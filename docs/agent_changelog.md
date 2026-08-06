@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1799] Repulsion Mine — *2026-08-06 16:13:38 UTC*
+
+A trap that triggers when a player gets close, detonating with a large force that pushes everything away instead of pulling or doing massive damage, useful for denying zones or saving allies.
+
+---
+
 ## [idea-1782] Payload Reversal Pushback — *2026-08-06 16:13:33 UTC*
 
 If a payload is completely unopposed by its owning team and pushed strictly by defenders for an extended period, it arms an explosive charge that detonates, knocking back the defenders slightly to give the attacking team a chance to recover.
