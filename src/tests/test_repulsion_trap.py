@@ -64,7 +64,14 @@ class MockBall:
 
 def test_repulsion_trap_trigger():
     trap = MockHazard("trap", variant="repulsion")
-    arena = MockArena([trap])
+    projectile = MockHazard("projectile")
+    projectile.owner_id = 99
+    projectile.x = 510
+    projectile.y = 510
+    projectile.vx = 0.0
+    projectile.vy = 0.0
+
+    arena = MockArena([trap, projectile])
     my_ball = MockBall(1, 500, 500)
     world = MockWorld(arena, [my_ball])
     action = Action(my_ball, world)
@@ -74,3 +81,5 @@ def test_repulsion_trap_trigger():
     assert trap.duration == 0.0
     assert my_ball.is_frictionless == True
     assert my_ball.vx != 0.0 or my_ball.vy != 0.0
+
+    assert projectile.vx != 0.0 or projectile.vy != 0.0

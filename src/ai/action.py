@@ -11408,6 +11408,20 @@ class Action:
                                                         b.vx = getattr(b, "vx", 0.0) + nx * knockback
                                                         b.vy = getattr(b, "vy", 0.0) + ny * knockback
                                                         b.is_frictionless = True # So it ignores drag and gets violently tossed
+                                        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                                            for h in self.world.arena.hazards:
+                                                if getattr(h, "kind", "") in ("projectile", "bomb", "missile", "arrow") and getattr(h, "owner_id", None) != getattr(hazard, "owner_id", None):
+                                                    dist_sq = (h.x - trigger_x)**2 + (h.y - trigger_y)**2
+                                                    if dist_sq < radius * radius:
+                                                        dist = math.sqrt(dist_sq)
+                                                        if dist < 0.0001:
+                                                            dist = 0.0001
+                                                        nx, ny = (h.x - trigger_x) / dist, (h.y - trigger_y) / dist
+                                                        knockback = 5000.0
+                                                        if hasattr(h, "vx"):
+                                                            h.vx = getattr(h, "vx", 0.0) + nx * knockback
+                                                        if hasattr(h, "vy"):
+                                                            h.vy = getattr(h, "vy", 0.0) + ny * knockback
 
                                 elif trap_variant == "reversal":
                                     hazard.duration = 0.0 # Destroy trap
