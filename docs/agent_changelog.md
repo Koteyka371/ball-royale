@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1787] Stasis Bubble Deployable — *2026-08-06 07:58:07 UTC*
+
+A rare deployable that casts a large stasis bubble around itself. Any entities or projectiles entering the bubble have their velocities slowed by 90% for a short duration.
+
+---
+
 ## [idea-1834] Energy Vampire Mode — *2026-08-06 05:48:13 UTC*
 
 A new game mode where stamina regeneration is completely disabled. The only way players can restore stamina (to use skills or sprint) is by dealing damage to other players, forcing hyper-aggressive gameplay.
