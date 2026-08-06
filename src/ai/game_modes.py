@@ -49860,3 +49860,60 @@ class ShiftingMirrorWallsMode(GameMode):
 GAME_MODES["shifting_mirror_walls"] = ShiftingMirrorWallsMode()
 
 GAME_MODES["wind_funnels"] = WindFunnelsMode()
+
+class GhostOrbMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Ghost Orb"
+        self.description = "When a ball dies, it leaves behind a ghost orb that chases living players and drains their stamina if touched."
+        self.ghost_orbs = []
+
+    class GhostOrb:
+        def __init__(self, x, y):
+            self.kind = "ghost_orb"
+            self.x = x
+            self.y = y
+            self.radius = 20.0
+            self.speed = 100.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.ghost_orbs = []
+
+    def on_ball_died(self, world, ball, killer=None):
+        if hasattr(super(), "on_ball_died"):
+            super().on_ball_died(world, ball, killer)
+
+        x = getattr(ball, "x", 0.0)
+        y = getattr(ball, "y", 0.0)
+        orb = self.GhostOrb(x, y)
+        self.ghost_orbs.append(orb)
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            world.arena.hazards.append(orb)
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import math
+
+        living_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator"]
+
+        for orb in self.ghost_orbs:
+            closest = None
+            min_dist = float('inf')
+            for b in living_balls:
+                dist = math.hypot(b.x - orb.x, b.y - orb.y)
+                if dist < min_dist:
+                    min_dist = dist
+                    closest = b
+
+            if closest and min_dist > 0:
+                orb.x += (closest.x - orb.x) / min_dist * orb.speed * delta
+                orb.y += (closest.y - orb.y) / min_dist * orb.speed * delta
+
+            for b in living_balls:
+                dist = math.hypot(b.x - orb.x, b.y - orb.y)
+                if dist <= orb.radius + getattr(b, "radius", 15.0):
+                    if hasattr(b, "stamina"):
+                        b.stamina = max(0.0, getattr(b, "stamina", 100.0) - 50.0 * delta)
+
+GAME_MODES["ghost_orb"] = GhostOrbMode()
