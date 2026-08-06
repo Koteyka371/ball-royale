@@ -11800,6 +11800,21 @@ class Action:
                                     self.ball.skill_timer = self.ball.skill_cooldown
                                 else:
                                     self.ball.skill_timer = 5.0
+                                # Strip all buffs
+                                buff_attributes = ["damage_boost_timer", "speed_boost_timer", "shield_timer", "hp_regen_timer", "invisibility_timer", "stealth_timer", "aura_timer", "kinetic_shield_timer", "orbital_shield_timer", "death_defy_timer", "crystal_armor_timer", "overclock_timer", "ghost_mode_timer", "hazard_immunity_timer", "emp_immunity_timer", "soul_boost_timer"]
+                                for attr in buff_attributes:
+                                    if hasattr(self.ball, attr) and getattr(self.ball, attr) > 0.0:
+                                        setattr(self.ball, attr, 0.0)
+                                if hasattr(self.ball, "damage") and hasattr(self.ball, "base_damage"):
+                                    self.ball.damage = self.ball.base_damage
+                                if hasattr(self.ball, "speed") and hasattr(self.ball, "base_speed"):
+                                    self.ball.speed = self.ball.base_speed
+                                if hasattr(self.ball, "shield_active"):
+                                    self.ball.shield_active = False
+                                if hasattr(self.ball, "kinetic_shield_active"):
+                                    self.ball.kinetic_shield_active = False
+                                if hasattr(self.ball, "ghost_mode_active"):
+                                    self.ball.ghost_mode_active = False
                             continue
                         elif hazard.kind == "orbital_strike_active":
                             hazard_damage = hazard.damage * delta
@@ -16875,6 +16890,22 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "orbital_mine_immunity_booster":
                     self.ball.orbital_mine_immunity_timer = 15.0
+                elif getattr(nearest, "kind", None) == "orbital_emp_strike_item":
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        try:
+                            from arena.procedural_arena import Hazard
+                            import random
+                            cx = getattr(self.world.arena, "width", getattr(self.world, "width", 1000.0)) / 2.0
+                            cy = getattr(self.world.arena, "height", getattr(self.world, "height", 1000.0)) / 2.0
+                            h_id = 5000 + len(self.world.arena.hazards) + random.randint(0, 10000)
+                            strike = Hazard(id=h_id, x=cx, y=cy, radius=400.0, kind="emp_strike", damage=0.0)
+                            strike.target_radius = 400.0
+                            setattr(strike, "duration", 3.0)
+                            self.world.arena.hazards.append(strike)
+                        except Exception:
+                            pass
+                    if hasattr(self.world, "events"):
+                        self.world.events.append({"type": "orbital_emp_strike", "message": "An Orbital EMP Strike has been called down!"})
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
