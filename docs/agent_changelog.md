@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1834] Energy Vampire Mode — *2026-08-06 05:48:13 UTC*
+
+A new game mode where stamina regeneration is completely disabled. The only way players can restore stamina (to use skills or sprint) is by dealing damage to other players, forcing hyper-aggressive gameplay.
+
+---
+
 ## [idea-1809] Kinetic Reversal Mine — *2026-08-06 02:57:26 UTC*
 
 A mine that, instead of dealing damage, reverses the velocity vector of all nearby physics objects and enemies with 2x magnitude when triggered, turning enemy charges or projectiles against them.
