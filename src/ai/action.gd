@@ -22865,6 +22865,33 @@ func execute(strategy: String, delta: float):
                                 self.ball.skill_timer = cd
                             elif self.ball.has_method("set_meta"):
                                 self.ball.set_meta("skill_timer", cd)
+
+                            var buff_attributes = ["damage_boost_timer", "speed_boost_timer", "shield_timer", "hp_regen_timer", "invisibility_timer", "stealth_timer", "aura_timer", "kinetic_shield_timer", "orbital_shield_timer", "death_defy_timer", "crystal_armor_timer", "overclock_timer", "ghost_mode_timer", "hazard_immunity_timer", "emp_immunity_timer", "soul_boost_timer"]
+                            for attr in buff_attributes:
+                                if attr in self.ball and typeof(self.ball[attr]) in [TYPE_FLOAT, TYPE_INT] and self.ball[attr] > 0.0:
+                                    self.ball[attr] = 0.0
+                                elif self.ball.has_method("has_meta") and self.ball.has_meta(attr) and typeof(self.ball.get_meta(attr)) in [TYPE_FLOAT, TYPE_INT] and self.ball.get_meta(attr) > 0.0:
+                                    self.ball.set_meta(attr, 0.0)
+                            if "damage" in self.ball and "base_damage" in self.ball:
+                                self.ball.damage = self.ball.base_damage
+                            elif self.ball.has_method("has_meta") and self.ball.has_meta("damage") and self.ball.has_meta("base_damage"):
+                                self.ball.set_meta("damage", self.ball.get_meta("base_damage"))
+                            if "speed" in self.ball and "base_speed" in self.ball:
+                                self.ball.speed = self.ball.base_speed
+                            elif self.ball.has_method("has_meta") and self.ball.has_meta("speed") and self.ball.has_meta("base_speed"):
+                                self.ball.set_meta("speed", self.ball.get_meta("base_speed"))
+                            if "shield_active" in self.ball:
+                                self.ball.shield_active = false
+                            elif self.ball.has_method("has_meta") and self.ball.has_meta("shield_active"):
+                                self.ball.set_meta("shield_active", false)
+                            if "kinetic_shield_active" in self.ball:
+                                self.ball.kinetic_shield_active = false
+                            elif self.ball.has_method("has_meta") and self.ball.has_meta("kinetic_shield_active"):
+                                self.ball.set_meta("kinetic_shield_active", false)
+                            if "ghost_mode_active" in self.ball:
+                                self.ball.ghost_mode_active = false
+                            elif self.ball.has_method("has_meta") and self.ball.has_meta("ghost_mode_active"):
+                                self.ball.set_meta("ghost_mode_active", false)
                         continue
                     elif hazard.kind == "orbital_strike_active":
                         var hd = hazard.damage * delta
@@ -33258,6 +33285,35 @@ func _collect_booster(delta: float):
                     self.ball.orbital_mine_immunity_timer = 15.0
                 elif self.ball.has_method("set_meta"):
                     self.ball.set_meta("orbital_mine_immunity_timer", 15.0)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "orbital_emp_strike_item":
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var ProceduralArenaModule = load("res://arena/procedural_arena.gd")
+                    if ProceduralArenaModule != null:
+                        var cx = 500.0
+                        if "width" in self.world.arena:
+                            cx = self.world.arena.width / 2.0
+                        elif "width" in self.world:
+                            cx = self.world.width / 2.0
+                        var cy = 500.0
+                        if "height" in self.world.arena:
+                            cy = self.world.arena.height / 2.0
+                        elif "height" in self.world:
+                            cy = self.world.height / 2.0
+                        var h_id = 5000 + self.world.arena.hazards.size() + (randi() % 10000)
+                        var strike = ProceduralArenaModule.Hazard.new(h_id, cx, cy, 400.0, "emp_strike", 0.0)
+                        strike.target_radius = 400.0
+                        strike.set_meta("duration", 3.0)
+                        self.world.arena.hazards.append(strike)
+                if self.world != null and "events" in self.world:
+                    self.world.events.append({"type": "orbital_emp_strike", "message": "An Orbital EMP Strike has been called down!"})
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
