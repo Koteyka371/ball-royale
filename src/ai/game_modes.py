@@ -36566,6 +36566,99 @@ class HealingRainMode(GameMode):
                         if hasattr(b, 'base_speed'):
                             b.speed = b.base_speed
 
+
+class GlowingMeteorFragmentsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Glowing Meteor Fragments"
+        self.description = "Random meteors crash into the arena and leave glowing fragments. Collecting a glowing fragment boosts a player's damage."
+        self.bombard_timer = 0.0
+        self.active_meteors = []
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        if getattr(world, "arena", None) is not None and getattr(world.arena, "hazards", None) is None:
+            world.arena.hazards = []
+        self.bombard_timer = 0.0
+        self.active_meteors = []
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import random
+        import math
+
+        self.bombard_timer += delta
+
+        if self.bombard_timer >= 5.0:
+            self.bombard_timer = 0.0
+            arena_width = getattr(world.arena, "width", 1000) if getattr(world, "arena", None) is not None else 1000
+            arena_height = getattr(world.arena, "height", 1000) if getattr(world, "arena", None) is not None else 1000
+
+            num_meteors = random.randint(1, 3)
+            for _ in range(num_meteors):
+                x = random.uniform(50, arena_width - 50)
+                y = random.uniform(50, arena_height - 50)
+
+                self.active_meteors.append({
+                    "id": f"meteor_{random.randint(10000, 99999)}",
+                    "x": x,
+                    "y": y,
+                    "delay": 2.0,
+                    "radius": 40.0
+                })
+
+        try:
+            from arena.procedural_arena import Hazard
+            HazardClass = Hazard
+        except ImportError:
+            class FallbackHazard:
+                def __init__(self, id, x, y, radius, kind, damage):
+                    self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
+            HazardClass = FallbackHazard
+
+        if getattr(world, "arena", None) is not None and not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        still_active = []
+        for m in self.active_meteors:
+            m["delay"] -= delta
+            if m["delay"] <= 0:
+                if getattr(world, "arena", None) is not None and hasattr(world.arena, "hazards"):
+                    world.arena.hazards.append(HazardClass(
+                        id=f"glowing_fragment_{random.randint(10000, 99999)}",
+                        x=m["x"],
+                        y=m["y"],
+                        radius=20.0,
+                        kind="glowing_fragment",
+                        damage=0.0
+                    ))
+            else:
+                still_active.append(m)
+
+        self.active_meteors = still_active
+
+        if getattr(world, "arena", None) is not None and hasattr(world.arena, "hazards"):
+            fragments = [h for h in world.arena.hazards if getattr(h, "kind", "") == "glowing_fragment"]
+            for frag in fragments:
+                for b in balls:
+                    if getattr(b, "alive", False):
+                        b_x = getattr(b, "x", 0.0)
+                        b_y = getattr(b, "y", 0.0)
+                        dx = b_x - getattr(frag, "x", 0.0)
+                        dy = b_y - getattr(frag, "y", 0.0)
+                        dist = math.hypot(dx, dy)
+                        b_r = getattr(b, "radius", 15.0)
+                        f_r = getattr(frag, "radius", 20.0)
+                        if dist <= b_r + f_r:
+                            b.damage_boost_timer = 10.0
+                            world.arena.hazards.remove(frag)
+                            break
+
+            world.arena.hazards = [h for h in world.arena.hazards if getattr(h, "kind", "") not in ["meteor_indicator"]]
+            for m in self.active_meteors:
+                world.arena.hazards.append(HazardClass(m["id"], m["x"], m["y"], m["radius"], "meteor_indicator", 0))
+
+
 GAME_MODES = {
     'healing_rain': HealingRainMode(),
     "boss_escort": BossEscortMode(),
@@ -36827,6 +36920,7 @@ GAME_MODES = {
     "weapon_collection": WeaponCollectionMode(),
     "blacksmith_boss": BlacksmithBossMode(),
     "solar_radiation_storm": SolarRadiationStormMode(),
+    "glowing_meteor_fragments": GlowingMeteorFragmentsMode(),
 }
 
 try:
