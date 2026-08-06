@@ -91,6 +91,32 @@ class CrowdSystem:
                 self.world.add_event("crowd_throw", {"message": f"Viewer {self._get_user_display(user)} spawned a {hazard_kind}!"})
                 self.excitement_level += 5.0
 
+        elif cmd == "!upgrade_hazard" and len(parts) >= 2:
+            hazard_kind = parts[1]
+            if self.viewer_loyalty.get(user, 0) >= 20:
+                if hasattr(self.world, 'arena') and hasattr(self.world.arena, 'hazards'):
+                    matching = [h for h in self.world.arena.hazards if getattr(h, "kind", "") == hazard_kind]
+                    if matching:
+                        hazard = random.choice(matching)
+                        hazard.radius = getattr(hazard, "radius", 20.0) * 2.0
+                        if hasattr(hazard, "damage"):
+                            hazard.damage *= 2.0
+                        hazard.is_super = True
+
+                        if hasattr(self.world, 'add_event'):
+                            self.world.add_event("explosion", {
+                                "x": getattr(hazard, "x", 0),
+                                "y": getattr(hazard, "y", 0),
+                                "radius": getattr(hazard, "radius", 20.0),
+                                "damage": 0.0
+                            })
+                            self.world.add_event("crowd_cheer", {
+                                "message": f"Viewer {self._get_user_display(user)} upgraded a {hazard_kind} to SUPER level!"
+                            })
+
+                        self._add_viewer_loyalty(user, -20)
+                        self.excitement_level += 10.0
+
         elif cmd == "!spawnboss" and len(parts) >= 2:
             boss_type = parts[1].lower()
             if hasattr(self.world, "game_mode"):

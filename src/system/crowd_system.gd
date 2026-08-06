@@ -121,6 +121,75 @@ func process_external_command(user: String, command: String, balls: Array):
             world.add_event("crowd_throw", {"message": "Viewer " + _get_user_display(user) + " spawned a " + hazard_kind + "!"})
             excitement_level += 5.0
 
+    elif cmd == "!upgrade_hazard" and parts.size() >= 2:
+        var hazard_kind = parts[1]
+        var current_pts = 0
+        if viewer_loyalty.has(user):
+            current_pts = viewer_loyalty[user]
+        if current_pts >= 20:
+            if world != null and world.has_method("get") and world.get("arena") != null:
+                var arena = world.get("arena")
+                if typeof(arena) == TYPE_OBJECT and arena.has_method("get") and arena.get("hazards") != null:
+                    var hazards = arena.get("hazards")
+                    var matching = []
+                    for h in hazards:
+                        var k = null
+                        if typeof(h) == TYPE_OBJECT and h.has_method("get"):
+                            k = h.get("kind")
+                        elif typeof(h) == TYPE_DICTIONARY and h.has("kind"):
+                            k = h["kind"]
+                        if k == hazard_kind:
+                            matching.append(h)
+
+                    if matching.size() > 0:
+                        var hazard = matching[randi() % matching.size()]
+
+                        var h_x = 0.0
+                        var h_y = 0.0
+                        var h_rad = 20.0
+
+                        if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set"):
+                            var rad = 20.0
+                            if hazard.get("radius") != null:
+                                rad = float(hazard.get("radius"))
+                            hazard.set("radius", rad * 2.0)
+
+                            if hazard.get("damage") != null:
+                                hazard.set("damage", float(hazard.get("damage")) * 2.0)
+                            hazard.set("is_super", true)
+
+                            h_x = float(hazard.get("x")) if hazard.get("x") != null else 0.0
+                            h_y = float(hazard.get("y")) if hazard.get("y") != null else 0.0
+                            h_rad = rad * 2.0
+
+                        elif typeof(hazard) == TYPE_DICTIONARY:
+                            var rad = 20.0
+                            if hazard.has("radius"):
+                                rad = float(hazard.get("radius"))
+                            hazard["radius"] = rad * 2.0
+
+                            if hazard.has("damage"):
+                                hazard["damage"] = float(hazard.get("damage")) * 2.0
+                            hazard["is_super"] = true
+
+                            h_x = float(hazard.get("x", 0.0))
+                            h_y = float(hazard.get("y", 0.0))
+                            h_rad = rad * 2.0
+
+                        if world != null and world.has_method("add_event"):
+                            world.add_event("explosion", {
+                                "x": h_x,
+                                "y": h_y,
+                                "radius": h_rad,
+                                "damage": 0.0
+                            })
+                            world.add_event("crowd_cheer", {
+                                "message": "Viewer " + _get_user_display(user) + " upgraded a " + hazard_kind + " to SUPER level!"
+                            })
+
+                        _add_viewer_loyalty(user, -20)
+                        excitement_level += 10.0
+
     elif cmd == "!spawnboss" and parts.size() >= 2:
         var boss_type = parts[1].to_lower()
         if world != null:
