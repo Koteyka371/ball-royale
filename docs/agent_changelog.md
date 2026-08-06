@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1844] Decoy Supply Drops — *2026-08-06 11:09:22 UTC*
+
+Spawn decoy supply drops occasionally that look identical to real ones but instead trigger an AoE stun or damage when approached by players, making supply drops high risk vs high reward.
+
+---
+
 ## [idea-1800] Time-Dilated Safe Zone — *2026-08-06 11:09:17 UTC*
 
 A moving safe zone where time passes much slower. Balls inside the zone move at half speed and their skill cooldowns regenerate twice as slow, but they take reduced damage and are safe from external map hazards.
