@@ -59062,7 +59062,79 @@ class ColorSwapTeamMode extends GameMode:
 			if "events" in world:
 				world.events.append({"type": "color_swap", "message": "Teams swapped colors!"})
 
+class HealingRainMode extends GameMode:
+	var storm_active = false
+	var storm_timer = 0.0
+	var storm_interval = 10.0
+	var storm_duration = 5.0
+
+	func _init():
+		name = "Healing Rain"
+		description = "Periodic rain storms that gradually heal players but slow down their movement."
+
+	func tick(world, balls, delta = 0.016):
+		super.tick(world, balls, delta)
+		storm_timer += delta
+
+		var was_active = storm_active
+
+		if not storm_active and storm_timer >= storm_interval:
+			storm_active = true
+			storm_timer = 0.0
+			if typeof(world) == TYPE_DICTIONARY:
+				if "events" in world:
+					world.events.append({"type": "healing_rain_start", "message": "A healing rain storm has started! Players are healed but slowed."})
+			else:
+				if world != null and world.has_method("add_event"):
+					world.add_event("healing_rain_start", {"message": "A healing rain storm has started! Players are healed but slowed."})
+		elif storm_active and storm_timer >= storm_duration:
+			storm_active = false
+			storm_timer = 0.0
+			if typeof(world) == TYPE_DICTIONARY:
+				if "events" in world:
+					world.events.append({"type": "healing_rain_end", "message": "The healing rain has stopped."})
+			else:
+				if world != null and world.has_method("add_event"):
+					world.add_event("healing_rain_end", {"message": "The healing rain has stopped."})
+
+		if storm_active:
+			for b in balls:
+				var alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else b.get("alive") if "alive" in b else true
+				var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type") if "ball_type" in b else ""
+				if not alive or b_type == "spectator":
+					continue
+
+				var hp = b.get("hp") if typeof(b) == TYPE_DICTIONARY else b.hp if "hp" in b else 100.0
+				var max_hp = b.get("max_hp") if typeof(b) == TYPE_DICTIONARY else b.max_hp if "max_hp" in b else 100.0
+				if hp < max_hp:
+					var new_hp = min(max_hp, hp + 10.0 * delta)
+					if typeof(b) == TYPE_DICTIONARY:
+						b["hp"] = new_hp
+					else:
+						b.hp = new_hp
+
+				var base_speed = b.get("base_speed") if typeof(b) == TYPE_DICTIONARY else b.base_speed if "base_speed" in b else 100.0
+				if typeof(b) == TYPE_DICTIONARY:
+					b["speed"] = base_speed * 0.5
+					b["_healing_rain_slowed"] = true
+				else:
+					b.set("speed", base_speed * 0.5)
+					b.set_meta("_healing_rain_slowed", true)
+		else:
+			if was_active:
+				for b in balls:
+					var was_slowed = b.get("_healing_rain_slowed") if typeof(b) == TYPE_DICTIONARY else b.has_meta("_healing_rain_slowed") and b.get_meta("_healing_rain_slowed")
+					if was_slowed:
+						var base_speed = b.get("base_speed") if typeof(b) == TYPE_DICTIONARY else b.base_speed if "base_speed" in b else 100.0
+						if typeof(b) == TYPE_DICTIONARY:
+							b["speed"] = base_speed
+							b["_healing_rain_slowed"] = false
+						else:
+							b.set("speed", base_speed)
+							b.set_meta("_healing_rain_slowed", false)
+
 var GAME_MODES = {
+	"healing_rain": HealingRainMode.new(),
 	"color_swap_team": ColorSwapTeamMode.new(),
 	"extreme_microclimate": ExtremeMicroclimateMode.new(),
 	"boss_escort": BossEscortMode.new(),
