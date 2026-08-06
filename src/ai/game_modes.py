@@ -6500,6 +6500,42 @@ class DualPayloadMode(GameMode):
                         except ImportError:
                             pass
 
+
+            if not hasattr(self, "red_speed_pad_timer"):
+                self.red_speed_pad_timer = 0.0
+
+            self.red_speed_pad_timer += delta
+            if self.red_speed_pad_timer >= 10.0:
+                self.red_speed_pad_timer = 0.0
+                if getattr(self, "payload_red", None) and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                    has_nearby = False
+                    for b in balls:
+                        if b == self.payload_red or not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                            continue
+                        if getattr(b, "team", "") == "Red":
+                            import math
+                            dist = math.hypot(getattr(b, "x", 0) - getattr(self.payload_red, "x", 0),
+                                              getattr(b, "y", 0) - getattr(self.payload_red, "y", 0))
+                            if dist <= 150.0:
+                                has_nearby = True
+                                break
+
+                    if has_nearby:
+                        try:
+                            from arena.procedural_arena import Hazard
+                            import random
+                            h_id = len(world.arena.hazards) + random.randint(1000, 9999)
+                            hx = getattr(self.payload_red, "x", 0)
+                            hy = getattr(self.payload_red, "y", 0)
+                            pad = Hazard(h_id, hx, hy, 40.0, "bounce_pad", 0.0)
+                            setattr(pad, 'duration', 10.0)
+                            setattr(pad, 'team', "Red")
+                            world.arena.hazards.append(pad)
+                            if hasattr(world, "add_event"):
+                                world.add_event("speed_pad_deployed", {"x": hx, "y": hy})
+                        except ImportError:
+                            pass
+
             dx = (arena_width - 100.0) - getattr(self.payload_red, "x", 0)
             dy = center_y - getattr(self.payload_red, "y", 0)
             dist = math.hypot(dx, dy)
@@ -6600,6 +6636,42 @@ class DualPayloadMode(GameMode):
                             setattr(drop, 'duration', 15.0)
                             setattr(drop, 'team', "Blue")
                             world.arena.hazards.append(drop)
+                        except ImportError:
+                            pass
+
+
+            if not hasattr(self, "blue_speed_pad_timer"):
+                self.blue_speed_pad_timer = 0.0
+
+            self.blue_speed_pad_timer += delta
+            if self.blue_speed_pad_timer >= 10.0:
+                self.blue_speed_pad_timer = 0.0
+                if getattr(self, "payload_blue", None) and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                    has_nearby = False
+                    for b in balls:
+                        if b == self.payload_blue or not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                            continue
+                        if getattr(b, "team", "") == "Blue":
+                            import math
+                            dist = math.hypot(getattr(b, "x", 0) - getattr(self.payload_blue, "x", 0),
+                                              getattr(b, "y", 0) - getattr(self.payload_blue, "y", 0))
+                            if dist <= 150.0:
+                                has_nearby = True
+                                break
+
+                    if has_nearby:
+                        try:
+                            from arena.procedural_arena import Hazard
+                            import random
+                            h_id = len(world.arena.hazards) + random.randint(1000, 9999)
+                            hx = getattr(self.payload_blue, "x", 0)
+                            hy = getattr(self.payload_blue, "y", 0)
+                            pad = Hazard(h_id, hx, hy, 40.0, "bounce_pad", 0.0)
+                            setattr(pad, 'duration', 10.0)
+                            setattr(pad, 'team', "Blue")
+                            world.arena.hazards.append(pad)
+                            if hasattr(world, "add_event"):
+                                world.add_event("speed_pad_deployed", {"x": hx, "y": hy})
                         except ImportError:
                             pass
 

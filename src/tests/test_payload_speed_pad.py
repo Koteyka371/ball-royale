@@ -5,7 +5,7 @@ import os
 # Append src to sys.path so backend modules can be imported
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from ai.game_modes import EscortMode
+from ai.game_modes import EscortMode, DualPayloadMode
 
 class MockBall:
     def __init__(self, team, x, y, id=0):
@@ -84,3 +84,67 @@ def test_payload_speed_pad_no_deployment_when_alone_or_enemies_only():
 
     # Pad should NOT deploy because no teammates are close
     assert not any(h.kind == "bounce_pad" for h in world.arena.hazards)
+
+def test_dual_payload_speed_pad_red():
+    mode = DualPayloadMode()
+    world = MockWorld()
+
+    pr = MockBall("Red", 100, 500, id=0)
+    pr.is_payload = True
+    pr.hp = 5000.0
+    pr.speed = 1.0
+    mode.payload_red = pr
+
+    pb = MockBall("Blue", 900, 500, id=1)
+    pb.is_payload = True
+    pb.hp = 5000.0
+    pb.speed = 1.0
+    mode.payload_blue = pb
+
+    # Teammate close to red payload
+    b1 = MockBall("Red", 120, 500, id=2)
+    # Enemy close to red payload (blue)
+    b2 = MockBall("Blue", 130, 500, id=3)
+
+    balls = [pr, pb, b1, b2]
+
+    # Tick for less than 10 seconds, no pad should deploy
+    mode.tick(world, balls, 9.0)
+    assert not any(h.kind == "bounce_pad" and getattr(h, "team", "") == "Red" for h in world.arena.hazards)
+
+    # Tick to cross 10.0 seconds threshold
+    mode.tick(world, balls, 2.0)
+
+    # Pad should deploy
+    assert any(h.kind == "bounce_pad" and getattr(h, "team", "") == "Red" for h in world.arena.hazards)
+
+def test_dual_payload_speed_pad_blue():
+    mode = DualPayloadMode()
+    world = MockWorld()
+
+    pr = MockBall("Red", 100, 500, id=0)
+    pr.is_payload = True
+    pr.hp = 5000.0
+    pr.speed = 1.0
+    mode.payload_red = pr
+
+    pb = MockBall("Blue", 900, 500, id=1)
+    pb.is_payload = True
+    pb.hp = 5000.0
+    pb.speed = 1.0
+    mode.payload_blue = pb
+
+    # Teammate close to blue payload
+    b1 = MockBall("Blue", 880, 500, id=2)
+
+    balls = [pr, pb, b1]
+
+    # Tick for less than 10 seconds, no pad should deploy
+    mode.tick(world, balls, 9.0)
+    assert not any(h.kind == "bounce_pad" and getattr(h, "team", "") == "Blue" for h in world.arena.hazards)
+
+    # Tick to cross 10.0 seconds threshold
+    mode.tick(world, balls, 2.0)
+
+    # Pad should deploy
+    assert any(h.kind == "bounce_pad" and getattr(h, "team", "") == "Blue" for h in world.arena.hazards)
