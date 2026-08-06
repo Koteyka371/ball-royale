@@ -50292,3 +50292,67 @@ class SuperVortexMode(GameMode):
                     b.vy += (dy / dist) * pull * delta
 
 GAME_MODES['super_vortex'] = SuperVortexMode()
+
+
+class PeriodicLowGravityMutatorMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Periodic Low Gravity"
+        self.description = "Intermittently turns the gravity extremely low, which makes balls jump much further and halves friction. A chaotic mutator that completely changes pacing every few seconds."
+        self.mutators_active = True
+        self.mutators = []
+        self.timer = 0.0
+        self.duration = 10.0
+        self.low_grav_active = False
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.timer = 0.0
+        self.low_grav_active = False
+        self.mutators = []
+
+    def apply_dynamic_traits(self, world, balls, delta):
+        super().apply_dynamic_traits(world, balls, delta)
+        self.timer += delta
+
+        if self.low_grav_active:
+            if self.timer >= self.duration:
+                self.low_grav_active = False
+                self.timer = 0.0
+                if "low_gravity" in self.mutators:
+                    self.mutators.remove("low_gravity")
+                if hasattr(world, "add_event"):
+                    world.add_event("gravity_normal", {"message": "Gravity returned to normal!"})
+
+                # Restore state
+                for b in balls:
+                    if getattr(b, "alive", False):
+                        is_applied = getattr(b, "_periodic_low_grav_applied", False)
+                        if is_applied:
+                            b.is_frictionless = getattr(b, "_orig_frictionless", False)
+                            if hasattr(b, "_orig_mass"):
+                                b.mass = b._orig_mass
+                            b._periodic_low_grav_applied = False
+            else:
+                if "low_gravity" not in self.mutators:
+                    self.mutators.append("low_gravity")
+
+                # Apply state once
+                for b in balls:
+                    if getattr(b, "alive", False):
+                        is_applied = getattr(b, "_periodic_low_grav_applied", False)
+                        if not is_applied:
+                            b._orig_frictionless = getattr(b, "is_frictionless", False)
+                            b._orig_mass = getattr(b, "mass", 1.0)
+
+                            b.is_frictionless = True
+                            b.mass = b._orig_mass * 0.5
+                            b._periodic_low_grav_applied = True
+        else:
+            if self.timer >= self.duration:
+                self.low_grav_active = True
+                self.timer = 0.0
+                if hasattr(world, "add_event"):
+                    world.add_event("gravity_low", {"message": "Low gravity warning!"})
+
+GAME_MODES['periodic_low_gravity_mutator'] = PeriodicLowGravityMutatorMode()
