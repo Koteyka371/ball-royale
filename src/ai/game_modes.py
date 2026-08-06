@@ -3824,8 +3824,8 @@ class BattleRoyaleMode(GameMode):
                 booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_link_booster", "speed_booster", "hologram_booster", "holographic_decoy_module", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_shield_booster", "nemesis_drone_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "weather_scanner_item", "aura_booster", "aura_amplifier_trap_booster", "hazard_immunity_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "dummy_item", "fake_healing_orb", "cursed_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "mirror_shield_booster", "half_reflect_shield_booster", "damage_reflection_booster", "layer_reflect_shield_booster", "projectile_reflect_booster", "deflector_shield_booster", "bounce_shield_booster", "rearm_token", "gravity_well_booster", "reverse_gravity_item", "gravity_boots", "overclock_booster", "chronosphere_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "decoy_flare_item", "kinetic_shield_booster", "bumper_synergy_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_time_anomaly", "deployable_decoy_swap_item", "pet_item", "artillery_pet_item", "hazard_jar_item", "ammo_pack", "orbital_mine_immunity_booster", "lightning_rod_item", "orbital_moon_item", "safe_zone_radar"]
                 chosen_kind = rnd.choice(booster_kinds)
                 b_id = 9000 + len(world.boosters) + rnd.randint(0, 1000)
-                b_x = _rnd.uniform(100, arena_width - 100)
-                b_y = _rnd.uniform(100, arena_height - 100)
+                b_x = rnd.uniform(100, arena_width - 100)
+                b_y = rnd.uniform(100, arena_height - 100)
                 new_booster = Booster(b_id, b_x, b_y, chosen_kind)
                 world.boosters.append(new_booster)
 
@@ -3842,7 +3842,22 @@ class BattleRoyaleMode(GameMode):
                             self.active = True
                     world.arena.hazards.append(HazardBooster(b_id, b_x, b_y, 15.0, chosen_kind, 0.0))
 
+                import math
+                for b in balls:
+                    if getattr(b, "alive", False):
+                        dist = math.hypot(getattr(b, "x", 0) - b_x, getattr(b, "y", 0) - b_y)
+                        if dist <= 40.0 + getattr(b, "radius", 15.0):
+                            b.hp = getattr(b, "hp", 100.0) - 30.0
+                            if getattr(b, "hp", 0) <= 0:
+                                b.alive = False
+                            if dist > 0:
+                                dx = getattr(b, "x", 0) - b_x
+                                dy = getattr(b, "y", 0) - b_y
+                                b.vx = getattr(b, "vx", 0.0) + (dx / dist) * 800.0
+                                b.vy = getattr(b, "vy", 0.0) + (dy / dist) * 800.0
+
                 if hasattr(world, "add_event"):
+                    world.add_event("supply_drop_shockwave", {"x": b_x, "y": b_y, "radius": 40.0})
                     world.add_event("supply_drop", {"message": f"A {chosen_kind} supply drop has appeared!"})
 
         if controller:
@@ -3865,8 +3880,8 @@ class BattleRoyaleMode(GameMode):
                     world.add_event("weather_change", {"weather": self.weather})
                 if self.weather == "wind":
                     rnd = getattr(self, "random", __import__("random"))
-                    self.wind_dx = _rnd.uniform(-50.0, 50.0)
-                    self.wind_dy = _rnd.uniform(-50.0, 50.0)
+                    self.wind_dx = rnd.uniform(-50.0, 50.0)
+                    self.wind_dy = rnd.uniform(-50.0, 50.0)
         else:
             self.weather_timer += delta
             time_until = 15.0 - self.weather_timer
@@ -6276,7 +6291,23 @@ class DualPayloadMode(GameMode):
                         drop = DummyHazard(h_id, hx, hy, 40.0, "supply_drop", 0.0)
 
                     world.arena.hazards.append(drop)
+
+                    import math
+                    for b in balls:
+                        if getattr(b, "alive", False):
+                            dist = math.hypot(getattr(b, "x", 0) - hx, getattr(b, "y", 0) - hy)
+                            if dist <= 40.0 + getattr(b, "radius", 15.0):
+                                b.hp = getattr(b, "hp", 100.0) - 30.0
+                                if getattr(b, "hp", 0) <= 0:
+                                    b.alive = False
+                                if dist > 0:
+                                    dx = getattr(b, "x", 0) - hx
+                                    dy = getattr(b, "y", 0) - hy
+                                    b.vx = getattr(b, "vx", 0.0) + (dx / dist) * 800.0
+                                    b.vy = getattr(b, "vy", 0.0) + (dy / dist) * 800.0
+
                     if hasattr(world, "add_event"):
+                        world.add_event("supply_drop_shockwave", {"x": hx, "y": hy, "radius": 40.0})
                         world.add_event("supply_drop_spawned", {"x": hx, "y": hy})
 
         # Check collisions with supply drops for all balls
@@ -7075,7 +7106,23 @@ class EscortMode(GameMode):
                     hy = getattr(self.payload, "y", 0) + random.uniform(-150, 150)
                     drop = Hazard(h_id, hx, hy, 40.0, "supply_drop", 0.0)
                     world.arena.hazards.append(drop)
+
+                    import math
+                    for b in balls:
+                        if getattr(b, "alive", False):
+                            dist = math.hypot(getattr(b, "x", 0) - hx, getattr(b, "y", 0) - hy)
+                            if dist <= 40.0 + getattr(b, "radius", 15.0):
+                                b.hp = getattr(b, "hp", 100.0) - 30.0
+                                if getattr(b, "hp", 0) <= 0:
+                                    b.alive = False
+                                if dist > 0:
+                                    dx = getattr(b, "x", 0) - hx
+                                    dy = getattr(b, "y", 0) - hy
+                                    b.vx = getattr(b, "vx", 0.0) + (dx / dist) * 800.0
+                                    b.vy = getattr(b, "vy", 0.0) + (dy / dist) * 800.0
+
                     if hasattr(world, "add_event"):
+                        world.add_event("supply_drop_shockwave", {"x": hx, "y": hy, "radius": 40.0})
                         world.add_event("supply_drop_spawned", {"x": hx, "y": hy})
                 except ImportError:
                     pass
@@ -9497,8 +9544,8 @@ class WeatherChaosMode(GameMode):
                     world.add_event("weather_change", {"weather": self.weather})
                 if self.weather == "wind":
                     rnd = getattr(self, "random", __import__("random"))
-                    self.wind_dx = _rnd.uniform(-50.0, 50.0)
-                    self.wind_dy = _rnd.uniform(-50.0, 50.0)
+                    self.wind_dx = rnd.uniform(-50.0, 50.0)
+                    self.wind_dy = rnd.uniform(-50.0, 50.0)
         else:
             self.weather_timer += delta
 
@@ -46946,7 +46993,22 @@ class TelegraphedSupplyDropMode(GameMode):
                     self.high_tier_drops = []
                 self.high_tier_drops.append(drop)
 
+                import math
+                for b in balls:
+                    if getattr(b, "alive", False):
+                        dist = math.hypot(getattr(b, "x", 0) - t["x"], getattr(b, "y", 0) - t["y"])
+                        if dist <= 60.0 + getattr(b, "radius", 15.0):
+                            b.hp = getattr(b, "hp", 100.0) - 30.0
+                            if getattr(b, "hp", 0) <= 0:
+                                b.alive = False
+                            if dist > 0:
+                                dx = getattr(b, "x", 0) - t["x"]
+                                dy = getattr(b, "y", 0) - t["y"]
+                                b.vx = getattr(b, "vx", 0.0) + (dx / dist) * 800.0
+                                b.vy = getattr(b, "vy", 0.0) + (dy / dist) * 800.0
+
                 if hasattr(world, "add_event"):
+                    world.add_event("supply_drop_shockwave", {"x": t["x"], "y": t["y"], "radius": 60.0})
                     world.add_event("high_tier_drop_landed", {"message": "Supply drop has landed! Capture it!"})
 
         # Process drops
