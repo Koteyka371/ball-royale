@@ -44,7 +44,8 @@ class PortalArena(ProceduralArena):
         self.hazards.append(Portal(id=2, x=w-150.0, y=150.0, radius=30.0, target_x=150.0, target_y=h-150.0))
         self.hazards.append(Portal(id=3, x=150.0, y=h-150.0, radius=30.0, target_x=w-150.0, target_y=150.0))
 
-class ConveyorBelt(ProceduralArena.Hazard):
+from arena.procedural_arena import Hazard
+class ConveyorBelt(Hazard):
     def __init__(self, id: int, x: float, y: float, radius: float, damage: float, direction_vector: tuple[float, float], speed_magnitude: float):
         super().__init__(id, x, y, radius, "conveyor_belt", damage)
         self.direction_vector = direction_vector
