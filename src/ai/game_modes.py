@@ -6292,6 +6292,10 @@ class DualPayloadMode(GameMode):
 
                     world.arena.hazards.append(drop)
 
+                    import random
+                    if random.random() < 0.25:
+                        setattr(drop, "is_decoy", True)
+
                     import math
                     for b in balls:
                         if getattr(b, "alive", False):
@@ -6320,20 +6324,37 @@ class DualPayloadMode(GameMode):
                         import math
                         dist = math.hypot(getattr(b, "x", 0) - getattr(h, "x", 0), getattr(b, "y", 0) - getattr(h, "y", 0))
                         if dist <= getattr(h, "radius", 40.0) + getattr(b, "radius", 15.0):
-                            import random
-                            buff_type = random.choice(["invulnerability", "instant_ultimate", "mega_heal"])
-                            if buff_type == "invulnerability":
-                                b.invulnerable_timer = getattr(b, "invulnerable_timer", 0.0) + 10.0
-                            elif buff_type == "instant_ultimate":
-                                b.ultimate_charge = getattr(b, "max_ultimate_charge", 100.0)
-                            elif buff_type == "mega_heal":
-                                b.hp = getattr(b, "max_hp", 100.0)
-                                b.shield = getattr(b, "shield", 0.0) + 50.0
+                            if getattr(h, "is_decoy", False):
+                                explosion_radius = 120.0
+                                for other_b in balls:
+                                    if getattr(other_b, "alive", False) and getattr(other_b, "ball_type", None) != "spectator":
+                                        import math
+                                        d = math.hypot(getattr(other_b, "x", 0) - getattr(h, "x", 0), getattr(other_b, "y", 0) - getattr(h, "y", 0))
+                                        if d <= explosion_radius + getattr(other_b, "radius", 15.0):
+                                            other_b.hp = getattr(other_b, "hp", 100.0) - 50.0
+                                            other_b.stun_timer = getattr(other_b, "stun_timer", 0.0) + 2.0
+                                            if getattr(other_b, "hp", 0) <= 0:
+                                                other_b.alive = False
 
-                            if h in world.arena.hazards:
-                                world.arena.hazards.remove(h)
-                            if hasattr(world, "add_event"):
-                                world.add_event("supply_drop_collected", {"team": getattr(b, "team", "Unknown"), "buff": buff_type})
+                                if h in world.arena.hazards:
+                                    world.arena.hazards.remove(h)
+                                if hasattr(world, "add_event"):
+                                    world.add_event("decoy_supply_drop_exploded", {"x": getattr(h, "x", 0), "y": getattr(h, "y", 0), "radius": explosion_radius})
+                            else:
+                                import random
+                                buff_type = random.choice(["invulnerability", "instant_ultimate", "mega_heal"])
+                                if buff_type == "invulnerability":
+                                    b.invulnerable_timer = getattr(b, "invulnerable_timer", 0.0) + 10.0
+                                elif buff_type == "instant_ultimate":
+                                    b.ultimate_charge = getattr(b, "max_ultimate_charge", 100.0)
+                                elif buff_type == "mega_heal":
+                                    b.hp = getattr(b, "max_hp", 100.0)
+                                    b.shield = getattr(b, "shield", 0.0) + 50.0
+
+                                if h in world.arena.hazards:
+                                    world.arena.hazards.remove(h)
+                                if hasattr(world, "add_event"):
+                                    world.add_event("supply_drop_collected", {"team": getattr(b, "team", "Unknown"), "buff": buff_type})
                             break
 
         # Overcharge Battery logic
@@ -7107,6 +7128,10 @@ class EscortMode(GameMode):
                     drop = Hazard(h_id, hx, hy, 40.0, "supply_drop", 0.0)
                     world.arena.hazards.append(drop)
 
+                    import random
+                    if random.random() < 0.25:
+                        setattr(drop, "is_decoy", True)
+
                     import math
                     for b in balls:
                         if getattr(b, "alive", False):
@@ -7137,20 +7162,37 @@ class EscortMode(GameMode):
                         import math
                         dist = math.hypot(getattr(b, "x", 0) - getattr(h, "x", 0), getattr(b, "y", 0) - getattr(h, "y", 0))
                         if dist <= getattr(h, "radius", 40.0) + getattr(b, "radius", 15.0):
-                            import random
-                            buff_type = random.choice(["invulnerability", "instant_ultimate", "mega_heal"])
-                            if buff_type == "invulnerability":
-                                b.invulnerable_timer = getattr(b, "invulnerable_timer", 0.0) + 10.0
-                            elif buff_type == "instant_ultimate":
-                                b.ultimate_charge = getattr(b, "max_ultimate_charge", 100.0)
-                            elif buff_type == "mega_heal":
-                                b.hp = getattr(b, "max_hp", 100.0)
-                                b.shield = getattr(b, "shield", 0.0) + 50.0
+                            if getattr(h, "is_decoy", False):
+                                explosion_radius = 120.0
+                                for other_b in balls:
+                                    if getattr(other_b, "alive", False) and getattr(other_b, "ball_type", None) != "spectator":
+                                        import math
+                                        d = math.hypot(getattr(other_b, "x", 0) - getattr(h, "x", 0), getattr(other_b, "y", 0) - getattr(h, "y", 0))
+                                        if d <= explosion_radius + getattr(other_b, "radius", 15.0):
+                                            other_b.hp = getattr(other_b, "hp", 100.0) - 50.0
+                                            other_b.stun_timer = getattr(other_b, "stun_timer", 0.0) + 2.0
+                                            if getattr(other_b, "hp", 0) <= 0:
+                                                other_b.alive = False
 
-                            if h in world.arena.hazards:
-                                world.arena.hazards.remove(h)
-                            if hasattr(world, "add_event"):
-                                world.add_event("supply_drop_collected", {"team": getattr(b, "team", "Unknown"), "buff": buff_type})
+                                if h in world.arena.hazards:
+                                    world.arena.hazards.remove(h)
+                                if hasattr(world, "add_event"):
+                                    world.add_event("decoy_supply_drop_exploded", {"x": getattr(h, "x", 0), "y": getattr(h, "y", 0), "radius": explosion_radius})
+                            else:
+                                import random
+                                buff_type = random.choice(["invulnerability", "instant_ultimate", "mega_heal"])
+                                if buff_type == "invulnerability":
+                                    b.invulnerable_timer = getattr(b, "invulnerable_timer", 0.0) + 10.0
+                                elif buff_type == "instant_ultimate":
+                                    b.ultimate_charge = getattr(b, "max_ultimate_charge", 100.0)
+                                elif buff_type == "mega_heal":
+                                    b.hp = getattr(b, "max_hp", 100.0)
+                                    b.shield = getattr(b, "shield", 0.0) + 50.0
+
+                                if h in world.arena.hazards:
+                                    world.arena.hazards.remove(h)
+                                if hasattr(world, "add_event"):
+                                    world.add_event("supply_drop_collected", {"team": getattr(b, "team", "Unknown"), "buff": buff_type})
                             break
 
 
