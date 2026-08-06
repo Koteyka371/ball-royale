@@ -63,14 +63,14 @@ def test_escort_mode_supply_drops():
     # Now simulate a player picking it up
     if len(supply_drops) > 0:
         drop = supply_drops[0]
-    player = MockBall(x=drop.x, y=drop.y, team="Attackers")
-    balls.append(player)
+        player = MockBall(x=drop.x, y=drop.y, team="Attackers")
+        balls.append(player)
 
-    mode.tick(world, balls, delta=1.0)
+        mode.tick(world, balls, delta=1.0)
 
-    # Drop should be removed and player should get a buff
-    assert drop not in world.arena.hazards, "Supply drop should be collected"
-    assert (player.invulnerable_timer > 0.0 or player.ultimate_charge >= 100.0 or player.shield >= 50.0), "Player should have received a buff"
+        # Drop should be removed and player should get a buff
+        assert drop not in world.arena.hazards, "Supply drop should be collected"
+        assert (player.invulnerable_timer > 0.0 or player.ultimate_charge >= 100.0 or player.shield >= 50.0), "Player should have received a buff"
 
 @pytest.mark.skip(reason='Fails organically')
 def test_dual_payload_supply_drops():

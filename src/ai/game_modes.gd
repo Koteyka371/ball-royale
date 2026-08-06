@@ -11600,6 +11600,8 @@ class EscortMode extends GameMode:
 									b.set("hp", new_hp)
 
 				var nearby_teammates = 0
+				var attackers_near = 0
+				var defenders_near = 0
 				for b in balls:
 					var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
 					if b_type == "spectator":
@@ -11616,14 +11618,22 @@ class EscortMode extends GameMode:
 						continue
 
 					var b_team = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else b.get("team")
-					if b_team == payload_team:
-						continue
-
 					var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
 					var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
 					var bdx = bx - px
 					var bdy = by - py
-					if sqrt(bdx*bdx + bdy*bdy) <= 150.0:
+					var bdist = sqrt(bdx*bdx + bdy*bdy)
+
+					if bdist <= 150.0:
+						if b_team == "Attackers":
+							attackers_near += 1
+						elif b_team == "Defenders":
+							defenders_near += 1
+
+					if b_team != payload_team:
+						continue
+
+					if bdist <= 150.0:
 						nearby_teammates += 1
 						var current_sb = b.get_meta("speed_boost_timer") if (typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("speed_boost_timer")) else (b.get("speed_boost_timer", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.speed_boost_timer if "speed_boost_timer" in b else 0.0))
 						var new_sb = max(current_sb, 2.0)
@@ -11635,6 +11645,58 @@ class EscortMode extends GameMode:
 							b.set_meta("speed_boost_timer", new_sb)
 
 				var speed_mult = 1.0 + (nearby_teammates * 0.5)
+
+				if attackers_near == 0 and defenders_near > 0:
+					var curr_timer = payload.get("unopposed_timer", 0.0) if typeof(payload) == TYPE_DICTIONARY else (payload.get("unopposed_timer") if payload.get("unopposed_timer") != null else 0.0)
+					if typeof(payload) == TYPE_DICTIONARY:
+						payload["unopposed_timer"] = curr_timer + delta
+					else:
+						payload.set("unopposed_timer", curr_timer + delta)
+				else:
+					if typeof(payload) == TYPE_DICTIONARY:
+						payload["unopposed_timer"] = 0.0
+					else:
+						payload.set("unopposed_timer", 0.0)
+
+				var unopp_timer = payload.get("unopposed_timer", 0.0) if typeof(payload) == TYPE_DICTIONARY else (payload.get("unopposed_timer") if payload.get("unopposed_timer") != null else 0.0)
+				if unopp_timer >= 10.0:
+					if typeof(payload) == TYPE_DICTIONARY:
+						payload["unopposed_timer"] = 0.0
+					else:
+						payload.set("unopposed_timer", 0.0)
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						world.add_event("payload_unopposed_detonation", {"x": px, "y": py})
+
+					for b in balls:
+						var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+						if b_type == "spectator":
+							continue
+						var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+						if not b_alive:
+							continue
+						var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.get("id")
+						var p_id = payload.get("id") if typeof(payload) == TYPE_DICTIONARY else payload.get("id")
+						if b_id != null and p_id != null and b_id == p_id:
+							continue
+						if typeof(b) == TYPE_OBJECT and typeof(payload) == TYPE_OBJECT and b == payload:
+							continue
+						var b_team = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else b.get("team")
+						if b_team == "Defenders":
+							var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
+							var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
+							var bdx = bx - px
+							var bdy = by - py
+							var bdist = sqrt(bdx*bdx + bdy*bdy)
+							if bdist > 0 and bdist <= 200.0:
+								var kb_force = 500.0
+								var cvx = b.get("vx", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get("vx") if b.get("vx") != null else 0.0)
+								var cvy = b.get("vy", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get("vy") if b.get("vy") != null else 0.0)
+								if typeof(b) == TYPE_DICTIONARY:
+									b["vx"] = cvx + (bdx / bdist) * kb_force
+									b["vy"] = cvy + (bdy / bdist) * kb_force
+								else:
+									b.set("vx", cvx + (bdx / bdist) * kb_force)
+									b.set("vy", cvy + (bdy / bdist) * kb_force
 
 				var is_sabotaged = payload.get("sabotaged", false) if typeof(payload) == TYPE_DICTIONARY else (payload.get("sabotaged") if payload.get("sabotaged") != null else false)
 				if not is_sabotaged:
