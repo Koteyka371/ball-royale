@@ -29525,8 +29525,8 @@ class FactoryMode extends GameMode:
 		self.points_for_kill = 10
 		self.arena = ArenaTypes.FactoryArena.new()
 
-	func update(world, delta: float):
-		super.update(world, delta)
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
 
 		if not "arena" in world or not world.arena or not "hazards" in world.arena:
 			return
