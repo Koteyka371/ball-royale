@@ -18655,7 +18655,6 @@ class CrowdedSafeZoneMode extends SafeZoneMode:
 	var base_shrink_rate: float = 10.0
 
 	func _init() -> void:
-		super._init()
 		name = "Crowded Safe Zone"
 		description = "The safe zone shrinks faster when more players are outside of it, forcing combat."
 
@@ -18785,7 +18784,6 @@ class SnakeSafeZoneMode extends GameMode:
 	var outside_damage_per_second: float = 15.0
 
 	func _init():
-		super._init()
 		name = "Snake Safe Zone"
 		description = "The safe zone is a winding, snake-like path that continuously moves across the arena and shrinks in width over time, forcing players into narrow corridors."
 
@@ -48466,7 +48464,6 @@ class VoidTilesMode extends GameMode:
 	var safe_radius: float = 1000.0
 
 	func _init():
-		super._init()
 		self.name = "Void Tiles"
 		self.description = "The edges of the arena break down into void tiles. Touching them slows you down and randomly rewinds your movement, forcing fights to the center."
 		self.id = "void_tiles"
@@ -48630,7 +48627,6 @@ class ToxicFloodRoyaleMode extends GameMode:
 	var damage_per_second = 30.0
 
 	func _init():
-		super._init()
 		name = "Toxic Flood Royale"
 		description = "The floor periodically floods with toxic poison. Players must fight for control of the limited elevated platforms to survive."
 		state = "dry"
@@ -49712,7 +49708,6 @@ class HealerFreezeTagMode extends GameMode:
 
 class RoamingDoppelgangerMode extends GameMode:
 	func _init():
-		super._init()
 		name = "Roaming Doppelganger"
 		description = "A rare elite hazard roams the map. When it spots a player, it perfectly mimics their stats, buffs, and loadout for 30 seconds. Players must outrun their doppelganger or fight an equally matched mirror."
 
@@ -50254,7 +50249,6 @@ class RisingLavaMode extends GameMode:
 	var initialized: bool = false
 
 	func _init() -> void:
-		super._init()
 		name = "Rising Lava"
 		description = "Lava rises from the bottom of the screen, destroying low platforms and damaging balls."
 
@@ -50877,7 +50871,6 @@ class WaterfallsMode extends GameMode:
 	var spawn_timer = 5.0
 
 	func _init():
-		super._init()
 		self.name = "Waterfalls"
 		self.description = "A waterfall hazard periodically appears. Balls caught in it are pulled to the center and then dropped to a lower arena layer, briefly disabling their attacks while they fall."
 		self.random_gen.randomize()
@@ -51178,7 +51171,6 @@ class TiltingPlatformMode extends GameMode:
 	var drift_speed: float = 100.0
 
 	func _init():
-		super._init()
 		name = "Tilting Platform"
 		description = "The arena periodically tilts, causing balls to drift slowly towards the edge or center."
 
@@ -51277,7 +51269,6 @@ class CurrencyBurdenMode extends GameMode:
 	var currency_spawn_timer = 0.0
 
 	func _init():
-		super._init()
 		self.name = "Risk Reward Currency"
 		self.description = "Currency pickups grant damage but slow you down and increase your size. Deposit at altars for permanent buffs."
 
@@ -52367,7 +52358,6 @@ class FakeBountyMutatorMode extends GameMode:
 class RicochetArenaMode extends GameMode:
 	var velocity_multiplier = 3.0
 	func _init():
-		super._init()
 		self.name = "Ricochet Arena"
 		self.description = "Arena walls apply a massive velocity multiplier on bounce."
 		self.velocity_multiplier = 3.0
@@ -52745,7 +52735,6 @@ class MovingWallsMode extends GameMode:
 	var spawn_timer: float = 0.0
 
 	func _init():
-		super._init()
 		name = "Moving Walls"
 		description = "Random walls spawn and slowly move across the arena. Players must dodge them to avoid being crushed or taking damage."
 
@@ -52988,7 +52977,6 @@ class ExpandingHazardBubblesMode extends GameMode:
 	var max_radius = 250.0
 
 	func _init():
-		super._init()
 		name = "Expanding Hazard Bubbles"
 		description = "The entire map is safe initially, but expanding hazard bubbles randomly spawn. Players must avoid the growing hazard zones."
 
@@ -53273,7 +53261,6 @@ class ImplosionBombEventMode extends GameMode:
 	var event_timer = 0.0
 
 	func _init():
-		super._init()
 		self.name = "Implosion Bomb Event"
 		self.description = "A hazard that slowly pulls entities toward its center. When it expires, it violently explodes, pushing everyone away."
 
@@ -53444,7 +53431,6 @@ class SingularityBombEventMode extends GameMode:
 	var event_timer = 0.0
 
 	func _init():
-		super._init()
 		self.name = "Singularity Bomb Event"
 		self.description = "A massive singularity bomb spawns periodically. It slowly pulls in all nearby projectiles. If it absorbs enough projectiles or takes enough damage, it detonates in a massive AoE blast!"
 
@@ -53676,7 +53662,6 @@ class RandomGravityShiftMode extends GameMode:
 
 class VulnerabilitySafeZoneMode extends SafeZoneMode:
 	func _init():
-		super._init()
 		name = "Vulnerability Safe Zone"
 		description = "The safe zone shrinks as usual, but instead of straight damage, balls outside the zone take increasing damage multipliers from all sources based on how far out they are."
 
@@ -54424,7 +54409,6 @@ class HazardLinesMode extends GameMode:
 	var spawn_timer: float = 0.0
 
 	func _init():
-		super._init()
 		name = "Hazard Lines"
 		description = "Hazard lines periodically spawn and move across the arena, damaging anyone caught."
 
@@ -55033,7 +55017,6 @@ class HazardShiftEventMode extends GameMode:
 	var active_timer = 0.0
 
 	func _init():
-		super._init()
 		self.name = "Hazard Shift Event"
 		self.description = "A random arena event that randomly shifts hazard positions and adds small random velocity impulses to all balls for a short duration."
 
@@ -55659,7 +55642,6 @@ class WallLeapersMode extends GameMode:
 	var spawn_timer: float = 0.0
 
 	func _init():
-		super._init()
 		name = "Wall Leapers"
 		description = "New hazard type that attaches to walls. If a ball gets too close, it leaps onto the ball and slows it down before exploding."
 
@@ -56345,7 +56327,6 @@ class SupercellStormMode extends GameMode:
 	var lightning_timer: float = 0.0
 
 	func _init():
-		super._init()
 		name = "Supercell Storm"
 		description = "A rare hybrid weather hazard that spawns when a thunderstorm and wind event overlap. It pulls balls like a tornado but also periodically strikes them with chain lightning while they are caught in the outer vortex."
 		weather = "thunderstorm"
@@ -57607,7 +57588,6 @@ class WhiteHoleMode extends SafeZoneMode:
 	var white_hole_radius: float = 50.0
 
 	func _init() -> void:
-		super._init()
 		name = "White Hole"
 		description = "A massive white hole sits in the center of the arena, constantly repelling players towards the outer boundary. Players must fight to stay in the center as the arena slowly shrinks from the edges."
 
@@ -57935,7 +57915,6 @@ class MicroclimateHazardMode extends GameMode:
 	var weather_timer = 0.0
 
 	func _init():
-		super._init()
 		name = "Microclimate Hazards"
 		description = "Small moving hazards that rapidly flip between extreme weather conditions."
 		weather_timer = 0.0
@@ -58028,7 +58007,6 @@ class GeyserHazardMode extends GameMode:
 	var spawn_timer = 0.0
 
 	func _init():
-		super._init()
 		self.name = "Geyser Hazards"
 		self.description = "Erupting geysers that launch players into the air and cause fall damage."
 
@@ -58505,7 +58483,6 @@ class BossEscortMode extends GameMode:
 	var goal_blue = Vector2(900.0, 500.0)
 
 	func _init():
-		super._init()
 		name = "Boss Escort"
 
 	func setup(world, balls: Array):
@@ -63608,7 +63585,6 @@ class VIPProtectionMode extends GameMode:
 	var random_gen = RandomNumberGenerator.new()
 
 	func _init():
-		super._init()
 		self.name = "Spectral VIP Protection"
 		self.description = "One player per team becomes a Spectral VIP. They cannot attack, are highly vulnerable, but emit a constant healing aura for teammates."
 		self.random_gen.randomize()
@@ -65031,7 +65007,6 @@ class OverdriveZoneMode extends GameMode:
 	var zone_radius: float = 200.0
 
 	func _init():
-		super._init()
 		name = "Overdrive Zone"
 		description = "A localized zone that speeds up ability cooldowns but drains stamina."
 
@@ -65436,7 +65411,6 @@ class AuraInversionZoneMode extends GameMode:
 	var hazard_obj = null
 
 	func _init():
-		super._init()
 		name = "Aura Inversion Zone"
 		description = "A hazard zone that inverts the effects of beneficial auras while players are inside."
 
@@ -66701,7 +66675,6 @@ class ChainReactionMode extends GameMode:
 	var pending_explosions = []
 
 	func _init():
-		super._init()
 		name = "Chain Reaction"
 		description = "Every elimination sets off a delayed explosion around the eliminated player. Surviving players can chain these explosions to eliminate multiple enemies."
 
@@ -67011,7 +66984,6 @@ class KillstreakExplosionMode extends GameMode:
 	var pending_explosions = []
 
 	func _init():
-		super._init()
 		name = "Killstreak Explosion"
 		description = "Every kill triggers an explosion that scales in radius and damage based on the killed ball's current killstreak."
 
@@ -67106,7 +67078,6 @@ class KillstreakExplosionMode extends GameMode:
 
 class MimicCloneSwapMode extends GameMode:
 	func _init():
-		super._init()
 		name = "Mimic Clone Swap"
 		description = "Every player spawns with a clone that perfectly mimics inputs, deals half damage, and takes double damage. Dying swaps the player into their clone but with halved stats."
 
@@ -67367,7 +67338,6 @@ class TornadoSwarmEventMode extends GameMode:
 	var event_timer: float = 15.0
 
 	func _init():
-		super._init()
 		name = "Tornado Swarm Event"
 		description = "An arena-wide event where miniature tornadoes spawn periodically across the map for a limited time. They last 10 seconds and have high velocity, causing utter chaos. These miniature tornadoes can also combine with elemental hazards to become mini-firenados, mini-poison tornadoes, or mini-blizzards that slow down players."
 
@@ -67601,7 +67571,6 @@ class DynamicDangerZonesMode extends GameMode:
 	var base_zone_radius = 200.0
 
 	func _init():
-		super._init()
 		name = "Dynamic Danger Zones"
 		description = "A dynamic procedural arena element where circular 'danger zones' periodically appear on the map. After a warning delay, any balls caught within the zone take heavy damage. The zones gradually shrink in size over the course of the match, forcing close-quarters combat."
 
@@ -67705,7 +67674,6 @@ GAME_MODES['random_teleporter'] = RandomTeleporterModeClass.new()
 
 class RepulsionFieldMode extends GameMode:
 	func _init():
-		super._init()
 		name = "Repulsion Field"
 		description = "All balls naturally repel each other slightly. The strength of repulsion increases as they get closer, making it difficult to land melee attacks and creating a pinball-like arena effect during high-speed collisions."
 
@@ -67763,7 +67731,6 @@ class MagneticShockwaveEventModeClass extends GameMode:
 	var pull_radius: float = 400.0
 
 	func _init():
-		super._init()
 		name = "Magnetic Shockwave Event"
 		description = "A new heavy hazard type that drops in the arena and periodically unleashes a massive magnetic shockwave that pulls players toward it while dealing damage. If a player touches the center of the anchor, they are completely stunned for 2 seconds."
 		anchor = {}
@@ -69167,7 +69134,6 @@ class CursedShrineMode extends GameMode:
 	var shrine_spawned: bool = false
 
 	func _init():
-		super._init()
 		self.name = "Cursed Shrine"
 		self.description = "A mysterious shrine spawns in the center of the arena. Interacting with it grants +20% damage and speed permanently, but halves current and maximum HP."
 		self.shrine_spawned = false
@@ -69266,7 +69232,6 @@ class CursedShrineMode extends GameMode:
 
 class CursedBoosterMode extends GameMode:
 	func _init():
-		super._init()
 		self.name = "Cursed Boosters"
 		self.description = "All boosters collected have the opposite of their intended effect, forcing players to avoid items they usually collect."
 
@@ -70176,7 +70141,6 @@ GAME_MODES["vip_protection"] = VIPProtectionMode.new()
 
 class ElementalChainReactionMode extends GameMode:
 	func _init():
-		super._init()
 		name = "Elemental Chain Reactions"
 		description = "A game mode where elemental attacks trigger chain reactions. Hitting a burning ball with a water attack creates a massive steam explosion that blinds everyone nearby, while hitting a frozen ball with a fire attack instantly shatters their ice for massive burst damage."
 GAME_MODES['elemental_chain_reactions'] = ElementalChainReactionMode.new()
@@ -70195,7 +70159,6 @@ class WindstormEventMode extends GameMode:
 	var is_active: bool = false
 
 	func _init():
-		super._init()
 		name = "Windstorm Event"
 		description = "A global event that causes a massive windstorm, periodically knocking all balls back in a specific direction and increasing chaotic movement."
 
@@ -70315,7 +70278,6 @@ class VolcanicEruptionEventMode extends GameMode:
 	var projectile_spawn_interval: float = 0.5
 
 	func _init():
-		super._init()
 		name = "Volcanic Eruption Event"
 		description = "A global event that causes the center of the arena to periodically erupt, showering random locations across the map with burning projectiles that leave lingering lava puddles. Provides chaotic area denial."
 
@@ -70908,7 +70870,6 @@ class EarthquakeEventMode extends GameMode:
 	var shake_timer = 0.0
 
 	func _init():
-		super._init()
 		self.name = "Earthquake Event"
 		self.description = "A periodic random event where the entire arena shakes. Balls without the 'grounded' status take minor continuous damage and suffer a severe speed penalty, forcing players to find safe zones or use specific defensive skills."
 
@@ -71050,7 +71011,6 @@ class HiveDefenseMode extends GameMode:
 	var blue_hive = null
 
 	func _init():
-		super._init()
 		name = "Hive Defense"
 		description = "Each team has a central Hive. Gather resources to upgrade defenses and spawn automated minions to assault the enemy Hive."
 
@@ -71336,7 +71296,6 @@ class WindingSnakePathMode extends GameMode:
 	var damage_increase_rate: float = 1.0
 
 	func _init():
-		super._init()
 		name = "Winding Snake Path"
 		description = "The safe zone is a winding path that continuously moves and shrinks, forcing players to navigate narrow corridors."
 
@@ -71520,7 +71479,6 @@ class CorruptionZoneMode extends GameMode:
 	var zones: Array = []
 
 	func _init() -> void:
-		super._init()
 		name = "Corruption Zones"
 		description = "Periodically, zones of corruption appear in the arena. Balls that stay in the corruption zone have their health drained, but they gain a temporary massive boost to attack damage and movement speed while inside, offering a high-risk, high-reward tactical element."
 
@@ -71668,7 +71626,6 @@ class StaminaDrainZoneMode extends GameMode:
 	var hazard_obj = null
 
 	func _init() -> void:
-		super._init()
 		name = "Stamina Drain Zone"
 		description = "A localized field appears that slowly drains the stamina of any ball caught inside it, forcing players to avoid the area or risk losing their abilities."
 
@@ -71739,7 +71696,6 @@ class VampiricZoneMode extends GameMode:
 	var hazard_obj = null
 
 	func _init() -> void:
-		super._init()
 		name = "Vampiric Zone"
 		description = "A stationary hazard that slowly drains the HP of any player within its radius, and heals the closest player on the opposite team proportional to the damage dealt."
 
@@ -74590,7 +74546,6 @@ class UnstablePayloadMode extends GameMode:
 	var spawn_timer = 10.0
 
 	func _init():
-		super._init()
 		name = "Unstable Payload"
 		description = "Periodically, an 'unstable payload' hazard spawns in the center of the arena. It slowly expands and deals increasing radiation damage. Players must attack it to push it towards enemy teams before it reaches critical mass and detonates, instantly eliminating anyone caught in its massive blast radius."
 
@@ -76236,7 +76191,6 @@ class QuantumWormholeMode extends GameMode:
 	var setup_done = false
 
 	func _init():
-		super._init()
 		name = "Quantum Wormhole"
 		description = "A hazard zone that instantly teleports a ball to a paired zone on the other side of the arena, maintaining their exact velocity and direction, which can be used defensively or aggressively."
 
@@ -76698,7 +76652,6 @@ class VerticalLavaPlatformerMode extends GameMode:
 	var initialized: bool = false
 
 	func _init() -> void:
-		super._init()
 		name = "Vertical Lava Platformer"
 		description = "A vertical-scrolling platformer where balls must outrun a rising lava pool using jump pads and low gravity to reach the top."
 		mutators_active = true
@@ -76828,7 +76781,6 @@ class AlternatingZoneMode extends GameMode:
 	var damage_rate: float = 20.0
 
 	func _init() -> void:
-		super._init()
 		name = "Alternating Zone"
 		description = "A central zone that alternates between healing players and damaging them every 5 seconds."
 
@@ -77456,7 +77408,6 @@ class SuddenDeathEventMode extends "res://src/ai/game_modes.gd".GameMode:
 	var applied_to_balls = {}
 
 	func _init():
-		super._init()
 		name = "Sudden Death Event"
 		description = "An extremely rare late-game event where all balls' cooldowns are permanently reduced by 50% but damage taken is doubled, forcing a high-stakes fast-paced ending to the match."
 
@@ -78129,3 +78080,135 @@ class ShiftingMirrorWallsMode extends GameMode:
 GAME_MODES["shifting_mirror_walls"] = ShiftingMirrorWallsMode.new()
 
 GAME_MODES["wind_funnels"] = WindFunnelsMode.new()
+
+class GhostOrbMode extends GameMode:
+	var ghost_orbs: Array = []
+
+	func _init():
+		name = "Ghost Orb"
+		description = "When a ball dies, it leaves behind a ghost orb that chases living players and drains their stamina if touched."
+
+	class GhostOrb:
+		var kind: String = "ghost_orb"
+		var x: float = 0.0
+		var y: float = 0.0
+		var radius: float = 20.0
+		var speed: float = 100.0
+
+		func _init(_x: float, _y: float):
+			x = _x
+			y = _y
+
+	func setup(world, balls) -> void:
+		super.setup(world, balls)
+		ghost_orbs = []
+
+	func on_ball_died(world, ball, killer = null) -> void:
+		if super.has_method("on_ball_died"):
+			super.on_ball_died(world, ball, killer)
+
+		var x: float = 0.0
+		var y: float = 0.0
+		if typeof(ball) == TYPE_DICTIONARY:
+			if ball.has("x"): x = ball.x
+			if ball.has("y"): y = ball.y
+		else:
+			if 'x' in ball: x = ball.x
+			elif ball.has_method('get_meta') and ball.has_meta('x'): x = ball.get_meta('x')
+			if 'y' in ball: y = ball.y
+			elif ball.has_method('get_meta') and ball.has_meta('y'): y = ball.get_meta('y')
+		var orb = GhostOrb.new(x, y)
+		ghost_orbs.append(orb)
+		if typeof(world) == TYPE_DICTIONARY:
+			if world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+				world.arena.hazards.append(orb)
+		else:
+			if 'arena' in world and 'hazards' in world.arena:
+				world.arena.hazards.append(orb)
+
+	func tick(world, balls, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		var living_balls: Array = []
+		for b in balls:
+			var is_alive = false
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.has("alive"): is_alive = b.alive
+				if b.has("ball_type"): b_type = b.ball_type
+			else:
+				if 'alive' in b: is_alive = b.alive
+				elif b.has_method('get_meta') and b.has_meta('alive'): is_alive = b.get_meta('alive')
+				if 'ball_type' in b: b_type = b.ball_type
+				elif b.has_method('get_meta') and b.has_meta('ball_type'): b_type = b.get_meta('ball_type')
+
+			if is_alive and b_type != "spectator":
+				living_balls.append(b)
+
+		for orb in ghost_orbs:
+			var closest = null
+			var min_dist: float = 999999.0
+			for b in living_balls:
+				var bx: float = 0.0
+				var by: float = 0.0
+				if typeof(b) == TYPE_DICTIONARY:
+					if b.has("x"): bx = b.x
+					if b.has("y"): by = b.y
+				else:
+					if 'x' in b: bx = b.x
+					elif b.has_method('get_meta') and b.has_meta('x'): bx = b.get_meta('x')
+					if 'y' in b: by = b.y
+					elif b.has_method('get_meta') and b.has_meta('y'): by = b.get_meta('y')
+				var dist: float = sqrt((bx - orb.x) * (bx - orb.x) + (by - orb.y) * (by - orb.y))
+				if dist < min_dist:
+					min_dist = dist
+					closest = b
+
+			if closest != null and min_dist > 0.0:
+				var cx: float = 0.0
+				var cy: float = 0.0
+				if typeof(closest) == TYPE_DICTIONARY:
+					if closest.has("x"): cx = closest.x
+					if closest.has("y"): cy = closest.y
+				else:
+					if 'x' in closest: cx = closest.x
+					elif closest.has_method('get_meta') and closest.has_meta('x'): cx = closest.get_meta('x')
+					if 'y' in closest: cy = closest.y
+					elif closest.has_method('get_meta') and closest.has_meta('y'): cy = closest.get_meta('y')
+				orb.x += (cx - orb.x) / min_dist * orb.speed * delta
+				orb.y += (cy - orb.y) / min_dist * orb.speed * delta
+
+			for b in living_balls:
+				var bx: float = 0.0
+				var by: float = 0.0
+				var b_radius: float = 15.0
+				if typeof(b) == TYPE_DICTIONARY:
+					if b.has("x"): bx = b.x
+					if b.has("y"): by = b.y
+					if b.has("radius"): b_radius = b.radius
+				else:
+					if 'x' in b: bx = b.x
+					elif b.has_method('get_meta') and b.has_meta('x'): bx = b.get_meta('x')
+					if 'y' in b: by = b.y
+					elif b.has_method('get_meta') and b.has_meta('y'): by = b.get_meta('y')
+					if 'radius' in b: b_radius = b.radius
+					elif b.has_method('get_meta') and b.has_meta('radius'): b_radius = b.get_meta('radius')
+
+				var dist: float = sqrt((bx - orb.x) * (bx - orb.x) + (by - orb.y) * (by - orb.y))
+				if dist <= orb.radius + b_radius:
+					if typeof(b) == TYPE_DICTIONARY:
+						if b.has("stamina"):
+							var current_stamina: float = b.stamina
+							var new_stamina: float = max(0.0, current_stamina - 50.0 * delta)
+							b.stamina = new_stamina
+					else:
+						if 'stamina' in b:
+							var current_stamina: float = b.stamina
+							var new_stamina: float = max(0.0, current_stamina - 50.0 * delta)
+							b.stamina = new_stamina
+						elif b.has_method('get_meta') and b.has_meta('stamina'):
+							var current_stamina: float = b.get_meta('stamina')
+							var new_stamina: float = max(0.0, current_stamina - 50.0 * delta)
+							b.set_meta('stamina', new_stamina)
+
+GAME_MODES["ghost_orb"] = GhostOrbMode.new()
