@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1800] Time-Dilated Safe Zone — *2026-08-06 11:09:17 UTC*
+
+A moving safe zone where time passes much slower. Balls inside the zone move at half speed and their skill cooldowns regenerate twice as slow, but they take reduced damage and are safe from external map hazards.
+
+---
+
 ## [idea-1822] Orbital EMP Blast — *2026-08-06 10:33:41 UTC*
 
 A rare drop that calls down an orbital EMP strike on a massive area. Balls caught in the blast have all buffs stripped and lose all stamina, making them extremely vulnerable, but it deals zero direct damage.
