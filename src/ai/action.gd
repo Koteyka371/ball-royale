@@ -22502,6 +22502,83 @@ func execute(strategy: String, delta: float):
                                                 _set_prop(b, "vy", cur_vy + ny * knockback)
                                                 _set_prop(b, "is_frictionless", true)
 
+                            elif trap_variant == "reversal":
+                                if typeof(hazard) != TYPE_DICTIONARY and hazard.has_method("set_meta"):
+                                    hazard.set_meta("duration", 0.0)
+                                elif "duration" in hazard:
+                                    hazard.duration = 0.0
+
+                                if typeof(hazard) != TYPE_DICTIONARY and hazard.has_method("set_meta"):
+                                    hazard.set_meta("damage", 0.0)
+                                elif "damage" in hazard:
+                                    hazard.damage = 0.0
+
+                                var trigger_x = hazard.x if "x" in hazard else (hazard.get("x") if typeof(hazard) == TYPE_OBJECT and hazard.has_method("get") else 0.0)
+                                var trigger_y = hazard.y if "y" in hazard else (hazard.get("y") if typeof(hazard) == TYPE_OBJECT and hazard.has_method("get") else 0.0)
+                                var h_radius = 40.0
+                                if "radius" in hazard: h_radius = hazard.radius
+                                elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get"): h_radius = hazard.get("radius")
+                                var radius = h_radius * 3.0
+
+                                var h_owner = null
+                                if "owner_id" in hazard: h_owner = hazard.owner_id
+                                elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("owner_id"): h_owner = hazard.get_meta("owner_id")
+
+                                var balls_list = []
+                                if "balls" in self.world: balls_list = self.world.balls
+                                elif self.world.has_method("get"): balls_list = self.world.get("balls")
+
+                                for b in balls_list:
+                                    var is_alive = true
+                                    if "alive" in b: is_alive = b.alive
+                                    elif typeof(b) == TYPE_OBJECT and b.has_method("get"): is_alive = b.get("alive")
+
+                                    var b_id = null
+                                    if "id" in b: b_id = b.id
+                                    elif typeof(b) == TYPE_OBJECT and b.has_method("get"): b_id = b.get("id")
+
+                                    if is_alive and b_id != h_owner:
+                                        var b_x = b.x if "x" in b else (b.get("x") if typeof(b) == TYPE_OBJECT and b.has_method("get") else 0.0)
+                                        var b_y = b.y if "y" in b else (b.get("y") if typeof(b) == TYPE_OBJECT and b.has_method("get") else 0.0)
+
+                                        var dist_sq = (b_x - trigger_x) * (b_x - trigger_x) + (b_y - trigger_y) * (b_y - trigger_y)
+                                        if dist_sq < radius * radius:
+                                            var b_vx = b.vx if "vx" in b else (b.get("vx") if typeof(b) == TYPE_OBJECT and b.has_method("get") else 0.0)
+                                            var b_vy = b.vy if "vy" in b else (b.get("vy") if typeof(b) == TYPE_OBJECT and b.has_method("get") else 0.0)
+                                            _set_prop(b, "vx", b_vx * -2.0)
+                                            _set_prop(b, "vy", b_vy * -2.0)
+
+                                var arena_hazards = []
+                                if "arena" in self.world and self.world.arena != null:
+                                    if "hazards" in self.world.arena: arena_hazards = self.world.arena.hazards
+                                    elif typeof(self.world.arena) == TYPE_OBJECT and self.world.arena.has_method("get"): arena_hazards = self.world.arena.get("hazards")
+
+                                for h in arena_hazards:
+                                    var h_kind = ""
+                                    if "kind" in h: h_kind = h.kind
+                                    elif typeof(h) == TYPE_OBJECT and h.has_method("get"): h_kind = h.get("kind")
+
+                                    if h_kind in ["projectile", "bomb", "missile", "arrow"]:
+                                        var other_owner = null
+                                        if "owner_id" in h: other_owner = h.owner_id
+                                        elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("owner_id"): other_owner = h.get_meta("owner_id")
+
+                                        if other_owner != h_owner:
+                                            var h_x = h.x if "x" in h else (h.get("x") if typeof(h) == TYPE_OBJECT and h.has_method("get") else 0.0)
+                                            var h_y = h.y if "y" in h else (h.get("y") if typeof(h) == TYPE_OBJECT and h.has_method("get") else 0.0)
+                                            var h_dist_sq = (h_x - trigger_x) * (h_x - trigger_x) + (h_y - trigger_y) * (h_y - trigger_y)
+                                            if h_dist_sq < radius * radius:
+                                                var h_vx = null
+                                                if "vx" in h: h_vx = h.vx
+                                                elif typeof(h) == TYPE_OBJECT and h.has_method("get"): h_vx = h.get("vx")
+                                                if h_vx != null:
+                                                    _set_prop(h, "vx", h_vx * -2.0)
+
+                                                var h_vy = null
+                                                if "vy" in h: h_vy = h.vy
+                                                elif typeof(h) == TYPE_OBJECT and h.has_method("get"): h_vy = h.get("vy")
+                                                if h_vy != null:
+                                                    _set_prop(h, "vy", h_vy * -2.0)
                             elif trap_variant == "leech_seed":
                                 var current_timer = self.ball.leech_seed_timer if "leech_seed_timer" in self.ball else (self.ball.get_meta("leech_seed_timer") if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("leech_seed_timer") else 0.0)
                                 _set_prop(self.ball, "leech_seed_timer", max(current_timer, 5.0))
