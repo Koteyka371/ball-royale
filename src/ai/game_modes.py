@@ -50059,3 +50059,99 @@ class GhostOrbMode(GameMode):
                         b.stamina = max(0.0, getattr(b, "stamina", 100.0) - 50.0 * delta)
 
 GAME_MODES["ghost_orb"] = GhostOrbMode()
+
+
+class SuperVortexMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Super Vortex"
+        self.description = "Multiple black holes roam the arena and periodically merge into a massive super-vortex at the center."
+        self.bhs = []
+        self.phase = "split"
+        self.phase_timer = 0.0
+        self.split_duration = 15.0
+        self.merged_duration = 5.0
+        self.small_bh_radius = 40.0
+        self.super_bh_radius = 120.0
+        self.small_pull = 100.0
+        self.super_pull = 400.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") else 1000
+        self.bhs = [
+            {"x": arena_width * 0.25, "y": arena_height * 0.25, "vx": 100.0, "vy": 150.0},
+            {"x": arena_width * 0.75, "y": arena_height * 0.25, "vx": -150.0, "vy": 100.0},
+            {"x": arena_width * 0.5, "y": arena_height * 0.75, "vx": 120.0, "vy": -120.0},
+        ]
+        self.phase = "split"
+        self.phase_timer = self.split_duration
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") else 1000
+        cx = arena_width / 2.0
+        cy = arena_height / 2.0
+
+        self.phase_timer -= delta
+        if self.phase_timer <= 0:
+            if self.phase == "split":
+                self.phase = "merged"
+                self.phase_timer = self.merged_duration
+            else:
+                self.phase = "split"
+                self.phase_timer = self.split_duration
+
+        if self.phase == "split":
+            # Move small black holes
+            for bh in self.bhs:
+                bh["x"] += bh["vx"] * delta
+                bh["y"] += bh["vy"] * delta
+
+                if bh["x"] - self.small_bh_radius < 0:
+                    bh["x"] = self.small_bh_radius
+                    bh["vx"] *= -1
+                elif bh["x"] + self.small_bh_radius > arena_width:
+                    bh["x"] = arena_width - self.small_bh_radius
+                    bh["vx"] *= -1
+
+                if bh["y"] - self.small_bh_radius < 0:
+                    bh["y"] = self.small_bh_radius
+                    bh["vy"] *= -1
+                elif bh["y"] + self.small_bh_radius > arena_height:
+                    bh["y"] = arena_height - self.small_bh_radius
+                    bh["vy"] *= -1
+
+            # Pull balls
+            for b in balls:
+                if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                    continue
+                for bh in self.bhs:
+                    dx = bh["x"] - b.x
+                    dy = bh["y"] - b.y
+                    dist = math.hypot(dx, dy)
+                    if dist > 0 and dist < 400.0:
+                        pull = self.small_pull * (1.0 - dist / 400.0)
+                        if not hasattr(b, "vx"): b.vx = 0.0
+                        if not hasattr(b, "vy"): b.vy = 0.0
+                        b.vx += (dx / dist) * pull * delta
+                        b.vy += (dy / dist) * pull * delta
+
+        elif self.phase == "merged":
+            # Pull balls to center
+            for b in balls:
+                if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                    continue
+                dx = cx - b.x
+                dy = cy - b.y
+                dist = math.hypot(dx, dy)
+                if dist > 0:
+                    pull = self.super_pull * (1.0 - min(dist / 800.0, 1.0))
+                    if not hasattr(b, "vx"): b.vx = 0.0
+                    if not hasattr(b, "vy"): b.vy = 0.0
+                    b.vx += (dx / dist) * pull * delta
+                    b.vy += (dy / dist) * pull * delta
+
+GAME_MODES['super_vortex'] = SuperVortexMode()
