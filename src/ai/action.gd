@@ -2805,6 +2805,31 @@ func _attempt_damage_internal(attacker, target) -> void:
 	if "hp" in target: new_hp = float(target.hp)
 
 	if new_hp < old_hp:
+		var is_stamina_vampire = false
+		if typeof(self.world) == TYPE_OBJECT and "current_mode_name" in self.world and self.world.current_mode_name == "Stamina Vampire":
+			is_stamina_vampire = true
+		elif typeof(self.world) == TYPE_DICTIONARY and self.world.has("current_mode_name") and self.world.get("current_mode_name") == "Stamina Vampire":
+			is_stamina_vampire = true
+		elif typeof(self.world) == TYPE_OBJECT and "game_mode" in self.world and self.world.game_mode != null and "name" in self.world.game_mode and self.world.game_mode.name == "Stamina Vampire":
+			is_stamina_vampire = true
+
+		if is_stamina_vampire:
+			var damage_dealt = old_hp - new_hp
+			var a_stam = null
+			if "stamina" in attacker: a_stam = float(attacker.stamina)
+			elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("get_meta") and attacker.has_meta("stamina"): a_stam = float(attacker.get_meta("stamina"))
+
+			if a_stam != null:
+				var a_max_stam = 100.0
+				if "max_stamina" in attacker: a_max_stam = float(attacker.max_stamina)
+				elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("get_meta") and attacker.has_meta("max_stamina"): a_max_stam = float(attacker.get_meta("max_stamina"))
+
+				var new_stam = min(a_max_stam, a_stam + damage_dealt)
+				if "stamina" in attacker:
+					attacker.stamina = new_stam
+				elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("set_meta"):
+					attacker.set_meta("stamina", new_stam)
+
 		var is_nemesis_sustain = false
 		if typeof(self.world) == TYPE_OBJECT and "current_mode_name" in self.world and self.world.current_mode_name == "Nemesis Sustain":
 			is_nemesis_sustain = true
@@ -28320,6 +28345,8 @@ func execute(strategy: String, delta: float):
                 gm_name = gm.name
             if gm_name == "Stamina Regen modifier":
                 regen_mult *= 2.0
+            if gm_name == "Stamina Vampire":
+                regen_mult = 0.0
 
         if is_dash:
             if typeof(my_ball) == TYPE_OBJECT and my_ball.has_method("set_meta"):

@@ -33245,6 +33245,13 @@ class ExponentialControlPointMode(GameMode):
                         b.speed_multiplier = getattr(b, "speed_multiplier", 1.0) * multiplier_buff
                         b.damage_multiplier = getattr(b, "damage_multiplier", 1.0) * multiplier_buff
 
+
+class StaminaVampireMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Stamina Vampire"
+        self.description = "Stamina regeneration is completely disabled. The only way to restore stamina is by dealing damage to other players."
+
 class VampiricMutatorMode(GameMode):
     def __init__(self):
         super().__init__()

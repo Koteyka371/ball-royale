@@ -1438,6 +1438,11 @@ class Action:
                     attacker.hp = min(getattr(attacker, 'hp', 100.0) + actual_damage_dealt * 0.3, getattr(attacker, 'max_hp', 100.0))
 
         if new_hp < old_hp:
+            if getattr(self.world, "game_mode", None) and getattr(self.world.game_mode, "name", "") == "Stamina Vampire":
+                damage_dealt = old_hp - new_hp
+                if getattr(attacker, "stamina", None) is not None:
+                    attacker.stamina = min(getattr(attacker, "max_stamina", 100.0), attacker.stamina + damage_dealt)
+
             # Nemesis Sustain game mode logic
             is_nemesis_sustain = getattr(self.world, "current_mode_name", "") == "Nemesis Sustain"
             if is_nemesis_sustain:
@@ -27334,6 +27339,8 @@ class Action:
         gm = getattr(self.world, "game_mode", None)
         if gm and getattr(gm, "name", "") == "Stamina Regen modifier":
             regen_mult *= 2.0
+        if gm and getattr(gm, "name", "") == "Stamina Vampire":
+            regen_mult = 0.0
 
         if getattr(self.ball, "is_dashing", False):
             self.ball.bumper_combo = 0
