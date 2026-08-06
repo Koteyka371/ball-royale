@@ -25889,17 +25889,41 @@ class Action:
                             self.ball.wet_debuff_timer = 3.0
 
                 if getattr(hazard, "kind", "") == "wind_tunnel":
-                    import math
-                    dist = math.hypot(self.ball.x - hazard.x, self.ball.y - hazard.y)
-                    h_rad = getattr(hazard, "radius", 150.0)
-                    if dist < h_rad:
-                        force = getattr(hazard, "wind_force", 1500.0) * delta
-                        dir_x = getattr(hazard, "wind_dir_x", 1.0)
-                        dir_y = getattr(hazard, "wind_dir_y", 0.0)
-                        self.ball.x += dir_x * force
-                        self.ball.y += dir_y * force
-                        if hasattr(self.ball, "vx"): self.ball.vx += dir_x * force
-                        if hasattr(self.ball, "vy"): self.ball.vy += dir_y * force
+                    # Act as a line segment tunnel if start_x and end_x are provided
+                    has_line = hasattr(hazard, "start_x") and hasattr(hazard, "end_x")
+                    if has_line:
+                        ax, ay = getattr(hazard, "start_x", 0.0), getattr(hazard, "start_y", 0.0)
+                        bx, by = getattr(hazard, "end_x", 0.0), getattr(hazard, "end_y", 0.0)
+                        dx, dy = bx - ax, by - ay
+                        l2 = dx*dx + dy*dy
+                        if l2 > 0:
+                            t = max(0.0, min(1.0, ((self.ball.x - ax) * dx + (self.ball.y - ay) * dy) / l2))
+                            proj_x = ax + t * dx
+                            proj_y = ay + t * dy
+                            dist_sq = (self.ball.x - proj_x)**2 + (self.ball.y - proj_y)**2
+                            h_rad = getattr(hazard, "radius", 50.0)
+                            if dist_sq < h_rad * h_rad:
+                                force = getattr(hazard, "wind_force", 1500.0) * delta
+                                dir_x = getattr(hazard, "wind_dir_x", 1.0)
+                                dir_y = getattr(hazard, "wind_dir_y", 0.0)
+                                self.ball.x += dir_x * force
+                                self.ball.y += dir_y * force
+                                if hasattr(self.ball, "vx"): self.ball.vx += dir_x * force
+                                if hasattr(self.ball, "vy"): self.ball.vy += dir_y * force
+                    else:
+                        import math
+                        hx = getattr(hazard, "x", 0.0)
+                        hy = getattr(hazard, "y", 0.0)
+                        dist = math.hypot(self.ball.x - hx, self.ball.y - hy)
+                        h_rad = getattr(hazard, "radius", 150.0)
+                        if dist < h_rad:
+                            force = getattr(hazard, "wind_force", 1500.0) * delta
+                            dir_x = getattr(hazard, "wind_dir_x", 1.0)
+                            dir_y = getattr(hazard, "wind_dir_y", 0.0)
+                            self.ball.x += dir_x * force
+                            self.ball.y += dir_y * force
+                            if hasattr(self.ball, "vx"): self.ball.vx += dir_x * force
+                            if hasattr(self.ball, "vy"): self.ball.vy += dir_y * force
 
                 if getattr(hazard, "kind", "") == "repulsion_zone":
                     import math
