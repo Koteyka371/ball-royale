@@ -22612,6 +22612,39 @@ func execute(strategy: String, delta: float):
                                                 _set_prop(b, "vy", cur_vy + ny * knockback)
                                                 _set_prop(b, "is_frictionless", true)
 
+                                var arena_hazards = []
+                                if "arena" in self.world and self.world.arena != null:
+                                    if "hazards" in self.world.arena: arena_hazards = self.world.arena.hazards
+                                    elif typeof(self.world.arena) == TYPE_OBJECT and self.world.arena.has_method("get"): arena_hazards = self.world.arena.get("hazards")
+
+                                for h in arena_hazards:
+                                    var h_kind = ""
+                                    if "kind" in h: h_kind = h.kind
+                                    elif typeof(h) == TYPE_OBJECT and h.has_method("get"): h_kind = h.get("kind")
+
+                                    if h_kind in ["projectile", "bomb", "missile", "arrow"]:
+                                        var other_owner = null
+                                        if "owner_id" in h: other_owner = h.owner_id
+                                        elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("owner_id"): other_owner = h.get_meta("owner_id")
+
+                                        if other_owner != h_owner:
+                                            var h_x = h.x if "x" in h else (h.get("x") if typeof(h) == TYPE_OBJECT and h.has_method("get") else 0.0)
+                                            var h_y = h.y if "y" in h else (h.get("y") if typeof(h) == TYPE_OBJECT and h.has_method("get") else 0.0)
+                                            var h_dist_sq = (h_x - trigger_x) * (h_x - trigger_x) + (h_y - trigger_y) * (h_y - trigger_y)
+                                            if h_dist_sq < radius * radius:
+                                                var h_dist = sqrt(h_dist_sq)
+                                                if h_dist < 0.0001:
+                                                    h_dist = 0.0001
+                                                var nx = (h_x - trigger_x) / h_dist
+                                                var ny = (h_y - trigger_y) / h_dist
+                                                var knockback = 5000.0
+
+                                                if "vx" in h: h.vx = h.vx + nx * knockback
+                                                elif typeof(h) == TYPE_OBJECT and h.has_method("set"): h.set("vx", h.get("vx") + nx * knockback)
+
+                                                if "vy" in h: h.vy = h.vy + ny * knockback
+                                                elif typeof(h) == TYPE_OBJECT and h.has_method("set"): h.set("vy", h.get("vy") + ny * knockback)
+
                             elif trap_variant == "reversal":
                                 if typeof(hazard) != TYPE_DICTIONARY and hazard.has_method("set_meta"):
                                     hazard.set_meta("duration", 0.0)
