@@ -636,3 +636,53 @@ def test_player_bribe_vote_insufficient_hp():
     assert result == False
     assert b.max_hp == 10.0
     assert b.hp == 10.0
+
+def test_upgrade_hazard_command():
+    from system.crowd_system import CrowdSystem
+
+    class MockHazard:
+        def __init__(self, kind):
+            self.kind = kind
+            self.radius = 20.0
+            self.damage = 10.0
+            self.x = 100.0
+            self.y = 100.0
+
+    class MockArena:
+        def __init__(self):
+            self.hazards = [MockHazard("spike_trap"), MockHazard("lava_pit")]
+
+    class MockWorld:
+        def __init__(self):
+            self.events = []
+            self.arena = MockArena()
+
+        def add_event(self, type_, data):
+            self.events.append((type_, data))
+
+    world = MockWorld()
+    system = CrowdSystem(world)
+
+    # User does not have enough points
+    system.viewer_loyalty["testuser"] = 10
+    system.process_external_command("testuser", "!upgrade_hazard spike_trap", [])
+
+    # Verify no upgrade happened
+    assert world.arena.hazards[0].radius == 20.0
+    assert len(world.events) == 0
+
+    # User has enough points
+    system.viewer_loyalty["testuser"] = 25
+    system.process_external_command("testuser", "!upgrade_hazard spike_trap", [])
+
+    # Verify upgrade
+    assert world.arena.hazards[0].radius == 40.0
+    assert world.arena.hazards[0].damage == 20.0
+    assert getattr(world.arena.hazards[0], "is_super", False) == True
+
+    # Verify point deduction (25 - 20 = 5)
+    assert system.viewer_loyalty["testuser"] == 5
+
+    # Verify events
+    assert any(e[0] == "explosion" for e in world.events)
+    assert any(e[0] == "crowd_cheer" for e in world.events)
