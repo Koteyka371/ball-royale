@@ -235,3 +235,36 @@ def test_end_weekly_tournament(temp_clan_file):
     assert "Bronze_Crown_Cosmetic" in cm.data["clans"]["Clan3"]["cosmetics"]
     assert "Health_Fountain" in cm.data["clans"]["Clan3"]["decorations"]
     assert "Bronze_Banner" in cm.data["clans"]["Clan3"]["decorations"]
+
+
+def test_clan_hub_pets(temp_clan_file):
+    cm = ClanManager(temp_clan_file)
+    cm.create_clan("PetClan", "p1")
+
+    # Unlock a pet
+    assert cm.unlock_pet("PetClan", "Speedy_Turtle") == True
+    assert "Speedy_Turtle" in cm.data["clans"]["PetClan"]["pets"]
+
+    # Unlock duplicate shouldn't duplicate
+    assert cm.unlock_pet("PetClan", "Speedy_Turtle") == False
+    assert len(cm.data["clans"]["PetClan"]["pets"]) == 1
+
+    # Cannot place unowned pet
+    assert cm.place_pet("PetClan", "Healing_Dog", 10, 20) == False
+
+    # Place owned pet
+    assert cm.place_pet("PetClan", "Speedy_Turtle", 10, 20) == True
+    assert len(cm.data["clans"]["PetClan"]["hub_pets"]) == 1
+    assert cm.data["clans"]["PetClan"]["hub_pets"][0]["pet"] == "Speedy_Turtle"
+
+    # Placing it again elsewhere moves it
+    assert cm.place_pet("PetClan", "Speedy_Turtle", 30, 40) == True
+    assert len(cm.data["clans"]["PetClan"]["hub_pets"]) == 2
+
+    # Remove pet
+    assert cm.remove_pet("PetClan", 10, 20) == True
+    assert len(cm.data["clans"]["PetClan"]["hub_pets"]) == 1
+
+    # Check buffs
+    buffs = cm.get_hub_pet_buffs("PetClan")
+    assert "Pet_Speed_Boost" in buffs
