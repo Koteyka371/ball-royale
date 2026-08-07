@@ -36929,6 +36929,66 @@ class CrimsonFogEventMode(GameMode):
                     b.hp -= 10.0 * delta
 
 
+
+class PeriodicVisionReductionEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Periodic Vision Reduction Event"
+        self.description = "An event that periodically reduces the camera/vision range of all players by 50% for 5 seconds."
+        self.cycle_timer = 15.0
+        self.duration = 5.0
+        self.active_event_timer = 0.0
+        self.is_active = False
+
+    def setup(self, world, balls):
+        self.cycle_timer = 15.0
+        self.active_event_timer = 0.0
+        self.is_active = False
+
+    def tick(self, world, balls, delta):
+        if not self.is_active:
+            self.cycle_timer -= delta
+            if self.cycle_timer <= 0:
+                self.is_active = True
+                self.active_event_timer = self.duration
+                if hasattr(world, "add_event"):
+                    world.add_event("visual_effect", {"type": "thick_fog_start", "x": 0, "y": 0})
+                elif isinstance(world, dict) and "events" in world:
+                    world["events"].append({"type": "visual_effect", "data": {"type": "thick_fog_start", "x": 0, "y": 0}})
+
+                for b in balls:
+                    if isinstance(b, dict):
+                        pass
+                    elif hasattr(b, "base_perception_radius"):
+                        if not getattr(b, "periodic_vision_reduction_applied", False):
+                            b.perception_radius = b.base_perception_radius * 0.5
+                            b.periodic_vision_reduction_applied = True
+        else:
+            self.active_event_timer -= delta
+            for b in balls:
+                if isinstance(b, dict):
+                    continue
+                elif hasattr(b, "base_perception_radius"):
+                    if not getattr(b, "periodic_vision_reduction_applied", False):
+                        b.perception_radius = b.base_perception_radius * 0.5
+                        b.periodic_vision_reduction_applied = True
+
+            if self.active_event_timer <= 0:
+                self.is_active = False
+                self.cycle_timer = 15.0
+                if hasattr(world, "add_event"):
+                    world.add_event("visual_effect", {"type": "thick_fog_end", "x": 0, "y": 0})
+                elif isinstance(world, dict) and "events" in world:
+                    world["events"].append({"type": "visual_effect", "data": {"type": "thick_fog_end", "x": 0, "y": 0}})
+
+                for b in balls:
+                    if isinstance(b, dict):
+                        pass
+                    else:
+                        if getattr(b, "periodic_vision_reduction_applied", False):
+                            b.perception_radius = getattr(b, "base_perception_radius", 500)
+                            b.periodic_vision_reduction_applied = False
+
 GAME_MODES = {
     "crimson_fog_event": CrimsonFogEventMode(),
     "nullification_zone": NullificationZoneMode(),
@@ -36953,6 +37013,7 @@ GAME_MODES = {
     'supercell_storm': SupercellStormMode(),
     'ice_floor': IceFloorMode(),
     'vision_reduction_event': VisionReductionEventMode(),
+    'periodic_vision_reduction_event': PeriodicVisionReductionEventMode(),
     'frozen_ground_event': FrozenGroundEventMode(),
     'wall_leapers': WallLeapersMode(),
     'networked_black_holes': NetworkedBlackHolesMode(),

@@ -59745,6 +59745,92 @@ class CrimsonFogEventMode extends GameMode:
 					b["hp"] -= 10.0 * delta
 
 
+
+class PeriodicVisionReductionEventMode extends GameMode:
+	var cycle_timer = 15.0
+	var duration = 5.0
+	var active_event_timer = 0.0
+	var is_active = false
+
+	func _init():
+		name = "Periodic Vision Reduction Event"
+		description = "An event that periodically reduces the camera/vision range of all players by 50% for 5 seconds."
+
+	func setup(world, balls):
+		cycle_timer = 15.0
+		active_event_timer = 0.0
+		is_active = false
+
+	func tick(world, balls, delta):
+		if not is_active:
+			cycle_timer -= delta
+			if cycle_timer <= 0:
+				is_active = true
+				active_event_timer = duration
+				if typeof(world) == TYPE_DICTIONARY and world.has("events"):
+					world["events"].append({
+						"type": "visual_effect",
+						"data": {"type": "thick_fog_start", "x": 0, "y": 0}
+					})
+				elif typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
+					world.add_event("visual_effect", {"type": "thick_fog_start", "x": 0, "y": 0})
+
+				for i in range(balls.size()):
+					var b = balls[i]
+					if typeof(b) == TYPE_DICTIONARY:
+						pass
+					else:
+						if "base_perception_radius" in b:
+							var p_applied = b.get_meta("periodic_vision_reduction_applied") if b.has_method("get_meta") and b.has_meta("periodic_vision_reduction_applied") else (b.periodic_vision_reduction_applied if "periodic_vision_reduction_applied" in b else false)
+							if not p_applied:
+								if "perception_radius" in b:
+									b.perception_radius = b.base_perception_radius * 0.5
+								if "periodic_vision_reduction_applied" in b:
+									b.periodic_vision_reduction_applied = true
+								elif b.has_method("set_meta"):
+									b.set_meta("periodic_vision_reduction_applied", true)
+		else:
+			active_event_timer -= delta
+			for i in range(balls.size()):
+				var b = balls[i]
+				if typeof(b) == TYPE_DICTIONARY:
+					pass
+				else:
+					if "base_perception_radius" in b:
+						var p_applied = b.get_meta("periodic_vision_reduction_applied") if b.has_method("get_meta") and b.has_meta("periodic_vision_reduction_applied") else (b.periodic_vision_reduction_applied if "periodic_vision_reduction_applied" in b else false)
+						if not p_applied:
+							if "perception_radius" in b:
+								b.perception_radius = b.base_perception_radius * 0.5
+							if "periodic_vision_reduction_applied" in b:
+								b.periodic_vision_reduction_applied = true
+							elif b.has_method("set_meta"):
+								b.set_meta("periodic_vision_reduction_applied", true)
+
+			if active_event_timer <= 0:
+				is_active = false
+				cycle_timer = 15.0
+				if typeof(world) == TYPE_DICTIONARY and world.has("events"):
+					world["events"].append({
+						"type": "visual_effect",
+						"data": {"type": "thick_fog_end", "x": 0, "y": 0}
+					})
+				elif typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
+					world.add_event("visual_effect", {"type": "thick_fog_end", "x": 0, "y": 0})
+
+				for i in range(balls.size()):
+					var b = balls[i]
+					if typeof(b) == TYPE_DICTIONARY:
+						pass
+					else:
+						var p_applied = b.get_meta("periodic_vision_reduction_applied") if b.has_method("get_meta") and b.has_meta("periodic_vision_reduction_applied") else (b.periodic_vision_reduction_applied if "periodic_vision_reduction_applied" in b else false)
+						if p_applied:
+							if "perception_radius" in b and "base_perception_radius" in b:
+								b.perception_radius = b.base_perception_radius
+							if "periodic_vision_reduction_applied" in b:
+								b.periodic_vision_reduction_applied = false
+							elif b.has_method("set_meta"):
+								b.set_meta("periodic_vision_reduction_applied", false)
+
 var GAME_MODES = {
     "crimson_fog_event": CrimsonFogEventMode.new(),
     "nullification_zone": NullificationZoneMode.new(),
@@ -59772,6 +59858,7 @@ var GAME_MODES = {
 	"supercell_storm": SupercellStormMode.new(),
 	"wall_leapers": WallLeapersMode.new(),
 	"vision_reduction_event": VisionReductionEventMode.new(),
+	"periodic_vision_reduction_event": PeriodicVisionReductionEventMode.new(),
 	"frozen_ground_event": FrozenGroundEventMode.new(),
 	"networked_black_holes": NetworkedBlackHolesMode.new(),
 
