@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1881] Static Field — *2026-08-07 13:08:32 UTC*
+
+An area that disables all entity abilities and drains stamina over time.
+
+---
+
 ## [idea-1840] Ghost Boosters — *2026-08-07 12:33:11 UTC*
 
 Boosters give you temporary ghost status.
