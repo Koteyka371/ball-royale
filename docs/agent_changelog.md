@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1891] Bungee Cord Skill — *2026-08-07 22:41:10 UTC*
+
+Similar to grapple but leaves a temporary tether between the player and the wall. Both the player and the wall are elastic, creating interesting physics traps and escapes.
+
+---
+
 ## [idea-1877] Clan Alliance System — *2026-08-07 22:36:25 UTC*
 
 Allow clans to form alliances to share territories and complete mega-quests together for exclusive alliance-wide buffs and cosmetics.
