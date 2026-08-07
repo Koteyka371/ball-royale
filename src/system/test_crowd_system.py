@@ -686,3 +686,56 @@ def test_upgrade_hazard_command():
     # Verify events
     assert any(e[0] == "explosion" for e in world.events)
     assert any(e[0] == "crowd_cheer" for e in world.events)
+
+def test_aura_command_success():
+    world = MockWorld()
+    system = CrowdSystem(world)
+
+    b1 = MockBall(1, "team1", "player")
+    b1.hp = 50.0
+    b1.max_hp = 100.0
+
+    system.viewer_loyalty["testuser"] = 100
+
+    system.process_external_command("testuser", "!aura red 1", [b1])
+
+    assert system.viewer_loyalty["testuser"] == 80
+    assert getattr(b1, "aura_color", "") == "red"
+    assert b1.hp == 75.0
+
+    # Check events
+    visual_events = [e for e in world.events if e[0] == "visual_effect" and e[1].get("type") == "aura_applied"]
+    assert len(visual_events) == 1
+    assert visual_events[0][1]["color"] == "red"
+    assert visual_events[0][1]["target_id"] == 1
+
+    cheer_events = [e for e in world.events if e[0] == "crowd_cheer"]
+    assert len(cheer_events) > 0
+
+def test_aura_command_insufficient_points():
+    world = MockWorld()
+    system = CrowdSystem(world)
+
+    b1 = MockBall(1, "team1", "player")
+    b1.hp = 50.0
+
+    system.viewer_loyalty["testuser"] = 10
+
+    system.process_external_command("testuser", "!aura red 1", [b1])
+
+    assert system.viewer_loyalty["testuser"] == 10
+    assert not hasattr(b1, "aura_color")
+    assert b1.hp == 50.0
+
+def test_aura_command_invalid_target():
+    world = MockWorld()
+    system = CrowdSystem(world)
+
+    b1 = MockBall(1, "team1", "player")
+
+    system.viewer_loyalty["testuser"] = 100
+
+    system.process_external_command("testuser", "!aura red 999", [b1])
+
+    assert system.viewer_loyalty["testuser"] == 100
+    assert not hasattr(b1, "aura_color")

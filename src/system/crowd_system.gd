@@ -389,6 +389,67 @@ func process_external_command(user: String, command: String, balls: Array):
             if world != null and world.has_method("add_event"):
                 world.add_event("crowd_cheer", {"message": "Viewer " + _get_user_display(user) + " voted for " + option + " (Power: " + str(vote_weight) + ")!"})
 
+    elif cmd == "!aura" and parts.size() >= 3:
+        var color = parts[1]
+        var target_id = parts[2]
+
+        var current_pts = 0
+        if viewer_loyalty.has(user):
+            current_pts = viewer_loyalty[user]
+
+        if current_pts >= 20:
+            var target = null
+            for b in alive_balls:
+                var b_id = ""
+                if typeof(b) == TYPE_OBJECT and b.has_method("get"):
+                    b_id = str(b.get("id"))
+                elif typeof(b) == TYPE_DICTIONARY and b.has("id"):
+                    b_id = str(b["id"])
+                if b_id == target_id:
+                    target = b
+                    break
+
+            if target != null:
+                # Apply cosmetic aura
+                if typeof(target) == TYPE_OBJECT and target.has_method("set"):
+                    target.set("aura_color", color)
+                elif typeof(target) == TYPE_DICTIONARY:
+                    target["aura_color"] = color
+
+                # Apply minor buff (heal 25 HP)
+                var hp = 100.0
+                var max_hp = 100.0
+                if typeof(target) == TYPE_OBJECT and target.has_method("get"):
+                    if target.get("hp") != null: hp = float(target.get("hp"))
+                    if target.get("max_hp") != null: max_hp = float(target.get("max_hp"))
+                elif typeof(target) == TYPE_DICTIONARY:
+                    if target.has("hp"): hp = float(target["hp"])
+                    if target.has("max_hp"): max_hp = float(target["max_hp"])
+
+                var new_hp = min(hp + 25.0, max_hp)
+                if typeof(target) == TYPE_OBJECT and target.has_method("set"):
+                    target.set("hp", new_hp)
+                elif typeof(target) == TYPE_DICTIONARY:
+                    target["hp"] = new_hp
+
+                # Deduct points
+                _add_viewer_loyalty(user, -20)
+                excitement_level += 5.0
+
+                # Announce event
+                if world != null and world.has_method("add_event"):
+                    var t_id = -1
+                    var b_type = "Player"
+                    if typeof(target) == TYPE_OBJECT and target.has_method("get"):
+                        if target.get("id") != null: t_id = target.get("id")
+                        if target.get("ball_type") != null: b_type = target.get("ball_type")
+                    elif typeof(target) == TYPE_DICTIONARY:
+                        if target.has("id"): t_id = target["id"]
+                        if target.has("ball_type"): b_type = target["ball_type"]
+
+                    world.add_event("visual_effect", {"type": "aura_applied", "color": color, "target_id": t_id})
+                    world.add_event("crowd_cheer", {"message": "Viewer " + _get_user_display(user) + " granted a " + color + " aura to " + str(b_type) + " " + str(target_id) + "!"})
+
     elif cmd == "!bounty" and parts.size() >= 2:
         var target_id = parts[1]
         var target = null
