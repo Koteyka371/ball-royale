@@ -36160,6 +36160,49 @@ class FrictionZonesMode(GameMode):
 
 
 
+class DenseRegionMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Dense Region"
+        self.description = "A dense region that pulls entities inwards, greatly increasing friction and heavily penalizing movement abilities."
+        self.region_radius = 300.0
+        self.pull_strength = 150.0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        import math
+        cx = getattr(world.arena, "width", 1000.0) / 2.0
+        cy = getattr(world.arena, "height", 1000.0) / 2.0
+
+        for b in balls:
+            if not getattr(b, "alive", True):
+                continue
+
+            dx = cx - b.x
+            dy = cy - b.y
+            dist = math.sqrt(dx*dx + dy*dy)
+
+            if dist < self.region_radius:
+                if dist > 0:
+                    if hasattr(b, "vx") and hasattr(b, "vy"):
+                        b.vx += (dx / dist) * self.pull_strength * delta
+                        b.vy += (dy / dist) * self.pull_strength * delta
+
+                # Apply friction penalty
+                if not hasattr(b, "_orig_friction_multiplier"):
+                    b._orig_friction_multiplier = getattr(b, "friction_multiplier", 1.0)
+                b.friction_multiplier = 3.0
+
+                # Penalize movement/skills
+                if hasattr(b, "skill_timer") and getattr(b, "skill_timer") > 0.0:
+                    # Penalize by adding delta (which negates normal cooldown reduction)
+                    b.skill_timer += delta * 2.0
+            else:
+                if hasattr(b, "_orig_friction_multiplier"):
+                    b.friction_multiplier = b._orig_friction_multiplier
+                    delattr(b, "_orig_friction_multiplier")
+
 class SolarRadiationStormMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -36971,6 +37014,7 @@ GAME_MODES = {
     "cursed_buff_zone": CursedBuffZoneMode(),
     "weapon_collection": WeaponCollectionMode(),
     "blacksmith_boss": BlacksmithBossMode(),
+    "dense_region": DenseRegionMode(),
     "solar_radiation_storm": SolarRadiationStormMode(),
 }
 
