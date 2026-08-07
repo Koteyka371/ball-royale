@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1870] Collapsing Geometry Arena — *2026-08-07 09:05:17 UTC*
+
+An arena map where taking damage near walls randomly alters the shape of the boundary, creating dynamic jagged paths and trapping mechanics as the walls deform instead of just breaking.
+
+---
+
 ## [idea-1838] Time Loop Skill — *2026-08-07 08:25:52 UTC*
 
 A new skill that records the player's position and health for 5 seconds. Activating the skill a second time rewinds the player to their recorded state.
