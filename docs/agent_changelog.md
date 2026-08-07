@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1866] Bounty Hunter Stealth Camouflage — *2026-08-07 11:18:22 UTC*
+
+When out of combat for a certain amount of time, Bounty Hunters become semi-invisible to enemies without thermal vision, allowing them to ambush high-priority targets.
+
+---
+
 ## [idea-1875] Portal Linking Mechanic — *2026-08-07 09:05:22 UTC*
 
 Portals don't just teleport randomly. Instead, two portals will occasionally link together, letting balls visually track where they will pop out, creating unique strategies and trick shots.
