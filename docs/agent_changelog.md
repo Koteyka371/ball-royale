@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1840] Ghost Boosters — *2026-08-07 12:33:11 UTC*
+
+Boosters give you temporary ghost status.
+
+---
+
 ## [idea-1873] Decoy Network Overload — *2026-08-07 12:05:15 UTC*
 
 If a player has multiple decoys active, they can trigger an ability that links them with lasers for a few seconds before detonating them in a chain reaction, creating area denial zones.
