@@ -59617,7 +59617,100 @@ class CrumblingArenaMode extends GameMode:
 
 		world.arena.set_meta("boundary_offsets", offsets)
 
+
+class NullificationZoneMode extends GameMode:
+    var zone_x: float = 500.0
+    var zone_y: float = 500.0
+    var zone_radius: float = 200.0
+    var drain_rate: float = 15.0
+    var hazard_obj = null
+
+    func _init():
+        name = "Nullification Zone"
+        description = "An area that disables all entity abilities and drains stamina over time."
+
+    func setup(world, balls: Array) -> void:
+        super.setup(world, balls)
+        var arena_width = 1000.0
+        var arena_height = 1000.0
+
+        if typeof(world) == TYPE_OBJECT and world.get("arena") != null:
+            var arena = world.arena
+            if typeof(arena) == TYPE_OBJECT:
+                arena_width = arena.get("width", 1000.0)
+                arena_height = arena.get("height", 1000.0)
+            elif typeof(arena) == TYPE_DICTIONARY:
+                arena_width = arena.get("width", 1000.0)
+                arena_height = arena.get("height", 1000.0)
+        elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+            var arena = world["arena"]
+            if typeof(arena) == TYPE_OBJECT:
+                arena_width = arena.get("width", 1000.0)
+                arena_height = arena.get("height", 1000.0)
+            elif typeof(arena) == TYPE_DICTIONARY:
+                arena_width = arena.get("width", 1000.0)
+                arena_height = arena.get("height", 1000.0)
+
+        zone_x = arena_width / 2.0
+        zone_y = arena_height / 2.0
+
+        if typeof(world) == TYPE_OBJECT and world.get("arena") != null:
+            var arena = world.arena
+            if typeof(arena) == TYPE_OBJECT and arena.get("hazards") != null:
+                hazard_obj = {"id": "nullification_zone", "x": zone_x, "y": zone_y, "radius": zone_radius, "kind": "nullification_zone", "damage": 0.0}
+                arena.hazards.append(hazard_obj)
+            elif typeof(arena) == TYPE_DICTIONARY and arena.has("hazards"):
+                hazard_obj = {"id": "nullification_zone", "x": zone_x, "y": zone_y, "radius": zone_radius, "kind": "nullification_zone", "damage": 0.0}
+                arena["hazards"].append(hazard_obj)
+        elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+            var arena = world["arena"]
+            if typeof(arena) == TYPE_OBJECT and arena.get("hazards") != null:
+                hazard_obj = {"id": "nullification_zone", "x": zone_x, "y": zone_y, "radius": zone_radius, "kind": "nullification_zone", "damage": 0.0}
+                arena.hazards.append(hazard_obj)
+            elif typeof(arena) == TYPE_DICTIONARY and arena.has("hazards"):
+                hazard_obj = {"id": "nullification_zone", "x": zone_x, "y": zone_y, "radius": zone_radius, "kind": "nullification_zone", "damage": 0.0}
+                arena["hazards"].append(hazard_obj)
+
+    func tick(world, balls: Array, delta: float = 0.016) -> void:
+        super.tick(world, balls, delta)
+        for b in balls:
+            var is_alive = true
+            if typeof(b) == TYPE_OBJECT:
+                is_alive = b.get("alive", true)
+            elif typeof(b) == TYPE_DICTIONARY:
+                is_alive = b.get("alive", true)
+
+            if is_alive:
+                var b_x = 0.0
+                var b_y = 0.0
+                if typeof(b) == TYPE_OBJECT:
+                    if "x" in b and "y" in b:
+                        b_x = b.x
+                        b_y = b.y
+                elif typeof(b) == TYPE_DICTIONARY:
+                    if b.has("x") and b.has("y"):
+                        b_x = b["x"]
+                        b_y = b["y"]
+
+                var dist_sq = (b_x - zone_x) * (b_x - zone_x) + (b_y - zone_y) * (b_y - zone_y)
+                if dist_sq <= zone_radius * zone_radius:
+                    if typeof(b) == TYPE_OBJECT:
+                        if "stamina" in b:
+                            b.stamina = max(0.0, b.stamina - drain_rate * delta)
+                        if "silence_timer" in b:
+                            b.silence_timer = max(b.silence_timer, 0.5)
+                        else:
+                            b.set("silence_timer", 0.5)
+                    elif typeof(b) == TYPE_DICTIONARY:
+                        if b.has("stamina"):
+                            b["stamina"] = max(0.0, b["stamina"] - drain_rate * delta)
+                        if b.has("silence_timer"):
+                            b["silence_timer"] = max(b["silence_timer"], 0.5)
+                        else:
+                            b["silence_timer"] = 0.5
+
 var GAME_MODES = {
+    "nullification_zone": NullificationZoneMode.new(),
 	"clan_hub": ClanHubMode.new(),
 	"crumbling_arena": CrumblingArenaMode.new(),
 	"cursed_altar": CursedAltarMode.new(),

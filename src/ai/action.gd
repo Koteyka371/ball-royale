@@ -25703,6 +25703,19 @@ func execute(strategy: String, delta: float):
                                 if hazard.has_method("set_meta"):
                                     hazard.set_meta("active", false)
                         continue
+                    elif hazard.kind == "nullification_zone":
+                        if "stamina" in self.ball:
+                            var stam = self.ball.stamina
+                            var new_stam = max(0.0, stam - 30.0 * delta)
+                            self.ball.stamina = new_stam
+                            if self.ball.has_method("set_meta"):
+                                self.ball.set_meta("stamina", new_stam)
+                        if "silence_timer" in self.ball:
+                            var st = self.ball.silence_timer
+                            self.ball.silence_timer = max(st, 0.5)
+                        else:
+                            self.ball.set("silence_timer", 0.5)
+                        continue
                     elif hazard.kind == "stamina_drain_zone":
                         var current_tick = 0
                         if "tick" in self.world:

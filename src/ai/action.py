@@ -13165,6 +13165,12 @@ class Action:
                                 if hazard.hp <= 0:
                                     hazard.active = False
                             continue
+                        elif hazard.kind == "nullification_zone":
+                            if hasattr(self.ball, "stamina"):
+                                drain_rate = 30.0 * delta
+                                self.ball.stamina = max(0.0, self.ball.stamina - drain_rate)
+                            self.ball.silence_timer = max(getattr(self.ball, "silence_timer", 0.0), 0.5)
+                            continue
                         elif hazard.kind == "stamina_drain_zone":
                             # Drain stamina when standing inside
                             if hasattr(self.ball, "stamina"):
