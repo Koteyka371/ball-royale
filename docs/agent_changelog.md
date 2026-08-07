@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1867] Bounty Hunter Tracking Darts — *2026-08-07 22:17:52 UTC*
+
+Bounty Hunters can shoot tracking darts that stick to enemies. Tracked enemies share their vision with the Bounty Hunter and take increased damage from all sources for a short duration.
+
+---
+
 ## [idea-1869] High Gravity Well — *2026-08-07 21:44:48 UTC*
 
 A dense region that pulls entities inwards, greatly increasing friction and heavily penalizing movement abilities.
