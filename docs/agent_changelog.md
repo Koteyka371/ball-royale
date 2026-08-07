@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1878] Dynamic Clan Hubs — *2026-08-07 11:25:50 UTC*
+
+Provide instanced, customizable environments for clan members to hang out in, interact with clan-specific NPCs, and view physical representations of their stash and unlocked decorations.
+
+---
+
 ## [idea-1866] Bounty Hunter Stealth Camouflage — *2026-08-07 11:18:22 UTC*
 
 When out of combat for a certain amount of time, Bounty Hunters become semi-invisible to enemies without thermal vision, allowing them to ambush high-priority targets.
