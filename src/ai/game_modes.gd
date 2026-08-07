@@ -80226,3 +80226,82 @@ class PeriodicGhostMutatorMode extends GameMode:
 						b["ghost_mode_timer"] = 3.0
 
 GAME_MODES['periodic_ghost_mutator'] = PeriodicGhostMutatorMode.new()
+
+class ConfettiCelebrationMode extends GameMode:
+	func _init() -> void:
+		name = "Confetti Celebration"
+		description = "When a ball is eliminated, instead of just disappearing, it triggers a massive confetti explosion that momentarily blinds nearby players and applies a small speed buff to everyone caught in it, simulating a chaotic celebration."
+
+	func on_ball_died(world, ball, killer = null):
+		if super.has_method("on_ball_died"):
+			super.on_ball_died(world, ball, killer)
+
+		var ex_x = 0.0
+		var ex_y = 0.0
+		if typeof(ball) == TYPE_DICTIONARY:
+			ex_x = ball.get("x", 0.0)
+			ex_y = ball.get("y", 0.0)
+		else:
+			ex_x = ball.x if "x" in ball else (ball.get_meta("x") if ball.has_meta("x") else 0.0)
+			ex_y = ball.y if "y" in ball else (ball.get_meta("y") if ball.has_meta("y") else 0.0)
+
+		var event_data = {"x": ex_x, "y": ex_y, "radius": 400.0}
+		if typeof(world) == TYPE_DICTIONARY and "events" in world:
+			world.events.append({"type": "confetti_explosion", "data": event_data})
+		elif typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+			world.add_event("confetti_explosion", event_data)
+
+		var balls = []
+		if typeof(world) == TYPE_DICTIONARY and "balls" in world:
+			balls = world.balls
+		elif typeof(world) == TYPE_OBJECT:
+			if "balls" in world:
+				balls = world.balls
+			elif "entities" in world:
+				balls = world.entities
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY: is_alive = b.get("alive", false)
+			else: is_alive = b.alive if "alive" in b else (b.get_meta("alive") if b.has_meta("alive") else false)
+
+			if not is_alive: continue
+
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY: b_type = b.get("ball_type", "")
+			else: b_type = b.ball_type if "ball_type" in b else (b.get_meta("ball_type") if b.has_meta("ball_type") else "")
+
+			if b_type == "spectator": continue
+
+			var b_x = 0.0
+			var b_y = 0.0
+			if typeof(b) == TYPE_DICTIONARY:
+				b_x = b.get("x", 0.0)
+				b_y = b.get("y", 0.0)
+			else:
+				b_x = b.x if "x" in b else (b.get_meta("x") if b.has_meta("x") else 0.0)
+				b_y = b.y if "y" in b else (b.get_meta("y") if b.has_meta("y") else 0.0)
+
+			var dist_sq = (b_x - ex_x) * (b_x - ex_x) + (b_y - ex_y) * (b_y - ex_y)
+			if dist_sq <= 400.0 * 400.0:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["is_blinded"] = true
+					b["blindness_timer"] = max(b.get("blindness_timer", 0.0), 2.0)
+					b["speed_boost_timer"] = max(b.get("speed_boost_timer", 0.0), 3.0)
+				else:
+					if "is_blinded" in b:
+						b.is_blinded = true
+					elif b.has_method("set_meta"):
+						b.set_meta("is_blinded", true)
+
+					if "blindness_timer" in b:
+						b.blindness_timer = max(b.blindness_timer, 2.0)
+					elif b.has_method("set_meta"):
+						b.set_meta("blindness_timer", max(b.get_meta("blindness_timer") if b.has_meta("blindness_timer") else 0.0, 2.0))
+
+					if "speed_boost_timer" in b:
+						b.speed_boost_timer = max(b.speed_boost_timer, 3.0)
+					elif b.has_method("set_meta"):
+						b.set_meta("speed_boost_timer", max(b.get_meta("speed_boost_timer") if b.has_meta("speed_boost_timer") else 0.0, 3.0))
+
+GAME_MODES["confetti_celebration"] = ConfettiCelebrationMode.new()

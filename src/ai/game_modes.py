@@ -51124,3 +51124,57 @@ class PeriodicGhostMutatorMode(GameMode):
                     b.ghost_mode_timer = 3.0
 
 GAME_MODES['periodic_ghost_mutator'] = PeriodicGhostMutatorMode()
+
+class ConfettiCelebrationMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Confetti Celebration"
+        self.description = "When a ball is eliminated, instead of just disappearing, it triggers a massive confetti explosion that momentarily blinds nearby players and applies a small speed buff to everyone caught in it, simulating a chaotic celebration."
+
+    def on_ball_died(self, world, ball, killer=None):
+        if hasattr(super(), "on_ball_died"):
+            super().on_ball_died(world, ball, killer)
+
+        if isinstance(ball, dict):
+            ex_x = ball.get("x", 0.0)
+            ex_y = ball.get("y", 0.0)
+        else:
+            ex_x = getattr(ball, "x", 0.0)
+            ex_y = getattr(ball, "y", 0.0)
+
+        # Trigger event for visual effect
+        if hasattr(world, "add_event"):
+            world.add_event("confetti_explosion", {"x": ex_x, "y": ex_y, "radius": 400.0})
+        elif isinstance(world, dict) and "events" in world:
+            world["events"].append({"type": "confetti_explosion", "data": {"x": ex_x, "y": ex_y, "radius": 400.0}})
+
+        balls = []
+        if isinstance(world, dict):
+            balls = world.get("balls", [])
+        else:
+            balls = getattr(world, "balls", getattr(world, "entities", []))
+
+        for b in balls:
+            is_b_dict = isinstance(b, dict)
+            is_alive = b.get("alive", False) if is_b_dict else getattr(b, "alive", False)
+            if not is_alive: continue
+
+            b_type = b.get("ball_type", "") if is_b_dict else getattr(b, "ball_type", "")
+            if b_type == "spectator": continue
+
+            b_x = b.get("x", 0.0) if is_b_dict else getattr(b, "x", 0.0)
+            b_y = b.get("y", 0.0) if is_b_dict else getattr(b, "y", 0.0)
+
+            dist_sq = (b_x - ex_x)**2 + (b_y - ex_y)**2
+            if dist_sq <= 400.0**2:
+                # Apply blindness and speed buff
+                if is_b_dict:
+                    b["is_blinded"] = True
+                    b["blindness_timer"] = max(b.get("blindness_timer", 0.0), 2.0)
+                    b["speed_boost_timer"] = max(b.get("speed_boost_timer", 0.0), 3.0)
+                else:
+                    b.is_blinded = True
+                    b.blindness_timer = max(getattr(b, "blindness_timer", 0.0), 2.0)
+                    b.speed_boost_timer = max(getattr(b, "speed_boost_timer", 0.0), 3.0)
+
+GAME_MODES['confetti_celebration'] = ConfettiCelebrationMode()
