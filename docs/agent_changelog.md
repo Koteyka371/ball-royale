@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1859] Altar Sabotage Item — *2026-08-07 04:43:32 UTC*
+
+An item that players can drop onto altars to sabotage them, dealing tick damage to enemy teams.
+
+---
+
 ## [idea-1854] Quantum Mirage Dash — *2026-08-07 04:43:27 UTC*
 
 After successfully completing a maximum cluster dash (all 3 jumps hit enemies), the ball leaves behind 3 static mirages of itself at the jump locations. These mirages briefly absorb a single enemy attack or hazard before dissipating, adding a layer of defensive misdirection to the aggressive playstyle.
