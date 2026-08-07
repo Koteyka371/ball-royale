@@ -50842,6 +50842,133 @@ class MagneticShrinkingFieldMode(GameMode):
 
 GAME_MODES['magnetic_shrinking_field'] = MagneticShrinkingFieldMode()
 
+
+class ClanHubMode(GameMode):
+    """A non-combat social environment tailored to a single clan where members can hang out, interact with clan-specific NPCs, and view their stash and unlocked decorations."""
+    def __init__(self):
+        super().__init__()
+        self.name = "clan_hub"
+        self.desc = "Clan social hub and physical stash."
+        self.hub_clan = None
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+
+        self.hub_clan = getattr(world, "hub_clan", None)
+        if not self.hub_clan:
+            for b in balls:
+                if getattr(b, "clan", None):
+                    self.hub_clan = getattr(b, "clan", None)
+                    break
+
+        for b in balls:
+            b.base_damage = 0.0
+            b.damage = 0.0
+            b.invulnerable = True
+
+        if not self.hub_clan:
+            return
+
+        clan_manager = getattr(world, "clan_manager", None)
+        if not clan_manager and hasattr(world, "profile_manager") and hasattr(world.profile_manager, "clan_manager"):
+            clan_manager = world.profile_manager.clan_manager
+
+        if not clan_manager:
+            return
+
+        clan_data = clan_manager.data.get("clans", {}).get(self.hub_clan, {})
+
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        for dec in clan_data.get("hub", []):
+            dec_name = dec.get("decoration", "Unknown")
+            x = dec.get("x", 0)
+            y = dec.get("y", 0)
+            world.arena.hazards.append({
+                "kind": "clan_decoration",
+                "name": dec_name,
+                "x": float(x),
+                "y": float(y),
+                "radius": 20.0
+            })
+
+        stash_x = 200.0
+        stash_y = 200.0
+        for item_name, amount in clan_data.get("stash", {}).items():
+            if amount > 0:
+                world.arena.hazards.append({
+                    "kind": "clan_stash_pile",
+                    "item": item_name,
+                    "amount": amount,
+                    "x": float(stash_x),
+                    "y": float(stash_y),
+                    "radius": 15.0
+                })
+                stash_x += 40.0
+
+        world.arena.hazards.append({
+            "kind": "clan_npc",
+            "role": "stash_master",
+            "x": 400.0,
+            "y": 100.0,
+            "radius": 30.0
+        })
+        world.arena.hazards.append({
+            "kind": "clan_npc",
+            "role": "quest_master",
+            "x": 100.0,
+            "y": 400.0,
+            "radius": 30.0
+        })
+
+    def tick(self, world: Any, delta: float) -> None:
+        if not self.hub_clan:
+            return
+
+        clan_manager = getattr(world, "clan_manager", None)
+        if not clan_manager and hasattr(world, "profile_manager") and hasattr(world.profile_manager, "clan_manager"):
+            clan_manager = world.profile_manager.clan_manager
+
+        hub_buffs = []
+        if clan_manager:
+            hub_buffs = clan_manager.get_hub_buffs(self.hub_clan)
+
+        balls = getattr(world, "balls", [])
+
+        for b in balls:
+            if b.alive:
+                for buff in hub_buffs:
+                    if buff == "Hub_Speed_Boost":
+                        b.speed = getattr(b, "base_speed", 100.0) + 20.0
+                    elif buff == "Hub_Health_Regen":
+                        if hasattr(b, "hp") and hasattr(b, "max_hp") and b.hp < b.max_hp:
+                            b.hp = min(b.max_hp, b.hp + 5.0 * delta)
+
+        hazards = getattr(world.arena, "hazards", []) if hasattr(world, "arena") else []
+        for h in hazards:
+            kind = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+            if kind == "clan_npc":
+                hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                h_radius = h.get("radius", 30.0) if isinstance(h, dict) else getattr(h, "radius", 30.0)
+                role = h.get("role", "npc") if isinstance(h, dict) else getattr(h, "role", "npc")
+
+                for b in balls:
+                    if not b.alive:
+                        continue
+                    bx = getattr(b, "x", 0)
+                    by = getattr(b, "y", 0)
+                    br = getattr(b, "radius", 10.0)
+                    dist = ((bx - hx)**2 + (by - hy)**2)**0.5
+                    if dist < (br + h_radius + 10.0):
+                        last_interaction = getattr(b, "last_npc_interaction", 0)
+                        current_time = getattr(world, "time", 0)
+                        if current_time - last_interaction > 1.0:
+                            world.add_event("npc_interaction", {"npc": role, "player": getattr(b, "id", "")})
+                            b.last_npc_interaction = current_time
+
+
 class OrbitalBlackHoleEventMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -50915,4 +51042,5 @@ class OrbitalBlackHoleEventMode(GameMode):
                             proj.vx += (dx / dist) * self.projectile_pull * delta
                             proj.vy += (dy / dist) * self.projectile_pull * delta
 
+GAME_MODES["clan_hub"] = ClanHubMode()
 GAME_MODES["orbital_black_hole_event"] = OrbitalBlackHoleEventMode()
