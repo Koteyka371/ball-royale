@@ -36569,7 +36569,110 @@ class HealingRainMode(GameMode):
                         if hasattr(b, 'base_speed'):
                             b.speed = b.base_speed
 
+
+class CursedAltarMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Cursed Altar"
+        self.description = "An altar that occasionally applies negative modifiers to players trying to capture it."
+
+    def setup(self, world, balls=None):
+        if hasattr(super(), "setup"):
+            try:
+                super().setup(world, balls)
+            except TypeError:
+                try:
+                    super().setup(world)
+                except Exception:
+                    pass
+
+        arena_w = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_h = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        self.altars = [{
+            "x": arena_w / 2,
+            "y": arena_h / 2,
+            "radius": 150.0,
+            "capture_progress": 0.0,
+            "owner": None,
+            "curse_timer": 3.0
+        }]
+        if not hasattr(world, "altars"):
+            world.altars = []
+        world.altars.extend(self.altars)
+
+    def tick(self, world, balls=None, delta=0.016):
+        if delta is None and isinstance(world, (int, float)):
+            delta = world
+            world = None
+        if balls is None and hasattr(world, 'balls'):
+            balls = world.balls
+
+        try:
+            super().tick(world, delta)
+        except TypeError:
+            try:
+                super().tick(world, balls, delta)
+            except Exception:
+                pass
+
+        if not hasattr(self, "altars"):
+            return
+
+        for altar in self.altars:
+            team_counts = {}
+            balls_inside = []
+
+            for b in balls:
+                if not getattr(b, "alive", False):
+                    continue
+
+                bx = getattr(b, "x", 0.0)
+                by = getattr(b, "y", 0.0)
+                br = getattr(b, "radius", 10.0)
+                dist_sq = (bx - altar["x"])**2 + (by - altar["y"])**2
+                if dist_sq <= (altar["radius"] + br)**2:
+                    team = getattr(b, "team", None)
+                    if team:
+                        team_counts[team] = team_counts.get(team, 0) + 1
+                        balls_inside.append(b)
+
+            if len(team_counts) == 1:
+                team = list(team_counts.keys())[0]
+                if altar["owner"] != team and altar["owner"] is not None:
+                    # Contested/Decaying
+                    altar["capture_progress"] -= 20.0 * delta
+                    if altar["capture_progress"] <= 0:
+                        altar["owner"] = None
+                        altar["capture_progress"] = 0.0
+                else:
+                    altar["owner"] = team
+                    altar["capture_progress"] = min(100.0, altar["capture_progress"] + 20.0 * delta)
+            else:
+                # Decaying
+                altar["capture_progress"] = max(0.0, altar["capture_progress"] - 10.0 * delta)
+                if altar["capture_progress"] <= 0:
+                    altar["owner"] = None
+
+            if altar["owner"] is not None and altar["capture_progress"] > 0:
+                altar["curse_timer"] -= delta
+                if altar["curse_timer"] <= 0:
+                    altar["curse_timer"] = 3.0
+                    for b in balls_inside:
+                        if getattr(b, "team", None) == altar["owner"]:
+                            if hasattr(b, "take_damage"):
+                                b.take_damage(5.0)
+                            else:
+                                b.hp = max(0.0, getattr(b, "hp", 100.0) - 5.0)
+
+                            if hasattr(b, "speed"):
+                                b.speed *= 0.8
+
+                            if hasattr(world, "add_event"):
+                                world.add_event("altar_curse", {"ball_id": getattr(b, "id", None)})
+
 GAME_MODES = {
+    'cursed_altar': CursedAltarMode(),
     'healing_rain': HealingRainMode(),
     "boss_escort": BossEscortMode(),
     "toxic_fog_event": ToxicFogEventMode(),
