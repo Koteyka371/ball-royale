@@ -27426,6 +27426,18 @@ class SacrificeAltarMode(GameMode):
                 dist_sq = (bx - ax)**2 + (by - ay)**2
                 b_radius = getattr(b, "radius", 10.0)
                 if dist_sq <= (radius + b_radius)**2:
+                    team = getattr(b, "team", getattr(b, "ball_type", "unknown"))
+
+                    if hasattr(b, "inventory") and "negative_modifier" in b.inventory:
+                        b.inventory.remove("negative_modifier")
+                        altar["sabotaged_by"] = team
+                        if hasattr(world, "add_event"):
+                            world.add_event("altar_sabotaged", {"team": team})
+
+                    saboteur = altar.get("sabotaged_by")
+                    if saboteur and saboteur != team:
+                        b.hp = max(0.0, getattr(b, "hp", 100.0) - 15.0 * delta)
+
                     # Near altar
                     max_hp = getattr(b, "max_hp", 100.0)
                     if max_hp > 30.0:
@@ -30827,6 +30839,16 @@ class TimeRewindAltarMode(GameMode):
                     team = getattr(b, "team", getattr(b, "ball_type", "unknown"))
                     teams_present[team] = teams_present.get(team, 0) + 1
 
+                    if hasattr(b, "inventory") and "negative_modifier" in b.inventory:
+                        b.inventory.remove("negative_modifier")
+                        self.altar["sabotaged_by"] = team
+                        if hasattr(world, "add_event"):
+                            world.add_event("altar_sabotaged", {"team": team})
+
+                    saboteur = self.altar.get("sabotaged_by")
+                    if saboteur and saboteur != team:
+                        b.hp = max(0.0, getattr(b, "hp", 100.0) - 15.0 * delta)
+
         if teams_present:
             max_team = max(teams_present, key=teams_present.get)
             is_tie = sum(1 for t, v in teams_present.items() if v == teams_present[max_team]) > 1
@@ -31662,8 +31684,25 @@ class CurrencyBurdenMode(GameMode):
             b.radius = b.base_radius * (1.0 + (curr * 0.02))
 
             # Deposit at altars
+            for altar in getattr(world, "altars", []):
+                dx = b.x - altar["x"]
+                dy = b.y - altar["y"]
+                dist = math.sqrt(dx*dx + dy*dy)
+                if dist <= b.radius + altar["radius"]:
+                    team = getattr(b, "team", getattr(b, "ball_type", "unknown"))
+
+                    if hasattr(b, "inventory") and "negative_modifier" in b.inventory:
+                        b.inventory.remove("negative_modifier")
+                        altar["sabotaged_by"] = team
+                        if hasattr(world, "add_event"):
+                            world.add_event("altar_sabotaged", {"team": team})
+
+                    saboteur = altar.get("sabotaged_by")
+                    if saboteur and saboteur != team:
+                        b.hp = max(0.0, getattr(b, "hp", 100.0) - 15.0 * delta)
+
             if curr > 0:
-                for altar in world.altars:
+                for altar in getattr(world, "altars", []):
                     dx = b.x - altar["x"]
                     dy = b.y - altar["y"]
                     dist = math.sqrt(dx*dx + dy*dy)
@@ -44735,6 +44774,16 @@ class WeatherCombinationsMode(GameMode):
                         team = getattr(b, "team", getattr(b, "ball_type", "unknown"))
                         teams_present[team] = teams_present.get(team, 0) + 1
 
+                        if hasattr(b, "inventory") and "negative_modifier" in b.inventory:
+                            b.inventory.remove("negative_modifier")
+                            altar["sabotaged_by"] = team
+                            if hasattr(world, "add_event"):
+                                world.add_event("altar_sabotaged", {"team": team})
+
+                        saboteur = altar.get("sabotaged_by")
+                        if saboteur and saboteur != team:
+                            b.hp = max(0.0, getattr(b, "hp", 100.0) - 15.0 * delta)
+
             if teams_present:
                 max_team = max(teams_present, key=teams_present.get)
                 is_tie = sum(1 for t, v in teams_present.items() if v == teams_present[max_team]) > 1
@@ -46231,6 +46280,16 @@ class WeatherTrapMode(GameMode):
                     if dist_sq <= altar["radius"]**2:
                         team = getattr(b, "team", getattr(b, "ball_type", "unknown"))
                         teams_present[team] = teams_present.get(team, 0) + 1
+
+                        if hasattr(b, "inventory") and "negative_modifier" in b.inventory:
+                            b.inventory.remove("negative_modifier")
+                            altar["sabotaged_by"] = team
+                            if hasattr(world, "add_event"):
+                                world.add_event("altar_sabotaged", {"team": team})
+
+                        saboteur = altar.get("sabotaged_by")
+                        if saboteur and saboteur != team:
+                            b.hp = max(0.0, getattr(b, "hp", 100.0) - 15.0 * delta)
 
             if teams_present:
                 max_team = max(teams_present, key=teams_present.get)
