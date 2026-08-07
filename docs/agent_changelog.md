@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1817] Viewer Faction Wars — *2026-08-07 13:29:06 UTC*
+
+Viewers can pledge loyalty to specific team colors at the start of a match. Whenever a viewer spawns a hazard or drops a buff, it gains a team affiliation, damaging only rival teams or buffing only their pledged team. This creates a meta-game of viewer armies fighting alongside AI.
+
+---
+
 ## [idea-1881] Static Field — *2026-08-07 13:08:32 UTC*
 
 An area that disables all entity abilities and drains stamina over time.
