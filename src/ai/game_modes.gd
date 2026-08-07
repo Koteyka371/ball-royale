@@ -77288,6 +77288,129 @@ class PeriodicLowGravityMutatorMode extends GameMode:
 
 GAME_MODES['periodic_low_gravity_mutator'] = PeriodicLowGravityMutatorMode.new()
 
+class MagneticShrinkingFieldMode extends GameMode:
+	var min_x: float = 0.0
+	var max_x: float = 1000.0
+	var min_y: float = 0.0
+	var max_y: float = 1000.0
+	var shrink_rate: float = 15.0
+
+	func _init():
+		super._init()
+		name = "Magnetic Shrinking Field"
+		description = "A powerful magnetic field slowly shrinks towards the center. Balls outside the field are pulled violently into walls or hazards, while balls inside must fight for the remaining stable space."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		var arena_width: float = 1000.0
+		var arena_height: float = 1000.0
+		if typeof(world) == TYPE_DICTIONARY and world.has("arena") and world["arena"] != null:
+			if typeof(world["arena"]) == TYPE_DICTIONARY:
+				arena_width = world["arena"].get("width", 1000.0)
+				arena_height = world["arena"].get("height", 1000.0)
+			elif typeof(world["arena"]) == TYPE_OBJECT:
+				arena_width = world["arena"].get("width") if "width" in world["arena"] else 1000.0
+				arena_height = world["arena"].get("height") if "height" in world["arena"] else 1000.0
+		elif typeof(world) == TYPE_OBJECT and world.get("arena") != null:
+			if typeof(world.get("arena")) == TYPE_DICTIONARY:
+				arena_width = world.get("arena").get("width", 1000.0)
+				arena_height = world.get("arena").get("height", 1000.0)
+			else:
+				arena_width = world.get("arena").get("width") if "width" in world.get("arena") else 1000.0
+				arena_height = world.get("arena").get("height") if "height" in world.get("arena") else 1000.0
+
+		min_x = 0.0
+		max_x = arena_width
+		min_y = 0.0
+		max_y = arena_height
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if max_x - min_x > 50.0:
+			min_x += shrink_rate * delta
+			max_x -= shrink_rate * delta
+
+		if max_y - min_y > 50.0:
+			min_y += shrink_rate * delta
+			max_y -= shrink_rate * delta
+
+		var arena_width: float = 1000.0
+		var arena_height: float = 1000.0
+		if typeof(world) == TYPE_DICTIONARY and world.has("arena") and world["arena"] != null:
+			if typeof(world["arena"]) == TYPE_DICTIONARY:
+				arena_width = world["arena"].get("width", 1000.0)
+				arena_height = world["arena"].get("height", 1000.0)
+			elif typeof(world["arena"]) == TYPE_OBJECT:
+				arena_width = world["arena"].get("width") if "width" in world["arena"] else 1000.0
+				arena_height = world["arena"].get("height") if "height" in world["arena"] else 1000.0
+		elif typeof(world) == TYPE_OBJECT and world.get("arena") != null:
+			if typeof(world.get("arena")) == TYPE_DICTIONARY:
+				arena_width = world.get("arena").get("width", 1000.0)
+				arena_height = world.get("arena").get("height", 1000.0)
+			else:
+				arena_width = world.get("arena").get("width") if "width" in world.get("arena") else 1000.0
+				arena_height = world.get("arena").get("height") if "height" in world.get("arena") else 1000.0
+
+		var center_x: float = arena_width / 2.0
+		var center_y: float = arena_height / 2.0
+
+		for b in balls:
+			var b_alive: bool = true
+			if typeof(b) == TYPE_DICTIONARY:
+				b_alive = b.get("alive", true)
+			elif typeof(b) == TYPE_OBJECT and "alive" in b:
+				b_alive = b.get("alive")
+
+			if not b_alive:
+				continue
+
+			var bx: float = 0.0
+			var by: float = 0.0
+			if typeof(b) == TYPE_DICTIONARY:
+				bx = b.get("x", 0.0)
+				by = b.get("y", 0.0)
+			elif typeof(b) == TYPE_OBJECT:
+				bx = b.get("x") if "x" in b else 0.0
+				by = b.get("y") if "y" in b else 0.0
+
+			if bx < min_x or bx > max_x or by < min_y or by > max_y:
+				var dx: float = bx - center_x
+				var dy: float = by - center_y
+				var dist: float = sqrt(dx * dx + dy * dy)
+
+				if dist > 0.0:
+					dx /= dist
+					dy /= dist
+				else:
+					dx = 1.0
+					dy = 0.0
+
+				var pull_strength: float = 2000.0 * delta
+				var new_x: float = bx + dx * pull_strength
+				var new_y: float = by + dy * pull_strength
+
+				if typeof(b) == TYPE_DICTIONARY:
+					b["x"] = new_x
+					b["y"] = new_y
+				elif typeof(b) == TYPE_OBJECT:
+					if "x" in b:
+						b.set("x", new_x)
+					if "y" in b:
+						b.set("y", new_y)
+
+				var dmg: float = 20.0 * delta
+				if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+					b.call("take_damage", dmg)
+				else:
+					var hp: float = 100.0
+					if typeof(b) == TYPE_DICTIONARY:
+						hp = b.get("hp", 100.0)
+						b["hp"] = hp - dmg
+					elif typeof(b) == TYPE_OBJECT and "hp" in b:
+						hp = b.get("hp")
+						b.set("hp", hp - dmg)
+
+GAME_MODES['magnetic_shrinking_field'] = MagneticShrinkingFieldMode.new()
+
 GAME_MODES["silent_world_mutator"] = SilentWorldMutatorMode.new()
 
 class AlternatingZoneMode extends GameMode:
