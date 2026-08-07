@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1841] Cursed Buffs — *2026-08-07 06:00:23 UTC*
+
+Boosters debuff you but last longer.
+
+---
+
 ## [idea-1864] Black Hole Gravity Modifier — *2026-08-07 05:07:52 UTC*
 
 A random mutator event where a massive central black hole occasionally spawns, heavily modifying the trajectory of all projectiles and slightly pulling balls inward while providing an orbit-like speed boost to tangential movement.
