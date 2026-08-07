@@ -51178,3 +51178,88 @@ class ConfettiCelebrationMode(GameMode):
                     b.speed_boost_timer = max(getattr(b, "speed_boost_timer", 0.0), 3.0)
 
 GAME_MODES['confetti_celebration'] = ConfettiCelebrationMode()
+
+class ConvergingSafeZonesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Converging Safe Zones"
+        self.description = "Multiple safe zones slowly converge and combine into one at the center, forcing different groups to travel and meet."
+        self.zones = []
+        self.center_x = 500.0
+        self.center_y = 500.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        self.center_x = arena_width / 2.0
+        self.center_y = arena_height / 2.0
+        self.zones = []
+
+        # Spawn initial zones near corners
+        corners = [
+            (200, 200), (arena_width - 200, 200),
+            (200, arena_height - 200), (arena_width - 200, arena_height - 200)
+        ]
+
+        for cx, cy in corners:
+            self.zones.append({
+                "x": cx,
+                "y": cy,
+                "radius": 200.0
+            })
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import math
+
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        # move zones towards center
+        converge_speed = 15.0
+        active_zones = []
+        for z in self.zones:
+            dx = self.center_x - z["x"]
+            dy = self.center_y - z["y"]
+            dist = math.sqrt(dx*dx + dy*dy)
+
+            if dist > 5.0:
+                z["x"] += (dx / dist) * converge_speed * delta
+                z["y"] += (dy / dist) * converge_speed * delta
+
+            active_zones.append(z)
+
+        self.zones = active_zones
+
+        # check player bounds
+        for ball in balls:
+            w_timer = getattr(ball, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
+            if not getattr(ball, "alive", False):
+                continue
+            if is_immune:
+                continue
+
+            in_zone = False
+            for z in self.zones:
+                dx = ball.x - z["x"]
+                dy = ball.y - z["y"]
+                if math.sqrt(dx*dx + dy*dy) <= z["radius"]:
+                    in_zone = True
+                    break
+
+            if not in_zone:
+                damage = 25.0 * delta
+                if hasattr(ball, "take_damage"):
+                    ball.take_damage(damage)
+                else:
+                    ball.hp -= damage
+                    if ball.hp <= 0:
+                        ball.hp = 0
+                        ball.alive = False
+                        if hasattr(ball, "id") and ball.id not in world.dead_balls:
+                            world.dead_balls.append(ball.id)
+                            if hasattr(world, "add_event"):
+                                world.add_event("ball_died", {"id": ball.id, "reason": "outside_zone", "killer_id": -1})
+GAME_MODES['converging_safe_zones'] = ConvergingSafeZonesMode()
