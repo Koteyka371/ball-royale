@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1862] Quantum Pinball Mode — *2026-08-07 00:22:46 UTC*
+
+An arena heavily populated with bouncers and bumpers. When colliding with bumpers, balls don't just gain velocity but phase into an intangible state for 1.5 seconds, ignoring terrain collisions.
+
+---
+
 ## [idea-1850] Static Feedback Loop — *2026-08-06 23:45:48 UTC*
 
 A new mutator where each time a player uses chain lightning, the leftover electric charge stays in the air, creating a static field that slows down all entities and gradually damages those without electric immunity over time.
