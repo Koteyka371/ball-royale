@@ -36891,7 +36891,46 @@ class NullificationZoneMode(GameMode):
                         b.stamina = max(0.0, getattr(b, "stamina", 0.0) - self.drain_rate * delta)
                     b.silence_timer = max(getattr(b, "silence_timer", 0.0), 0.5)
 
+
+class CrimsonFogEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Crimson Fog Event"
+        self.description = "A dense crimson fog rolls into the arena, draining health over time but granting double lifesteal."
+        self.fog_timer = 15.0
+        self.fog_active = False
+
+    def setup(self, world, balls):
+        if hasattr(super(), 'setup'):
+            super().setup(world, balls)
+        self.fog_timer = 15.0
+        self.fog_active = False
+        self.crimson_fog_active = False
+
+    def tick(self, world, balls, delta=0.016):
+        if hasattr(super(), 'tick'):
+            super().tick(world, balls, delta)
+
+        self.fog_timer -= delta
+        if self.fog_timer <= 0:
+            self.fog_active = not self.fog_active
+            self.crimson_fog_active = self.fog_active
+            self.fog_timer = 20.0 if self.fog_active else 10.0
+
+            if hasattr(world, "add_event"):
+                if self.fog_active:
+                    world.add_event("visual_effect", {"type": "crimson_fog_start", "message": "The Crimson Fog rolls in!"})
+                else:
+                    world.add_event("visual_effect", {"type": "crimson_fog_end", "message": "The Crimson Fog dissipates."})
+
+        if self.fog_active:
+            for b in balls:
+                if getattr(b, "alive", False) and hasattr(b, "hp"):
+                    b.hp -= 10.0 * delta
+
+
 GAME_MODES = {
+    "crimson_fog_event": CrimsonFogEventMode(),
     "nullification_zone": NullificationZoneMode(),
     'crumbling_arena': CrumblingArenaMode(),
     'cursed_altar': CursedAltarMode(),

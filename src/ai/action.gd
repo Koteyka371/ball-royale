@@ -2842,6 +2842,31 @@ func _attempt_damage_internal(attacker, target) -> void:
 	if "hp" in target: new_hp = float(target.hp)
 
 	if new_hp < old_hp:
+		var gm = null
+		if typeof(self.world) == TYPE_OBJECT and "game_mode" in self.world: gm = self.world.game_mode
+		elif typeof(self.world) == TYPE_DICTIONARY and self.world.has("game_mode"): gm = self.world.get("game_mode")
+
+		var gm_name = ""
+		var fog_active = false
+		if typeof(gm) == TYPE_OBJECT:
+			if "name" in gm: gm_name = gm.name
+			elif gm.has_method("get") and gm.get("name") != null: gm_name = gm.get("name")
+			if "crimson_fog_active" in gm: fog_active = gm.crimson_fog_active
+		elif typeof(gm) == TYPE_DICTIONARY:
+			if gm.has("name"): gm_name = gm.get("name")
+			if gm.has("crimson_fog_active"): fog_active = gm.get("crimson_fog_active")
+
+		if gm_name == "Crimson Fog Event" and fog_active and attacker != null:
+			var damage_dealt = old_hp - new_hp
+			if typeof(attacker) == TYPE_OBJECT:
+				var att_hp = float(attacker.hp) if "hp" in attacker else 100.0
+				var att_mhp = float(attacker.max_hp) if "max_hp" in attacker else 100.0
+				attacker.hp = min(att_mhp, att_hp + (damage_dealt * 2.0))
+			elif typeof(attacker) == TYPE_DICTIONARY:
+				var att_hp = float(attacker.get("hp", 100.0))
+				var att_mhp = float(attacker.get("max_hp", 100.0))
+				attacker["hp"] = min(att_mhp, att_hp + (damage_dealt * 2.0))
+
 		var is_stamina_vampire = false
 		if typeof(self.world) == TYPE_OBJECT and "current_mode_name" in self.world and self.world.current_mode_name == "Stamina Vampire":
 			is_stamina_vampire = true
