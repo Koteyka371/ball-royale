@@ -21,15 +21,39 @@ class RandomTeleporterMode(GameMode):
         self.spawn_timer += delta
         if self.spawn_timer >= self.spawn_interval:
             self.spawn_timer -= self.spawn_interval
-            portal = {
-                "x": random.uniform(50, max(50, arena_w - 50)),
-                "y": random.uniform(50, max(50, arena_h - 50)),
-                "radius": 30.0,
-                "lifetime": 10.0
-            }
-            self.portals.append(portal)
-            if hasattr(world, "add_event"):
-                world.add_event("portal_spawn", {"message": "A random teleporter portal appeared!", "x": portal["x"], "y": portal["y"]})
+
+            # 30% chance to spawn a linked pair instead of a single portal
+            if random.random() < 0.3:
+                p1 = {
+                    "x": random.uniform(50, max(50, arena_w - 50)),
+                    "y": random.uniform(50, max(50, arena_h - 50)),
+                    "radius": 30.0,
+                    "lifetime": 10.0,
+                    "cooldown": 0.0
+                }
+                p2 = {
+                    "x": random.uniform(50, max(50, arena_w - 50)),
+                    "y": random.uniform(50, max(50, arena_h - 50)),
+                    "radius": 30.0,
+                    "lifetime": 10.0,
+                    "cooldown": 0.0
+                }
+                p1["link"] = p2
+                p2["link"] = p1
+                self.portals.extend([p1, p2])
+                if hasattr(world, "add_event"):
+                    world.add_event("portal_spawn", {"message": "A linked random teleporter portal pair appeared!", "x": p1["x"], "y": p1["y"]})
+            else:
+                portal = {
+                    "x": random.uniform(50, max(50, arena_w - 50)),
+                    "y": random.uniform(50, max(50, arena_h - 50)),
+                    "radius": 30.0,
+                    "lifetime": 10.0,
+                    "cooldown": 0.0
+                }
+                self.portals.append(portal)
+                if hasattr(world, "add_event"):
+                    world.add_event("portal_spawn", {"message": "A random teleporter portal appeared!", "x": portal["x"], "y": portal["y"]})
 
         active_portals = []
         for portal in self.portals:
@@ -39,6 +63,10 @@ class RandomTeleporterMode(GameMode):
         self.portals = active_portals
 
         for portal in self.portals:
+            if portal.get("cooldown", 0.0) > 0:
+                portal["cooldown"] -= delta
+                continue
+
             px, py, pr = portal["x"], portal["y"], portal["radius"]
             for b in balls:
                 if getattr(b, "alive", False):
@@ -46,18 +74,27 @@ class RandomTeleporterMode(GameMode):
                     dy = getattr(b, "y", 0.0) - py
                     dist = math.sqrt(dx * dx + dy * dy)
                     if dist < pr + getattr(b, "radius", 10.0):
-                        # Teleport
                         if hasattr(world, "add_event"):
                             world.add_event("teleport_out", {"message": "Teleported!", "x": b.x, "y": b.y})
 
-                        # Reset velocity to 0
-                        if hasattr(b, "vx"): b.vx = 0.0
-                        if hasattr(b, "vy"): b.vy = 0.0
+                        if "link" in portal:
+                            linked = portal["link"]
+                            b.x = linked["x"]
+                            b.y = linked["y"]
+                            portal["cooldown"] = 0.5
+                            linked["cooldown"] = 0.5
+                        else:
+                            # Reset velocity to 0 for unlinked
+                            if hasattr(b, "vx"): b.vx = 0.0
+                            if hasattr(b, "vy"): b.vy = 0.0
 
-                        b.x = random.uniform(50, max(50, arena_w - 50))
-                        b.y = random.uniform(50, max(50, arena_h - 50))
+                            b.x = random.uniform(50, max(50, arena_w - 50))
+                            b.y = random.uniform(50, max(50, arena_h - 50))
+                            portal["cooldown"] = 0.5
 
                         if hasattr(world, "add_event"):
                             world.add_event("teleport_in", {"message": "Arrived!", "x": b.x, "y": b.y})
+
+                        break # Only teleport one ball per portal per tick to avoid weirdness, or just prevent processing the same ball multiple times.
 
 GAME_MODES['random_teleporter'] = RandomTeleporterMode()
