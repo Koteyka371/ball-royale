@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1868] Ghost Phase — *2026-08-07 12:05:10 UTC*
+
+Players periodically become ghosts and can pass through walls.
+
+---
+
 ## [idea-1878] Dynamic Clan Hubs — *2026-08-07 11:25:50 UTC*
 
 Provide instanced, customizable environments for clan members to hang out in, interact with clan-specific NPCs, and view physical representations of their stash and unlocked decorations.
