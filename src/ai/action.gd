@@ -42523,6 +42523,7 @@ func _use_skill():
             var jump_radius = 200.0
 
             var visited_enemies = []
+            var spawned_decoys = []
 
             while jumps < max_jumps:
                 var alive_enemies = []
@@ -42649,6 +42650,7 @@ func _use_skill():
 
                     if "balls" in self.world:
                         self.world.balls.append(decoy)
+                    spawned_decoys.append(decoy)
 
                 # Quantum state remains true for collision sweep
 
@@ -42713,6 +42715,25 @@ func _use_skill():
                         self.ball.set_meta("stamina_speed_burst_timer", burst + 0.5)
                     else:
                         self.ball.stamina_speed_burst_timer = burst + 0.5
+
+            if jumps == max_jumps:
+                for d in spawned_decoys:
+                    if d.has_method("set_meta"):
+                        d.set_meta("decoy_type", "static_mirage")
+                        d.set_meta("hp", 1.0)
+                        d.set_meta("max_hp", 1.0)
+                        d.set_meta("decoy_timer", 2.0)
+                        d.set_meta("vx", 0.0)
+                        d.set_meta("vy", 0.0)
+                        d.set_meta("speed", 0.0)
+                    else:
+                        d.decoy_type = "static_mirage"
+                        d.hp = 1.0
+                        d.max_hp = 1.0
+                        d.decoy_timer = 2.0
+                        d.vx = 0.0
+                        d.vy = 0.0
+                        d.speed = 0.0
 
             if self.ball.has_method("set_meta"):
                 self.ball.set_meta("intangible", false)
