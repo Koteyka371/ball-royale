@@ -32879,7 +32879,7 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'survival_rewind', 'echo_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_dash', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone', 'deploy_distract_drone', 'deploy_fake_balls', 'decoy_swarm', 'hire_mercenary', 'hazard_surfing', 'grapple_hook', 'instant_swap']
+                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'survival_rewind', 'echo_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_dash', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone', 'deploy_distract_drone', 'deploy_fake_balls', 'decoy_swarm', 'hire_mercenary', 'hazard_surfing', 'grapple_hook', 'elastic_tether', 'instant_swap']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -37284,6 +37284,101 @@ func _use_skill():
             else:
                 if "skill_timer" in self.ball: self.ball.skill_timer = cd
                 else: self.ball.set_meta("skill_timer", cd)
+        elif skill_name == "elastic_tether":
+            var cd = 5.0
+            if "SKILL_COOLDOWN" in self.ball: cd = self.ball.SKILL_COOLDOWN
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("SKILL_COOLDOWN"): cd = self.ball.get_meta("SKILL_COOLDOWN")
+            if typeof(self.ball) == TYPE_DICTIONARY: self.ball["skill_timer"] = cd
+            else:
+                if "skill_timer" in self.ball: self.ball.skill_timer = cd
+                else: self.ball.set_meta("skill_timer", cd)
+
+            var arena_width = 1000.0
+            var arena_height = 1000.0
+            if "arena" in world and world.arena != null:
+                if typeof(world.arena) == TYPE_DICTIONARY:
+                    if "width" in world.arena: arena_width = world.arena.width
+                    if "height" in world.arena: arena_height = world.arena.height
+                else:
+                    arena_width = world.arena.width
+                    arena_height = world.arena.height
+
+            var grapple_targets = []
+            if "arena" in world and world.arena != null:
+                var hazards = []
+                if typeof(world.arena) == TYPE_DICTIONARY and "hazards" in world.arena:
+                    hazards = world.arena.hazards
+                elif typeof(world.arena) != TYPE_DICTIONARY:
+                    hazards = world.arena.hazards
+
+                for h in hazards:
+                    var hx = 0.0
+                    var hy = 0.0
+                    if typeof(h) == TYPE_DICTIONARY:
+                        hx = h.x
+                        hy = h.y
+                    else:
+                        hx = h.x
+                        hy = h.y
+                    var dist_sq = pow(hx - ball.x, 2) + pow(hy - ball.y, 2)
+                    if dist_sq < 250000:
+                        grapple_targets.append({"target": h, "dist_sq": dist_sq, "x": hx, "y": hy})
+
+            var closest_target = null
+            var closest_target_dist_sq = 999999.0
+            for t in grapple_targets:
+                if t.dist_sq < closest_target_dist_sq:
+                    closest_target = t.target
+                    closest_target_dist_sq = t.dist_sq
+
+            var dists = {
+                "left": ball.x,
+                "right": arena_width - ball.x,
+                "top": ball.y,
+                "bottom": arena_height - ball.y
+            }
+            var closest_wall = "left"
+            var closest_wall_dist = dists["left"]
+            for k in dists.keys():
+                if dists[k] < closest_wall_dist:
+                    closest_wall_dist = dists[k]
+                    closest_wall = k
+
+            if closest_target != null and closest_target_dist_sq < (closest_wall_dist * closest_wall_dist):
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["elastic_tether_target"] = closest_target
+                    self.ball["elastic_tether_timer"] = 5.0
+                else:
+                    if "elastic_tether_target" in self.ball:
+                        self.ball.elastic_tether_target = closest_target
+                        self.ball.elastic_tether_timer = 5.0
+                    else:
+                        self.ball.set_meta("elastic_tether_target", closest_target)
+                        self.ball.set_meta("elastic_tether_timer", 5.0)
+            else:
+                var target_x = ball.x
+                var target_y = ball.y
+                if closest_wall == "left":
+                    target_x = 0.0
+                elif closest_wall == "right":
+                    target_x = arena_width
+                elif closest_wall == "top":
+                    target_y = 0.0
+                elif closest_wall == "bottom":
+                    target_y = arena_height
+
+                var wall_target = {"x": target_x, "y": target_y, "alive": true}
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["elastic_tether_target"] = wall_target
+                    self.ball["elastic_tether_timer"] = 5.0
+                else:
+                    if "elastic_tether_target" in self.ball:
+                        self.ball.elastic_tether_target = wall_target
+                        self.ball.elastic_tether_timer = 5.0
+                    else:
+                        self.ball.set_meta("elastic_tether_target", wall_target)
+                        self.ball.set_meta("elastic_tether_timer", 5.0)
+
         elif skill_name == "grapple_hook":
             ball.skill_timer = 5.0
             if "SKILL_COOLDOWN" in ball:
@@ -48918,6 +49013,49 @@ func _update_skill_timer(delta: float):
         l_tether_timer = max(0.0, l_tether_timer - delta)
         if "leech_tether_timer" in self.ball: self.ball.leech_tether_timer = l_tether_timer
         elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("leech_tether_timer", l_tether_timer)
+
+    var e_tether_timer = 0.0
+    if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("elastic_tether_timer"):
+        e_tether_timer = self.ball.get_meta("elastic_tether_timer")
+    elif "elastic_tether_timer" in self.ball:
+        e_tether_timer = self.ball.elastic_tether_timer
+
+    if e_tether_timer > 0:
+        var target = null
+        if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("elastic_tether_target"):
+            target = self.ball.get_meta("elastic_tether_target")
+        elif "elastic_tether_target" in self.ball:
+            target = self.ball.elastic_tether_target
+
+        var target_alive = true
+        if target != null:
+            if typeof(target) == TYPE_DICTIONARY and target.has("alive"): target_alive = target.alive
+            elif typeof(target) != TYPE_DICTIONARY and "alive" in target: target_alive = target.alive
+            elif typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("alive"): target_alive = target.get_meta("alive")
+
+        if target != null and target_alive:
+            var tx = target.x if ("x" in target) else target.get("position").x if (typeof(target) != TYPE_DICTIONARY and target.get("position") != null) else target.get("x", 0.0)
+            var ty = target.y if ("y" in target) else target.get("position").y if (typeof(target) != TYPE_DICTIONARY and target.get("position") != null) else target.get("y", 0.0)
+            var dx = tx - self.ball.x
+            var dy = ty - self.ball.y
+            var dist = sqrt(dx*dx + dy*dy)
+
+            if dist > 0.0001:
+                var spring_force = (dist / 200.0) * 1500.0 * delta
+                var bvx = self.ball.vx if "vx" in self.ball else self.ball.get_meta("vx") if (typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("vx")) else 0.0
+                var bvy = self.ball.vy if "vy" in self.ball else self.ball.get_meta("vy") if (typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("vy")) else 0.0
+
+                bvx += (dx / dist) * spring_force
+                bvy += (dy / dist) * spring_force
+
+                if "vx" in self.ball: self.ball.vx = bvx
+                elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("vx", bvx)
+                if "vy" in self.ball: self.ball.vy = bvy
+                elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("vy", bvy)
+
+        e_tether_timer -= delta
+        if "elastic_tether_timer" in self.ball: self.ball.elastic_tether_timer = e_tether_timer
+        elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("elastic_tether_timer", e_tether_timer)
 
     if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("magnet_tether_timer"):
         m_tether_timer = self.ball.get_meta("magnet_tether_timer")

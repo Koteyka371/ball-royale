@@ -16588,7 +16588,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'survival_rewind', 'echo_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_dash', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone', 'deploy_distract_drone', 'deploy_fake_balls', 'decoy_swarm', 'hire_mercenary', 'hazard_surfing', 'grapple_hook']
+                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'survival_rewind', 'echo_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_dash', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone', 'deploy_distract_drone', 'deploy_fake_balls', 'decoy_swarm', 'hire_mercenary', 'hazard_surfing', 'grapple_hook', 'elastic_tether']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
@@ -19015,6 +19015,50 @@ class Action:
                 self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 12.0)
 
 
+            elif skill_name == "elastic_tether":
+                self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 5.0)
+
+                arena_width = float(getattr(self.world.arena, "width", 1000.0) if hasattr(self.world, "arena") and self.world.arena else getattr(self.world, "width", 1000.0))
+                arena_height = float(getattr(self.world.arena, "height", 1000.0) if hasattr(self.world, "arena") and self.world.arena else getattr(self.world, "height", 1000.0))
+
+                grapple_targets = []
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    for h in self.world.arena.hazards:
+                        dist_sq = (h.x - self.ball.x)**2 + (h.y - self.ball.y)**2
+                        if dist_sq < 250000: # 500 range
+                            grapple_targets.append(("hazard", h, dist_sq))
+
+                closest_target = None
+                closest_target_dist_sq = 999999.0
+                for t_type, t, dist_sq in grapple_targets:
+                    if dist_sq < closest_target_dist_sq:
+                        closest_target = t
+                        closest_target_dist_sq = dist_sq
+
+                dists = {
+                    "left": self.ball.x,
+                    "right": arena_width - self.ball.x,
+                    "top": self.ball.y,
+                    "bottom": arena_height - self.ball.y
+                }
+                closest_wall = min(dists, key=dists.get)
+                closest_wall_dist = dists[closest_wall]
+
+                if closest_target and closest_target_dist_sq < (closest_wall_dist ** 2):
+                    self.ball.elastic_tether_target = closest_target
+                    self.ball.elastic_tether_timer = 5.0
+                else:
+                    target_x, target_y = self.ball.x, self.ball.y
+                    if closest_wall == "left":
+                        target_x = 0.0
+                    elif closest_wall == "right":
+                        target_x = arena_width
+                    elif closest_wall == "top":
+                        target_y = 0.0
+                    elif closest_wall == "bottom":
+                        target_y = arena_height
+                    self.ball.elastic_tether_target = type("WallTarget", (), {"x": target_x, "y": target_y, "alive": True})()
+                    self.ball.elastic_tether_timer = 5.0
             elif skill_name == "grapple_hook":
                 self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 5.0)
 
@@ -26611,6 +26655,26 @@ class Action:
 
                     self.ball.slow_timer = max(getattr(self.ball, "slow_timer", 0.0), 0.5)
             self.ball.nemesis_pull_timer = nemesis_pull_timer - delta
+
+        elastic_tether_timer = getattr(self.ball, "elastic_tether_timer", 0.0)
+        if elastic_tether_timer > 0:
+            target = getattr(self.ball, "elastic_tether_target", None)
+            if target and getattr(target, "alive", True):
+                import math
+                dx = target.x - self.ball.x
+                dy = target.y - self.ball.y
+                dist = math.hypot(dx, dy)
+
+                # Apply spring force pulling towards the target based on distance
+                if dist > 0.0001:
+                    spring_force = (dist / 200.0) * 1500.0 * delta
+                    if not hasattr(self.ball, "vx"): self.ball.vx = 0.0
+                    if not hasattr(self.ball, "vy"): self.ball.vy = 0.0
+
+                    self.ball.vx += (dx / dist) * spring_force
+                    self.ball.vy += (dy / dist) * spring_force
+
+            self.ball.elastic_tether_timer = elastic_tether_timer - delta
 
         magnet_tether_timer = getattr(self.ball, "magnet_tether_timer", 0.0)
         if magnet_tether_timer > 0:
