@@ -77,7 +77,7 @@ func get_perks(ball_id: int) -> Array:
 
 
 func get_mutator_options() -> Array:
-    return ["low_gravity", "double_damage", "high_speed", "vampirism", "global_hp", "global_cooldown", "invisible_hazards", "kinetic_ghost", "bouncy_walls", "bouncy_payload", "sudden_death_event", "shifting_mirror_walls", "stamina_vampire"]
+    return ["low_gravity", "double_damage", "high_speed", "vampirism", "global_hp", "global_cooldown", "invisible_hazards", "kinetic_ghost", "bouncy_walls", "bouncy_payload", "sudden_death_event", "shifting_mirror_walls", "stamina_vampire", "static_field_mutator"]
 
 func cast_mutator_vote(player_id: String, mutator: String, profile: ProfileManager, spend_currency: bool = false, currency_type: String = "skill_points") -> bool:
     if not selections.has("mutator_votes"):
