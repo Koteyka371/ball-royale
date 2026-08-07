@@ -22,6 +22,10 @@ class ClanManager:
                         clan["pets"] = []
                     if "hub_pets" not in clan:
                         clan["hub_pets"] = []
+                    if "allies" not in clan:
+                        clan["allies"] = []
+                    if "mega_quests" not in clan:
+                        clan["mega_quests"] = []
                 return data
         except (FileNotFoundError, json.JSONDecodeError):
             return {"clans": {}}
@@ -45,7 +49,9 @@ class ClanManager:
             "decorations": [],
             "hub": [],
             "pets": [],
-            "hub_pets": []
+            "hub_pets": [],
+            "allies": [],
+            "mega_quests": []
         }
         self.save()
         return True
@@ -292,6 +298,10 @@ class ClanManager:
                         clan["pets"] = []
                     if "hub_pets" not in clan:
                         clan["hub_pets"] = []
+                    if "allies" not in clan:
+                        clan["allies"] = []
+                    if "mega_quests" not in clan:
+                        clan["mega_quests"] = []
                 # Remove existing at this position
                 clan["hub"] = [d for d in clan["hub"] if d.get("x") != x or d.get("y") != y]
                 clan["hub"].append({"decoration": decoration_name, "x": x, "y": y})
@@ -433,3 +443,132 @@ class ClanManager:
         self.data["tournament_scores"] = {}
         self.save()
         return True
+
+    def get_alliance_cluster(self, clan_name):
+        if clan_name not in self.data["clans"]:
+            return set()
+        visited = set()
+        queue = [clan_name]
+        while queue:
+            current = queue.pop(0)
+            if current not in visited:
+                visited.add(current)
+                if current in self.data["clans"]:
+                    for ally in self.data["clans"][current].get("allies", []):
+                        if ally not in visited:
+                            queue.append(ally)
+        return visited
+
+    def form_alliance(self, clan1_name, clan2_name):
+        if clan1_name in self.data["clans"] and clan2_name in self.data["clans"] and clan1_name != clan2_name:
+            cluster1 = self.get_alliance_cluster(clan1_name)
+            cluster2 = self.get_alliance_cluster(clan2_name)
+            if clan1_name in cluster2 or clan2_name in cluster1:
+                return False
+            if len(cluster1.union(cluster2)) > 3:
+                return False
+            clan1 = self.data["clans"][clan1_name]
+            clan2 = self.data["clans"][clan2_name]
+            if "allies" not in clan1:
+                clan1["allies"] = []
+            if "allies" not in clan2:
+                clan2["allies"] = []
+            if clan2_name not in clan1["allies"] and clan1_name not in clan2["allies"]:
+                clan1["allies"].append(clan2_name)
+                clan2["allies"].append(clan1_name)
+                self.save()
+                return True
+        return False
+
+    def break_alliance(self, clan1_name, clan2_name):
+        if clan1_name in self.data["clans"] and clan2_name in self.data["clans"]:
+            clan1 = self.data["clans"][clan1_name]
+            clan2 = self.data["clans"][clan2_name]
+            success = False
+            if "allies" in clan1 and clan2_name in clan1["allies"]:
+                clan1["allies"].remove(clan2_name)
+                success = True
+            if "allies" in clan2 and clan1_name in clan2["allies"]:
+                clan2["allies"].remove(clan1_name)
+                success = True
+            if success:
+                self.save()
+            return success
+        return False
+
+    def get_shared_territories(self, clan_name):
+        shared = set()
+        cluster = self.get_alliance_cluster(clan_name)
+        for c in cluster:
+            if c in self.data["clans"]:
+                shared.update(self.data["clans"][c].get("territories", []))
+        return list(shared)
+
+    def add_mega_quest(self, clan_name, description, required_progress, rewards=None):
+        if rewards is None:
+            rewards = []
+        if clan_name in self.data["clans"]:
+            clan = self.data["clans"][clan_name]
+            if "mega_quests" not in clan:
+                clan["mega_quests"] = []
+            clan["mega_quests"].append({
+                "description": description,
+                "required": required_progress,
+                "current": 0,
+                "completed": False,
+                "rewards": rewards,
+                "contributors": {}
+            })
+            self.save()
+            return True
+        return False
+
+    def get_mega_quests(self, clan_name):
+        if clan_name in self.data["clans"]:
+            return self.data["clans"][clan_name].get("mega_quests", [])
+        return []
+
+    def progress_mega_quest(self, clan_name, quest_index, amount, player_id=None):
+        if clan_name in self.data["clans"]:
+            clan = self.data["clans"][clan_name]
+            if "mega_quests" not in clan:
+                clan["mega_quests"] = []
+            if 0 <= quest_index < len(clan["mega_quests"]):
+                quest = clan["mega_quests"][quest_index]
+                if not quest["completed"]:
+                    quest["current"] += amount
+                    if player_id:
+                        quest.setdefault("contributors", {})
+                        quest["contributors"][player_id] = quest["contributors"].get(player_id, 0) + amount
+                    if quest["current"] >= quest["required"]:
+                        quest["current"] = quest["required"]
+                        quest["completed"] = True
+                        rewards = quest.get("rewards", [])
+
+                        cluster = self.get_alliance_cluster(clan_name)
+                        for ally_name in cluster:
+                            if ally_name in self.data["clans"]:
+                                ally = self.data["clans"][ally_name]
+                                ally["points"] = ally.get("points", 0) + 50
+                                for reward in rewards:
+                                    rtype = reward.get("type")
+                                    rval = reward.get("value")
+                                    if rtype == "points":
+                                        ally["points"] += rval
+                                    elif rtype == "buff":
+                                        if "buffs" not in ally:
+                                            ally["buffs"] = []
+                                        if rval not in ally["buffs"]:
+                                            ally["buffs"].append(rval)
+                                    elif rtype == "cosmetic":
+                                        if "cosmetics" not in ally:
+                                            ally["cosmetics"] = []
+                                        if rval not in ally["cosmetics"]:
+                                            ally["cosmetics"].append(rval)
+                                    elif rtype == "stash_item":
+                                        if "stash" not in ally:
+                                            ally["stash"] = {}
+                                        ally["stash"][rval] = ally["stash"].get(rval, 0) + reward.get("amount", 1)
+                    self.save()
+                    return True
+        return False
