@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1857] Shrinking Magnetic Field Mode — *2026-08-07 00:33:42 UTC*
+
+A battle royale variation where instead of a standard safe zone, a powerful magnetic field slowly shrinks towards the center. Balls outside the field are pulled violently into walls or hazards, while balls inside must fight for the remaining stable space.
+
+---
+
 ## [idea-1862] Quantum Pinball Mode — *2026-08-07 00:22:46 UTC*
 
 An arena heavily populated with bouncers and bumpers. When colliding with bumpers, balls don't just gain velocity but phase into an intangible state for 1.5 seconds, ignoring terrain collisions.
