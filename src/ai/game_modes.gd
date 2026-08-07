@@ -79487,3 +79487,141 @@ class StaticFieldMutatorMode extends GameMode:
 
 GAME_MODES["super_vortex"] = SuperVortexMode.new()
 GAME_MODES["static_field_mutator"] = StaticFieldMutatorMode.new()
+
+class OrbitalBlackHoleEventMode extends GameMode:
+	var active = false
+	var timer = 0.0
+	var pull_strength = 50.0
+	var tangential_boost = 150.0
+	var projectile_pull = 500.0
+
+	func _init() -> void:
+		name = "Orbital Black Hole Event"
+		description = "A massive central black hole occasionally spawns, heavily modifying the trajectory of all projectiles and slightly pulling balls inward while providing an orbit-like speed boost to tangential movement."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		if not active:
+			if randf() < 0.02 * delta:
+				active = true
+				timer = 15.0
+				if world != null and world.has_method("add_event"):
+					world.add_event("orbital_black_hole", {"message": "An orbital black hole has appeared!"})
+		else:
+			timer -= delta
+			if timer <= 0:
+				active = false
+				if world != null and world.has_method("add_event"):
+					world.add_event("orbital_black_hole_end", {"message": "The orbital black hole has vanished."})
+				return
+
+			var arena_width = 1000.0
+			var arena_height = 1000.0
+			if world != null and typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+				if "width" in world.arena:
+					arena_width = world.arena.width
+				if "height" in world.arena:
+					arena_height = world.arena.height
+			elif world != null and typeof(world) == TYPE_DICTIONARY and ("arena" in world) and world.arena != null:
+				if world.arena.has("width"):
+					arena_width = world.arena.width
+				if world.arena.has("height"):
+					arena_height = world.arena.height
+
+			var cx = arena_width / 2.0
+			var cy = arena_height / 2.0
+
+			for b in balls:
+				var is_alive = false
+				if typeof(b) == TYPE_OBJECT and "alive" in b:
+					is_alive = b.alive
+				elif typeof(b) == TYPE_DICTIONARY and b.has("alive"):
+					is_alive = b.alive
+
+				if not is_alive: continue
+
+				var b_type = ""
+				if typeof(b) == TYPE_OBJECT and "ball_type" in b:
+					b_type = b.ball_type
+				elif typeof(b) == TYPE_DICTIONARY and b.has("ball_type"):
+					b_type = b.ball_type
+				if b_type == "spectator": continue
+
+				var bx = 0.0
+				var by = 0.0
+				if typeof(b) == TYPE_OBJECT:
+					if "x" in b: bx = b.x
+					if "y" in b: by = b.y
+				elif typeof(b) == TYPE_DICTIONARY:
+					if b.has("x"): bx = b.x
+					if b.has("y"): by = b.y
+
+				var dx = cx - bx
+				var dy = cy - by
+				var dist = sqrt(dx * dx + dy * dy)
+
+				if dist > 0:
+					if typeof(b) == TYPE_OBJECT:
+						if "x" in b: b.x += (dx / dist) * pull_strength * delta
+						if "y" in b: b.y += (dy / dist) * pull_strength * delta
+					elif typeof(b) == TYPE_DICTIONARY:
+						if b.has("x"): b.x += (dx / dist) * pull_strength * delta
+						if b.has("y"): b.y += (dy / dist) * pull_strength * delta
+
+					var tangent_x = -dy / dist
+					var tangent_y = dx / dist
+
+					var vx = 0.0
+					var vy = 0.0
+					if typeof(b) == TYPE_OBJECT:
+						if "vx" in b: vx = b.vx
+						if "vy" in b: vy = b.vy
+					elif typeof(b) == TYPE_DICTIONARY:
+						if b.has("vx"): vx = b.vx
+						if b.has("vy"): vy = b.vy
+
+					var dot1 = vx * tangent_x + vy * tangent_y
+					var dot2 = vx * (-tangent_x) + vy * (-tangent_y)
+
+					var push_x = tangent_x
+					var push_y = tangent_y
+					if dot2 > dot1:
+						push_x = -tangent_x
+						push_y = -tangent_y
+
+					if typeof(b) == TYPE_OBJECT:
+						if "x" in b: b.x += push_x * tangential_boost * delta
+						if "y" in b: b.y += push_y * tangential_boost * delta
+					elif typeof(b) == TYPE_DICTIONARY:
+						if b.has("x"): b.x += push_x * tangential_boost * delta
+						if b.has("y"): b.y += push_y * tangential_boost * delta
+
+			var projectiles = []
+			if world != null and typeof(world) == TYPE_OBJECT and "projectiles" in world:
+				projectiles = world.projectiles
+			elif world != null and typeof(world) == TYPE_DICTIONARY and world.has("projectiles"):
+				projectiles = world.projectiles
+
+			for proj in projectiles:
+				var px = 0.0
+				var py = 0.0
+				if typeof(proj) == TYPE_OBJECT:
+					if "x" in proj: px = proj.x
+					if "y" in proj: py = proj.y
+				elif typeof(proj) == TYPE_DICTIONARY:
+					if proj.has("x"): px = proj.x
+					if proj.has("y"): py = proj.y
+
+				var dx = cx - px
+				var dy = cy - py
+				var dist = sqrt(dx * dx + dy * dy)
+				if dist > 0:
+					if typeof(proj) == TYPE_OBJECT:
+						if "vx" in proj: proj.vx += (dx / dist) * projectile_pull * delta
+						if "vy" in proj: proj.vy += (dy / dist) * projectile_pull * delta
+					elif typeof(proj) == TYPE_DICTIONARY:
+						if proj.has("vx"): proj.vx += (dx / dist) * projectile_pull * delta
+						if proj.has("vy"): proj.vy += (dy / dist) * projectile_pull * delta
+
+GAME_MODES["orbital_black_hole_event"] = OrbitalBlackHoleEventMode.new()

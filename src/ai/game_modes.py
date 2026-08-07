@@ -50704,3 +50704,78 @@ class MagneticShrinkingFieldMode(GameMode):
                     b.hp = getattr(b, "hp", 100.0) - dmg
 
 GAME_MODES['magnetic_shrinking_field'] = MagneticShrinkingFieldMode()
+
+class OrbitalBlackHoleEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Orbital Black Hole Event"
+        self.description = "A massive central black hole occasionally spawns, heavily modifying the trajectory of all projectiles and slightly pulling balls inward while providing an orbit-like speed boost to tangential movement."
+        self.active = False
+        self.timer = 0.0
+        self.pull_strength = 50.0
+        self.tangential_boost = 150.0
+        self.projectile_pull = 500.0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import random
+        import math
+
+        if not self.active:
+            if random.random() < 0.02 * delta:
+                self.active = True
+                self.timer = 15.0
+                if hasattr(world, "add_event"):
+                    world.add_event("orbital_black_hole", {"message": "An orbital black hole has appeared!"})
+        else:
+            self.timer -= delta
+            if self.timer <= 0:
+                self.active = False
+                if hasattr(world, "add_event"):
+                    world.add_event("orbital_black_hole_end", {"message": "The orbital black hole has vanished."})
+                return
+
+            arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+            arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+            cx = arena_width / 2.0
+            cy = arena_height / 2.0
+
+            for b in balls:
+                if not getattr(b, "alive", False): continue
+                if getattr(b, "ball_type", "") == "spectator": continue
+
+                dx = cx - getattr(b, "x", 0)
+                dy = cy - getattr(b, "y", 0)
+                dist = math.hypot(dx, dy)
+
+                if dist > 0:
+                    b.x += (dx / dist) * self.pull_strength * delta
+                    b.y += (dy / dist) * self.pull_strength * delta
+
+                    tangent_x = -dy / dist
+                    tangent_y = dx / dist
+
+                    vx = getattr(b, "vx", 0)
+                    vy = getattr(b, "vy", 0)
+                    dot1 = vx * tangent_x + vy * tangent_y
+                    dot2 = vx * (-tangent_x) + vy * (-tangent_y)
+
+                    if dot2 > dot1:
+                        tangent_x = -tangent_x
+                        tangent_y = -tangent_y
+
+                    b.x += tangent_x * self.tangential_boost * delta
+                    b.y += tangent_y * self.tangential_boost * delta
+
+            if hasattr(world, "projectiles"):
+                for proj in world.projectiles:
+                    dx = cx - getattr(proj, "x", 0)
+                    dy = cy - getattr(proj, "y", 0)
+                    dist = math.hypot(dx, dy)
+                    if dist > 0:
+                        if hasattr(proj, "vx") and hasattr(proj, "vy"):
+                            proj.vx += (dx / dist) * self.projectile_pull * delta
+                            proj.vy += (dy / dist) * self.projectile_pull * delta
+
+GAME_MODES["orbital_black_hole_event"] = OrbitalBlackHoleEventMode()
