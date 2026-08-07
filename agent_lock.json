@@ -43,9 +43,9 @@
     "agent-6": {
       "name": "Jules Innovation",
       "area": "innovation",
-      "task_id": null,
-      "status": "idle",
-      "started_at": null,
+      "task_id": "idea-1817",
+      "status": "assigned",
+      "started_at": "2026-08-07T00:23:49.819556+00:00",
       "cycles_today": 0
     },
     "supervisor": {
@@ -115,9 +115,9 @@
     "agent-14": {
       "name": "Jules Worker 14",
       "area": "content",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-1838",
+      "started_at": "2026-08-07T00:23:49.819556+00:00",
       "cycles_today": 0
     },
     "agent-15": {
@@ -131,9 +131,9 @@
     "agent-16": {
       "name": "Jules Worker 16",
       "area": "innovation",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-1840",
+      "started_at": "2026-08-07T00:23:49.819556+00:00",
       "cycles_today": 0
     },
     "agent-17": {
