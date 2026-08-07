@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1865] Twitch Loyalty Shop: Cosmetic Auras — *2026-08-07 00:57:27 UTC*
+
+A new integration where Twitch viewers can type !aura <color> <target_ball_id> to spend their viewer loyalty points, granting their favorite ball a cosmetic aura and a minor one-time buff for the current match. This encourages viewers to stick around to build loyalty for their favorite AI.
+
+---
+
 ## [idea-1858] Ice Rink Arena — *2026-08-07 00:50:44 UTC*
 
 Frictionless arena where balls keep their momentum longer.
