@@ -256,6 +256,11 @@ class Action:
                 attacker.damage = orig_dmg
 
     def _attempt_damage_internal(self, attacker, target) -> None:
+        if hasattr(attacker, "out_of_combat_timer"):
+            attacker.out_of_combat_timer = 0.0
+        if hasattr(target, "out_of_combat_timer"):
+            target.out_of_combat_timer = 0.0
+
         original_damage = getattr(attacker, "damage", 10.0)
         if getattr(target, "in_time_dilation_zone", False):
             original_damage *= 0.5
@@ -1961,6 +1966,8 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        if hasattr(self.ball, "out_of_combat_timer"):
+            self.ball.out_of_combat_timer += delta
 
         # Snowball growth on ice patches
         is_snowball = getattr(self.ball, "ball_type", "") == "snowball" or getattr(self.ball, "skin", "") == "snowball"

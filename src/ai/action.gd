@@ -419,6 +419,16 @@ func _attempt_damage(attacker, target) -> void:
 			attacker.damage = orig_dmg
 
 func _attempt_damage_internal(attacker, target) -> void:
+	if typeof(attacker) == TYPE_DICTIONARY:
+		if attacker.has("out_of_combat_timer"): attacker["out_of_combat_timer"] = 0.0
+	else:
+		if "out_of_combat_timer" in attacker: attacker.out_of_combat_timer = 0.0
+
+	if typeof(target) == TYPE_DICTIONARY:
+		if target.has("out_of_combat_timer"): target["out_of_combat_timer"] = 0.0
+	else:
+		if "out_of_combat_timer" in target: target.out_of_combat_timer = 0.0
+
 	var t_in_dilation = target.in_time_dilation_zone if "in_time_dilation_zone" in target else target.get_meta("in_time_dilation_zone") if typeof(target) == TYPE_OBJECT and target.has_method("get_meta") and target.has_meta("in_time_dilation_zone") else false
 	var has_original_damage = "damage" in attacker or (typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta") and attacker.has_meta("damage"))
 	var original_damage_pre = 10.0
@@ -3632,6 +3642,8 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+	if "out_of_combat_timer" in self.ball:
+		self.ball.out_of_combat_timer += delta
 
 	# Snowball growth on ice patches
 	var is_snowball = false

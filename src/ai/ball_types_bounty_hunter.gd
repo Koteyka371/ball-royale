@@ -22,6 +22,7 @@ var kills: int = 0
 var first_hit_taken: bool = false
 var current_action: String = "idle"
 var skill_timer: float = 0.0
+var out_of_combat_timer: float = 0.0
 var personality
 
 func _init(p_id: int = 0, p_x: float = 0.0, p_y: float = 0.0):
