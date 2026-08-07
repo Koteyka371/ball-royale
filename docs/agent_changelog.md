@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1869] High Gravity Well — *2026-08-07 21:44:48 UTC*
+
+A dense region that pulls entities inwards, greatly increasing friction and heavily penalizing movement abilities.
+
+---
+
 ## [idea-1888] Clan Pets — *2026-08-07 21:29:21 UTC*
 
 Unlockable pets for clan members to keep in their Clan Hub. They give slight passive boosts when interacted with before a match.
