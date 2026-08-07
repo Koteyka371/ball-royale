@@ -63,7 +63,7 @@ class PreGameLobby:
 
 
     def get_mutator_options(self):
-        return ["low_gravity", "double_damage", "high_speed", "vampirism", "global_hp", "global_cooldown", "invisible_hazards", "kinetic_ghost", "bouncy_walls", "bouncy_payload", "sudden_death_event", "shifting_mirror_walls", "stamina_vampire", "frictionless_arena_modifier"]
+        return ["low_gravity", "double_damage", "high_speed", "vampirism", "global_hp", "global_cooldown", "invisible_hazards", "kinetic_ghost", "bouncy_walls", "bouncy_payload", "sudden_death_event", "shifting_mirror_walls", "stamina_vampire", "frictionless_arena_modifier", "orbital_black_hole_event"]
 
     def cast_mutator_vote(self, player_id, mutator, profile, spend_currency=False, currency_type="skill_points"):
         if "mutator_votes" not in self.selections:
