@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1888] Clan Pets — *2026-08-07 21:29:21 UTC*
+
+Unlockable pets for clan members to keep in their Clan Hub. They give slight passive boosts when interacted with before a match.
+
+---
+
 ## [idea-1871] Wall Reinforcement Mode — *2026-08-07 21:29:16 UTC*
 
 A game mode where players can actively rebuild and strengthen arena boundaries by collecting resources, delaying the hazard zone expansion and creating strategic defensive bunkers.
