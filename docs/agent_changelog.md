@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1877] Clan Alliance System — *2026-08-07 22:36:25 UTC*
+
+Allow clans to form alliances to share territories and complete mega-quests together for exclusive alliance-wide buffs and cosmetics.
+
+---
+
 ## [idea-1867] Bounty Hunter Tracking Darts — *2026-08-07 22:17:52 UTC*
 
 Bounty Hunters can shoot tracking darts that stick to enemies. Tracked enemies share their vision with the Bounty Hunter and take increased damage from all sources for a short duration.
