@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1819] Confetti Explosion Mode — *2026-08-07 13:57:45 UTC*
+
+When a ball is eliminated, instead of just disappearing, it triggers a massive confetti explosion that momentarily blinds nearby players and applies a small speed buff to everyone caught in it, simulating a chaotic celebration.
+
+---
+
 ## [idea-1817] Viewer Faction Wars — *2026-08-07 13:29:06 UTC*
 
 Viewers can pledge loyalty to specific team colors at the start of a match. Whenever a viewer spawns a hazard or drops a buff, it gains a team affiliation, damaging only rival teams or buffing only their pledged team. This creates a meta-game of viewer armies fighting alongside AI.
