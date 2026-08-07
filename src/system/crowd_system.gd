@@ -24,6 +24,7 @@ var external_commands = []
 var has_real_spectators = false
 var active_bets = []
 var viewer_loyalty = {}
+var active_pledges = {}
 var user_votes = {}
 var viewer_vote_streaks = {}
 var current_vote_participants = []
@@ -84,7 +85,14 @@ func process_external_command(user: String, command: String, balls: Array):
         elif typeof(b) == TYPE_DICTIONARY and b.has("alive") and b["alive"] and b.get("ball_type") != "spectator":
             alive_balls.append(b)
 
-    if cmd == "!spawn" and parts.size() >= 2:
+    if cmd == "!pledge" and parts.size() >= 2:
+        var team_color = parts[1].to_lower()
+        active_pledges[user] = team_color
+        _add_viewer_loyalty(user, 5)
+        if world != null and world.has_method("add_event"):
+            world.add_event("crowd_cheer", {"message": "Viewer " + _get_user_display(user) + " pledged loyalty to Team " + team_color.capitalize() + "!"})
+
+    elif cmd == "!spawn" and parts.size() >= 2:
         var hazard_kind = parts[1]
         var target = null
         if parts.size() >= 3:
@@ -100,7 +108,23 @@ func process_external_command(user: String, command: String, balls: Array):
                     break
 
         if target == null and not alive_balls.is_empty():
-            target = alive_balls[randi() % alive_balls.size()]
+            if active_pledges.has(user):
+                var pledged_team = active_pledges[user]
+                var enemies = []
+                for b in alive_balls:
+                    var b_team = ""
+                    if typeof(b) == TYPE_OBJECT and b.has_method("get"):
+                        b_team = b.get("team") if b.get("team") != null else b.get("ball_type")
+                    elif typeof(b) == TYPE_DICTIONARY:
+                        b_team = b.get("team", b.get("ball_type", ""))
+                    if str(b_team).to_lower() != str(pledged_team).to_lower():
+                        enemies.append(b)
+                if not enemies.is_empty():
+                    target = enemies[randi() % enemies.size()]
+                else:
+                    target = alive_balls[randi() % alive_balls.size()]
+            else:
+                target = alive_balls[randi() % alive_balls.size()]
 
         if target != null and world != null and world.has_method("add_event"):
             var t_x = 0.0
@@ -112,11 +136,15 @@ func process_external_command(user: String, command: String, balls: Array):
                 t_x = float(target.get("x", 0.0))
                 t_y = float(target.get("y", 0.0))
 
-            world.add_event("spawn_hazard", {
+            var event_data = {
                 "x": t_x,
                 "y": t_y,
                 "kind": hazard_kind
-            })
+            }
+            if active_pledges.has(user):
+                event_data["owner_team"] = active_pledges[user]
+
+            world.add_event("spawn_hazard", event_data)
             _add_viewer_loyalty(user, 5)
             world.add_event("crowd_throw", {"message": "Viewer " + _get_user_display(user) + " spawned a " + hazard_kind + "!"})
             excitement_level += 5.0
@@ -308,7 +336,23 @@ func process_external_command(user: String, command: String, balls: Array):
                     break
 
         if target == null and not alive_balls.is_empty():
-            target = alive_balls[randi() % alive_balls.size()]
+            if active_pledges.has(user):
+                var pledged_team = active_pledges[user]
+                var friends = []
+                for b in alive_balls:
+                    var b_team = ""
+                    if typeof(b) == TYPE_OBJECT and b.has_method("get"):
+                        b_team = b.get("team") if b.get("team") != null else b.get("ball_type")
+                    elif typeof(b) == TYPE_DICTIONARY:
+                        b_team = b.get("team", b.get("ball_type", ""))
+                    if str(b_team).to_lower() == str(pledged_team).to_lower():
+                        friends.append(b)
+                if not friends.is_empty():
+                    target = friends[randi() % friends.size()]
+                else:
+                    target = alive_balls[randi() % alive_balls.size()]
+            else:
+                target = alive_balls[randi() % alive_balls.size()]
 
         if target != null and world != null and world.has_method("add_event"):
             var t_x = 0.0
@@ -320,12 +364,16 @@ func process_external_command(user: String, command: String, balls: Array):
                 t_x = float(target.get("x", 0.0))
                 t_y = float(target.get("y", 0.0))
 
-            world.add_event("spawn_booster", {
+            var event_data = {
                 "x": t_x,
                 "y": t_y,
                 "kind": booster_kind,
                 "value": 30.0
-            })
+            }
+            if active_pledges.has(user):
+                event_data["team"] = active_pledges[user]
+
+            world.add_event("spawn_booster", event_data)
             _add_viewer_loyalty(user, 5)
             world.add_event("crowd_throw", {"message": "Viewer " + _get_user_display(user) + " dropped a " + booster_kind + " booster!"})
             excitement_level += 5.0

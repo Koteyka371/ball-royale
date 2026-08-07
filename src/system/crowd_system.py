@@ -31,6 +31,7 @@ class CrowdSystem:
         self.last_chant_team = None
         self.has_real_spectators = False
         self.viewer_loyalty = {}
+        self.active_pledges = {}
         self.user_votes = {}
         self.active_bets = []
 
@@ -69,7 +70,16 @@ class CrowdSystem:
         cmd = parts[0].lower()
         alive_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator"]
 
-        if cmd == "!spawn" and len(parts) >= 2:
+        if cmd == "!pledge" and len(parts) >= 2:
+            team_color = parts[1].lower()
+            if not hasattr(self, 'active_pledges'):
+                self.active_pledges = {}
+            self.active_pledges[user] = team_color
+            self._add_viewer_loyalty(user, 5)
+            if hasattr(self.world, 'add_event'):
+                self.world.add_event("crowd_cheer", {"message": f"Viewer {self._get_user_display(user)} pledged loyalty to Team {team_color.capitalize()}!"})
+
+        elif cmd == "!spawn" and len(parts) >= 2:
             hazard_kind = parts[1]
             target = None
             if len(parts) >= 3:
@@ -79,14 +89,28 @@ class CrowdSystem:
                 except ValueError:
                     pass
             if not target and alive_balls:
-                target = random.choice(alive_balls)
+                # If pledged, try to spawn near enemy team
+                if hasattr(self, 'active_pledges') and user in getattr(self, 'active_pledges', {}):
+                    pledged_team = self.active_pledges[user]
+                    enemies = [b for b in alive_balls if str(getattr(b, "team", getattr(b, "ball_type", ""))).lower() != str(pledged_team).lower()]
+                    if enemies:
+                        target = random.choice(enemies)
+                    else:
+                        target = random.choice(alive_balls)
+                else:
+                    target = random.choice(alive_balls)
 
             if target and hasattr(self.world, 'add_event'):
-                self.world.add_event("spawn_hazard", {
+                event_data = {
                     "x": getattr(target, "x", 0),
                     "y": getattr(target, "y", 0),
                     "kind": hazard_kind
-                })
+                }
+                # Assign team affiliation to hazard based on pledge
+                if hasattr(self, 'active_pledges') and user in getattr(self, 'active_pledges', {}):
+                    event_data["owner_team"] = self.active_pledges[user]
+
+                self.world.add_event("spawn_hazard", event_data)
                 self._add_viewer_loyalty(user, 5)
                 self.world.add_event("crowd_throw", {"message": f"Viewer {self._get_user_display(user)} spawned a {hazard_kind}!"})
                 self.excitement_level += 5.0
@@ -205,15 +229,29 @@ class CrowdSystem:
                 except ValueError:
                     pass
             if not target and alive_balls:
-                target = random.choice(alive_balls)
+                # If pledged, try to drop near friendly team
+                if hasattr(self, 'active_pledges') and user in getattr(self, 'active_pledges', {}):
+                    pledged_team = self.active_pledges[user]
+                    friends = [b for b in alive_balls if str(getattr(b, "team", getattr(b, "ball_type", ""))).lower() == str(pledged_team).lower()]
+                    if friends:
+                        target = random.choice(friends)
+                    else:
+                        target = random.choice(alive_balls)
+                else:
+                    target = random.choice(alive_balls)
 
             if target and hasattr(self.world, 'add_event'):
-                self.world.add_event("spawn_booster", {
+                event_data = {
                     "x": getattr(target, "x", 0),
                     "y": getattr(target, "y", 0),
                     "kind": booster_kind,
                     "value": 30.0
-                })
+                }
+                # Assign team affiliation to booster based on pledge
+                if hasattr(self, 'active_pledges') and user in getattr(self, 'active_pledges', {}):
+                    event_data["team"] = self.active_pledges[user]
+
+                self.world.add_event("spawn_booster", event_data)
                 self._add_viewer_loyalty(user, 5)
                 self.world.add_event("crowd_throw", {"message": f"Viewer {self._get_user_display(user)} dropped a {booster_kind} booster!"})
                 self.excitement_level += 5.0
