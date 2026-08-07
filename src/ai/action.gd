@@ -7280,11 +7280,11 @@ func execute(strategy: String, delta: float):
                         var diff = post_speed - pre_speed
                         if typeof(self.ball) == TYPE_OBJECT:
                             self.ball.speed = pre_speed - diff
-                            if "slow_timer" in self.ball: self.ball.slow_timer = 5.0
-                            elif self.ball.has_method("set_meta"): self.ball.set_meta("slow_timer", 5.0)
+                            if "slow_timer" in self.ball: self.ball.slow_timer = 10.0
+                            elif self.ball.has_method("set_meta"): self.ball.set_meta("slow_timer", 10.0)
                         else:
                             self.ball["speed"] = pre_speed - diff
-                            self.ball["slow_timer"] = 5.0
+                            self.ball["slow_timer"] = 10.0
 
                     if post_damage > pre_damage:
                         var diff = post_damage - pre_damage
@@ -36437,11 +36437,11 @@ func _collect_booster(delta: float):
                         var diff = post_speed - pre_speed
                         if typeof(self.ball) == TYPE_OBJECT:
                             self.ball.speed = pre_speed - diff
-                            if "slow_timer" in self.ball: self.ball.slow_timer = 5.0
-                            elif self.ball.has_method("set_meta"): self.ball.set_meta("slow_timer", 5.0)
+                            if "slow_timer" in self.ball: self.ball.slow_timer = 10.0
+                            elif self.ball.has_method("set_meta"): self.ball.set_meta("slow_timer", 10.0)
                         else:
                             self.ball["speed"] = pre_speed - diff
-                            self.ball["slow_timer"] = 5.0
+                            self.ball["slow_timer"] = 10.0
 
                     if post_damage > pre_damage:
                         var diff = post_damage - pre_damage

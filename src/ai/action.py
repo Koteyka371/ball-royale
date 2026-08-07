@@ -3413,7 +3413,7 @@ class Action:
                         post_speed = getattr(self.ball, "speed", 100.0)
                         if post_speed > pre_stats["speed"]:
                             self.ball.speed = pre_stats["speed"] - (post_speed - pre_stats["speed"])
-                            self.ball.slow_timer = getattr(self.ball, "slow_timer", 0.0) + 5.0
+                            self.ball.slow_timer = getattr(self.ball, "slow_timer", 0.0) + 10.0
                         post_damage = getattr(self.ball, "damage", 10.0)
                         if post_damage > pre_stats["damage"]:
                             self.ball.damage = pre_stats["damage"] - (post_damage - pre_stats["damage"])
@@ -18627,7 +18627,7 @@ class Action:
                         post_speed = getattr(self.ball, "speed", 100.0)
                         if post_speed > pre_stats["speed"]:
                             self.ball.speed = pre_stats["speed"] - (post_speed - pre_stats["speed"])
-                            self.ball.slow_timer = getattr(self.ball, "slow_timer", 0.0) + 5.0
+                            self.ball.slow_timer = getattr(self.ball, "slow_timer", 0.0) + 10.0
                         post_damage = getattr(self.ball, "damage", 10.0)
                         if post_damage > pre_stats["damage"]:
                             self.ball.damage = pre_stats["damage"] - (post_damage - pre_stats["damage"])
