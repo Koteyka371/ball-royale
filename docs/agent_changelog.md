@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1858] Ice Rink Arena — *2026-08-07 00:50:44 UTC*
+
+Frictionless arena where balls keep their momentum longer.
+
+---
+
 ## [idea-1857] Shrinking Magnetic Field Mode — *2026-08-07 00:33:42 UTC*
 
 A battle royale variation where instead of a standard safe zone, a powerful magnetic field slowly shrinks towards the center. Balls outside the field are pulled violently into walls or hazards, while balls inside must fight for the remaining stable space.
