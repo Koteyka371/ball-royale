@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1871] Wall Reinforcement Mode — *2026-08-07 21:29:16 UTC*
+
+A game mode where players can actively rebuild and strengthen arena boundaries by collecting resources, delaying the hazard zone expansion and creating strategic defensive bunkers.
+
+---
+
 ## [idea-1830] Vampiric Fog Weather Event — *2026-08-07 19:08:29 UTC*
 
 Periodically, a dense crimson fog rolls into the arena. While in the fog, players continuously lose a small amount of health. However, dealing damage to other players inside the fog restores health equivalent to double the damage dealt. This forces aggressive play during the weather event and changes target prioritization dynamically.
