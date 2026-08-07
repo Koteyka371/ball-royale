@@ -24,6 +24,7 @@ class BountyHunter:
         self.first_hit_taken = False
         self.current_action = "idle"
         self.skill_timer = 0.0
+        self.out_of_combat_timer = 0.0
         self.personality = Personality("relentless")
 
     def get_hp_percent(self) -> float:

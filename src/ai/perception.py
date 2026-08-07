@@ -247,8 +247,10 @@ class Perception:
                 if getattr(e, "ball_type", "") == "sand_elemental" and hasattr(self.world, "arena") and getattr(self.world.arena, "is_sandstorming", False):
                     is_sand_cloaked = True
 
+                e_is_semi_invisible_bh = getattr(e, "ball_type", getattr(e.__class__, "BALL_TYPE", "")) == "bounty_hunter" and getattr(e, "out_of_combat_timer", 0.0) >= 5.0
+
                 is_sk = getattr(e, "is_sun_kissed", False)
-                if (e_has_stealth or e_has_shadow or is_sand_cloaked or e_has_stealth_booster or e_has_ghost_mode_booster or e_has_invisibility) and not is_sk:
+                if (e_has_stealth or e_has_shadow or is_sand_cloaked or e_has_stealth_booster or e_has_ghost_mode_booster or e_has_invisibility or e_is_semi_invisible_bh) and not is_sk:
                     dist = math.sqrt((ex - bx_curr)**2 + (ey - by_curr)**2)
 
                     if has_thermal_vision:
@@ -259,6 +261,8 @@ class Perception:
                         if e_has_invisibility:
                             continue
                         elif (e_has_stealth_booster or e_has_ghost_mode_booster) and dist > 15.0:
+                            continue
+                        elif e_is_semi_invisible_bh and dist > 40.0:
                             continue
                         elif is_sand_cloaked and dist > 40.0:
                             continue

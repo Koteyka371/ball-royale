@@ -298,13 +298,19 @@ func scan() -> Dictionary:
             if "ball_type" in e and e.ball_type == "sand_elemental" and self.world != null and "arena" in self.world and "is_sandstorming" in self.world.arena and self.world.arena.is_sandstorming:
                 is_sand_cloaked = true
 
+            var e_is_semi_invisible_bh = false
+            if "ball_type" in e and e.ball_type == "bounty_hunter":
+                var out_timer = e.get("out_of_combat_timer", 0.0) if typeof(e) == TYPE_DICTIONARY else e.get("out_of_combat_timer") if "out_of_combat_timer" in e else 0.0
+                if float(out_timer) >= 5.0:
+                    e_is_semi_invisible_bh = true
+
             var is_e_sk = false
             if typeof(e) == TYPE_DICTIONARY:
                 is_e_sk = e.get("is_sun_kissed", false)
             else:
                 is_e_sk = e.get("is_sun_kissed") if "is_sun_kissed" in e else (e.get_meta("is_sun_kissed") if e.has_method("has_meta") and e.has_meta("is_sun_kissed") else false)
 
-            if (e_has_stealth or e_has_shadow or is_sand_cloaked or e_has_stealth_booster or e_has_ghost_mode_booster or e_has_invisibility) and not is_e_sk:
+            if (e_has_stealth or e_has_shadow or is_sand_cloaked or e_has_stealth_booster or e_has_ghost_mode_booster or e_has_invisibility or e_is_semi_invisible_bh) and not is_e_sk:
                 var dist = sqrt(pow(e.x - bx_curr, 2) + pow(e.y - by_curr, 2))
 
                 if ball_has_thermal_vision:
@@ -314,6 +320,8 @@ func scan() -> Dictionary:
                     if e_has_invisibility:
                         continue
                     elif (e_has_stealth_booster or e_has_ghost_mode_booster) and dist > 15.0:
+                        continue
+                    elif e_is_semi_invisible_bh and dist > 40.0:
                         continue
                     elif is_sand_cloaked and dist > 40.0:
                         continue

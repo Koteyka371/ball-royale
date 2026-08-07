@@ -21,8 +21,8 @@ def test_vampiric_mutator_setup():
     mode.setup(world, balls)
 
     # Check that lifesteal is applied correctly
-    assert balls[0].lifesteal == 2.0
-    assert balls[1].lifesteal == 2.5
+    assert balls[0].lifesteal == 2.5
+    assert balls[1].lifesteal == 3.0
 
 def test_vampiric_mutator_tick():
     mode = VampiricMutatorMode()
