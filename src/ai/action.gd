@@ -9175,6 +9175,39 @@ func execute(strategy: String, delta: float):
         self.ball["nemesis_reveal_timer"] = n_reveal
 
 
+
+    var is_echo_recording = self.ball.get("is_echo_recording", false) if typeof(self.ball) == TYPE_DICTIONARY else false
+    if typeof(self.ball) != TYPE_DICTIONARY:
+        if self.ball.has_method("has_meta") and self.ball.has_meta("is_echo_recording"):
+            is_echo_recording = self.ball.get_meta("is_echo_recording")
+        elif "is_echo_recording" in self.ball:
+            is_echo_recording = self.ball.is_echo_recording
+
+    var echo_timer = self.ball.get("echo_rewind_timer", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else 0.0
+    if typeof(self.ball) != TYPE_DICTIONARY:
+        if self.ball.has_method("has_meta") and self.ball.has_meta("echo_rewind_timer"):
+            echo_timer = self.ball.get_meta("echo_rewind_timer")
+        elif "echo_rewind_timer" in self.ball:
+            echo_timer = self.ball.echo_rewind_timer
+
+    if is_echo_recording and echo_timer > 0.0:
+        echo_timer -= delta
+        if echo_timer <= 0.0:
+            is_echo_recording = false
+            echo_timer = 0.0
+
+        if typeof(self.ball) == TYPE_DICTIONARY:
+            self.ball["is_echo_recording"] = is_echo_recording
+            self.ball["echo_rewind_timer"] = echo_timer
+        else:
+            if self.ball.has_method("set_meta"):
+                self.ball.set_meta("is_echo_recording", is_echo_recording)
+                self.ball.set_meta("echo_rewind_timer", echo_timer)
+            if "is_echo_recording" in self.ball:
+                self.ball.is_echo_recording = is_echo_recording
+            if "echo_rewind_timer" in self.ball:
+                self.ball.echo_rewind_timer = echo_timer
+
     var srt = 0.0
     if typeof(self.ball) == TYPE_DICTIONARY:
         srt = self.ball.get("survival_rewind_timer", 0.0)
@@ -32793,7 +32826,7 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'survival_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_dash', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone', 'deploy_distract_drone', 'deploy_fake_balls', 'decoy_swarm', 'hire_mercenary', 'hazard_surfing', 'grapple_hook', 'instant_swap']
+                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'survival_rewind', 'echo_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_dash', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone', 'deploy_distract_drone', 'deploy_fake_balls', 'decoy_swarm', 'hire_mercenary', 'hazard_surfing', 'grapple_hook', 'instant_swap']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -37911,6 +37944,69 @@ func _use_skill():
                             "y": self.ball.y,
                             "hp": hp
                         }
+        elif skill_name == "echo_rewind":
+            var is_recording = my_ball.get("is_echo_recording", false)
+            if typeof(my_ball) != TYPE_DICTIONARY:
+                if my_ball.has_method("has_meta") and my_ball.has_meta("is_echo_recording"):
+                    is_recording = my_ball.get_meta("is_echo_recording")
+                elif "is_echo_recording" in my_ball:
+                    is_recording = my_ball.is_echo_recording
+
+            if is_recording:
+                var state = my_ball.get("echo_rewind_state", {})
+                if typeof(my_ball) != TYPE_DICTIONARY:
+                    if my_ball.has_method("has_meta") and my_ball.has_meta("echo_rewind_state"):
+                        state = my_ball.get_meta("echo_rewind_state")
+                    elif "echo_rewind_state" in my_ball:
+                        state = my_ball.echo_rewind_state
+
+                if typeof(state) == TYPE_DICTIONARY and state.size() > 0:
+                    if typeof(my_ball) == TYPE_DICTIONARY:
+                        my_ball["x"] = state.get("x", my_ball.get("x", 0.0))
+                        my_ball["y"] = state.get("y", my_ball.get("y", 0.0))
+                        var past_hp = state.get("hp", my_ball.get("max_hp", 100.0))
+                        if past_hp > my_ball.get("hp", 0.0):
+                            my_ball["hp"] = past_hp
+                        my_ball["is_echo_recording"] = false
+                        my_ball["stun_timer"] = 0.0
+                        my_ball["silence_timer"] = 0.0
+                        my_ball["is_stunned"] = false
+                    else:
+                        my_ball.x = state.get("x", my_ball.x)
+                        my_ball.y = state.get("y", my_ball.y)
+                        if "hp" in my_ball:
+                            var past_hp = state.get("hp", my_ball.get("max_hp", 100.0))
+                            if past_hp > my_ball.get("hp", 0.0):
+                                my_ball.hp = past_hp
+
+                        if my_ball.has_method("set_meta"):
+                            my_ball.set_meta("is_echo_recording", false)
+                        if "is_echo_recording" in my_ball:
+                            my_ball.is_echo_recording = false
+
+                        if "stun_timer" in my_ball: my_ball.stun_timer = 0.0
+                        if "silence_timer" in my_ball: my_ball.silence_timer = 0.0
+                        if "is_stunned" in my_ball: my_ball.is_stunned = false
+                        if "poison_timer" in my_ball: my_ball.poison_timer = 0.0
+            else:
+                var state = {
+                    "x": my_ball.get("x", 0.0) if typeof(my_ball) == TYPE_DICTIONARY else my_ball.x,
+                    "y": my_ball.get("y", 0.0) if typeof(my_ball) == TYPE_DICTIONARY else my_ball.y,
+                    "hp": my_ball.get("hp", 100.0) if typeof(my_ball) == TYPE_DICTIONARY else my_ball.get("hp", 100.0)
+                }
+                if typeof(my_ball) == TYPE_DICTIONARY:
+                    my_ball["is_echo_recording"] = true
+                    my_ball["echo_rewind_timer"] = 5.0
+                    my_ball["echo_rewind_state"] = state
+                else:
+                    if my_ball.has_method("set_meta"):
+                        my_ball.set_meta("is_echo_recording", true)
+                        my_ball.set_meta("echo_rewind_timer", 5.0)
+                        my_ball.set_meta("echo_rewind_state", state)
+
+                    if "is_echo_recording" in my_ball: my_ball.is_echo_recording = true
+                    if "echo_rewind_timer" in my_ball: my_ball.echo_rewind_timer = 5.0
+                    if "echo_rewind_state" in my_ball: my_ball.echo_rewind_state = state
         elif skill_name == "time_rewind_self":
             var history = []
             if typeof(my_ball) == TYPE_DICTIONARY:
