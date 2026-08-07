@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1838] Time Loop Skill — *2026-08-07 08:25:52 UTC*
+
+A new skill that records the player's position and health for 5 seconds. Activating the skill a second time rewinds the player to their recorded state.
+
+---
+
 ## [idea-1841] Cursed Buffs — *2026-08-07 06:00:23 UTC*
 
 Boosters debuff you but last longer.
