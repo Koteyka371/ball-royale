@@ -19,8 +19,9 @@ class MockBooster:
         self.active = True
 
 class MockArena:
-    def __init__(self, hazards=None):
+    def __init__(self, hazards=None, items=None):
         self.hazards = hazards if hazards else []
+        self.items = items if items else []
 
 class MockWorld:
     def __init__(self, balls=None, boosters=None, arena=None):
@@ -54,8 +55,11 @@ def test_magnetic_field_timer_effect():
     enemy = MockEntity(2, 50, 0, "enemy")
     ally = MockEntity(3, -50, 0, "player")
     booster = MockBooster(0, 50, "health_booster")
+    item = MockEntity(4, 0, 50, "item")
+    item.kind = "coin"
 
-    world = MockWorld([ball, enemy, ally], [booster])
+    arena = MockArena(items=[item])
+    world = MockWorld([ball, enemy, ally], [booster], arena)
     action = Action(ball, world)
 
     action.execute("idle", 0.1)
@@ -73,3 +77,7 @@ def test_magnetic_field_timer_effect():
     # Booster should be pulled (closer to ball)
     assert booster.x == 0
     assert booster.y < 50
+
+    # Item should be pulled (closer to ball)
+    assert item.x == 0
+    assert item.y < 50
