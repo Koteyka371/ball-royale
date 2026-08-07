@@ -50916,3 +50916,36 @@ class OrbitalBlackHoleEventMode(GameMode):
                             proj.vy += (dy / dist) * self.projectile_pull * delta
 
 GAME_MODES["orbital_black_hole_event"] = OrbitalBlackHoleEventMode()
+
+class PeriodicGhostMutatorMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Periodic Ghost"
+        self.description = "Players periodically become ghosts and can pass through walls."
+        self.mutators_active = True
+        self.mutators = []
+        self.timer = 0.0
+        self.duration = 10.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.timer = 0.0
+        self.mutators = []
+
+    def tick(self, world, balls, delta):
+        super().tick(world, balls, delta)
+        self.timer += delta
+
+        if self.timer >= self.duration:
+            self.timer = 0.0
+            if hasattr(world, "add_event"):
+                world.add_event("ghost_mode", {"message": "Ghost mode activated!"})
+
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                    b.intangible = True
+                    b.intangible_timer = 3.0
+                    b.ghost_mode_active = True
+                    b.ghost_mode_timer = 3.0
+
+GAME_MODES['periodic_ghost_mutator'] = PeriodicGhostMutatorMode()
