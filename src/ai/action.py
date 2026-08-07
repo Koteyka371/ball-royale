@@ -12973,6 +12973,9 @@ class Action:
                                     if not ks_active:
                                         self.ball.speed_boost_timer = getattr(self.ball, "speed_boost_timer", 0.0) + 3.0
 
+                                self.ball.intangible = True
+                                self.ball.intangible_timer = max(getattr(self.ball, "intangible_timer", 0.0), 1.5)
+
                                 # Time Dilation Bumper Logic
                                 if hazard.kind == "time_dilation_bumper":
                                     current_tick = getattr(self.world, "tick", 0)

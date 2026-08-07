@@ -24991,6 +24991,31 @@ func execute(strategy: String, delta: float):
                             elif "bumper_combo" in self.ball:
                                 bumper_combo = self.ball.bumper_combo
 
+                            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                if "intangible" in self.ball: self.ball.intangible = true
+                                else: self.ball.set_meta("intangible", true)
+                            elif "intangible" in self.ball:
+                                self.ball.intangible = true
+                            elif typeof(self.ball) == TYPE_DICTIONARY:
+                                self.ball["intangible"] = true
+
+                            var cur_int_timer = 0.0
+                            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("intangible_timer"):
+                                cur_int_timer = self.ball.get_meta("intangible_timer")
+                            elif "intangible_timer" in self.ball:
+                                cur_int_timer = self.ball.intangible_timer
+                            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("intangible_timer"):
+                                cur_int_timer = self.ball["intangible_timer"]
+
+                            var new_int_timer = max(cur_int_timer, 1.5)
+                            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                if "intangible_timer" in self.ball: self.ball.intangible_timer = new_int_timer
+                                else: self.ball.set_meta("intangible_timer", new_int_timer)
+                            elif "intangible_timer" in self.ball:
+                                self.ball.intangible_timer = new_int_timer
+                            elif typeof(self.ball) == TYPE_DICTIONARY:
+                                self.ball["intangible_timer"] = new_int_timer
+
                             # Time Dilation Bumper Logic
                             if hazard.kind == "time_dilation_bumper":
                                 var current_tick = 0
