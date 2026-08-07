@@ -58718,6 +58718,12 @@ class DenseRegionMode extends GameMode:
 				alive = b.get("alive")
 
 			if not alive:
+				if typeof(b) == TYPE_DICTIONARY and b.has("_orig_friction_multiplier"):
+					b["friction_multiplier"] = b["_orig_friction_multiplier"]
+					b.erase("_orig_friction_multiplier")
+				elif typeof(b) == TYPE_OBJECT and b.has_meta("_orig_friction_multiplier"):
+					b.set("friction_multiplier", b.get_meta("_orig_friction_multiplier"))
+					b.remove_meta("_orig_friction_multiplier")
 				continue
 
 			var bx = 0.0
