@@ -36179,6 +36179,9 @@ class DenseRegionMode(GameMode):
 
         for b in balls:
             if not getattr(b, "alive", True):
+                if hasattr(b, "_orig_friction_multiplier"):
+                    b.friction_multiplier = b._orig_friction_multiplier
+                    delattr(b, "_orig_friction_multiplier")
                 continue
 
             dx = cx - b.x

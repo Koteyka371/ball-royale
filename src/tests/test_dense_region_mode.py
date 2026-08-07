@@ -72,3 +72,22 @@ def test_dense_region_mode():
     assert b_in.vx == b_in_vx_before
     # its skill timer should not have increased this tick
     assert abs(b_in.skill_timer - 2.032) < 0.001
+
+def test_dense_region_death_restore():
+    mode = DenseRegionMode()
+    world = MockWorld()
+
+    # Ball inside the region
+    b_in = MockBall(1, 400.0, 500.0)
+    balls = [b_in]
+
+    # First tick applies the debuff
+    mode.tick(world, balls, delta=0.016)
+    assert b_in.friction_multiplier == 3.0
+
+    # Ball dies while still inside the region
+    b_in.alive = False
+
+    # Second tick should clear the debuff even though it's inside the region and dead
+    mode.tick(world, balls, delta=0.016)
+    assert b_in.friction_multiplier == 1.0
