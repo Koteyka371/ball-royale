@@ -45126,6 +45126,38 @@ class SacrificeAltarMode extends GameMode:
 
 				var dist_sq = (bx - ax) * (bx - ax) + (by - ay) * (by - ay)
 				if dist_sq <= (radius + b_radius) * (radius + b_radius):
+					var b_team = "unknown"
+					if b_is_dict:
+						b_team = b.get("team", b.get("ball_type", "unknown"))
+					else:
+						if "team" in b: b_team = b.team
+						elif "ball_type" in b: b_team = b.ball_type
+
+					var inv = []
+					if typeof(b) == TYPE_DICTIONARY and b.has("inventory"):
+						inv = b.inventory
+					elif typeof(b) != TYPE_DICTIONARY and b.has_method("get_meta") and b.has_meta("inventory"):
+						inv = b.get_meta("inventory")
+
+					if typeof(inv) == TYPE_ARRAY and inv.has("negative_modifier"):
+						inv.erase("negative_modifier")
+						altar["sabotaged_by"] = b_team
+						if world != null and typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
+							world.add_event("altar_sabotaged", {"team": b_team})
+
+					var saboteur = altar.get("sabotaged_by", null)
+					if saboteur != null and saboteur != b_team:
+						var cur_hp = 100.0
+						if typeof(b) == TYPE_DICTIONARY and b.has("hp"):
+							cur_hp = b.hp
+						elif typeof(b) != TYPE_DICTIONARY and "hp" in b:
+							cur_hp = b.hp
+						cur_hp = max(0.0, cur_hp - 15.0 * delta)
+						if typeof(b) == TYPE_DICTIONARY and b.has("hp"):
+							b.hp = cur_hp
+						elif typeof(b) != TYPE_DICTIONARY and "hp" in b:
+							b.hp = cur_hp
+
 					# Near altar
 					var max_hp = b.get("max_hp", 100.0) if b_is_dict else (b.max_hp if "max_hp" in b else 100.0)
 					if max_hp > 30.0:
@@ -50487,6 +50519,31 @@ class TimeRewindAltarMode extends GameMode:
 					else:
 						teams_present[team] = 1
 
+					var inv = []
+					if typeof(b) == TYPE_DICTIONARY and b.has("inventory"):
+						inv = b.inventory
+					elif typeof(b) != TYPE_DICTIONARY and b.has_method("get_meta") and b.has_meta("inventory"):
+						inv = b.get_meta("inventory")
+
+					if typeof(inv) == TYPE_ARRAY and inv.has("negative_modifier"):
+						inv.erase("negative_modifier")
+						self.altar["sabotaged_by"] = team
+						if world != null and typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
+							world.add_event("altar_sabotaged", {"team": team})
+
+					var saboteur = self.altar.get("sabotaged_by", null)
+					if saboteur != null and saboteur != team:
+						var cur_hp = 100.0
+						if typeof(b) == TYPE_DICTIONARY and b.has("hp"):
+							cur_hp = b.hp
+						elif typeof(b) != TYPE_DICTIONARY and "hp" in b:
+							cur_hp = b.hp
+						cur_hp = max(0.0, cur_hp - 15.0 * delta)
+						if typeof(b) == TYPE_DICTIONARY and b.has("hp"):
+							b.hp = cur_hp
+						elif typeof(b) != TYPE_DICTIONARY and "hp" in b:
+							b.hp = cur_hp
+
 		if teams_present.size() > 0:
 			var max_team = null
 			var max_count = -1
@@ -51734,6 +51791,44 @@ class CurrencyBurdenMode extends GameMode:
 				b.set("damage", new_damage)
 				b.set("radius", new_radius)
 				b.set_meta("currency", bcurrency)
+
+			if "altars" in world:
+				for altar in world.altars:
+					var dx = bx - float(altar["x"])
+					var dy = by - float(altar["y"])
+					var dist = sqrt(dx*dx + dy*dy)
+					if dist <= bradius + float(altar["radius"]):
+						var b_team = "unknown"
+						if typeof(b) == TYPE_DICTIONARY:
+							b_team = b.get("team", b.get("ball_type", "unknown"))
+						else:
+							if "team" in b: b_team = b.team
+							elif "ball_type" in b: b_team = b.ball_type
+
+						var inv = []
+						if typeof(b) == TYPE_DICTIONARY and b.has("inventory"):
+							inv = b.inventory
+						elif typeof(b) != TYPE_DICTIONARY and b.has_method("get_meta") and b.has_meta("inventory"):
+							inv = b.get_meta("inventory")
+
+						if typeof(inv) == TYPE_ARRAY and inv.has("negative_modifier"):
+							inv.erase("negative_modifier")
+							altar["sabotaged_by"] = b_team
+							if world != null and typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
+								world.add_event("altar_sabotaged", {"team": b_team})
+
+						var saboteur = altar.get("sabotaged_by", null)
+						if saboteur != null and saboteur != b_team:
+							var cur_hp = 100.0
+							if typeof(b) == TYPE_DICTIONARY and b.has("hp"):
+								cur_hp = b.hp
+							elif typeof(b) != TYPE_DICTIONARY and "hp" in b:
+								cur_hp = b.hp
+							cur_hp = max(0.0, cur_hp - 15.0 * delta)
+							if typeof(b) == TYPE_DICTIONARY and b.has("hp"):
+								b.hp = cur_hp
+							elif typeof(b) != TYPE_DICTIONARY and "hp" in b:
+								b.hp = cur_hp
 
 			# Deposit at altars
 			if bcurrency > 0 and "altars" in world:
@@ -70546,6 +70641,30 @@ class WeatherCombinationsMode extends GameMode:
                             teams_present[b_team] += 1
                         else:
                             teams_present[b_team] = 1
+						var inv = []
+						if typeof(b) == TYPE_DICTIONARY and b.has("inventory"):
+							inv = b.inventory
+						elif typeof(b) != TYPE_DICTIONARY and b.has_method("get_meta") and b.has_meta("inventory"):
+							inv = b.get_meta("inventory")
+
+						if typeof(inv) == TYPE_ARRAY and inv.has("negative_modifier"):
+							inv.erase("negative_modifier")
+							altar["sabotaged_by"] = b_team
+							if world != null and typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
+								world.add_event("altar_sabotaged", {"team": b_team})
+
+						var saboteur = altar.get("sabotaged_by", null)
+						if saboteur != null and saboteur != b_team:
+							var cur_hp = 100.0
+							if typeof(b) == TYPE_DICTIONARY and b.has("hp"):
+								cur_hp = b.hp
+							elif typeof(b) != TYPE_DICTIONARY and "hp" in b:
+								cur_hp = b.hp
+							cur_hp = max(0.0, cur_hp - 15.0 * delta)
+							if typeof(b) == TYPE_DICTIONARY and b.has("hp"):
+								b.hp = cur_hp
+							elif typeof(b) != TYPE_DICTIONARY and "hp" in b:
+								b.hp = cur_hp
 
             if teams_present.size() > 0:
                 var max_team = null
