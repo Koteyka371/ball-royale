@@ -59428,7 +59428,110 @@ class CursedAltarMode extends GameMode:
 								else: bid = b.get("id", null)
 								world.add_event("altar_curse", {"ball_id": bid})
 
+
+class CrumblingArenaMode extends GameMode:
+	var last_hp = {}
+
+	func _init():
+		super._init()
+		name = "Crumbling Arena"
+		description = "Taking damage near walls randomly alters the shape of the boundary, creating dynamic jagged paths and trapping mechanics as the walls deform instead of just breaking."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		last_hp.clear()
+		for b in balls:
+			if typeof(b) == TYPE_OBJECT and "id" in b and "hp" in b:
+				last_hp[b.id] = b.hp
+			elif typeof(b) == TYPE_DICTIONARY and b.has("id") and b.has("hp"):
+				last_hp[b["id"]] = b["hp"]
+
+		if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+			if not world.arena.has_meta("boundary_offsets"):
+				world.arena.set_meta("boundary_offsets", {"top": 0.0, "bottom": 0.0, "left": 0.0, "right": 0.0})
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if typeof(world) != TYPE_OBJECT or not "arena" in world or world.arena == null:
+			return
+
+		var offsets = {"top": 0.0, "bottom": 0.0, "left": 0.0, "right": 0.0}
+		if world.arena.has_meta("boundary_offsets"):
+			offsets = world.arena.get_meta("boundary_offsets")
+
+		var w = 1000.0
+		if "width" in world: w = world.width
+		var h = 1000.0
+		if "height" in world: h = world.height
+
+		for b in balls:
+			var b_alive = true
+			var b_id = -1
+			var b_hp = 100.0
+			var b_x = 0.0
+			var b_y = 0.0
+
+			if typeof(b) == TYPE_OBJECT:
+				if "alive" in b: b_alive = b.alive
+				if "id" in b: b_id = b.id
+				if "hp" in b: b_hp = b.hp
+				if "x" in b: b_x = b.x
+				if "y" in b: b_y = b.y
+			elif typeof(b) == TYPE_DICTIONARY:
+				if b.has("alive"): b_alive = b["alive"]
+				if b.has("id"): b_id = b["id"]
+				if b.has("hp"): b_hp = b["hp"]
+				if b.has("x"): b_x = b["x"]
+				if b.has("y"): b_y = b["y"]
+
+			if not b_alive or b_id == -1:
+				continue
+
+			var current_hp = b_hp
+			var b_last_hp = current_hp
+			if last_hp.has(b_id):
+				b_last_hp = last_hp[b_id]
+
+			if current_hp < b_last_hp:
+				# Took damage
+				var margin = 200.0
+				var top_bound = offsets["top"]
+				var bottom_bound = h - offsets["bottom"]
+				var left_bound = offsets["left"]
+				var right_bound = w - offsets["right"]
+
+				var wall_hit = ""
+				if b_y <= top_bound + margin:
+					wall_hit = "top"
+				elif b_y >= bottom_bound - margin:
+					wall_hit = "bottom"
+				elif b_x <= left_bound + margin:
+					wall_hit = "left"
+				elif b_x >= right_bound - margin:
+					wall_hit = "right"
+
+				if wall_hit != "":
+					var deformation = randf_range(30.0, 70.0)
+					offsets[wall_hit] += deformation
+
+					if "hazards" in world.arena:
+						var tx = b_x
+						var ty = b_y
+
+						var h_id = 90000 + world.arena.hazards.size() + (randi() % 1000)
+						var trap = null
+
+						if ResourceLoader.exists("res://src/arena/procedural_arena.gd"):
+							var pa = load("res://src/arena/procedural_arena.gd")
+							trap = pa.Hazard.new(h_id, tx, ty, randf_range(25.0, 50.0), "spikes", 15.0)
+							trap.set_meta("duration", 15.0)
+							world.arena.hazards.append(trap)
+
+			last_hp[b_id] = current_hp
+
+		world.arena.set_meta("boundary_offsets", offsets)
+
 var GAME_MODES = {
+	"crumbling_arena": CrumblingArenaMode.new(),
 	"cursed_altar": CursedAltarMode.new(),
 	"healing_rain": HealingRainMode.new(),
 	"color_swap_team": ColorSwapTeamMode.new(),
