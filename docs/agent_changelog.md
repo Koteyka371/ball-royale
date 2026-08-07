@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1875] Portal Linking Mechanic — *2026-08-07 09:05:22 UTC*
+
+Portals don't just teleport randomly. Instead, two portals will occasionally link together, letting balls visually track where they will pop out, creating unique strategies and trick shots.
+
+---
+
 ## [idea-1870] Collapsing Geometry Arena — *2026-08-07 09:05:17 UTC*
 
 An arena map where taking damage near walls randomly alters the shape of the boundary, creating dynamic jagged paths and trapping mechanics as the walls deform instead of just breaking.
