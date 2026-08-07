@@ -57,3 +57,35 @@ def test_bounty_tracker_drone_tick():
 
     assert getattr(drone, "hp", 100.0) < 100.0
     assert getattr(drone, "duration", 10) == 0.0
+
+def test_bounty_tracker_drone_stick_and_debuff():
+    world = MockWorld()
+    hunter = MockEntity(id=1, x=100.0, y=100.0, alive=True, ball_type="bounty_hunter")
+    target = MockEntity(id=2, x=200.0, y=100.0, alive=True, ball_type="normal", is_bounty_target=True, radius=15.0, defense_multiplier=1.0)
+    world.balls = [hunter, target]
+
+    drone = MockEntity(id=10, x=190.0, y=100.0, radius=8.0, kind="bounty_tracker_drone", damage=0.0, owner_id=1, duration=45.0, hp=100.0)
+    world.arena.hazards = [drone]
+
+    mode = GameMode()
+
+    # Tick 1: drone attaches and debuffs target
+    mode.tick(world, world.balls, 0.5)
+
+    assert getattr(drone, "attached", False) == True
+    assert drone.x == target.x
+    assert drone.y == target.y
+    assert target.defense_multiplier < 1.0
+    assert any(e["type"] == "bounty_vision_shared" for e in world.events)
+
+    # Target moves
+    target.x = 300.0
+
+    # Tick 2: drone follows target
+    mode.tick(world, world.balls, 0.5)
+    assert drone.x == target.x
+
+    # Tick 3: drone expires, target regains defense
+    drone.duration = 0.0
+    mode.tick(world, world.balls, 0.5)
+    assert target.defense_multiplier == 1.0

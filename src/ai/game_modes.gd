@@ -3843,33 +3843,97 @@ class GameMode:
 						var dx = nx - dx_val
 						var dy = ny - dy_val
 						var dist = sqrt(dx * dx + dy * dy)
-						if dist > 0.0001:
-							var speed = 100.0 * delta
-							var new_x = dx_val + (dx / dist) * speed
-							var new_y = dy_val + (dy / dist) * speed
-							if "x" in d: d.x = new_x
-							elif typeof(d) == TYPE_OBJECT and d.has_method("set_meta"): d.set_meta("x", new_x)
-							elif typeof(d) == TYPE_DICTIONARY: d["x"] = new_x
 
-							if "y" in d: d.y = new_y
-							elif typeof(d) == TYPE_OBJECT and d.has_method("set_meta"): d.set_meta("y", new_y)
-							elif typeof(d) == TYPE_DICTIONARY: d["y"] = new_y
+						var dr_val = 8.0
+						if "radius" in d: dr_val = d.radius
+						elif typeof(d) == TYPE_OBJECT and d.has_method("get") and d.get("radius") != null: dr_val = d.get("radius")
+						elif typeof(d) == TYPE_DICTIONARY and d.has("radius"): dr_val = d["radius"]
 
-							var ping = 0.0
-							if "ping_timer" in d: ping = d.ping_timer
-							elif typeof(d) == TYPE_OBJECT and d.has_method("get_meta") and d.has_meta("ping_timer"): ping = d.get_meta("ping_timer")
-							elif typeof(d) == TYPE_DICTIONARY and d.has("ping_timer"): ping = d["ping_timer"]
+						var tr = 15.0
+						if "radius" in target: tr = target.radius
+						elif typeof(target) == TYPE_OBJECT and target.has_method("get") and target.get("radius") != null: tr = target.get("radius")
+						elif typeof(target) == TYPE_DICTIONARY and target.has("radius"): tr = target["radius"]
 
-							ping += delta
-							if ping >= 1.5:
-								ping = 0.0
-								if "events" in world:
-									world.events.append({"type": "bounty_compass", "data": {"target_x": nx, "target_y": ny, "owner_id": d_owner_id}})
-									world.events.append({"type": "visual_effect", "data": {"type": "line", "x": new_x, "y": new_y, "tx": nx, "ty": ny, "color": "orange"}})
+						var is_attached = false
+						if "attached" in d: is_attached = d.attached
+						elif typeof(d) == TYPE_OBJECT and d.has_method("get_meta") and d.has_meta("attached"): is_attached = d.get_meta("attached")
+						elif typeof(d) == TYPE_DICTIONARY and d.has("attached"): is_attached = d["attached"]
 
-							if "ping_timer" in d: d.ping_timer = ping
-							elif typeof(d) == TYPE_OBJECT and d.has_method("set_meta"): d.set_meta("ping_timer", ping)
-							elif typeof(d) == TYPE_DICTIONARY: d["ping_timer"] = ping
+						if is_attached or dist < tr + dr_val:
+							if not is_attached:
+								if "attached" in d: d.attached = true
+								elif typeof(d) == TYPE_OBJECT and d.has_method("set_meta"): d.set_meta("attached", true)
+								elif typeof(d) == TYPE_DICTIONARY: d["attached"] = true
+
+								var target_id = null
+								if "id" in target: target_id = target.id
+								elif typeof(target) == TYPE_OBJECT and target.has_method("get") and target.get("id") != null: target_id = target.get("id")
+								elif typeof(target) == TYPE_DICTIONARY and target.has("id"): target_id = target["id"]
+
+								if "attached_target_id" in d: d.attached_target_id = target_id
+								elif typeof(d) == TYPE_OBJECT and d.has_method("set_meta"): d.set_meta("attached_target_id", target_id)
+								elif typeof(d) == TYPE_DICTIONARY: d["attached_target_id"] = target_id
+
+								var def_mult = 1.0
+								if "defense_multiplier" in target: def_mult = target.defense_multiplier
+								elif typeof(target) == TYPE_OBJECT and target.has_method("get") and target.get("defense_multiplier") != null: def_mult = target.get("defense_multiplier")
+								elif typeof(target) == TYPE_DICTIONARY and target.has("defense_multiplier"): def_mult = target["defense_multiplier"]
+
+								def_mult = max(0.1, def_mult - 0.2)
+
+								if "defense_multiplier" in target: target.defense_multiplier = def_mult
+								elif typeof(target) == TYPE_OBJECT and target.has_method("set_meta"): target.set_meta("defense_multiplier", def_mult)
+								elif typeof(target) == TYPE_DICTIONARY: target["defense_multiplier"] = def_mult
+
+								if "debuffed_target" in d: d.debuffed_target = target
+								elif typeof(d) == TYPE_OBJECT and d.has_method("set_meta"): d.set_meta("debuffed_target", target)
+								elif typeof(d) == TYPE_DICTIONARY: d["debuffed_target"] = target
+
+							if "x" in d: d.x = nx
+							elif typeof(d) == TYPE_OBJECT and d.has_method("set_meta"): d.set_meta("x", nx)
+							elif typeof(d) == TYPE_DICTIONARY: d["x"] = nx
+
+							if "y" in d: d.y = ny
+							elif typeof(d) == TYPE_OBJECT and d.has_method("set_meta"): d.set_meta("y", ny)
+							elif typeof(d) == TYPE_DICTIONARY: d["y"] = ny
+
+							var tid = null
+							if "id" in target: tid = target.id
+							elif typeof(target) == TYPE_OBJECT and target.has_method("get") and target.get("id") != null: tid = target.get("id")
+							elif typeof(target) == TYPE_DICTIONARY and target.has("id"): tid = target["id"]
+
+							if typeof(world) == TYPE_DICTIONARY and world.has("events"):
+								world["events"].append({"type": "bounty_vision_shared", "data": {"target_id": tid, "owner_id": d_owner_id}})
+							elif typeof(world) == TYPE_OBJECT and "events" in world:
+								world.events.append({"type": "bounty_vision_shared", "data": {"target_id": tid, "owner_id": d_owner_id}})
+						else:
+							if dist > 0.0001:
+								var speed = 100.0 * delta
+								var new_x = dx_val + (dx / dist) * speed
+								var new_y = dy_val + (dy / dist) * speed
+								if "x" in d: d.x = new_x
+								elif typeof(d) == TYPE_OBJECT and d.has_method("set_meta"): d.set_meta("x", new_x)
+								elif typeof(d) == TYPE_DICTIONARY: d["x"] = new_x
+
+								if "y" in d: d.y = new_y
+								elif typeof(d) == TYPE_OBJECT and d.has_method("set_meta"): d.set_meta("y", new_y)
+								elif typeof(d) == TYPE_DICTIONARY: d["y"] = new_y
+
+								var ping = 0.0
+								if "ping_timer" in d: ping = d.ping_timer
+								elif typeof(d) == TYPE_OBJECT and d.has_method("get_meta") and d.has_meta("ping_timer"): ping = d.get_meta("ping_timer")
+								elif typeof(d) == TYPE_DICTIONARY and d.has("ping_timer"): ping = d["ping_timer"]
+
+								ping += delta
+								if ping >= 1.5:
+									ping = 0.0
+									if "events" in world:
+										world.events.append({"type": "bounty_compass", "data": {"target_x": nx, "target_y": ny, "owner_id": d_owner_id}})
+										world.events.append({"type": "visual_effect", "data": {"type": "line", "x": new_x, "y": new_y, "tx": nx, "ty": ny, "color": "orange"}})
+
+								if "ping_timer" in d: d.ping_timer = ping
+								elif typeof(d) == TYPE_OBJECT and d.has_method("set_meta"): d.set_meta("ping_timer", ping)
+								elif typeof(d) == TYPE_DICTIONARY: d["ping_timer"] = ping
 
 				for b in balls:
 					var b_alive = false
@@ -3939,6 +4003,42 @@ class GameMode:
 					if "duration" in d: d.duration = 0.0
 					elif typeof(d) == TYPE_OBJECT and d.has_method("set_meta"): d.set_meta("duration", 0.0)
 					elif typeof(d) == TYPE_DICTIONARY: d["duration"] = 0.0
+
+				var is_expired = false
+				if "duration" in d:
+					if d.duration <= 0.0: is_expired = true
+				elif typeof(d) == TYPE_OBJECT and d.has_method("get_meta") and d.has_meta("duration"):
+					if d.get_meta("duration") <= 0.0: is_expired = true
+				elif typeof(d) == TYPE_DICTIONARY and d.has("duration"):
+					if d["duration"] <= 0.0: is_expired = true
+
+				if is_expired:
+					var debuffed_target = null
+					if "debuffed_target" in d: debuffed_target = d.debuffed_target
+					elif typeof(d) == TYPE_OBJECT and d.has_method("get_meta") and d.has_meta("debuffed_target"): debuffed_target = d.get_meta("debuffed_target")
+					elif typeof(d) == TYPE_DICTIONARY and d.has("debuffed_target"): debuffed_target = d["debuffed_target"]
+
+					if debuffed_target != null:
+						var dt_alive = false
+						if "alive" in debuffed_target: dt_alive = debuffed_target.alive
+						elif typeof(debuffed_target) == TYPE_OBJECT and debuffed_target.has_method("get") and debuffed_target.get("alive") != null: dt_alive = debuffed_target.get("alive")
+						elif typeof(debuffed_target) == TYPE_DICTIONARY and debuffed_target.has("alive"): dt_alive = debuffed_target["alive"]
+
+						if dt_alive:
+							var def_mult = 1.0
+							if "defense_multiplier" in debuffed_target: def_mult = debuffed_target.defense_multiplier
+							elif typeof(debuffed_target) == TYPE_OBJECT and debuffed_target.has_method("get") and debuffed_target.get("defense_multiplier") != null: def_mult = debuffed_target.get("defense_multiplier")
+							elif typeof(debuffed_target) == TYPE_DICTIONARY and debuffed_target.has("defense_multiplier"): def_mult = debuffed_target["defense_multiplier"]
+
+							def_mult = min(1.0, def_mult + 0.2)
+
+							if "defense_multiplier" in debuffed_target: debuffed_target.defense_multiplier = def_mult
+							elif typeof(debuffed_target) == TYPE_OBJECT and debuffed_target.has_method("set_meta"): debuffed_target.set_meta("defense_multiplier", def_mult)
+							elif typeof(debuffed_target) == TYPE_DICTIONARY: debuffed_target["defense_multiplier"] = def_mult
+
+					if "debuffed_target" in d: d.debuffed_target = null
+					elif typeof(d) == TYPE_OBJECT and d.has_method("set_meta"): d.set_meta("debuffed_target", null)
+					elif typeof(d) == TYPE_DICTIONARY: d["debuffed_target"] = null
 
 		if "arena" in world and "hazards" in world.arena:
 			var drones = []

@@ -1577,27 +1577,63 @@ class GameMode:
                         nx, ny = getattr(target, "x", 0), getattr(target, "y", 0)
                         dx, dy = nx - getattr(d, "x", 0), ny - getattr(d, "y", 0)
                         dist = (dx**2 + dy**2)**0.5
-                        if dist > 0.0001:
-                            speed = 100.0 * delta
+
+                        dr = d.get("radius", 8.0) if isinstance(d, dict) else getattr(d, "radius", 8.0)
+                        tr = getattr(target, "radius", 15.0)
+
+                        is_attached = getattr(d, "attached", False) if not isinstance(d, dict) else d.get("attached", False)
+
+                        if is_attached or dist < tr + dr:
+                            if not is_attached:
+                                if isinstance(d, dict):
+                                    d["attached"] = True
+                                    d["attached_target_id"] = getattr(target, "id", None)
+                                else:
+                                    d.attached = True
+                                    d.attached_target_id = getattr(target, "id", None)
+
+                                # Add the debuff when initially attached
+                                target.defense_multiplier = max(0.1, getattr(target, "defense_multiplier", 1.0) - 0.2)
+
+                                # Store the fact that this target was debuffed on the drone itself
+                                if isinstance(d, dict):
+                                    d["debuffed_target"] = target
+                                else:
+                                    d.debuffed_target = target
+
+                            # Stick to the target
                             if isinstance(d, dict):
-                                d["x"] = d.get("x", 0) + (dx / dist) * speed
-                                d["y"] = d.get("y", 0) + (dy / dist) * speed
-                                if "ping_timer" not in d: d["ping_timer"] = 0.0
-                                d["ping_timer"] += delta
-                                if d["ping_timer"] >= 1.5:
-                                    d["ping_timer"] = 0.0
-                                    if hasattr(world, "events"):
-                                        world.events.append({"type": "bounty_compass", "data": {"target_x": float(nx), "target_y": float(ny), "owner_id": getattr(owner, "id", None)}})
-                                        world.events.append({"type": "visual_effect", "data": {"type": "line", "x": float(d["x"]), "y": float(d["y"]), "tx": float(nx), "ty": float(ny), "color": "orange"}})
+                                d["x"] = nx
+                                d["y"] = ny
                             else:
-                                d.x = getattr(d, "x", 0) + (dx / dist) * speed
-                                d.y = getattr(d, "y", 0) + (dy / dist) * speed
-                                d.ping_timer = getattr(d, "ping_timer", 0.0) + delta
-                                if d.ping_timer >= 1.5:
-                                    d.ping_timer = 0.0
-                                    if hasattr(world, "events"):
-                                        world.events.append({"type": "bounty_compass", "data": {"target_x": float(nx), "target_y": float(ny), "owner_id": getattr(owner, "id", None)}})
-                                        world.events.append({"type": "visual_effect", "data": {"type": "line", "x": float(d.x), "y": float(d.y), "tx": float(nx), "ty": float(ny), "color": "orange"}})
+                                d.x = nx
+                                d.y = ny
+
+                            # Share vision
+                            if hasattr(world, "events"):
+                                world.events.append({"type": "bounty_vision_shared", "data": {"target_id": getattr(target, "id", None), "owner_id": getattr(owner, "id", None)}})
+                        else:
+                            if dist > 0.0001:
+                                speed = 100.0 * delta
+                                if isinstance(d, dict):
+                                    d["x"] = d.get("x", 0) + (dx / dist) * speed
+                                    d["y"] = d.get("y", 0) + (dy / dist) * speed
+                                    if "ping_timer" not in d: d["ping_timer"] = 0.0
+                                    d["ping_timer"] += delta
+                                    if d["ping_timer"] >= 1.5:
+                                        d["ping_timer"] = 0.0
+                                        if hasattr(world, "events"):
+                                            world.events.append({"type": "bounty_compass", "data": {"target_x": float(nx), "target_y": float(ny), "owner_id": getattr(owner, "id", None)}})
+                                            world.events.append({"type": "visual_effect", "data": {"type": "line", "x": float(d["x"]), "y": float(d["y"]), "tx": float(nx), "ty": float(ny), "color": "orange"}})
+                                else:
+                                    d.x = getattr(d, "x", 0) + (dx / dist) * speed
+                                    d.y = getattr(d, "y", 0) + (dy / dist) * speed
+                                    d.ping_timer = getattr(d, "ping_timer", 0.0) + delta
+                                    if d.ping_timer >= 1.5:
+                                        d.ping_timer = 0.0
+                                        if hasattr(world, "events"):
+                                            world.events.append({"type": "bounty_compass", "data": {"target_x": float(nx), "target_y": float(ny), "owner_id": getattr(owner, "id", None)}})
+                                            world.events.append({"type": "visual_effect", "data": {"type": "line", "x": float(d.x), "y": float(d.y), "tx": float(nx), "ty": float(ny), "color": "orange"}})
 
                 # Damage from overlapping balls
                 for b in balls:
@@ -1618,6 +1654,25 @@ class GameMode:
                 else:
                     if getattr(d, "hp", 0.0) <= 0:
                         d.duration = 0
+
+                # Revert debuff if the drone expires
+                is_expired = False
+                if isinstance(d, dict):
+                    if d.get("duration", 10.0) <= 0:
+                        is_expired = True
+                else:
+                    if getattr(d, "duration", 10.0) <= 0:
+                        is_expired = True
+
+                if is_expired:
+                    debuffed_target = d.get("debuffed_target", None) if isinstance(d, dict) else getattr(d, "debuffed_target", None)
+                    if debuffed_target and getattr(debuffed_target, "alive", False):
+                        debuffed_target.defense_multiplier = min(1.0, getattr(debuffed_target, "defense_multiplier", 1.0) + 0.2)
+
+                    if isinstance(d, dict):
+                        d["debuffed_target"] = None
+                    else:
+                        d.debuffed_target = None
 
             drones = [h for h in world.arena.hazards if getattr(h, "kind", "") == "nemesis_drone"]
             for d in drones:
