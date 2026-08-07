@@ -80076,3 +80076,60 @@ class OrbitalBlackHoleEventMode extends GameMode:
 						if proj.has("vy"): proj.vy += (dy / dist) * projectile_pull * delta
 
 GAME_MODES["orbital_black_hole_event"] = OrbitalBlackHoleEventMode.new()
+
+class PeriodicGhostMutatorMode extends GameMode:
+	var timer: float = 0.0
+	var duration: float = 10.0
+
+	func _init() -> void:
+		name = "Periodic Ghost"
+		description = "Players periodically become ghosts and can pass through walls."
+		mutators_active = true
+		mutators = []
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		timer = 0.0
+		mutators = []
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+		timer += delta
+
+		if timer >= duration:
+			timer = 0.0
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("ghost_mode", {"message": "Ghost mode activated!"})
+
+			for b in balls:
+				var is_alive = false
+				if typeof(b) == TYPE_OBJECT:
+					if "alive" in b: is_alive = b.alive
+					elif b.has_method("has_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
+				elif typeof(b) == TYPE_DICTIONARY and b.has("alive"):
+					is_alive = b.alive
+
+				var ball_type = ""
+				if typeof(b) == TYPE_OBJECT:
+					if "ball_type" in b: ball_type = b.ball_type
+					elif b.has_method("has_meta") and b.has_meta("ball_type"): ball_type = b.get_meta("ball_type")
+				elif typeof(b) == TYPE_DICTIONARY and b.has("ball_type"):
+					ball_type = b.ball_type
+
+				if is_alive and ball_type != "spectator":
+					if typeof(b) == TYPE_OBJECT:
+						if "intangible" in b: b.intangible = true
+						elif b.has_method("set_meta"): b.set_meta("intangible", true)
+						if "intangible_timer" in b: b.intangible_timer = 3.0
+						elif b.has_method("set_meta"): b.set_meta("intangible_timer", 3.0)
+						if "ghost_mode_active" in b: b.ghost_mode_active = true
+						elif b.has_method("set_meta"): b.set_meta("ghost_mode_active", true)
+						if "ghost_mode_timer" in b: b.ghost_mode_timer = 3.0
+						elif b.has_method("set_meta"): b.set_meta("ghost_mode_timer", 3.0)
+					elif typeof(b) == TYPE_DICTIONARY:
+						b["intangible"] = true
+						b["intangible_timer"] = 3.0
+						b["ghost_mode_active"] = true
+						b["ghost_mode_timer"] = 3.0
+
+GAME_MODES['periodic_ghost_mutator'] = PeriodicGhostMutatorMode.new()
