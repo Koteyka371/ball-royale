@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1854] Quantum Mirage Dash — *2026-08-07 04:43:27 UTC*
+
+After successfully completing a maximum cluster dash (all 3 jumps hit enemies), the ball leaves behind 3 static mirages of itself at the jump locations. These mirages briefly absorb a single enemy attack or hazard before dissipating, adding a layer of defensive misdirection to the aggressive playstyle.
+
+---
+
 ## [idea-1860] Cursed Altar — *2026-08-07 04:20:45 UTC*
 
 An altar that occasionally applies negative modifiers to players trying to capture it.
