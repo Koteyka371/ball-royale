@@ -51521,3 +51521,97 @@ class BoundaryBuilderMode(ShrinkingArenaMode):
                                         world.arena.hazards.remove(h)
 
 GAME_MODES['boundary_builder'] = BoundaryBuilderMode()
+class MoonGravityZonesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Moon Gravity Zones"
+        self.description = "An area where jumps go much higher and falling is slow."
+        self.zone_timer = 0.0
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        if not hasattr(world, "arena") or not hasattr(world.arena, "hazards"):
+            return
+
+        self.zone_timer += delta
+        if self.zone_timer >= 10.0:
+            self.zone_timer = 0.0
+            arena_width = getattr(world.arena, "width", 1000.0)
+            arena_height = getattr(world.arena, "height", 1000.0)
+
+            import random
+            x = random.uniform(200.0, arena_width - 200.0)
+            y = random.uniform(200.0, arena_height - 200.0)
+            h_id = f"moon_gravity_zone_{random.randint(10000, 99999)}"
+
+            try:
+                from arena.procedural_arena import Hazard
+                zone = Hazard(id=h_id, x=x, y=y, radius=200.0, kind="moon_gravity_zone", damage=0.0)
+                zone.duration = 20.0
+                zone.active = True
+                world.arena.hazards.append(zone)
+            except ImportError:
+                zone = {"id": h_id, "x": x, "y": y, "radius": 200.0, "kind": "moon_gravity_zone", "damage": 0.0, "active": True, "duration": 20.0}
+                world.arena.hazards.append(zone)
+
+            if hasattr(world, "add_event"):
+                world.add_event("moon_gravity_zone_spawned", {"message": "A Moon Gravity Zone has appeared!"})
+
+        # Process zone expiration and effects
+        hazards_to_remove = []
+        for h in world.arena.hazards:
+            h_kind = getattr(h, "kind", "") if not isinstance(h, dict) else h.get("kind", "")
+            if h_kind == "moon_gravity_zone":
+                if isinstance(h, dict):
+                    h["duration"] -= delta
+                    if h["duration"] <= 0:
+                        hazards_to_remove.append(h)
+                else:
+                    if hasattr(h, "duration"):
+                        h.duration -= delta
+                        if h.duration <= 0:
+                            hazards_to_remove.append(h)
+
+        for h in hazards_to_remove:
+            if h in world.arena.hazards:
+                world.arena.hazards.remove(h)
+
+        import math
+        for b in balls:
+            if not getattr(b, "alive", True) or getattr(b, "ball_type", "") == "spectator":
+                continue
+
+            in_zone = False
+            for h in world.arena.hazards:
+                if getattr(h, "active", True):
+                    h_kind = getattr(h, "kind", "") if not isinstance(h, dict) else h.get("kind", "")
+                    if h_kind == "moon_gravity_zone":
+                        hx = getattr(h, "x", 0.0) if not isinstance(h, dict) else h.get("x", 0.0)
+                        hy = getattr(h, "y", 0.0) if not isinstance(h, dict) else h.get("y", 0.0)
+                        hr = getattr(h, "radius", 200.0) if not isinstance(h, dict) else h.get("radius", 200.0)
+
+                        dist = math.hypot(b.x - hx, b.y - hy)
+                        if dist <= hr + getattr(b, "radius", 15.0):
+                            in_zone = True
+                            break
+
+            if in_zone:
+                if not getattr(b, "_in_moon_gravity", False):
+                    b._in_moon_gravity = True
+                    b._orig_mass_moon = getattr(b, "mass", 1.0)
+                    b.mass = b._orig_mass_moon * 0.3 # lighter weight, falling is slow
+
+                # Make jumps go much higher by modifying bounciness or jump multipliers
+                b.bounciness_multiplier = max(getattr(b, "bounciness_multiplier", 1.0), 2.5)
+                # Ensure they float a bit visually if applicable
+                if hasattr(b, "vz"):
+                    b.vz += 20.0 * delta
+            else:
+                if getattr(b, "_in_moon_gravity", False):
+                    b.mass = getattr(b, "_orig_mass_moon", 1.0)
+                    b._in_moon_gravity = False
+                    if hasattr(b, "bounciness_multiplier"):
+                        b.bounciness_multiplier = 1.0
+
+GAME_MODES['moon_gravity_zones'] = MoonGravityZonesMode()

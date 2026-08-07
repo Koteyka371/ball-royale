@@ -60568,6 +60568,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"chaotic_pinball_machine": ChaoticPinballMachineMode.new(),
 	"extreme_bounciness": ExtremeBouncinessMode.new(),
 	"super_bouncy_arena": SuperBouncyArenaMode.new(),
+	"moon_gravity_zones": MoonGravityZonesMode.new(),
 	"jump_pad_boundaries": JumpPadBoundariesMode.new(),
 	"pinball": PinballMode.new(),
 	"portal_node": PortalNodeMode.new(),
@@ -80719,3 +80720,134 @@ class ConfettiCelebrationMode extends GameMode:
 						b.set_meta("speed_boost_timer", max(b.get_meta("speed_boost_timer") if b.has_meta("speed_boost_timer") else 0.0, 3.0))
 
 GAME_MODES["confetti_celebration"] = ConfettiCelebrationMode.new()
+class MoonGravityZonesMode extends GameMode:
+	var zone_timer = 0.0
+
+	func _init() -> void:
+		name = "Moon Gravity Zones"
+		description = "An area where jumps go much higher and falling is slow."
+		zone_timer = 0.0
+
+	func tick(world: Dictionary, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		var arena = world.get("arena")
+		if not arena or typeof(arena) != TYPE_DICTIONARY or not arena.has("hazards"):
+			return
+
+		zone_timer += delta
+		if zone_timer >= 10.0:
+			zone_timer = 0.0
+			var arena_width = arena.get("width", 1000.0)
+			var arena_height = arena.get("height", 1000.0)
+
+			var x = randf_range(200.0, arena_width - 200.0)
+			var y = randf_range(200.0, arena_height - 200.0)
+			var h_id = 95000 + randi() % 10000
+
+			var zone = {
+				"id": h_id,
+				"x": x,
+				"y": y,
+				"radius": 200.0,
+				"kind": "moon_gravity_zone",
+				"damage": 0.0,
+				"active": true,
+				"duration": 20.0
+			}
+			arena.hazards.append(zone)
+
+			if world.has("add_event"):
+				world.add_event.call("moon_gravity_zone_spawned", {"message": "A Moon Gravity Zone has appeared!"})
+
+		var hazards_to_remove = []
+		for h in arena.hazards:
+			var h_kind = h.get("kind", "") if typeof(h) == TYPE_DICTIONARY else (h.kind if typeof(h) == TYPE_OBJECT and "kind" in h else "")
+			if h_kind == "moon_gravity_zone":
+				if typeof(h) == TYPE_DICTIONARY:
+					h["duration"] = h.get("duration", 20.0) - delta
+					if h["duration"] <= 0:
+						hazards_to_remove.append(h)
+				elif typeof(h) == TYPE_OBJECT:
+					var duration = h.get("duration") if "duration" in h else 20.0
+					duration -= delta
+					h.set("duration", duration)
+					if duration <= 0:
+						hazards_to_remove.append(h)
+
+		for h in hazards_to_remove:
+			if typeof(arena.hazards) == TYPE_ARRAY:
+				var idx = arena.hazards.find(h)
+				if idx != -1:
+					arena.hazards.remove_at(idx)
+
+		for b in balls:
+			var is_alive = b.get("alive", true) if typeof(b) == TYPE_DICTIONARY else (b.alive if typeof(b) == TYPE_OBJECT and "alive" in b else true)
+			var ball_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else (b.ball_type if typeof(b) == TYPE_OBJECT and "ball_type" in b else "")
+			if not is_alive or ball_type == "spectator":
+				continue
+
+			var b_x = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.x if typeof(b) == TYPE_OBJECT and "x" in b else 0.0)
+			var b_y = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.y if typeof(b) == TYPE_OBJECT and "y" in b else 0.0)
+			var b_radius = b.get("radius", 15.0) if typeof(b) == TYPE_DICTIONARY else (b.radius if typeof(b) == TYPE_OBJECT and "radius" in b else 15.0)
+
+			var in_zone = false
+			for h in arena.hazards:
+				var is_active = h.get("active", true) if typeof(h) == TYPE_DICTIONARY else (h.active if typeof(h) == TYPE_OBJECT and "active" in h else true)
+				if is_active:
+					var h_kind = h.get("kind", "") if typeof(h) == TYPE_DICTIONARY else (h.kind if typeof(h) == TYPE_OBJECT and "kind" in h else "")
+					if h_kind == "moon_gravity_zone":
+						var h_x = h.get("x", 0.0) if typeof(h) == TYPE_DICTIONARY else (h.x if typeof(h) == TYPE_OBJECT and "x" in h else 0.0)
+						var h_y = h.get("y", 0.0) if typeof(h) == TYPE_DICTIONARY else (h.y if typeof(h) == TYPE_OBJECT and "y" in h else 0.0)
+						var h_radius = h.get("radius", 200.0) if typeof(h) == TYPE_DICTIONARY else (h.radius if typeof(h) == TYPE_OBJECT and "radius" in h else 200.0)
+
+						var dist = sqrt(pow(b_x - h_x, 2) + pow(b_y - h_y, 2))
+						if dist <= h_radius + b_radius:
+							in_zone = true
+							break
+
+			if in_zone:
+				if typeof(b) == TYPE_DICTIONARY:
+					if not b.get("_in_moon_gravity", false):
+						b["_in_moon_gravity"] = true
+						b["_orig_mass_moon"] = b.get("mass", 1.0)
+						b["mass"] = b["_orig_mass_moon"] * 0.3
+
+					var current_bounciness = b.get("bounciness_multiplier", 1.0)
+					if current_bounciness < 2.5:
+						b["bounciness_multiplier"] = 2.5
+
+					if b.has("vz"):
+						b["vz"] = b.get("vz", 0.0) + 20.0 * delta
+				elif typeof(b) == TYPE_OBJECT:
+					if not b.has_meta("_in_moon_gravity") or not b.get_meta("_in_moon_gravity"):
+						b.set_meta("_in_moon_gravity", true)
+						var m = b.mass if "mass" in b else 1.0
+						b.set_meta("_orig_mass_moon", m)
+						if "mass" in b:
+							b.mass = m * 0.3
+
+					var current_bounciness = b.bounciness_multiplier if "bounciness_multiplier" in b else (b.get_meta("bounciness_multiplier") if b.has_meta("bounciness_multiplier") else 1.0)
+					if current_bounciness < 2.5:
+						if "bounciness_multiplier" in b:
+							b.bounciness_multiplier = 2.5
+						else:
+							b.set_meta("bounciness_multiplier", 2.5)
+
+					if "vz" in b:
+						b.vz += 20.0 * delta
+			else:
+				if typeof(b) == TYPE_DICTIONARY:
+					if b.get("_in_moon_gravity", false):
+						b["mass"] = b.get("_orig_mass_moon", 1.0)
+						b["_in_moon_gravity"] = false
+						b["bounciness_multiplier"] = 1.0
+				elif typeof(b) == TYPE_OBJECT:
+					if b.has_meta("_in_moon_gravity") and b.get_meta("_in_moon_gravity"):
+						if "mass" in b:
+							b.mass = b.get_meta("_orig_mass_moon")
+						b.set_meta("_in_moon_gravity", false)
+						if "bounciness_multiplier" in b:
+							b.bounciness_multiplier = 1.0
+						elif b.has_meta("bounciness_multiplier"):
+							b.set_meta("bounciness_multiplier", 1.0)
