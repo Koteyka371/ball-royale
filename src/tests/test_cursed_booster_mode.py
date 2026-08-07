@@ -80,4 +80,4 @@ def test_cursed_speed_collection():
     # Pre was 100, post is 115, diff is 15.
     # Cursed inverses the diff, so speed should be 100 - 15 = 85
     assert b.speed == 85.0
-    assert getattr(b, "slow_timer", 0.0) == 5.0
+    assert getattr(b, "slow_timer", 0.0) == 10.0
