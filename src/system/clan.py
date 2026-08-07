@@ -18,6 +18,10 @@ class ClanManager:
                         clan["decorations"] = []
                     if "hub" not in clan:
                         clan["hub"] = []
+                    if "pets" not in clan:
+                        clan["pets"] = []
+                    if "hub_pets" not in clan:
+                        clan["hub_pets"] = []
                 return data
         except (FileNotFoundError, json.JSONDecodeError):
             return {"clans": {}}
@@ -39,7 +43,9 @@ class ClanManager:
             "territories": [],
             "perks": [],
             "decorations": [],
-            "hub": []
+            "hub": [],
+            "pets": [],
+            "hub_pets": []
         }
         self.save()
         return True
@@ -282,6 +288,10 @@ class ClanManager:
             if decoration_name in clan.get("decorations", []):
                 if "hub" not in clan:
                     clan["hub"] = []
+                    if "pets" not in clan:
+                        clan["pets"] = []
+                    if "hub_pets" not in clan:
+                        clan["hub_pets"] = []
                 # Remove existing at this position
                 clan["hub"] = [d for d in clan["hub"] if d.get("x") != x or d.get("y") != y]
                 clan["hub"].append({"decoration": decoration_name, "x": x, "y": y})
@@ -299,6 +309,56 @@ class ClanManager:
                     self.save()
                     return True
         return False
+
+
+    def unlock_pet(self, clan_name, pet_name):
+        if clan_name in self.data["clans"]:
+            clan = self.data["clans"][clan_name]
+            if "pets" not in clan:
+                clan["pets"] = []
+            if pet_name not in clan["pets"]:
+                clan["pets"].append(pet_name)
+                self.save()
+                return True
+        return False
+
+    def place_pet(self, clan_name, pet_name, x, y):
+        if clan_name in self.data["clans"]:
+            clan = self.data["clans"][clan_name]
+            if pet_name in clan.get("pets", []):
+                if "hub_pets" not in clan:
+                    clan["hub_pets"] = []
+                # Remove existing at this position
+                clan["hub_pets"] = [p for p in clan["hub_pets"] if p.get("x") != x or p.get("y") != y]
+                clan["hub_pets"].append({"pet": pet_name, "x": x, "y": y})
+                self.save()
+                return True
+        return False
+
+    def remove_pet(self, clan_name, x, y):
+        if clan_name in self.data["clans"]:
+            clan = self.data["clans"][clan_name]
+            if "hub_pets" in clan:
+                initial_len = len(clan["hub_pets"])
+                clan["hub_pets"] = [p for p in clan["hub_pets"] if p.get("x") != x or p.get("y") != y]
+                if len(clan["hub_pets"]) < initial_len:
+                    self.save()
+                    return True
+        return False
+
+    def get_hub_pet_buffs(self, clan_name):
+        buffs = []
+        if clan_name in self.data["clans"]:
+            clan = self.data["clans"][clan_name]
+            for p in clan.get("hub_pets", []):
+                pet_name = p.get("pet", "")
+                if pet_name == "Speedy_Turtle":
+                    buffs.append("Pet_Speed_Boost")
+                elif pet_name == "Healing_Dog":
+                    buffs.append("Pet_Health_Regen")
+                elif pet_name == "Gold_Dragon":
+                    buffs.append("Pet_Golden_Aura")
+        return list(set(buffs))
 
     def get_hub_buffs(self, clan_name):
         buffs = []

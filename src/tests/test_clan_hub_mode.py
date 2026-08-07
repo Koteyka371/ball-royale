@@ -12,6 +12,10 @@ class MockClanManager:
                         {"decoration": "Champion_Trophy", "x": 100, "y": 100},
                         {"decoration": "Speed_Statue", "x": 150, "y": 150}
                     ],
+                    "hub_pets": [
+                        {"pet": "Speedy_Turtle", "x": 300, "y": 300},
+                        {"pet": "Healing_Dog", "x": 350, "y": 350}
+                    ],
                     "stash": {
                         "gold": 500,
                         "wood": 100
@@ -23,6 +27,11 @@ class MockClanManager:
     def get_hub_buffs(self, clan_name):
         if clan_name == "TestClan":
             return ["Hub_Speed_Boost", "Hub_Health_Regen"]
+        return []
+
+    def get_hub_pet_buffs(self, clan_name):
+        if clan_name == "TestClan":
+            return ["Pet_Speed_Boost", "Pet_Health_Regen"]
         return []
 
 class MockProfileManager:
@@ -80,8 +89,12 @@ def test_clan_hub_mode_setup():
     # Check hazards spawned
     hazards = world.arena.hazards
 
-    # 2 decorations + 2 stash items + 2 NPCs = 6 hazards
-    assert len(hazards) == 6
+    # 2 decorations + 2 stash items + 2 NPCs + 2 Pets = 8 hazards
+    assert len(hazards) == 8
+
+    pets = [h for h in hazards if h["kind"] == "clan_pet"]
+    assert len(pets) == 2
+    assert pets[0]["name"] == "Speedy_Turtle"
 
     decorations = [h for h in hazards if h["kind"] == "clan_decoration"]
     assert len(decorations) == 2
@@ -142,3 +155,33 @@ def test_clan_hub_mode_tick_npc_interaction():
     assert world.events[0]["type"] == "npc_interaction"
     assert world.events[0]["data"]["npc"] == "stash_master"
     assert world.events[0]["data"]["player"] == 1
+
+
+def test_clan_hub_mode_tick_pet_interaction():
+    world = MockWorld()
+    b1 = MockBall(1, "TestClan")
+    # Place ball exactly on pet location
+    b1.x = 300.0
+    b1.y = 300.0
+    b1.base_speed = 100.0
+    b1.hp = 50.0
+    b1.max_hp = 100.0
+    world.balls = [b1]
+
+    # Add a pet to hazards
+    world.arena.hazards = [{
+        "kind": "clan_pet",
+        "name": "Speedy_Turtle",
+        "x": 300.0,
+        "y": 300.0,
+        "radius": 25.0
+    }]
+
+    mode = ClanHubMode()
+    mode.hub_clan = "TestClan"
+
+    world.time = 2.0
+    mode.tick(world, 0.5)
+
+    # Base speed should be increased by 15.0
+    assert b1.speed == 115.0

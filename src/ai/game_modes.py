@@ -50969,6 +50969,18 @@ class ClanHubMode(GameMode):
         if not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
 
+        for pet in clan_data.get("hub_pets", []):
+            pet_name = pet.get("pet", "Unknown")
+            x = pet.get("x", 0)
+            y = pet.get("y", 0)
+            world.arena.hazards.append({
+                "kind": "clan_pet",
+                "name": pet_name,
+                "x": float(x),
+                "y": float(y),
+                "radius": 25.0
+            })
+
         for dec in clan_data.get("hub", []):
             dec_name = dec.get("decoration", "Unknown")
             x = dec.get("x", 0)
@@ -51021,6 +51033,7 @@ class ClanHubMode(GameMode):
         hub_buffs = []
         if clan_manager:
             hub_buffs = clan_manager.get_hub_buffs(self.hub_clan)
+            hub_pet_buffs = clan_manager.get_hub_pet_buffs(self.hub_clan) if hasattr(clan_manager, "get_hub_pet_buffs") else []
 
         balls = getattr(world, "balls", [])
 
@@ -51036,6 +51049,29 @@ class ClanHubMode(GameMode):
         hazards = getattr(world.arena, "hazards", []) if hasattr(world, "arena") else []
         for h in hazards:
             kind = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+            if kind == "clan_pet":
+                hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                h_radius = h.get("radius", 25.0) if isinstance(h, dict) else getattr(h, "radius", 25.0)
+
+                for b in balls:
+                    if not b.alive: continue
+                    bx = getattr(b, "x", 0)
+                    by = getattr(b, "y", 0)
+                    br = getattr(b, "radius", 10.0)
+                    dist = ((bx - hx)**2 + (by - hy)**2)**0.5
+
+                    if dist < (br + h_radius + 20.0):
+                        pet_buffs = hub_pet_buffs
+                        for buff in pet_buffs:
+                            if buff == "Pet_Speed_Boost":
+                                b.speed = getattr(b, "base_speed", 100.0) + 15.0
+                            elif buff == "Pet_Health_Regen":
+                                if hasattr(b, "hp") and hasattr(b, "max_hp") and b.hp < b.max_hp:
+                                    b.hp = min(b.max_hp, b.hp + 3.0 * delta)
+                            elif buff == "Pet_Golden_Aura":
+                                b.gold = getattr(b, "gold", 0) # Just a passive check or logic if needed, maybe we don't modify gold actively here, just a buff aura
+
             if kind == "clan_npc":
                 hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
                 hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)

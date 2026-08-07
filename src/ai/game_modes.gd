@@ -80078,6 +80078,24 @@ class ClanHubMode extends GameMode:
 		elif typeof(world) == TYPE_OBJECT and world.get("arena") != null and typeof(world.get("arena")) == TYPE_OBJECT and world.get("arena").get("hazards") != null:
 			arena_hazards = world.get("arena").get("hazards")
 
+		if clan_data.has("hub_pets"):
+			var hub_pets = clan_data["hub_pets"]
+			for p in hub_pets:
+				var pet_name = "Unknown"
+				if typeof(p) == TYPE_DICTIONARY and p.has("pet"): pet_name = p["pet"]
+				var px = 0.0
+				if typeof(p) == TYPE_DICTIONARY and p.has("x"): px = float(p["x"])
+				var py = 0.0
+				if typeof(p) == TYPE_DICTIONARY and p.has("y"): py = float(p["y"])
+
+				arena_hazards.append({
+					"kind": "clan_pet",
+					"name": pet_name,
+					"x": px,
+					"y": py,
+					"radius": 25.0
+				})
+
 		if clan_data.has("hub"):
 			var hub_decorations = clan_data["hub"]
 			for dec in hub_decorations:
@@ -80155,6 +80173,11 @@ class ClanHubMode extends GameMode:
 			if typeof(clan_manager) == TYPE_OBJECT and clan_manager.has_method("get_hub_buffs"):
 				hub_buffs = clan_manager.get_hub_buffs(hub_clan)
 
+		var hub_pet_buffs = []
+		if clan_manager != null:
+			if typeof(clan_manager) == TYPE_OBJECT and clan_manager.has_method("get_hub_pet_buffs"):
+				hub_pet_buffs = clan_manager.get_hub_pet_buffs(hub_clan)
+
 		var balls = []
 		if typeof(world) == TYPE_DICTIONARY and world.has("balls"):
 			balls = world["balls"]
@@ -80192,6 +80215,63 @@ class ClanHubMode extends GameMode:
 			if typeof(h) == TYPE_DICTIONARY and h.has("kind"): h_kind = h["kind"]
 			elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("kind"): h_kind = h.get_meta("kind")
 			elif typeof(h) == TYPE_OBJECT and h.get("kind") != null: h_kind = h.get("kind")
+
+			if h_kind == "clan_pet":
+				var hx = 0.0
+				if typeof(h) == TYPE_DICTIONARY and h.has("x"): hx = h["x"]
+				elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("x"): hx = h.get_meta("x")
+				elif typeof(h) == TYPE_OBJECT and h.get("x") != null: hx = h.get("x")
+
+				var hy = 0.0
+				if typeof(h) == TYPE_DICTIONARY and h.has("y"): hy = h["y"]
+				elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("y"): hy = h.get_meta("y")
+				elif typeof(h) == TYPE_OBJECT and h.get("y") != null: hy = h.get("y")
+
+				var hr = 25.0
+				if typeof(h) == TYPE_DICTIONARY and h.has("radius"): hr = h["radius"]
+				elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("radius"): hr = h.get_meta("radius")
+				elif typeof(h) == TYPE_OBJECT and h.get("radius") != null: hr = h.get("radius")
+
+				for b in balls:
+					var is_alive = false
+					if typeof(b) == TYPE_DICTIONARY and b.has("alive"): is_alive = b["alive"]
+					elif typeof(b) == TYPE_OBJECT and b.get("alive") != null: is_alive = b.get("alive")
+
+					if not is_alive: continue
+
+					var bx = 0.0
+					if typeof(b) == TYPE_DICTIONARY and b.has("x"): bx = b["x"]
+					elif typeof(b) == TYPE_OBJECT and b.get("x") != null: bx = b.get("x")
+
+					var by = 0.0
+					if typeof(b) == TYPE_DICTIONARY and b.has("y"): by = b["y"]
+					elif typeof(b) == TYPE_OBJECT and b.get("y") != null: by = b.get("y")
+
+					var br = 10.0
+					if typeof(b) == TYPE_DICTIONARY and b.has("radius"): br = b["radius"]
+					elif typeof(b) == TYPE_OBJECT and b.get("radius") != null: br = b.get("radius")
+
+					var dx = bx - hx
+					var dy = by - hy
+					var dist = sqrt(dx * dx + dy * dy)
+
+					if dist < (br + hr + 20.0):
+						for buff in hub_pet_buffs:
+							if buff == "Pet_Speed_Boost":
+								if typeof(b) == TYPE_DICTIONARY and b.has("base_speed"):
+									b["speed"] = b["base_speed"] + 15.0
+								elif typeof(b) == TYPE_OBJECT and b.get("base_speed") != null:
+									b.speed = b.base_speed + 15.0
+							elif buff == "Pet_Health_Regen":
+								if typeof(b) == TYPE_DICTIONARY and b.has("hp") and b.has("max_hp") and b["hp"] < b["max_hp"]:
+									b["hp"] = min(b["max_hp"], b["hp"] + 3.0 * delta)
+								elif typeof(b) == TYPE_OBJECT and b.get("hp") != null and b.get("max_hp") != null and b.hp < b.max_hp:
+									b.hp = min(b.max_hp, b.hp + 3.0 * delta)
+							elif buff == "Pet_Golden_Aura":
+								if typeof(b) == TYPE_DICTIONARY and b.has("gold"):
+									b["gold"] = b["gold"]
+								elif typeof(b) == TYPE_OBJECT and b.get("gold") != null:
+									b.gold = b.gold
 
 			if h_kind == "clan_npc":
 				var hx = 0.0

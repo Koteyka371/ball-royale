@@ -25,6 +25,10 @@ func load_clans():
                     clan["decorations"] = []
                 if not clan.has("hub"):
                     clan["hub"] = []
+                if not clan.has("pets"):
+                    clan["pets"] = []
+                if not clan.has("hub_pets"):
+                    clan["hub_pets"] = []
             return
 
     data = {"clans": {}}
@@ -47,7 +51,9 @@ func create_clan(clan_name: String, creator_id: String) -> bool:
 		"territories": [],
 		"perks": [],
 		"decorations": [],
-		"hub": []
+		"hub": [],
+		"pets": [],
+		"hub_pets": []
 	}
     save_clans()
     return true
@@ -325,6 +331,7 @@ func place_decoration(clan_name: String, decoration_name: String, x: float, y: f
             if not clan.has("hub"):
                 clan["hub"] = []
 
+
             var new_hub = []
             for d in clan["hub"]:
                 if d.has("x") and d.has("y"):
@@ -352,6 +359,72 @@ func remove_decoration(clan_name: String, x: float, y: float) -> bool:
                 save_clans()
                 return true
     return false
+
+
+func unlock_pet(clan_name: String, pet_name: String) -> bool:
+    if data["clans"].has(clan_name):
+        var clan = data["clans"][clan_name]
+        if not clan.has("pets"):
+            clan["pets"] = []
+        if not clan["pets"].has(pet_name):
+            clan["pets"].append(pet_name)
+            save_clans()
+            return true
+    return false
+
+func place_pet(clan_name: String, pet_name: String, x: float, y: float) -> bool:
+    if data["clans"].has(clan_name):
+        var clan = data["clans"][clan_name]
+        if clan.has("pets") and clan["pets"].has(pet_name):
+            if not clan.has("hub_pets"):
+                clan["hub_pets"] = []
+
+            var new_hub_pets = []
+            for p in clan["hub_pets"]:
+                if p.has("x") and p.has("y"):
+                    if p["x"] != x or p["y"] != y:
+                        new_hub_pets.append(p)
+
+            new_hub_pets.append({"pet": pet_name, "x": x, "y": y})
+            clan["hub_pets"] = new_hub_pets
+            save_clans()
+            return true
+    return false
+
+func remove_pet(clan_name: String, x: float, y: float) -> bool:
+    if data["clans"].has(clan_name):
+        var clan = data["clans"][clan_name]
+        if clan.has("hub_pets"):
+            var initial_len = clan["hub_pets"].size()
+            var new_hub_pets = []
+            for p in clan["hub_pets"]:
+                if p.has("x") and p.has("y"):
+                    if p["x"] != x or p["y"] != y:
+                        new_hub_pets.append(p)
+            clan["hub_pets"] = new_hub_pets
+            if clan["hub_pets"].size() < initial_len:
+                save_clans()
+                return true
+    return false
+
+func get_hub_pet_buffs(clan_name: String) -> Array:
+    var buffs = []
+    if data["clans"].has(clan_name):
+        var clan = data["clans"][clan_name]
+        if clan.has("hub_pets"):
+            for p in clan["hub_pets"]:
+                if p.has("pet"):
+                    var pet_name = p["pet"]
+                    if pet_name == "Speedy_Turtle":
+                        if not buffs.has("Pet_Speed_Boost"):
+                            buffs.append("Pet_Speed_Boost")
+                    elif pet_name == "Healing_Dog":
+                        if not buffs.has("Pet_Health_Regen"):
+                            buffs.append("Pet_Health_Regen")
+                    elif pet_name == "Gold_Dragon":
+                        if not buffs.has("Pet_Golden_Aura"):
+                            buffs.append("Pet_Golden_Aura")
+    return buffs
 
 func get_hub_buffs(clan_name: String) -> Array:
     var buffs = []
