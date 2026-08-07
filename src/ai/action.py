@@ -22045,6 +22045,7 @@ class Action:
                 jump_radius = 200.0 # Small radius for clustering
 
                 visited_enemies = set()
+                spawned_decoys = []
 
                 while jumps < max_jumps:
                     dir_x = 0.0
@@ -22133,6 +22134,7 @@ class Action:
                     decoy.skill = None
                     decoy.active_skill = None
                     self.world.balls.append(decoy)
+                    spawned_decoys.append(decoy)
 
                     # Keep quantum state active temporarily by appending to a list of states
                     # (This loop resolves immediately in tick, but setting it false immediately
@@ -22168,6 +22170,16 @@ class Action:
                     if jumps > 1:
                         # Refreshes a minor stamina burst
                         self.ball.stamina_speed_burst_timer = getattr(self.ball, "stamina_speed_burst_timer", 0.0) + 0.5
+
+                if jumps == max_jumps:
+                    for d in spawned_decoys:
+                        d.decoy_type = "static_mirage"
+                        d.hp = 1.0
+                        d.max_hp = 1.0
+                        d.decoy_timer = 2.0
+                        d.vx = 0.0
+                        d.vy = 0.0
+                        d.speed = 0.0
 
                 # Turn off quantum state now that collision sweeps are done
                 self.ball.intangible = False
