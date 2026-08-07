@@ -100,8 +100,8 @@
       "name": "Jules Worker 12",
       "area": "ai-core",
       "task_id": "idea-1853",
-      "status": "assigned",
-      "started_at": "2026-08-07T17:54:37.707058+00:00",
+      "status": "working",
+      "started_at": "2026-08-07T18:06:18.676033+00:00",
       "cycles_today": 0
     },
     "agent-13": {
