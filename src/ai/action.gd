@@ -11678,6 +11678,25 @@ func execute(strategy: String, delta: float):
 			if "tether_booster_timer" in self.ball: self.ball.tether_booster_timer = tether_booster_timer
 			elif self.ball.has_method("set_meta"): self.ball.set_meta("tether_booster_timer", tether_booster_timer)
 
+	var silence_immunity_timer = 0.0
+	if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("silence_immunity_timer"): silence_immunity_timer = self.ball.silence_immunity_timer
+	elif typeof(self.ball) == TYPE_OBJECT and "silence_immunity_timer" in self.ball: silence_immunity_timer = self.ball.silence_immunity_timer
+	elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("silence_immunity_timer"): silence_immunity_timer = self.ball.get_meta("silence_immunity_timer")
+
+	if silence_immunity_timer > 0.0:
+		silence_immunity_timer -= delta
+		if silence_immunity_timer < 0.0: silence_immunity_timer = 0.0
+
+		if typeof(self.ball) == TYPE_DICTIONARY:
+			self.ball["silence_immunity_timer"] = silence_immunity_timer
+			self.ball["silence_timer"] = 0.0
+		elif typeof(self.ball) == TYPE_OBJECT:
+			if "silence_immunity_timer" in self.ball: self.ball.silence_immunity_timer = silence_immunity_timer
+			elif self.ball.has_method("set_meta"): self.ball.set_meta("silence_immunity_timer", silence_immunity_timer)
+
+			if "silence_timer" in self.ball: self.ball.silence_timer = 0.0
+			elif self.ball.has_method("set_meta"): self.ball.set_meta("silence_timer", 0.0)
+
 	if self.ball.has_method("has_meta") and self.ball.has_meta("silence_timer"):
 		var st = self.ball.get_meta("silence_timer")
 		if st > 0.0:
@@ -31324,6 +31343,48 @@ func _collect_booster(delta: float):
                         var h_idx = self.world.arena.hazards.find(b)
                         if h_idx != -1:
                             self.world.arena.hazards.remove_at(h_idx)
+            elif b_kind == "silence_immunity_booster":
+                var dx_ghost = b_x - self.ball.x
+                var dy_ghost = b_y - self.ball.y
+                var b_dist = sqrt(dx_ghost * dx_ghost + dy_ghost * dy_ghost)
+                var b_rad = 15.0
+                if typeof(b) == TYPE_DICTIONARY and b.has("radius"): b_rad = b.radius
+                elif typeof(b) == TYPE_OBJECT and "radius" in b: b_rad = b.radius
+                var self_rad = 10.0
+                if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("radius"): self_rad = self.ball.radius
+                elif typeof(self.ball) == TYPE_OBJECT and "radius" in self.ball: self_rad = self.ball.radius
+                if b_dist <= self_rad + b_rad + 5.0:
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["silence_immunity_timer"] = 15.0
+                    else:
+                        if "silence_immunity_timer" in self.ball: self.ball.silence_immunity_timer = 15.0
+                        elif self.ball.has_method("set_meta"): self.ball.set_meta("silence_immunity_timer", 15.0)
+
+                    if typeof(b) == TYPE_DICTIONARY: b["active"] = false
+                    elif typeof(b) == TYPE_OBJECT and "active" in b: b.active = false
+
+                    if typeof(self.world) == TYPE_DICTIONARY:
+                        if self.world.has("boosters"):
+                            var boosters = self.world.boosters
+                            var new_boosters = []
+                            for x in boosters: if x != b: new_boosters.append(x)
+                            self.world.boosters = new_boosters
+                        if self.world.has("arena") and typeof(self.world.arena) == TYPE_DICTIONARY and self.world.arena.has("hazards"):
+                            var hazards = self.world.arena.hazards
+                            var new_hazards = []
+                            for x in hazards: if x != b: new_hazards.append(x)
+                            self.world.arena.hazards = new_hazards
+                    elif typeof(self.world) == TYPE_OBJECT:
+                        if "boosters" in self.world:
+                            var boosters = self.world.boosters
+                            var new_boosters = []
+                            for x in boosters: if x != b: new_boosters.append(x)
+                            self.world.boosters = new_boosters
+                        if "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT and "hazards" in self.world.arena:
+                            var hazards = self.world.arena.hazards
+                            var new_hazards = []
+                            for x in hazards: if x != b: new_hazards.append(x)
+                            self.world.arena.hazards = new_hazards
             elif b_kind == "ghost_booster":
                 var bx = 0.0
                 var by = 0.0
