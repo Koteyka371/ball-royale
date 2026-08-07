@@ -51521,3 +51521,64 @@ class BoundaryBuilderMode(ShrinkingArenaMode):
                                         world.arena.hazards.remove(h)
 
 GAME_MODES['boundary_builder'] = BoundaryBuilderMode()
+
+
+class SwapLowestHPMutator(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Low HP Swap Mutator"
+        self.description = "Any ball dropping below 30% HP instantly swaps positions with the highest HP enemy in the arena."
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        for b in balls:
+            if not getattr(b, "alive", True) or getattr(b, "ball_type", "") == "spectator":
+                continue
+
+            hp = getattr(b, "hp", 0.0)
+            max_hp = getattr(b, "max_hp", 1.0)
+            if max_hp <= 0:
+                continue
+
+            hp_percent = hp / max_hp
+
+            # Check if dropped below 30%
+            if hp_percent < 0.3:
+                # Only trigger if not already triggered this drop
+                if not getattr(b, "low_hp_swap_triggered", False):
+                    b.low_hp_swap_triggered = True
+
+                    # Find highest HP enemy
+                    best_enemy = None
+                    best_enemy_hp = -1.0
+                    b_team = getattr(b, "team", "")
+
+                    for enemy in balls:
+                        if not getattr(enemy, "alive", True) or getattr(enemy, "ball_type", "") == "spectator":
+                            continue
+                        if getattr(enemy, "team", "") == b_team:
+                            continue
+
+                        enemy_hp = getattr(enemy, "hp", 0.0)
+                        if enemy_hp > best_enemy_hp:
+                            best_enemy_hp = enemy_hp
+                            best_enemy = enemy
+
+                    if best_enemy:
+                        # Swap positions
+                        bx, by = b.x, b.y
+                        ex, ey = best_enemy.x, best_enemy.y
+
+                        b.x, b.y = ex, ey
+                        best_enemy.x, best_enemy.y = bx, by
+
+                        if hasattr(world, "add_event"):
+                            world.add_event("teleport_effect", {"x": bx, "y": by})
+                            world.add_event("teleport_effect", {"x": ex, "y": ey})
+                            world.add_event("message", {"text": f"{getattr(b, 'name', 'Entity')} swapped with {getattr(best_enemy, 'name', 'Enemy')}!"})
+            else:
+                # Reset trigger if hp >= 30%
+                b.low_hp_swap_triggered = False
+
+GAME_MODES['low_hp_swap_mutator'] = SwapLowestHPMutator()
