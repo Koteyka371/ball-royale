@@ -36845,7 +36845,54 @@ class CrumblingArenaMode(GameMode):
             for k, v in offsets.items():
                 world.arena.boundary_offsets[k] = v
 
+
+class NullificationZoneMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Nullification Zone"
+        self.description = "An area that disables all entity abilities and drains stamina over time."
+        self.zone_x = 500.0
+        self.zone_y = 500.0
+        self.zone_radius = 200.0
+        self.drain_rate = 15.0
+        self.hazard_obj = None
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        self.zone_x = arena_width / 2.0
+        self.zone_y = arena_height / 2.0
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            try:
+                from arena.procedural_arena import Hazard
+                hazard_class = Hazard
+            except ImportError:
+                class FallbackHazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                hazard_class = FallbackHazard
+            self.hazard_obj = hazard_class("nullification_zone", self.zone_x, self.zone_y, self.zone_radius, "nullification_zone", 0.0)
+            world.arena.hazards.append(self.hazard_obj)
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        for b in balls:
+            if getattr(b, "alive", True) and hasattr(b, "x") and hasattr(b, "y"):
+                dist_sq = (b.x - self.zone_x) ** 2 + (b.y - self.zone_y) ** 2
+                if dist_sq <= self.zone_radius ** 2:
+                    if hasattr(b, "stamina"):
+                        b.stamina = max(0.0, getattr(b, "stamina", 0.0) - self.drain_rate * delta)
+                    b.silence_timer = max(getattr(b, "silence_timer", 0.0), 0.5)
+
 GAME_MODES = {
+    "nullification_zone": NullificationZoneMode(),
     'crumbling_arena': CrumblingArenaMode(),
     'cursed_altar': CursedAltarMode(),
     'healing_rain': HealingRainMode(),
