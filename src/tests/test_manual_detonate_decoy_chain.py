@@ -1,6 +1,5 @@
 import pytest
 import sys
-import copy
 sys.path.append('src')
 from ai.action import Action
 
@@ -17,6 +16,7 @@ class MockWorld:
         self.boosters = []
         self.events = []
         self.next_id = 1000
+        self.tick = 5
 
     def add_event(self, event_type, data):
         self.events.append((event_type, data))
@@ -36,8 +36,10 @@ class MockBall:
         self.skill_timer = 0.0
         self.SKILL_COOLDOWN = 5.0
         self.is_decoy = False
+        self.decoy_type = ""
+        self.decoy_timer = 0.0
 
-def test_manual_detonate_decoy():
+def test_manual_detonate_decoy_chain():
     w = MockWorld()
     b = MockBall(1, 100, 100, "red")
     b.skill = "manual_detonate_decoy"
@@ -50,32 +52,43 @@ def test_manual_detonate_decoy():
     decoy2.is_decoy = True
     decoy2.owner_id = 1
 
-    enemy = MockBall(4, 220, 220, "blue") # near decoy1 (distance = sqrt(20^2 + 20^2) = ~28 <= 150)
+    decoy3 = MockBall(6, 400, 400, "red")
+    decoy3.is_decoy = True
+    decoy3.owner_id = 1
+
+    enemy = MockBall(4, 220, 220, "blue")
     enemy.hp = 100
 
-    far_enemy = MockBall(5, 500, 500, "blue")
-    far_enemy.hp = 100
-
-    w.balls = [b, decoy1, enemy, far_enemy]
+    w.balls = [b, decoy1, decoy2, decoy3, enemy]
 
     act = Action(b, w)
     act._use_skill()
 
-    # Both decoys should be dead
-    assert decoy1.hp == 0
-    assert decoy1.alive == False
+    # The decoys should not be dead yet
+    assert decoy1.hp == 100
+    assert decoy1.alive == True
+    assert decoy2.alive == True
+    assert decoy3.alive == True
 
+    # They should have the timer applied
+    assert decoy1.decoy_type == "explosive"
+    assert decoy1.decoy_timer == 3.0
+    assert decoy2.decoy_type == "explosive"
+    assert decoy2.decoy_timer == 3.0
+    assert decoy3.decoy_type == "explosive"
+    assert decoy3.decoy_timer == 3.0
 
+    # No immediate explosion
+    assert sum(1 for e in w.events if e[0] == "explosion") == 0
+    assert enemy.hp == 100
 
-    # Explosion damage from decoy1 (50) - wait, is enemy getting hit by both?
-    # Distance from enemy(220, 220) to decoy2(300, 300) = sqrt(80^2 + 80^2) = sqrt(6400 + 6400) = sqrt(12800) = 113.1
-    # 113.1 <= 150.0 is True! So enemy gets hit by BOTH explosions!
-    # 100 - 50 - 50 = 0.
-    assert enemy.hp == 50
-    assert far_enemy.hp == 100
-
-    # Events added (two explosions)
-    assert sum(1 for e in w.events if e[0] == "explosion") == 1
+    # Should create C(3, 2) = 3 laser beams
+    assert len(w.arena.hazards) == 3
+    for h in w.arena.hazards:
+        assert h.kind == "laser_beam"
+        assert h.timer == 3.0
+        assert h.damage == 50.0
+        assert h.team == "red"
 
     # Skill on cooldown
     assert b.skill_timer == 5.0

@@ -39180,58 +39180,119 @@ func _use_skill():
                             active_decoys.append(b)
 
             if active_decoys.size() > 0:
-                for decoy in active_decoys:
-                    var dx_pos = 0.0
-                    var dy_pos = 0.0
-                    if "x" in decoy: dx_pos = decoy.x
-                    elif typeof(decoy) == TYPE_OBJECT and decoy.has_method("get_meta") and decoy.has_meta("x"): dx_pos = decoy.get_meta("x")
+                if active_decoys.size() > 1:
+                    for decoy in active_decoys:
+                        if "decoy_type" in decoy: decoy.decoy_type = "explosive"
+                        elif typeof(decoy) == TYPE_OBJECT and decoy.has_method("set_meta"): decoy.set_meta("decoy_type", "explosive")
 
-                    if "y" in decoy: dy_pos = decoy.y
-                    elif typeof(decoy) == TYPE_OBJECT and decoy.has_method("get_meta") and decoy.has_meta("y"): dy_pos = decoy.get_meta("y")
+                        if "decoy_timer" in decoy: decoy.decoy_timer = 3.0
+                        elif typeof(decoy) == TYPE_OBJECT and decoy.has_method("set_meta"): decoy.set_meta("decoy_timer", 3.0)
 
-                    if typeof(self.world) == TYPE_OBJECT and self.world.has_method("add_event"):
-                        self.world.add_event("explosion", {"x": dx_pos, "y": dy_pos, "radius": 150.0, "damage": 50.0})
+                    for i in range(active_decoys.size()):
+                        for j in range(i + 1, active_decoys.size()):
+                            var d1 = active_decoys[i]
+                            var d2 = active_decoys[j]
 
-                    if "balls" in self.world:
-                        for b in self.world.balls:
-                            if b != self.ball:
-                                var b_alive = true
-                                if "alive" in b: b_alive = b.alive
-                                elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+                            var d1_id = 0
+                            if "id" in d1: d1_id = d1.id
+                            elif typeof(d1) == TYPE_OBJECT and d1.has_method("get_meta") and d1.has_meta("id"): d1_id = d1.get_meta("id")
+                            var d2_id = 0
+                            if "id" in d2: d2_id = d2.id
+                            elif typeof(d2) == TYPE_OBJECT and d2.has_method("get_meta") and d2.has_meta("id"): d2_id = d2.get_meta("id")
 
-                                if b_alive:
-                                    var b_team = ""
-                                    if "team" in b: b_team = b.team
-                                    elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("team"): b_team = b.get_meta("team")
+                            var d1_x = 0.0
+                            if "x" in d1: d1_x = d1.x
+                            elif typeof(d1) == TYPE_OBJECT and d1.has_method("get_meta") and d1.has_meta("x"): d1_x = d1.get_meta("x")
+                            var d1_y = 0.0
+                            if "y" in d1: d1_y = d1.y
+                            elif typeof(d1) == TYPE_OBJECT and d1.has_method("get_meta") and d1.has_meta("y"): d1_y = d1.get_meta("y")
+                            var d2_x = 0.0
+                            if "x" in d2: d2_x = d2.x
+                            elif typeof(d2) == TYPE_OBJECT and d2.has_method("get_meta") and d2.has_meta("x"): d2_x = d2.get_meta("x")
+                            var d2_y = 0.0
+                            if "y" in d2: d2_y = d2.y
+                            elif typeof(d2) == TYPE_OBJECT and d2.has_method("get_meta") and d2.has_meta("y"): d2_y = d2.get_meta("y")
 
-                                    var self_team = ""
-                                    if "team" in self.ball: self_team = self.ball.team
-                                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("team"): self_team = self.ball.get_meta("team")
+                            var my_team = ""
+                            if "team" in self.ball: my_team = str(self.ball.team)
+                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("team"): my_team = str(self.ball.get_meta("team"))
+                            elif "ball_type" in self.ball: my_team = str(self.ball.ball_type)
 
-                                    if b_team != self_team:
-                                        var bx = 0.0
-                                        var by = 0.0
-                                        if "x" in b: bx = b.x
-                                        elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("x"): bx = b.get_meta("x")
-                                        if "y" in b: by = b.y
-                                        elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("y"): by = b.get_meta("y")
+                            var tick = 0
+                            if self.world != null and "tick" in self.world: tick = self.world.tick
 
-                                        var dx2 = bx - dx_pos
-                                        var dy2 = by - dy_pos
-                                        var dist_sq = dx2*dx2 + dy2*dy2
-                                        if dist_sq <= 150.0 * 150.0:
-                                            if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
-                                                b.take_damage(50.0)
-                                            elif "hp" in b:
-                                                b.hp = max(0, b.hp - 50.0)
-                                            elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta") and b.has_meta("hp"):
-                                                b.set_meta("hp", max(0, b.get_meta("hp") - 50.0))
+                            var beam = {
+                                "id": "decoy_laser_" + str(d1_id) + "_" + str(d2_id) + "_" + str(tick),
+                                "kind": "laser_beam",
+                                "start_x": d1_x,
+                                "start_y": d1_y,
+                                "x": d1_x,
+                                "y": d1_y,
+                                "end_x": d2_x,
+                                "end_y": d2_y,
+                                "radius": 15.0,
+                                "damage": 50.0,
+                                "team": my_team,
+                                "timer": 3.0,
+                                "active": true,
+                                "hit_ids": []
+                            }
 
-                    if "hp" in decoy: decoy.hp = 0.0
-                    elif typeof(decoy) == TYPE_OBJECT and decoy.has_method("set_meta"): decoy.set_meta("hp", 0.0)
+                            if self.world != null and "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT and "hazards" in self.world.arena:
+                                self.world.arena.hazards.append(beam)
+                else:
+                    for decoy in active_decoys:
+                        var dx_pos = 0.0
+                        var dy_pos = 0.0
+                        if "x" in decoy: dx_pos = decoy.x
+                        elif typeof(decoy) == TYPE_OBJECT and decoy.has_method("get_meta") and decoy.has_meta("x"): dx_pos = decoy.get_meta("x")
 
-                    if "alive" in decoy: decoy.alive = false
-                    elif typeof(decoy) == TYPE_OBJECT and decoy.has_method("set_meta"): decoy.set_meta("alive", false)
+                        if "y" in decoy: dy_pos = decoy.y
+                        elif typeof(decoy) == TYPE_OBJECT and decoy.has_method("get_meta") and decoy.has_meta("y"): dy_pos = decoy.get_meta("y")
+
+                        if typeof(self.world) == TYPE_OBJECT and self.world.has_method("add_event"):
+                            self.world.add_event("explosion", {"x": dx_pos, "y": dy_pos, "radius": 150.0, "damage": 50.0})
+
+                        if "balls" in self.world:
+                            for b in self.world.balls:
+                                if b != self.ball:
+                                    var b_alive = true
+                                    if "alive" in b: b_alive = b.alive
+                                    elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+
+                                    if b_alive:
+                                        var b_team = ""
+                                        if "team" in b: b_team = str(b.team)
+                                        elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("team"): b_team = str(b.get_meta("team"))
+
+                                        var self_team = ""
+                                        if "team" in self.ball: self_team = str(self.ball.team)
+                                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("team"): self_team = str(self.ball.get_meta("team"))
+
+                                        if b_team != self_team:
+                                            var bx = 0.0
+                                            var by = 0.0
+                                            if "x" in b: bx = b.x
+                                            elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("x"): bx = b.get_meta("x")
+                                            if "y" in b: by = b.y
+                                            elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("y"): by = b.get_meta("y")
+
+                                            var dx2 = bx - dx_pos
+                                            var dy2 = by - dy_pos
+                                            var dist_sq = dx2*dx2 + dy2*dy2
+                                            if dist_sq <= 150.0 * 150.0:
+                                                if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+                                                    b.take_damage(50.0)
+                                                elif "hp" in b:
+                                                    b.hp = max(0, b.hp - 50.0)
+                                                elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta") and b.has_meta("hp"):
+                                                    b.set_meta("hp", max(0, b.get_meta("hp") - 50.0))
+
+                        if "hp" in decoy: decoy.hp = 0.0
+                        elif typeof(decoy) == TYPE_OBJECT and decoy.has_method("set_meta"): decoy.set_meta("hp", 0.0)
+
+                        if "alive" in decoy: decoy.alive = false
+                        elif typeof(decoy) == TYPE_OBJECT and decoy.has_method("set_meta"): decoy.set_meta("alive", false)
 
                 var cd = 5.0
                 if "SKILL_COOLDOWN" in self.ball: cd = self.ball.SKILL_COOLDOWN

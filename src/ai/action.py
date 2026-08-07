@@ -20093,24 +20093,54 @@ class Action:
                     active_decoys = [b for b in getattr(self.world, "balls", []) if getattr(b, "is_decoy", False) and getattr(b, "owner_id", None) == self.ball.id and getattr(b, "alive", True)]
 
                     if active_decoys:
-                        for decoy in active_decoys:
-                            if hasattr(self.world, "add_event"):
-                                self.world.add_event("explosion", {"x": decoy.x, "y": decoy.y, "radius": 150.0, "damage": 50.0})
+                        if len(active_decoys) > 1:
+                            for decoy in active_decoys:
+                                decoy.decoy_type = "explosive"
+                                decoy.decoy_timer = 3.0
+                            for i in range(len(active_decoys)):
+                                for j in range(i + 1, len(active_decoys)):
+                                    d1 = active_decoys[i]
+                                    d2 = active_decoys[j]
+                                    try:
+                                        beam = LaserBeamNode()
+                                    except NameError:
+                                        class LaserBeamNode: pass
+                                        beam = LaserBeamNode()
+                                    beam.id = f"decoy_laser_{getattr(d1, 'id', 0)}_{getattr(d2, 'id', 0)}_{getattr(self.world, 'tick', 0)}"
+                                    beam.kind = "laser_beam"
+                                    beam.start_x = d1.x
+                                    beam.start_y = d1.y
+                                    beam.x = beam.start_x
+                                    beam.y = beam.start_y
+                                    beam.end_x = d2.x
+                                    beam.end_y = d2.y
+                                    beam.radius = 15.0
+                                    beam.damage = 50.0
+                                    beam.team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
+                                    beam.timer = 3.0
+                                    beam.active = True
+                                    beam.hit_ids = []
+                                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                                        self.world.arena.hazards.append(beam)
+                        else:
+                            for decoy in active_decoys:
+                                if hasattr(self.world, "add_event"):
+                                    self.world.add_event("explosion", {"x": decoy.x, "y": decoy.y, "radius": 150.0, "damage": 50.0})
 
-                            for b in getattr(self.world, "balls", []):
-                                if b != self.ball and getattr(b, "alive", True):
-                                    if getattr(b, "team", "") != getattr(self.ball, "team", ""):
-                                        dx = b.x - decoy.x
-                                        dy = b.y - decoy.y
-                                        dist_sq = dx*dx + dy*dy
-                                        if dist_sq <= 150.0**2:
-                                            if hasattr(b, "take_damage"):
-                                                b.take_damage(50.0)
-                                            else:
-                                                b.hp = max(0, getattr(b, "hp", 100) - 50.0)
+                                for b in getattr(self.world, "balls", []):
+                                    if b != self.ball and getattr(b, "alive", True):
+                                        if getattr(b, "team", "") != getattr(self.ball, "team", ""):
+                                            dx = b.x - decoy.x
+                                            dy = b.y - decoy.y
+                                            dist_sq = dx*dx + dy*dy
+                                            if dist_sq <= 150.0**2:
+                                                if hasattr(b, "take_damage"):
+                                                    b.take_damage(50.0)
+                                                else:
+                                                    b.hp = max(0, getattr(b, "hp", 100) - 50.0)
 
-                            decoy.hp = 0
-                            decoy.alive = False
+                                decoy.hp = 0
+                                decoy.alive = False
 
                         self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 5.0)
 
