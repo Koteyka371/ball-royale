@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1846] Magnetic Pull Booster — *2026-08-07 05:07:47 UTC*
+
+A rare booster that upon collection spawns a miniature magnetic field around the ball for a short duration, pulling in nearby items and boosters while slightly repelling enemy balls.
+
+---
+
 ## [idea-1859] Altar Sabotage Item — *2026-08-07 04:43:32 UTC*
 
 An item that players can drop onto altars to sabotage them, dealing tick damage to enemy teams.
