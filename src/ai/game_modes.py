@@ -51304,3 +51304,126 @@ class ConvergingSafeZonesMode(GameMode):
                             if hasattr(world, "add_event"):
                                 world.add_event("ball_died", {"id": ball.id, "reason": "outside_zone", "killer_id": -1})
 GAME_MODES['converging_safe_zones'] = ConvergingSafeZonesMode()
+
+class BoundaryBuilderMode(ShrinkingArenaMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Boundary Builder"
+        self.description = "Players collect resource blocks to rebuild the shrinking arena boundary and create defensive bunkers."
+        self.resource_timer = 0.0
+        self.bunkers = []
+
+    class ResourceBlock:
+        def __init__(self, id_val, x, y):
+            self.id = id_val
+            self.x = x
+            self.y = y
+            self.radius = 15.0
+            self.kind = "resource_block"
+            self.active = True
+
+    class Bunker:
+        def __init__(self, id_val, team, x, y):
+            self.id = id_val
+            self.team = team
+            self.x = x
+            self.y = y
+            self.radius = 40.0
+            self.hp = 500.0
+            self.max_hp = 500.0
+            self.kind = "bunker"
+            self.active = True
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        self.resource_timer += delta
+        if self.resource_timer >= 5.0:
+            self.resource_timer -= 5.0
+            if hasattr(world, "arena"):
+                import random
+                aw = getattr(world.arena, "width", 1000.0)
+                ah = getattr(world.arena, "height", 1000.0)
+                if not hasattr(self, "next_block_id"):
+                    self.next_block_id = 1000
+                new_block = self.ResourceBlock(
+                    self.next_block_id,
+                    random.uniform(50, aw - 50),
+                    random.uniform(50, ah - 50)
+                )
+                self.next_block_id += 1
+                if not hasattr(world.arena, "hazards"):
+                    world.arena.hazards = []
+                world.arena.hazards.append(new_block)
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for h in list(world.arena.hazards):
+                if getattr(h, "kind", "") == "resource_block" and getattr(h, "active", True):
+                    for b in balls:
+                        if not getattr(b, "alive", True):
+                            continue
+                        import math
+                        bx = getattr(b, "x", 0.0)
+                        by = getattr(b, "y", 0.0)
+                        br = getattr(b, "radius", 15.0)
+                        hx = getattr(h, "x", 0.0)
+                        hy = getattr(h, "y", 0.0)
+                        hr = getattr(h, "radius", 15.0)
+                        dist = math.hypot(bx - hx, by - hy)
+                        if dist < br + hr:
+                            h.active = False
+                            world.arena.hazards.remove(h)
+                            b_res = getattr(b, "blocks_collected", 0) + 1
+                            b.blocks_collected = b_res
+
+                            if b_res >= 3:
+                                b.blocks_collected -= 3
+                                # Rebuild boundary by expanding it slightly
+                                ow = getattr(world.arena, "width", 1000.0)
+                                oh = getattr(world.arena, "height", 1000.0)
+                                nw = min(2000.0, ow + 50.0)
+                                nh = min(2000.0, oh + 50.0)
+                                world.arena.width = nw
+                                world.arena.height = nh
+
+                                # And build a bunker
+                                if not hasattr(self, "next_bunker_id"):
+                                    self.next_bunker_id = 2000
+                                bunker = self.Bunker(self.next_bunker_id, getattr(b, "team", "neutral"), bx, by)
+                                self.next_bunker_id += 1
+                                self.bunkers.append(bunker)
+                                world.arena.hazards.append(bunker)
+                            break
+
+            for h in list(world.arena.hazards):
+                if getattr(h, "kind", "") == "bunker" and getattr(h, "active", True):
+                    for b in balls:
+                        if not getattr(b, "alive", True):
+                            continue
+                        import math
+                        bx = getattr(b, "x", 0.0)
+                        by = getattr(b, "y", 0.0)
+                        br = getattr(b, "radius", 15.0)
+                        hx = getattr(h, "x", 0.0)
+                        hy = getattr(h, "y", 0.0)
+                        hr = getattr(h, "radius", 40.0)
+                        team = getattr(h, "team", "neutral")
+                        dist = math.hypot(bx - hx, by - hy)
+
+                        if dist < br + hr:
+                            if getattr(b, "team", "") != team:
+                                # push back enemy
+                                overlap = (br + hr) - dist
+                                if dist > 0:
+                                    nx = (bx - hx) / dist
+                                    ny = (by - hy) / dist
+                                    b.x += nx * overlap
+                                    b.y += ny * overlap
+
+                                h.hp -= 10.0 * delta
+                                if h.hp <= 0:
+                                    h.active = False
+                                    if h in world.arena.hazards:
+                                        world.arena.hazards.remove(h)
+
+GAME_MODES['boundary_builder'] = BoundaryBuilderMode()

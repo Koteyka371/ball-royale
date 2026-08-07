@@ -59756,7 +59756,187 @@ class CrimsonFogEventMode extends GameMode:
 					b["hp"] -= 10.0 * delta
 
 
+
+class BoundaryBuilderMode extends ShrinkingBoundaryMode:
+	var bunkers = []
+	var resource_timer = 0.0
+	var next_block_id = 1000
+	var next_bunker_id = 2000
+
+	func _init():
+		name = "Boundary Builder"
+		description = "Players collect resource blocks to rebuild the shrinking arena boundary and create defensive bunkers."
+
+	class ResourceBlock:
+		var id
+		var x: float
+		var y: float
+		var radius: float = 15.0
+		var kind: String = "resource_block"
+		var active: bool = true
+
+		func _init(id_val, px, py):
+			id = id_val
+			x = px
+			y = py
+
+		func to_dict() -> Dictionary:
+			return {
+				"id": id,
+				"x": x,
+				"y": y,
+				"radius": radius,
+				"kind": kind,
+				"active": active
+			}
+
+	class Bunker:
+		var id
+		var team: String
+		var x: float
+		var y: float
+		var radius: float = 40.0
+		var hp: float = 500.0
+		var max_hp: float = 500.0
+		var kind: String = "bunker"
+		var active: bool = true
+
+		func _init(id_val, pteam, px, py):
+			id = id_val
+			team = pteam
+			x = px
+			y = py
+
+		func to_dict() -> Dictionary:
+			return {
+				"id": id,
+				"team": team,
+				"x": x,
+				"y": y,
+				"radius": radius,
+				"hp": hp,
+				"max_hp": max_hp,
+				"kind": kind,
+				"active": active
+			}
+
+	func tick(world: Object, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		resource_timer += delta
+		if resource_timer >= 5.0:
+			resource_timer -= 5.0
+			if world.has_method("get_arena"):
+				var arena = world.get("arena")
+				if arena:
+					var aw = arena.get("width")
+					var ah = arena.get("height")
+					var rx = 50.0 + randf() * (aw - 100.0)
+					var ry = 50.0 + randf() * (ah - 100.0)
+					var b_id = next_block_id
+					next_block_id += 1
+					var b = ResourceBlock.new(b_id, rx, ry)
+					var haz = arena.get("hazards")
+					if haz != null:
+						haz.append(b.to_dict())
+
+		var arena = null
+		if world.has_method("get_arena"):
+			arena = world.get("arena")
+		if typeof(arena) == TYPE_DICTIONARY or typeof(arena) == TYPE_OBJECT:
+			var haz = arena.get("hazards")
+			if haz != null:
+				var to_remove = []
+				for i in range(haz.size()):
+					var h = haz[i]
+					if h.get("kind") == "resource_block" and h.get("active"):
+						for b in balls:
+							if b.get("alive") == false:
+								continue
+							var dx = b.get("x") - h.get("x")
+							var dy = b.get("y") - h.get("y")
+							var dist = sqrt(dx*dx + dy*dy)
+							var br = b.get("radius")
+							var hr = h.get("radius")
+							if dist < br + hr:
+								h["active"] = false
+								to_remove.append(h)
+								var coll = 0
+								if typeof(b) == TYPE_DICTIONARY:
+									if b.has("blocks_collected"):
+										coll = b.get("blocks_collected", 0)
+									coll += 1
+									b["blocks_collected"] = coll
+								else:
+									if b.has_meta("blocks_collected"):
+										coll = b.get_meta("blocks_collected")
+									coll += 1
+									b.set_meta("blocks_collected", coll)
+
+								if coll >= 3:
+									if typeof(b) == TYPE_DICTIONARY:
+										b["blocks_collected"] = coll - 3
+									else:
+										b.set_meta("blocks_collected", coll - 3)
+
+									var ow = 1000.0
+									if typeof(arena) == TYPE_DICTIONARY and arena.has("width"):
+										ow = arena["width"]
+									else:
+										ow = arena.get("width")
+									var oh = 1000.0
+									if typeof(arena) == TYPE_DICTIONARY and arena.has("height"):
+										oh = arena["height"]
+									else:
+										oh = arena.get("height")
+
+									var nw = min(2000.0, ow + 50.0)
+									var nh = min(2000.0, oh + 50.0)
+									if typeof(arena) == TYPE_DICTIONARY:
+										arena["width"] = nw
+										arena["height"] = nh
+									else:
+										arena.set("width", nw)
+										arena.set("height", nh)
+
+									var b_id = next_bunker_id
+									next_bunker_id += 1
+									var bunker = Bunker.new(b_id, b.get("team"), b.get("x"), b.get("y"))
+									haz.append(bunker.to_dict())
+								break
+					elif h.get("kind") == "bunker" and h.get("active"):
+						for b in balls:
+							if b.get("alive") == false:
+								continue
+							var dx = b.get("x") - h.get("x")
+							var dy = b.get("y") - h.get("y")
+							var dist = sqrt(dx*dx + dy*dy)
+							var br = b.get("radius")
+							var hr = h.get("radius")
+							var team = h.get("team")
+							if dist < br + hr:
+								if b.get("team") != team:
+									var overlap = (br + hr) - dist
+									if dist > 0:
+										var nx = dx / dist
+										var ny = dy / dist
+										if typeof(b) == TYPE_DICTIONARY:
+											b["x"] += nx * overlap
+											b["y"] += ny * overlap
+										else:
+											b.set("x", b.get("x") + nx * overlap)
+											b.set("y", b.get("y") + ny * overlap)
+									h["hp"] -= 10.0 * delta
+									if h["hp"] <= 0:
+										h["active"] = false
+										to_remove.append(h)
+
+				for r in to_remove:
+					if haz.has(r):
+						haz.erase(r)
+
 var GAME_MODES = {
+	"boundary_builder": BoundaryBuilderMode.new(),
     "crimson_fog_event": CrimsonFogEventMode.new(),
     "nullification_zone": NullificationZoneMode.new(),
 	"clan_hub": ClanHubMode.new(),
