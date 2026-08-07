@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1830] Vampiric Fog Weather Event — *2026-08-07 19:08:29 UTC*
+
+Periodically, a dense crimson fog rolls into the arena. While in the fog, players continuously lose a small amount of health. However, dealing damage to other players inside the fog restores health equivalent to double the damage dealt. This forces aggressive play during the weather event and changes target prioritization dynamically.
+
+---
+
 ## [idea-1887] Shrinking Maps from Multiple Points — *2026-08-07 14:52:30 UTC*
 
 Instead of a single shrinking circle like traditional battle royale, have multiple safe zones that slowly converge and combine into one, forcing different groups to travel and meet at the center.
