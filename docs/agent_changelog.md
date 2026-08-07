@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1887] Shrinking Maps from Multiple Points — *2026-08-07 14:52:30 UTC*
+
+Instead of a single shrinking circle like traditional battle royale, have multiple safe zones that slowly converge and combine into one, forcing different groups to travel and meet at the center.
+
+---
+
 ## [idea-1819] Confetti Explosion Mode — *2026-08-07 13:57:45 UTC*
 
 When a ball is eliminated, instead of just disappearing, it triggers a massive confetti explosion that momentarily blinds nearby players and applies a small speed buff to everyone caught in it, simulating a chaotic celebration.
