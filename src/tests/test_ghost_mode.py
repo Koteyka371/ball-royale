@@ -89,6 +89,9 @@ def test_ghost_mode_booster():
     assert getattr(ball, "intangible", False)
     assert getattr(ally, "intangible", False)
     assert not getattr(far_ally, "intangible", False)
+    assert getattr(ball, "is_ghost", False)
+    assert getattr(ally, "is_ghost", False)
+    assert not getattr(far_ally, "is_ghost", False)
 
     # Test perception distance
     enemy_action = Action(enemy, world)

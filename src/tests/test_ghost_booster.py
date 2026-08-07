@@ -56,6 +56,7 @@ def test_ghost_booster():
     assert getattr(ball, "ghost_mode_active", False) == True
     assert getattr(ball, "intangible", False) == True
     assert getattr(ball, "intangible_timer", 0.0) > 0.0
+    assert getattr(ball, "is_ghost", False) == True
 
     # Add hazard
     hazard = MockHazard("damage_zone")
@@ -79,3 +80,4 @@ def test_ghost_booster():
     # Timer should be 0 and ghost mode false
     assert getattr(ball, "ghost_booster_timer", 1.0) == 0.0
     assert getattr(ball, "ghost_mode_active", True) == False
+    assert getattr(ball, "is_ghost", True) == False

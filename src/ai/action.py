@@ -16067,6 +16067,7 @@ class Action:
                         self.ball.ghost_mode_active = True
                         self.ball.intangible = True
                         self.ball.intangible_timer = 10.0
+                        self.ball.is_ghost = True
                         b.active = False
                         if hasattr(self.world, "boosters") and b in self.world.boosters:
                             self.world.boosters.remove(b)
@@ -16451,6 +16452,7 @@ class Action:
                     self.ball.ghost_mode_timer = 5.0
                     self.ball.intangible = True
                     self.ball.ghost_mode_active = True
+                    self.ball.is_ghost = True
                     # Apply to nearby allies
                     if hasattr(self.world, "balls"):
                         my_team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
@@ -16464,6 +16466,7 @@ class Action:
                                         other_ball.ghost_mode_timer = 5.0
                                         other_ball.intangible = True
                                         other_ball.ghost_mode_active = True
+                                        other_ball.is_ghost = True
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
@@ -24884,6 +24887,7 @@ class Action:
             if self.ball.ghost_booster_timer <= 0:
                 self.ball.ghost_booster_timer = 0.0
                 self.ball.ghost_mode_active = False
+                self.ball.is_ghost = False
         if getattr(self.ball, "emp_immunity_timer", 0.0) > 0:
             self.ball.emp_immunity_timer -= delta
             if self.ball.emp_immunity_timer < 0:

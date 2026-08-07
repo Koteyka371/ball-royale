@@ -28407,6 +28407,9 @@ func execute(strategy: String, delta: float):
                 if typeof(self.ball) == TYPE_OBJECT and "ghost_mode_active" in self.ball: self.ball.ghost_mode_active = false
                 elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("ghost_mode_active", false)
                 elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["ghost_mode_active"] = false
+                if typeof(self.ball) == TYPE_OBJECT and "is_ghost" in self.ball: self.ball.is_ghost = false
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("is_ghost", false)
+                elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["is_ghost"] = false
 
             if typeof(self.ball) == TYPE_OBJECT and "ghost_booster_timer" in self.ball: self.ball.ghost_booster_timer = gb_timer
             elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("ghost_booster_timer", gb_timer)
@@ -30557,6 +30560,8 @@ func _attack(delta: float):
             elif self.ball.has_method("set_meta"): self.ball.set_meta("intangible", false)
             if "ghost_mode_active" in self.ball: self.ball.ghost_mode_active = false
             elif self.ball.has_method("set_meta"): self.ball.set_meta("ghost_mode_active", false)
+            if "is_ghost" in self.ball: self.ball.is_ghost = false
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("is_ghost", false)
 
     var intangible = false
     if "intangible" in self.ball: intangible = self.ball.intangible
@@ -31316,6 +31321,8 @@ func _collect_booster(delta: float):
 
                         if "ghost_mode_active" in self.ball: self.ball.ghost_mode_active = true
                         elif self.ball.has_method("set_meta"): self.ball.set_meta("ghost_mode_active", true)
+                        if "is_ghost" in self.ball: self.ball.is_ghost = true
+                        elif self.ball.has_method("set_meta"): self.ball.set_meta("is_ghost", true)
 
                     if typeof(self.ball) == TYPE_DICTIONARY:
                         self.ball["intangible"] = true
@@ -32551,6 +32558,8 @@ func _collect_booster(delta: float):
                     if "intangible" in self.ball: self.ball.intangible = true
                     self.ball.set_meta("ghost_mode_active", true)
                     if "ghost_mode_active" in self.ball: self.ball.ghost_mode_active = true
+                    self.ball.set_meta("is_ghost", true)
+                    if "is_ghost" in self.ball: self.ball.is_ghost = true
                 # Apply to nearby allies
                 if self.world != null and "balls" in self.world:
                     var my_team = ""
@@ -32581,6 +32590,8 @@ func _collect_booster(delta: float):
                                         if "intangible" in ob: ob.intangible = true
                                         ob.set_meta("ghost_mode_active", true)
                                         if "ghost_mode_active" in ob: ob.ghost_mode_active = true
+                                        ob.set_meta("is_ghost", true)
+                                        if "is_ghost" in ob: ob.is_ghost = true
 
                 if self.world != null and "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT and "hazards" in self.world.arena:
                     var h_idx = self.world.arena.hazards.find(nearest)
@@ -32659,6 +32670,8 @@ func _collect_booster(delta: float):
                     if "intangible" in self.ball: self.ball.intangible = true
                     self.ball.set_meta("ghost_mode_active", true)
                     if "ghost_mode_active" in self.ball: self.ball.ghost_mode_active = true
+                    self.ball.set_meta("is_ghost", true)
+                    if "is_ghost" in self.ball: self.ball.is_ghost = true
                 # Apply to nearby allies
                 if self.world != null and "balls" in self.world:
                     var my_team = ""
@@ -32689,6 +32702,8 @@ func _collect_booster(delta: float):
                                         if "intangible" in ob: ob.intangible = true
                                         ob.set_meta("ghost_mode_active", true)
                                         if "ghost_mode_active" in ob: ob.ghost_mode_active = true
+                                        ob.set_meta("is_ghost", true)
+                                        if "is_ghost" in ob: ob.is_ghost = true
 
                 if self.world != null and "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT and "hazards" in self.world.arena:
                     var h_idx = self.world.arena.hazards.find(nearest)
