@@ -46,7 +46,7 @@
       "task_id": "idea-1823",
       "status": "working",
       "started_at": "2026-08-07T15:02:04.673965+00:00",
-      "cycles_today": 0
+      "cycles_today": 1
     },
     "supervisor": {
       "name": "Jules Supervisor",
