@@ -299,7 +299,9 @@ func scan() -> Dictionary:
                 is_sand_cloaked = true
 
             var e_is_semi_invisible_bh = false
-            if "ball_type" in e and e.ball_type == "bounty_hunter":
+            if typeof(e) == TYPE_OBJECT and e.has_method("is_semi_invisible"):
+                e_is_semi_invisible_bh = e.is_semi_invisible()
+            elif "ball_type" in e and e.ball_type == "bounty_hunter":
                 var out_timer = e.get("out_of_combat_timer", 0.0) if typeof(e) == TYPE_DICTIONARY else e.get("out_of_combat_timer") if "out_of_combat_timer" in e else 0.0
                 if float(out_timer) >= 5.0:
                     e_is_semi_invisible_bh = true

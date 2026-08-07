@@ -11,6 +11,7 @@ class BountyHunter:
     COLOR = "orange"
     SKILL = "deploy_tracker_drone"
     SKILL_COOLDOWN = 12.0
+    SEMI_INVISIBLE_THRESHOLD = 5.0
 
     def __init__(self, ball_id: int, x: float = 0.0, y: float = 0.0):
         self.id = ball_id
@@ -29,6 +30,9 @@ class BountyHunter:
 
     def get_hp_percent(self) -> float:
         return self.hp / self.max_hp if self.max_hp > 0 else 0.0
+
+    def is_semi_invisible(self) -> bool:
+        return self.out_of_combat_timer >= self.SEMI_INVISIBLE_THRESHOLD
 
     def flee(self, delta: float) -> None:
         self.current_action = "flee"

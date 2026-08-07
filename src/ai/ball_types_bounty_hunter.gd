@@ -10,6 +10,7 @@ const AGGRESSION = 0.9
 const COLOR = "orange"
 const SKILL = "deploy_tracker_drone"
 const SKILL_COOLDOWN = 12.0
+const SEMI_INVISIBLE_THRESHOLD = 5.0
 
 var id: int = 0
 var hp: float = HP
@@ -35,6 +36,9 @@ func _init(p_id: int = 0, p_x: float = 0.0, p_y: float = 0.0):
 
 func get_hp_percent() -> float:
 	return hp / max_hp if max_hp > 0 else 0.0
+
+func is_semi_invisible() -> bool:
+	return out_of_combat_timer >= SEMI_INVISIBLE_THRESHOLD
 
 func flee(delta: float) -> void:
 	current_action = "flee"

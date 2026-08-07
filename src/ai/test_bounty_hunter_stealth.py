@@ -43,9 +43,11 @@ def test_bounty_hunter_stealth_mechanic():
     # Tick execution out of combat should increment the timer
     action.execute("idle", 2.0)
     assert hunter.out_of_combat_timer == 2.0
+    assert not hunter.is_semi_invisible()
 
     action.execute("idle", 4.0)
     assert hunter.out_of_combat_timer == 6.0
+    assert hunter.is_semi_invisible()
 
     # Test Perception logic
     enemy = MockEntity(id=2, x=0.0, y=100.0, team=2, alive=True, ball_type="basic", has_thermal_vision=False)
@@ -71,6 +73,7 @@ def test_bounty_hunter_stealth_mechanic():
     # Reset out_of_combat_timer on damage dealt
     action._attempt_damage_internal(hunter, enemy)
     assert hunter.out_of_combat_timer == 0.0
+    assert not hunter.is_semi_invisible()
 
     # Now they can be seen without thermal from far
     enemy.has_thermal_vision = False
