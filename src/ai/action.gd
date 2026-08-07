@@ -18470,7 +18470,33 @@ func execute(strategy: String, delta: float):
                                 hazard["duration"] = 0.0
                                 hazard["active"] = false
                             else:
-                                if "duration" in hazard: hazard.duration = 0.0
+
+                            if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                                for h_proj in self.world.arena.hazards:
+                                    var hp_kind = ""
+                                    if "kind" in h_proj: hp_kind = h_proj.kind
+                                    elif h_proj.has_method("get_meta") and h_proj.has_meta("kind"): hp_kind = h_proj.get_meta("kind")
+
+                                    var hp_owner = null
+                                    if "owner_id" in h_proj: hp_owner = h_proj.owner_id
+                                    elif h_proj.has_method("get_meta") and h_proj.has_meta("owner_id"): hp_owner = h_proj.get_meta("owner_id")
+
+                                    if (hp_kind == "projectile" or hp_kind == "bomb" or hp_kind == "missile" or hp_kind == "arrow") and hp_owner != owner_id:
+                                        var hp_x = 0.0
+                                        var hp_y = 0.0
+                                        if "x" in h_proj: hp_x = h_proj.x
+                                        elif h_proj.has_method("get_meta") and h_proj.has_meta("x"): hp_x = h_proj.get_meta("x")
+                                        if "y" in h_proj: hp_y = h_proj.y
+                                        elif h_proj.has_method("get_meta") and h_proj.has_meta("y"): hp_y = h_proj.get_meta("y")
+
+                                        var hp_dist_sq = (hp_x - h_x)*(hp_x - h_x) + (hp_y - h_y)*(hp_y - h_y)
+                                        if hp_dist_sq < h_radius * h_radius:
+                                            if "vx" in h_proj: h_proj.vx *= -1.0
+                                            elif h_proj.has_method("set_meta") and h_proj.has_meta("vx"): h_proj.set_meta("vx", h_proj.get_meta("vx") * -1.0)
+                                            if "vy" in h_proj: h_proj.vy *= -1.0
+                                            elif h_proj.has_method("set_meta") and h_proj.has_meta("vy"): h_proj.set_meta("vy", h_proj.get_meta("vy") * -1.0)
+
+                            if "duration" in hazard: hazard.duration = 0.0
                                 if "active" in hazard: hazard.active = false
 
                 elif hazard.kind == "deployable_gravity_line":
@@ -20334,6 +20360,32 @@ func execute(strategy: String, delta: float):
                             elif "hp" in self.ball:
                                 self.ball.hp -= dmg
 
+
+                            if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                                for h_proj in self.world.arena.hazards:
+                                    var hp_kind = ""
+                                    if "kind" in h_proj: hp_kind = h_proj.kind
+                                    elif h_proj.has_method("get_meta") and h_proj.has_meta("kind"): hp_kind = h_proj.get_meta("kind")
+
+                                    var hp_owner = null
+                                    if "owner_id" in h_proj: hp_owner = h_proj.owner_id
+                                    elif h_proj.has_method("get_meta") and h_proj.has_meta("owner_id"): hp_owner = h_proj.get_meta("owner_id")
+
+                                    if (hp_kind == "projectile" or hp_kind == "bomb" or hp_kind == "missile" or hp_kind == "arrow") and hp_owner != owner_id:
+                                        var hp_x = 0.0
+                                        var hp_y = 0.0
+                                        if "x" in h_proj: hp_x = h_proj.x
+                                        elif h_proj.has_method("get_meta") and h_proj.has_meta("x"): hp_x = h_proj.get_meta("x")
+                                        if "y" in h_proj: hp_y = h_proj.y
+                                        elif h_proj.has_method("get_meta") and h_proj.has_meta("y"): hp_y = h_proj.get_meta("y")
+
+                                        var hp_dist_sq = (hp_x - h_x)*(hp_x - h_x) + (hp_y - h_y)*(hp_y - h_y)
+                                        if hp_dist_sq < h_radius * h_radius:
+                                            if "vx" in h_proj: h_proj.vx *= -1.0
+                                            elif h_proj.has_method("set_meta") and h_proj.has_meta("vx"): h_proj.set_meta("vx", h_proj.get_meta("vx") * -1.0)
+                                            if "vy" in h_proj: h_proj.vy *= -1.0
+                                            elif h_proj.has_method("set_meta") and h_proj.has_meta("vy"): h_proj.set_meta("vy", h_proj.get_meta("vy") * -1.0)
+
                             if "duration" in hazard: hazard.duration = 0.0
                             elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
                             if "active" in hazard: hazard.active = false
@@ -22166,7 +22218,33 @@ func execute(strategy: String, delta: float):
                                     if typeof(hazard) == TYPE_DICTIONARY:
                                         hazard["duration"] = 0.0
                                     elif typeof(hazard) == TYPE_OBJECT:
-                                        if "duration" in hazard: hazard.duration = 0.0
+
+                            if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                                for h_proj in self.world.arena.hazards:
+                                    var hp_kind = ""
+                                    if "kind" in h_proj: hp_kind = h_proj.kind
+                                    elif h_proj.has_method("get_meta") and h_proj.has_meta("kind"): hp_kind = h_proj.get_meta("kind")
+
+                                    var hp_owner = null
+                                    if "owner_id" in h_proj: hp_owner = h_proj.owner_id
+                                    elif h_proj.has_method("get_meta") and h_proj.has_meta("owner_id"): hp_owner = h_proj.get_meta("owner_id")
+
+                                    if (hp_kind == "projectile" or hp_kind == "bomb" or hp_kind == "missile" or hp_kind == "arrow") and hp_owner != owner_id:
+                                        var hp_x = 0.0
+                                        var hp_y = 0.0
+                                        if "x" in h_proj: hp_x = h_proj.x
+                                        elif h_proj.has_method("get_meta") and h_proj.has_meta("x"): hp_x = h_proj.get_meta("x")
+                                        if "y" in h_proj: hp_y = h_proj.y
+                                        elif h_proj.has_method("get_meta") and h_proj.has_meta("y"): hp_y = h_proj.get_meta("y")
+
+                                        var hp_dist_sq = (hp_x - h_x)*(hp_x - h_x) + (hp_y - h_y)*(hp_y - h_y)
+                                        if hp_dist_sq < h_radius * h_radius:
+                                            if "vx" in h_proj: h_proj.vx *= -1.0
+                                            elif h_proj.has_method("set_meta") and h_proj.has_meta("vx"): h_proj.set_meta("vx", h_proj.get_meta("vx") * -1.0)
+                                            if "vy" in h_proj: h_proj.vy *= -1.0
+                                            elif h_proj.has_method("set_meta") and h_proj.has_meta("vy"): h_proj.set_meta("vy", h_proj.get_meta("vy") * -1.0)
+
+                            if "duration" in hazard: hazard.duration = 0.0
 
                                     if "events" in self.world:
                                         self.world.events.append({"type": "trap_short_circuit", "data": {"id": hazard.get("id") if typeof(hazard) == TYPE_DICTIONARY else (hazard.id if "id" in hazard else null), "x": hazard.x, "y": hazard.y}})
@@ -37020,7 +37098,33 @@ func _use_skill():
                                     hazard["duration"] = 0.0
                                     hazard["active"] = false
                                 else:
-                                    if "duration" in hazard: hazard.duration = 0.0
+
+                            if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                                for h_proj in self.world.arena.hazards:
+                                    var hp_kind = ""
+                                    if "kind" in h_proj: hp_kind = h_proj.kind
+                                    elif h_proj.has_method("get_meta") and h_proj.has_meta("kind"): hp_kind = h_proj.get_meta("kind")
+
+                                    var hp_owner = null
+                                    if "owner_id" in h_proj: hp_owner = h_proj.owner_id
+                                    elif h_proj.has_method("get_meta") and h_proj.has_meta("owner_id"): hp_owner = h_proj.get_meta("owner_id")
+
+                                    if (hp_kind == "projectile" or hp_kind == "bomb" or hp_kind == "missile" or hp_kind == "arrow") and hp_owner != owner_id:
+                                        var hp_x = 0.0
+                                        var hp_y = 0.0
+                                        if "x" in h_proj: hp_x = h_proj.x
+                                        elif h_proj.has_method("get_meta") and h_proj.has_meta("x"): hp_x = h_proj.get_meta("x")
+                                        if "y" in h_proj: hp_y = h_proj.y
+                                        elif h_proj.has_method("get_meta") and h_proj.has_meta("y"): hp_y = h_proj.get_meta("y")
+
+                                        var hp_dist_sq = (hp_x - h_x)*(hp_x - h_x) + (hp_y - h_y)*(hp_y - h_y)
+                                        if hp_dist_sq < h_radius * h_radius:
+                                            if "vx" in h_proj: h_proj.vx *= -1.0
+                                            elif h_proj.has_method("set_meta") and h_proj.has_meta("vx"): h_proj.set_meta("vx", h_proj.get_meta("vx") * -1.0)
+                                            if "vy" in h_proj: h_proj.vy *= -1.0
+                                            elif h_proj.has_method("set_meta") and h_proj.has_meta("vy"): h_proj.set_meta("vy", h_proj.get_meta("vy") * -1.0)
+
+                            if "duration" in hazard: hazard.duration = 0.0
                                     elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
                                     if "active" in hazard: hazard.active = false
                                     elif hazard.has_method("set_meta"): hazard.set_meta("active", false)
@@ -49864,7 +49968,7 @@ func _update_skill_timer(delta: float):
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
-                var pullable = ["deployable_proximity_mud_puddle", "overload_zone_item", "deployable_stasis_bubble", "deployable_pull_trap", "deployable_freeze_trap", "deployable_decoy_swap_item", "event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "vision_reduction_trap", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "entanglement_booster", "weather_booster", "portal_gun_item", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "anchor_repulsor_booster", "gravity_well_booster", "overclock_booster", "chronosphere_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "pet_item", "wind_tunnel", "cryogenic_booster", "eclipse_booster_item", "eclipse_booster"]
+                var pullable = ["deployable_proximity_mud_puddle", "overload_zone_item", "deployable_stasis_bubble", "deployable_reversal_trap", "deployable_pull_trap", "deployable_freeze_trap", "deployable_decoy_swap_item", "event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "vision_reduction_trap", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "entanglement_booster", "weather_booster", "portal_gun_item", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "anchor_repulsor_booster", "gravity_well_booster", "overclock_booster", "chronosphere_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "pet_item", "wind_tunnel", "cryogenic_booster", "eclipse_booster_item", "eclipse_booster"]
                 if h_rad < 30.0 or pullable.has(h_kind):
                     var dx = self.ball.x - hazard.x
                     var dy = self.ball.y - hazard.y
@@ -51111,6 +51215,32 @@ func _update_skill_timer(delta: float):
                                                 if self.world.has_method("_deal_damage"):
                                                     var dummy_att = {"damage": b_dmg, "id": owner_id}
                                                     self.world._deal_damage(dummy_att, b, b_dmg)
+
+                            if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                                for h_proj in self.world.arena.hazards:
+                                    var hp_kind = ""
+                                    if "kind" in h_proj: hp_kind = h_proj.kind
+                                    elif h_proj.has_method("get_meta") and h_proj.has_meta("kind"): hp_kind = h_proj.get_meta("kind")
+
+                                    var hp_owner = null
+                                    if "owner_id" in h_proj: hp_owner = h_proj.owner_id
+                                    elif h_proj.has_method("get_meta") and h_proj.has_meta("owner_id"): hp_owner = h_proj.get_meta("owner_id")
+
+                                    if (hp_kind == "projectile" or hp_kind == "bomb" or hp_kind == "missile" or hp_kind == "arrow") and hp_owner != owner_id:
+                                        var hp_x = 0.0
+                                        var hp_y = 0.0
+                                        if "x" in h_proj: hp_x = h_proj.x
+                                        elif h_proj.has_method("get_meta") and h_proj.has_meta("x"): hp_x = h_proj.get_meta("x")
+                                        if "y" in h_proj: hp_y = h_proj.y
+                                        elif h_proj.has_method("get_meta") and h_proj.has_meta("y"): hp_y = h_proj.get_meta("y")
+
+                                        var hp_dist_sq = (hp_x - h_x)*(hp_x - h_x) + (hp_y - h_y)*(hp_y - h_y)
+                                        if hp_dist_sq < h_radius * h_radius:
+                                            if "vx" in h_proj: h_proj.vx *= -1.0
+                                            elif h_proj.has_method("set_meta") and h_proj.has_meta("vx"): h_proj.set_meta("vx", h_proj.get_meta("vx") * -1.0)
+                                            if "vy" in h_proj: h_proj.vy *= -1.0
+                                            elif h_proj.has_method("set_meta") and h_proj.has_meta("vy"): h_proj.set_meta("vy", h_proj.get_meta("vy") * -1.0)
+
                             if "duration" in hazard: hazard.duration = 0.0
                             elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
                             elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set"): hazard.set("duration", 0.0)
@@ -51554,7 +51684,33 @@ func _update_skill_timer(delta: float):
                                                                 if "killer" in b: b.killer = "pull_trap"
                                                                 elif b.has_method("set_meta"): b.set_meta("killer", "pull_trap")
 
-                                        if "duration" in hazard: hazard.duration = 0.0
+
+                            if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                                for h_proj in self.world.arena.hazards:
+                                    var hp_kind = ""
+                                    if "kind" in h_proj: hp_kind = h_proj.kind
+                                    elif h_proj.has_method("get_meta") and h_proj.has_meta("kind"): hp_kind = h_proj.get_meta("kind")
+
+                                    var hp_owner = null
+                                    if "owner_id" in h_proj: hp_owner = h_proj.owner_id
+                                    elif h_proj.has_method("get_meta") and h_proj.has_meta("owner_id"): hp_owner = h_proj.get_meta("owner_id")
+
+                                    if (hp_kind == "projectile" or hp_kind == "bomb" or hp_kind == "missile" or hp_kind == "arrow") and hp_owner != owner_id:
+                                        var hp_x = 0.0
+                                        var hp_y = 0.0
+                                        if "x" in h_proj: hp_x = h_proj.x
+                                        elif h_proj.has_method("get_meta") and h_proj.has_meta("x"): hp_x = h_proj.get_meta("x")
+                                        if "y" in h_proj: hp_y = h_proj.y
+                                        elif h_proj.has_method("get_meta") and h_proj.has_meta("y"): hp_y = h_proj.get_meta("y")
+
+                                        var hp_dist_sq = (hp_x - h_x)*(hp_x - h_x) + (hp_y - h_y)*(hp_y - h_y)
+                                        if hp_dist_sq < h_radius * h_radius:
+                                            if "vx" in h_proj: h_proj.vx *= -1.0
+                                            elif h_proj.has_method("set_meta") and h_proj.has_meta("vx"): h_proj.set_meta("vx", h_proj.get_meta("vx") * -1.0)
+                                            if "vy" in h_proj: h_proj.vy *= -1.0
+                                            elif h_proj.has_method("set_meta") and h_proj.has_meta("vy"): h_proj.set_meta("vy", h_proj.get_meta("vy") * -1.0)
+
+                            if "duration" in hazard: hazard.duration = 0.0
                                         elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
                                         elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set"): hazard.set("duration", 0.0)
                 if h_kind == "deployable_freeze_trap":
@@ -51623,6 +51779,86 @@ func _update_skill_timer(delta: float):
                                 if typeof(self.ball) == TYPE_DICTIONARY: self.ball["freeze_trap_vulnerability_timer"] = 3.0
                                 elif self.ball.has_method("set_meta"): self.ball.set_meta("freeze_trap_vulnerability_timer", 3.0)
                                 elif "freeze_trap_vulnerability_timer" in self.ball: self.ball.freeze_trap_vulnerability_timer = 3.0
+
+
+                            if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                                for h_proj in self.world.arena.hazards:
+                                    var hp_kind = ""
+                                    if "kind" in h_proj: hp_kind = h_proj.kind
+                                    elif h_proj.has_method("get_meta") and h_proj.has_meta("kind"): hp_kind = h_proj.get_meta("kind")
+
+                                    var hp_owner = null
+                                    if "owner_id" in h_proj: hp_owner = h_proj.owner_id
+                                    elif h_proj.has_method("get_meta") and h_proj.has_meta("owner_id"): hp_owner = h_proj.get_meta("owner_id")
+
+                                    if (hp_kind == "projectile" or hp_kind == "bomb" or hp_kind == "missile" or hp_kind == "arrow") and hp_owner != owner_id:
+                                        var hp_x = 0.0
+                                        var hp_y = 0.0
+                                        if "x" in h_proj: hp_x = h_proj.x
+                                        elif h_proj.has_method("get_meta") and h_proj.has_meta("x"): hp_x = h_proj.get_meta("x")
+                                        if "y" in h_proj: hp_y = h_proj.y
+                                        elif h_proj.has_method("get_meta") and h_proj.has_meta("y"): hp_y = h_proj.get_meta("y")
+
+                                        var hp_dist_sq = (hp_x - h_x)*(hp_x - h_x) + (hp_y - h_y)*(hp_y - h_y)
+                                        if hp_dist_sq < h_radius * h_radius:
+                                            if "vx" in h_proj: h_proj.vx *= -1.0
+                                            elif h_proj.has_method("set_meta") and h_proj.has_meta("vx"): h_proj.set_meta("vx", h_proj.get_meta("vx") * -1.0)
+                                            if "vy" in h_proj: h_proj.vy *= -1.0
+                                            elif h_proj.has_method("set_meta") and h_proj.has_meta("vy"): h_proj.set_meta("vy", h_proj.get_meta("vy") * -1.0)
+
+                            if "duration" in hazard: hazard.duration = 0.0
+                            elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
+                            elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set"): hazard.set("duration", 0.0)
+
+                if h_kind == "deployable_reversal_trap":
+                    var owner_id = null
+                    if "owner_id" in hazard: owner_id = hazard.owner_id
+                    elif hazard.has_method("get_meta") and hazard.has_meta("owner_id"): owner_id = hazard.get_meta("owner_id")
+
+                    var b_id = null
+                    if "id" in ball: b_id = ball.id
+                    elif ball.has_method("get_meta") and ball.has_meta("id"): b_id = ball.get_meta("id")
+
+                    if owner_id != b_id:
+                        var dx = h_x - b_x
+                        var dy = h_y - b_y
+                        var dist_sq = dx*dx + dy*dy
+
+                        var h_radius = 60.0
+                        if "radius" in hazard: h_radius = hazard.radius
+                        elif hazard.has_method("get_meta") and hazard.has_meta("radius"): h_radius = hazard.get_meta("radius")
+
+                        if dist_sq < h_radius * h_radius:
+                            if "vx" in ball: ball.vx *= -1.0
+                            elif ball.has_method("set_meta"): ball.set_meta("vx", ball.get_meta("vx") * -1.0)
+                            if "vy" in ball: ball.vy *= -1.0
+                            elif ball.has_method("set_meta"): ball.set_meta("vy", ball.get_meta("vy") * -1.0)
+
+
+                            if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                                for h_proj in self.world.arena.hazards:
+                                    var hp_kind = ""
+                                    if "kind" in h_proj: hp_kind = h_proj.kind
+                                    elif h_proj.has_method("get_meta") and h_proj.has_meta("kind"): hp_kind = h_proj.get_meta("kind")
+
+                                    var hp_owner = null
+                                    if "owner_id" in h_proj: hp_owner = h_proj.owner_id
+                                    elif h_proj.has_method("get_meta") and h_proj.has_meta("owner_id"): hp_owner = h_proj.get_meta("owner_id")
+
+                                    if (hp_kind == "projectile" or hp_kind == "bomb" or hp_kind == "missile" or hp_kind == "arrow") and hp_owner != owner_id:
+                                        var hp_x = 0.0
+                                        var hp_y = 0.0
+                                        if "x" in h_proj: hp_x = h_proj.x
+                                        elif h_proj.has_method("get_meta") and h_proj.has_meta("x"): hp_x = h_proj.get_meta("x")
+                                        if "y" in h_proj: hp_y = h_proj.y
+                                        elif h_proj.has_method("get_meta") and h_proj.has_meta("y"): hp_y = h_proj.get_meta("y")
+
+                                        var hp_dist_sq = (hp_x - h_x)*(hp_x - h_x) + (hp_y - h_y)*(hp_y - h_y)
+                                        if hp_dist_sq < h_radius * h_radius:
+                                            if "vx" in h_proj: h_proj.vx *= -1.0
+                                            elif h_proj.has_method("set_meta") and h_proj.has_meta("vx"): h_proj.set_meta("vx", h_proj.get_meta("vx") * -1.0)
+                                            if "vy" in h_proj: h_proj.vy *= -1.0
+                                            elif h_proj.has_method("set_meta") and h_proj.has_meta("vy"): h_proj.set_meta("vy", h_proj.get_meta("vy") * -1.0)
 
                             if "duration" in hazard: hazard.duration = 0.0
                             elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
@@ -51759,7 +51995,33 @@ func _update_skill_timer(delta: float):
                                                         if "killer" in tb: tb.killer = "deployable_pull_trap"
                                                         elif tb.has_method("set_meta"): tb.set_meta("killer", "deployable_pull_trap")
 
-                                    if "duration" in hazard: hazard.duration = 0.0
+
+                            if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                                for h_proj in self.world.arena.hazards:
+                                    var hp_kind = ""
+                                    if "kind" in h_proj: hp_kind = h_proj.kind
+                                    elif h_proj.has_method("get_meta") and h_proj.has_meta("kind"): hp_kind = h_proj.get_meta("kind")
+
+                                    var hp_owner = null
+                                    if "owner_id" in h_proj: hp_owner = h_proj.owner_id
+                                    elif h_proj.has_method("get_meta") and h_proj.has_meta("owner_id"): hp_owner = h_proj.get_meta("owner_id")
+
+                                    if (hp_kind == "projectile" or hp_kind == "bomb" or hp_kind == "missile" or hp_kind == "arrow") and hp_owner != owner_id:
+                                        var hp_x = 0.0
+                                        var hp_y = 0.0
+                                        if "x" in h_proj: hp_x = h_proj.x
+                                        elif h_proj.has_method("get_meta") and h_proj.has_meta("x"): hp_x = h_proj.get_meta("x")
+                                        if "y" in h_proj: hp_y = h_proj.y
+                                        elif h_proj.has_method("get_meta") and h_proj.has_meta("y"): hp_y = h_proj.get_meta("y")
+
+                                        var hp_dist_sq = (hp_x - h_x)*(hp_x - h_x) + (hp_y - h_y)*(hp_y - h_y)
+                                        if hp_dist_sq < h_radius * h_radius:
+                                            if "vx" in h_proj: h_proj.vx *= -1.0
+                                            elif h_proj.has_method("set_meta") and h_proj.has_meta("vx"): h_proj.set_meta("vx", h_proj.get_meta("vx") * -1.0)
+                                            if "vy" in h_proj: h_proj.vy *= -1.0
+                                            elif h_proj.has_method("set_meta") and h_proj.has_meta("vy"): h_proj.set_meta("vy", h_proj.get_meta("vy") * -1.0)
+
+                            if "duration" in hazard: hazard.duration = 0.0
                                     elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
                                     elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set"): hazard.set("duration", 0.0)
 
@@ -52246,6 +52508,32 @@ func _update_skill_timer(delta: float):
                                 if "stun_timer" in self.ball: self.ball.stun_timer = new_stun
                                 elif self.ball.has_method("set_meta"): self.ball.set_meta("stun_timer", new_stun)
 
+
+                            if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                                for h_proj in self.world.arena.hazards:
+                                    var hp_kind = ""
+                                    if "kind" in h_proj: hp_kind = h_proj.kind
+                                    elif h_proj.has_method("get_meta") and h_proj.has_meta("kind"): hp_kind = h_proj.get_meta("kind")
+
+                                    var hp_owner = null
+                                    if "owner_id" in h_proj: hp_owner = h_proj.owner_id
+                                    elif h_proj.has_method("get_meta") and h_proj.has_meta("owner_id"): hp_owner = h_proj.get_meta("owner_id")
+
+                                    if (hp_kind == "projectile" or hp_kind == "bomb" or hp_kind == "missile" or hp_kind == "arrow") and hp_owner != owner_id:
+                                        var hp_x = 0.0
+                                        var hp_y = 0.0
+                                        if "x" in h_proj: hp_x = h_proj.x
+                                        elif h_proj.has_method("get_meta") and h_proj.has_meta("x"): hp_x = h_proj.get_meta("x")
+                                        if "y" in h_proj: hp_y = h_proj.y
+                                        elif h_proj.has_method("get_meta") and h_proj.has_meta("y"): hp_y = h_proj.get_meta("y")
+
+                                        var hp_dist_sq = (hp_x - h_x)*(hp_x - h_x) + (hp_y - h_y)*(hp_y - h_y)
+                                        if hp_dist_sq < h_radius * h_radius:
+                                            if "vx" in h_proj: h_proj.vx *= -1.0
+                                            elif h_proj.has_method("set_meta") and h_proj.has_meta("vx"): h_proj.set_meta("vx", h_proj.get_meta("vx") * -1.0)
+                                            if "vy" in h_proj: h_proj.vy *= -1.0
+                                            elif h_proj.has_method("set_meta") and h_proj.has_meta("vy"): h_proj.set_meta("vy", h_proj.get_meta("vy") * -1.0)
+
                             if "duration" in hazard: hazard.duration = 0.0
                             elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
                             elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set"): hazard.set("duration", 0.0)
@@ -52456,7 +52744,33 @@ func _update_skill_timer(delta: float):
                                     self.ball["time_rewind_state"] = state
 
                             if typeof(hazard) == TYPE_OBJECT:
-                                if "duration" in hazard: hazard.duration = 0.0
+
+                            if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                                for h_proj in self.world.arena.hazards:
+                                    var hp_kind = ""
+                                    if "kind" in h_proj: hp_kind = h_proj.kind
+                                    elif h_proj.has_method("get_meta") and h_proj.has_meta("kind"): hp_kind = h_proj.get_meta("kind")
+
+                                    var hp_owner = null
+                                    if "owner_id" in h_proj: hp_owner = h_proj.owner_id
+                                    elif h_proj.has_method("get_meta") and h_proj.has_meta("owner_id"): hp_owner = h_proj.get_meta("owner_id")
+
+                                    if (hp_kind == "projectile" or hp_kind == "bomb" or hp_kind == "missile" or hp_kind == "arrow") and hp_owner != owner_id:
+                                        var hp_x = 0.0
+                                        var hp_y = 0.0
+                                        if "x" in h_proj: hp_x = h_proj.x
+                                        elif h_proj.has_method("get_meta") and h_proj.has_meta("x"): hp_x = h_proj.get_meta("x")
+                                        if "y" in h_proj: hp_y = h_proj.y
+                                        elif h_proj.has_method("get_meta") and h_proj.has_meta("y"): hp_y = h_proj.get_meta("y")
+
+                                        var hp_dist_sq = (hp_x - h_x)*(hp_x - h_x) + (hp_y - h_y)*(hp_y - h_y)
+                                        if hp_dist_sq < h_radius * h_radius:
+                                            if "vx" in h_proj: h_proj.vx *= -1.0
+                                            elif h_proj.has_method("set_meta") and h_proj.has_meta("vx"): h_proj.set_meta("vx", h_proj.get_meta("vx") * -1.0)
+                                            if "vy" in h_proj: h_proj.vy *= -1.0
+                                            elif h_proj.has_method("set_meta") and h_proj.has_meta("vy"): h_proj.set_meta("vy", h_proj.get_meta("vy") * -1.0)
+
+                            if "duration" in hazard: hazard.duration = 0.0
                                 elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
                             elif typeof(hazard) == TYPE_DICTIONARY: hazard["duration"] = 0.0
                             if "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
@@ -52500,6 +52814,32 @@ func _update_skill_timer(delta: float):
                         elif self.ball.has_method("get_meta") and self.ball.has_meta("radius"): b_rad_check = self.ball.get_meta("radius")
 
                         if is_proj and dist_sq < (h_rad_check + b_rad_check) * (h_rad_check + b_rad_check):
+
+                            if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                                for h_proj in self.world.arena.hazards:
+                                    var hp_kind = ""
+                                    if "kind" in h_proj: hp_kind = h_proj.kind
+                                    elif h_proj.has_method("get_meta") and h_proj.has_meta("kind"): hp_kind = h_proj.get_meta("kind")
+
+                                    var hp_owner = null
+                                    if "owner_id" in h_proj: hp_owner = h_proj.owner_id
+                                    elif h_proj.has_method("get_meta") and h_proj.has_meta("owner_id"): hp_owner = h_proj.get_meta("owner_id")
+
+                                    if (hp_kind == "projectile" or hp_kind == "bomb" or hp_kind == "missile" or hp_kind == "arrow") and hp_owner != owner_id:
+                                        var hp_x = 0.0
+                                        var hp_y = 0.0
+                                        if "x" in h_proj: hp_x = h_proj.x
+                                        elif h_proj.has_method("get_meta") and h_proj.has_meta("x"): hp_x = h_proj.get_meta("x")
+                                        if "y" in h_proj: hp_y = h_proj.y
+                                        elif h_proj.has_method("get_meta") and h_proj.has_meta("y"): hp_y = h_proj.get_meta("y")
+
+                                        var hp_dist_sq = (hp_x - h_x)*(hp_x - h_x) + (hp_y - h_y)*(hp_y - h_y)
+                                        if hp_dist_sq < h_radius * h_radius:
+                                            if "vx" in h_proj: h_proj.vx *= -1.0
+                                            elif h_proj.has_method("set_meta") and h_proj.has_meta("vx"): h_proj.set_meta("vx", h_proj.get_meta("vx") * -1.0)
+                                            if "vy" in h_proj: h_proj.vy *= -1.0
+                                            elif h_proj.has_method("set_meta") and h_proj.has_meta("vy"): h_proj.set_meta("vy", h_proj.get_meta("vy") * -1.0)
+
                             if "duration" in hazard: hazard.duration = 0.0
                             elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
                             elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set"): hazard.set("duration", 0.0)
@@ -52572,7 +52912,33 @@ func _update_skill_timer(delta: float):
                                             "radius": 30.0
                                         })
 
-                                    if "duration" in hazard: hazard.duration = 0.0
+
+                            if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                                for h_proj in self.world.arena.hazards:
+                                    var hp_kind = ""
+                                    if "kind" in h_proj: hp_kind = h_proj.kind
+                                    elif h_proj.has_method("get_meta") and h_proj.has_meta("kind"): hp_kind = h_proj.get_meta("kind")
+
+                                    var hp_owner = null
+                                    if "owner_id" in h_proj: hp_owner = h_proj.owner_id
+                                    elif h_proj.has_method("get_meta") and h_proj.has_meta("owner_id"): hp_owner = h_proj.get_meta("owner_id")
+
+                                    if (hp_kind == "projectile" or hp_kind == "bomb" or hp_kind == "missile" or hp_kind == "arrow") and hp_owner != owner_id:
+                                        var hp_x = 0.0
+                                        var hp_y = 0.0
+                                        if "x" in h_proj: hp_x = h_proj.x
+                                        elif h_proj.has_method("get_meta") and h_proj.has_meta("x"): hp_x = h_proj.get_meta("x")
+                                        if "y" in h_proj: hp_y = h_proj.y
+                                        elif h_proj.has_method("get_meta") and h_proj.has_meta("y"): hp_y = h_proj.get_meta("y")
+
+                                        var hp_dist_sq = (hp_x - h_x)*(hp_x - h_x) + (hp_y - h_y)*(hp_y - h_y)
+                                        if hp_dist_sq < h_radius * h_radius:
+                                            if "vx" in h_proj: h_proj.vx *= -1.0
+                                            elif h_proj.has_method("set_meta") and h_proj.has_meta("vx"): h_proj.set_meta("vx", h_proj.get_meta("vx") * -1.0)
+                                            if "vy" in h_proj: h_proj.vy *= -1.0
+                                            elif h_proj.has_method("set_meta") and h_proj.has_meta("vy"): h_proj.set_meta("vy", h_proj.get_meta("vy") * -1.0)
+
+                            if "duration" in hazard: hazard.duration = 0.0
                                     elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
                                     elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set"): hazard.set("duration", 0.0)
                 if h_kind == "siren_trap":
@@ -52676,7 +53042,33 @@ func _update_skill_timer(delta: float):
                                     if world != null and "arena" in world and "hazards" in world.arena:
                                         world.arena.hazards.append(trap)
 
-                                if "duration" in hazard: hazard.duration = 0.0
+
+                            if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                                for h_proj in self.world.arena.hazards:
+                                    var hp_kind = ""
+                                    if "kind" in h_proj: hp_kind = h_proj.kind
+                                    elif h_proj.has_method("get_meta") and h_proj.has_meta("kind"): hp_kind = h_proj.get_meta("kind")
+
+                                    var hp_owner = null
+                                    if "owner_id" in h_proj: hp_owner = h_proj.owner_id
+                                    elif h_proj.has_method("get_meta") and h_proj.has_meta("owner_id"): hp_owner = h_proj.get_meta("owner_id")
+
+                                    if (hp_kind == "projectile" or hp_kind == "bomb" or hp_kind == "missile" or hp_kind == "arrow") and hp_owner != owner_id:
+                                        var hp_x = 0.0
+                                        var hp_y = 0.0
+                                        if "x" in h_proj: hp_x = h_proj.x
+                                        elif h_proj.has_method("get_meta") and h_proj.has_meta("x"): hp_x = h_proj.get_meta("x")
+                                        if "y" in h_proj: hp_y = h_proj.y
+                                        elif h_proj.has_method("get_meta") and h_proj.has_meta("y"): hp_y = h_proj.get_meta("y")
+
+                                        var hp_dist_sq = (hp_x - h_x)*(hp_x - h_x) + (hp_y - h_y)*(hp_y - h_y)
+                                        if hp_dist_sq < h_radius * h_radius:
+                                            if "vx" in h_proj: h_proj.vx *= -1.0
+                                            elif h_proj.has_method("set_meta") and h_proj.has_meta("vx"): h_proj.set_meta("vx", h_proj.get_meta("vx") * -1.0)
+                                            if "vy" in h_proj: h_proj.vy *= -1.0
+                                            elif h_proj.has_method("set_meta") and h_proj.has_meta("vy"): h_proj.set_meta("vy", h_proj.get_meta("vy") * -1.0)
+
+                            if "duration" in hazard: hazard.duration = 0.0
                                 elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
                                 elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set"): hazard.set("duration", 0.0)
                                 elif typeof(hazard) == TYPE_DICTIONARY: hazard["duration"] = 0.0
