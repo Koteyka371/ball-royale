@@ -3846,7 +3846,7 @@ class BattleRoyaleMode(GameMode):
                 for b in balls:
                     if getattr(b, "alive", False):
                         dist = math.hypot(getattr(b, "x", 0) - b_x, getattr(b, "y", 0) - b_y)
-                        if dist <= 40.0 + getattr(b, "radius", 15.0):
+                        if dist <= 40.0 + (float(getattr(b, "radius", 15.0)) if isinstance(getattr(b, "radius", 15.0), (int, float)) else 15.0):
                             b.hp = getattr(b, "hp", 100.0) - 30.0
                             if getattr(b, "hp", 0) <= 0:
                                 b.alive = False
@@ -6300,7 +6300,7 @@ class DualPayloadMode(GameMode):
                     for b in balls:
                         if getattr(b, "alive", False):
                             dist = math.hypot(getattr(b, "x", 0) - hx, getattr(b, "y", 0) - hy)
-                            if dist <= 40.0 + getattr(b, "radius", 15.0):
+                            if dist <= 40.0 + (float(getattr(b, "radius", 15.0)) if isinstance(getattr(b, "radius", 15.0), (int, float)) else 15.0):
                                 b.hp = getattr(b, "hp", 100.0) - 30.0
                                 if getattr(b, "hp", 0) <= 0:
                                     b.alive = False
@@ -7136,7 +7136,7 @@ class EscortMode(GameMode):
                     for b in balls:
                         if getattr(b, "alive", False):
                             dist = math.hypot(getattr(b, "x", 0) - hx, getattr(b, "y", 0) - hy)
-                            if dist <= 40.0 + getattr(b, "radius", 15.0):
+                            if dist <= 40.0 + (float(getattr(b, "radius", 15.0)) if isinstance(getattr(b, "radius", 15.0), (int, float)) else 15.0):
                                 b.hp = getattr(b, "hp", 100.0) - 30.0
                                 if getattr(b, "hp", 0) <= 0:
                                     b.alive = False
@@ -50467,3 +50467,75 @@ class PeriodicLowGravityMutatorMode(GameMode):
                     world.add_event("gravity_low", {"message": "Low gravity warning!"})
 
 GAME_MODES['periodic_low_gravity_mutator'] = PeriodicLowGravityMutatorMode()
+
+
+class MagneticShrinkingFieldMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Magnetic Shrinking Field"
+        self.description = "A powerful magnetic field slowly shrinks towards the center. Balls outside the field are pulled violently into walls or hazards, while balls inside must fight for the remaining stable space."
+        self.min_x = 0.0
+        self.max_x = 1000.0
+        self.min_y = 0.0
+        self.max_y = 1000.0
+        self.shrink_rate = 15.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        self.min_x = 0.0
+        self.max_x = arena_width
+        self.min_y = 0.0
+        self.max_y = arena_height
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+
+        # Shrink map boundaries inward
+        if self.max_x - self.min_x > 50.0:
+            self.min_x += self.shrink_rate * delta
+            self.max_x -= self.shrink_rate * delta
+
+        if self.max_y - self.min_y > 50.0:
+            self.min_y += self.shrink_rate * delta
+            self.max_y -= self.shrink_rate * delta
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        center_x = arena_width / 2.0
+        center_y = arena_height / 2.0
+
+        for b in balls:
+            if not getattr(b, "alive", True):
+                continue
+
+            bx = getattr(b, "x", 0.0)
+            by = getattr(b, "y", 0.0)
+
+            # Check if outside safe zone
+            if bx < self.min_x or bx > self.max_x or by < self.min_y or by > self.max_y:
+                # Pulled violently into walls (outwards)
+                dx = bx - center_x
+                dy = by - center_y
+                dist = math.sqrt(dx**2 + dy**2)
+
+                if dist > 0.0:
+                    dx /= dist
+                    dy /= dist
+                else:
+                    dx = 1.0
+                    dy = 0.0
+
+                pull_strength = 2000.0 * delta # Violent pull
+                b.x = bx + dx * pull_strength
+                b.y = by + dy * pull_strength
+
+                # Apply damage for being outside the zone
+                dmg = 20.0 * delta
+                if hasattr(b, "take_damage"):
+                    b.take_damage(dmg)
+                else:
+                    b.hp = getattr(b, "hp", 100.0) - dmg
+
+GAME_MODES['magnetic_shrinking_field'] = MagneticShrinkingFieldMode()
