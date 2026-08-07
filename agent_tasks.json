@@ -32222,7 +32222,7 @@
     },
     {
       "id": "idea-1884",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Swap Mutator",

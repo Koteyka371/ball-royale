@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1884] Quantum Swap Mutator — *2026-08-07 23:05:20 UTC*
+
+A mutator where any ball dropping below 30% HP instantly swaps positions with the highest HP enemy in the arena.
+
+---
+
 ## [idea-1891] Bungee Cord Skill — *2026-08-07 22:41:10 UTC*
 
 Similar to grapple but leaves a temporary tether between the player and the wall. Both the player and the wall are elastic, creating interesting physics traps and escapes.
