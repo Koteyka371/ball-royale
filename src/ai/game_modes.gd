@@ -80719,3 +80719,185 @@ class ConfettiCelebrationMode extends GameMode:
 						b.set_meta("speed_boost_timer", max(b.get_meta("speed_boost_timer") if b.has_meta("speed_boost_timer") else 0.0, 3.0))
 
 GAME_MODES["confetti_celebration"] = ConfettiCelebrationMode.new()
+
+
+class SwapLowestHPMutatorMode extends GameMode:
+	func _init():
+		super._init()
+		self.name = "Low HP Swap Mutator"
+		self.description = "Any ball dropping below 30% HP instantly swaps positions with the highest HP enemy in the arena."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				if "alive" in b: is_alive = b.alive
+				elif b.has_method("has_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
+
+			if not is_alive:
+				continue
+
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_type = b.get("ball_type", "")
+			else:
+				if "ball_type" in b: b_type = b.ball_type
+				elif b.has_method("has_meta") and b.has_meta("ball_type"): b_type = b.get_meta("ball_type")
+
+			if b_type == "spectator":
+				continue
+
+			var hp = 0.0
+			var max_hp = 1.0
+			var b_team = ""
+			var b_name = "Entity"
+
+			if typeof(b) == TYPE_DICTIONARY:
+				hp = b.get("hp", 0.0)
+				max_hp = b.get("max_hp", 1.0)
+				b_team = b.get("team", "")
+				b_name = b.get("name", "Entity")
+			else:
+				if "hp" in b: hp = b.hp
+				elif b.has_method("has_meta") and b.has_meta("hp"): hp = b.get_meta("hp")
+
+				if "max_hp" in b: max_hp = b.max_hp
+				elif b.has_method("has_meta") and b.has_meta("max_hp"): max_hp = b.get_meta("max_hp")
+
+				if "team" in b: b_team = b.team
+				elif b.has_method("has_meta") and b.has_meta("team"): b_team = b.get_meta("team")
+
+				if "name" in b: b_name = b.name
+				elif b.has_method("has_meta") and b.has_meta("name"): b_name = b.get_meta("name")
+
+			if max_hp <= 0:
+				continue
+
+			var hp_percent = hp / max_hp
+
+			var low_hp_swap_triggered = false
+			if typeof(b) == TYPE_DICTIONARY:
+				low_hp_swap_triggered = b.get("low_hp_swap_triggered", false)
+			else:
+				if "low_hp_swap_triggered" in b: low_hp_swap_triggered = b.low_hp_swap_triggered
+				elif b.has_method("has_meta") and b.has_meta("low_hp_swap_triggered"): low_hp_swap_triggered = b.get_meta("low_hp_swap_triggered")
+
+			if hp_percent < 0.3:
+				if not low_hp_swap_triggered:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["low_hp_swap_triggered"] = true
+					else:
+						if "low_hp_swap_triggered" in b: b.low_hp_swap_triggered = true
+						elif b.has_method("set_meta"): b.set_meta("low_hp_swap_triggered", true)
+
+					var best_enemy = null
+					var best_enemy_hp = -1.0
+
+					for enemy in balls:
+						var e_is_alive = false
+						if typeof(enemy) == TYPE_DICTIONARY:
+							e_is_alive = enemy.get("alive", false)
+						else:
+							if "alive" in enemy: e_is_alive = enemy.alive
+							elif enemy.has_method("has_meta") and enemy.has_meta("alive"): e_is_alive = enemy.get_meta("alive")
+
+						if not e_is_alive:
+							continue
+
+						var e_type = ""
+						if typeof(enemy) == TYPE_DICTIONARY:
+							e_type = enemy.get("ball_type", "")
+						else:
+							if "ball_type" in enemy: e_type = enemy.ball_type
+							elif enemy.has_method("has_meta") and enemy.has_meta("ball_type"): e_type = enemy.get_meta("ball_type")
+
+						if e_type == "spectator":
+							continue
+
+						var e_team = ""
+						var e_hp = 0.0
+
+						if typeof(enemy) == TYPE_DICTIONARY:
+							e_team = enemy.get("team", "")
+							e_hp = enemy.get("hp", 0.0)
+						else:
+							if "team" in enemy: e_team = enemy.team
+							elif enemy.has_method("has_meta") and enemy.has_meta("team"): e_team = enemy.get_meta("team")
+
+							if "hp" in enemy: e_hp = enemy.hp
+							elif enemy.has_method("has_meta") and enemy.has_meta("hp"): e_hp = enemy.get_meta("hp")
+
+						if e_team == b_team:
+							continue
+
+						if e_hp > best_enemy_hp:
+							best_enemy_hp = e_hp
+							best_enemy = enemy
+
+					if best_enemy != null:
+						var bx = 0.0
+						var by = 0.0
+						var ex = 0.0
+						var ey = 0.0
+						var e_name = "Enemy"
+
+						if typeof(b) == TYPE_DICTIONARY:
+							bx = b.get("x", 0.0)
+							by = b.get("y", 0.0)
+						else:
+							if "x" in b: bx = b.x
+							elif b.has_method("has_meta") and b.has_meta("x"): bx = b.get_meta("x")
+
+							if "y" in b: by = b.y
+							elif b.has_method("has_meta") and b.has_meta("y"): by = b.get_meta("y")
+
+						if typeof(best_enemy) == TYPE_DICTIONARY:
+							ex = best_enemy.get("x", 0.0)
+							ey = best_enemy.get("y", 0.0)
+							e_name = best_enemy.get("name", "Enemy")
+						else:
+							if "x" in best_enemy: ex = best_enemy.x
+							elif best_enemy.has_method("has_meta") and best_enemy.has_meta("x"): ex = best_enemy.get_meta("x")
+
+							if "y" in best_enemy: ey = best_enemy.y
+							elif best_enemy.has_method("has_meta") and best_enemy.has_meta("y"): ey = best_enemy.get_meta("y")
+
+							if "name" in best_enemy: e_name = best_enemy.name
+							elif best_enemy.has_method("has_meta") and best_enemy.has_meta("name"): e_name = best_enemy.get_meta("name")
+
+						if typeof(b) == TYPE_DICTIONARY:
+							b["x"] = ex
+							b["y"] = ey
+						else:
+							if "x" in b: b.x = ex
+							elif b.has_method("set_meta"): b.set_meta("x", ex)
+
+							if "y" in b: b.y = ey
+							elif b.has_method("set_meta"): b.set_meta("y", ey)
+
+						if typeof(best_enemy) == TYPE_DICTIONARY:
+							best_enemy["x"] = bx
+							best_enemy["y"] = by
+						else:
+							if "x" in best_enemy: best_enemy.x = bx
+							elif best_enemy.has_method("set_meta"): best_enemy.set_meta("x", bx)
+
+							if "y" in best_enemy: best_enemy.y = by
+							elif best_enemy.has_method("set_meta"): best_enemy.set_meta("y", by)
+
+						if typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
+							world.add_event("teleport_effect", {"x": bx, "y": by})
+							world.add_event("teleport_effect", {"x": ex, "y": ey})
+							world.add_event("message", {"text": str(b_name) + " swapped with " + str(e_name) + "!"})
+			else:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["low_hp_swap_triggered"] = false
+				else:
+					if "low_hp_swap_triggered" in b: b.low_hp_swap_triggered = false
+					elif b.has_method("set_meta"): b.set_meta("low_hp_swap_triggered", false)
+
+GAME_MODES["low_hp_swap_mutator"] = SwapLowestHPMutatorMode.new()
