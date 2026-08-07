@@ -59709,7 +59709,44 @@ class NullificationZoneMode extends GameMode:
                         else:
                             b["silence_timer"] = 0.5
 
+
+class CrimsonFogEventMode extends GameMode:
+	var fog_timer = 15.0
+	var fog_active = false
+	var crimson_fog_active = false
+
+	func _init():
+		name = "Crimson Fog Event"
+		description = "A dense crimson fog rolls into the arena, draining health over time but granting double lifesteal."
+
+	func setup(world, balls):
+		fog_timer = 15.0
+		fog_active = false
+		crimson_fog_active = false
+
+	func tick(world, balls, delta=0.016):
+		fog_timer -= delta
+		if fog_timer <= 0:
+			fog_active = not fog_active
+			crimson_fog_active = fog_active
+			fog_timer = 20.0 if fog_active else 10.0
+
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				if fog_active:
+					world.add_event("visual_effect", {"type": "crimson_fog_start", "message": "The Crimson Fog rolls in!"})
+				else:
+					world.add_event("visual_effect", {"type": "crimson_fog_end", "message": "The Crimson Fog dissipates."})
+
+		if fog_active:
+			for b in balls:
+				if typeof(b) == TYPE_OBJECT and b.get("alive") != false and "hp" in b:
+					b.hp -= 10.0 * delta
+				elif typeof(b) == TYPE_DICTIONARY and b.get("alive", true) and b.has("hp"):
+					b["hp"] -= 10.0 * delta
+
+
 var GAME_MODES = {
+    "crimson_fog_event": CrimsonFogEventMode.new(),
     "nullification_zone": NullificationZoneMode.new(),
 	"clan_hub": ClanHubMode.new(),
 	"crumbling_arena": CrumblingArenaMode.new(),

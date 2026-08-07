@@ -1,0 +1,7 @@
+1. Implement `CrimsonFogEventMode` in `src/ai/game_modes.py` and `src/ai/game_modes.gd`.
+   - Setup fog event mode with a timer.
+   - When active, players lose health over time continuously.
+   - Implement damage tracking inside the mode or hook into the damage event if available, otherwise just use a variable `lifesteal_multiplier` or similar on players so that their damage restores double HP in `action.py`/`action.gd` when `crimson_fog_active` is true. Let's see how lifesteal is usually done. Wait, damage to players restoring double health... it's probably better to check for `crimson_fog_active` in `action.py` and `action.gd` during damage resolution, since we know lifesteal logic can be added in post-damage blocks. Wait, memory says: "global damage interception and modifier effects (like conditional lifesteal from weather or game modes) should be implemented in the post-damage resolution blocks (e.g., checking `if new_hp < old_hp:` in `action.py` or within `_attempt_damage_internal` in `action.gd`) rather than modifying the `take_damage` methods of individual entities."
+2. Let's check `src/ai/action.py` and `src/ai/action.gd` to find the post-damage resolution blocks and inject the 2x lifesteal for crimson fog.
+3. Add `crimson_fog_event` to the `GAME_MODES` dictionary in both python and gdscript files.
+4. Add tests for `CrimsonFogEventMode` in `src/tests/test_crimson_fog.py`.

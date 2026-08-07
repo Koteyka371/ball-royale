@@ -1457,6 +1457,11 @@ class Action:
                     attacker.hp = min(getattr(attacker, 'hp', 100.0) + actual_damage_dealt * 0.3, getattr(attacker, 'max_hp', 100.0))
 
         if new_hp < old_hp:
+            gm = getattr(self.world, "game_mode", None)
+            if gm and getattr(gm, "name", "") == "Crimson Fog Event" and getattr(gm, "crimson_fog_active", False) and attacker is not None:
+                damage_dealt = old_hp - new_hp
+                attacker.hp = min(getattr(attacker, "max_hp", 100.0), getattr(attacker, "hp", 100.0) + (damage_dealt * 2.0))
+
             if getattr(self.world, "game_mode", None) and getattr(self.world.game_mode, "name", "") == "Stamina Vampire":
                 damage_dealt = old_hp - new_hp
                 if getattr(attacker, "stamina", None) is not None:
