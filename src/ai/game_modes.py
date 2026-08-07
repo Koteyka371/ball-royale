@@ -36753,7 +36753,100 @@ class CursedAltarMode(GameMode):
                             if hasattr(world, "add_event"):
                                 world.add_event("altar_curse", {"ball_id": getattr(b, "id", None)})
 
+
+class CrumblingArenaMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Crumbling Arena"
+        self.description = "Taking damage near walls randomly alters the shape of the boundary, creating dynamic jagged paths and trapping mechanics as the walls deform instead of just breaking."
+        self.last_hp = {}
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.last_hp.clear()
+        for b in balls:
+            self.last_hp[b.id] = getattr(b, "hp", 100.0)
+
+        if not hasattr(world, "arena"):
+            return
+        if not hasattr(world.arena, "boundary_offsets"):
+            world.arena.boundary_offsets = {"top": 0.0, "bottom": 0.0, "left": 0.0, "right": 0.0}
+
+    def tick(self, world, balls, delta):
+        if not hasattr(world, "arena"):
+            return
+
+        offsets = getattr(world.arena, "boundary_offsets", {"top": 0.0, "bottom": 0.0, "left": 0.0, "right": 0.0})
+        w = getattr(world, "width", 1000.0)
+        h = getattr(world, "height", 1000.0)
+
+        import random
+        for b in balls:
+            if not getattr(b, "alive", True):
+                continue
+
+            current_hp = getattr(b, "hp", 100.0)
+            last_hp = self.last_hp.get(b.id, current_hp)
+
+            if current_hp < last_hp:
+                # Took damage! Check if near walls
+                margin = 200.0
+                top_bound = offsets.get("top", 0.0)
+                bottom_bound = h - offsets.get("bottom", 0.0)
+                left_bound = offsets.get("left", 0.0)
+                right_bound = w - offsets.get("right", 0.0)
+
+                wall_hit = None
+                if getattr(b, "y", 0.0) <= top_bound + margin:
+                    wall_hit = "top"
+                elif getattr(b, "y", 0.0) >= bottom_bound - margin:
+                    wall_hit = "bottom"
+                elif getattr(b, "x", 0.0) <= left_bound + margin:
+                    wall_hit = "left"
+                elif getattr(b, "x", 0.0) >= right_bound - margin:
+                    wall_hit = "right"
+
+                if wall_hit:
+                    # Deform the wall by increasing the boundary offset
+                    deformation = random.uniform(30.0, 70.0)
+                    offsets[wall_hit] += deformation
+
+                    # Create some temporary hazards to represent jagged paths/traps
+                    if not hasattr(world.arena, "hazards"):
+                        world.arena.hazards = []
+
+                    # Calculate position for trap
+                    tx = b.x
+                    ty = b.y
+
+                    # Add a hazard there
+                    h_id = 90000 + len(world.arena.hazards) + random.randint(0, 1000)
+
+                    # Since we can't cleanly import ProceduralArena.Hazard here without issues,
+                    # We will create a duck-typed Hazard directly
+                    class MockHazard:
+                        def __init__(self, id, x, y, radius, kind, damage):
+                            self.id = id
+                            self.x = x
+                            self.y = y
+                            self.radius = radius
+                            self.kind = kind
+                            self.damage = damage
+
+                    trap = MockHazard(id=h_id, x=tx, y=ty, radius=random.uniform(25.0, 50.0), kind="spikes", damage=15.0)
+                    setattr(trap, "duration", 15.0)
+                    world.arena.hazards.append(trap)
+
+            self.last_hp[b.id] = current_hp
+
+        if not hasattr(world.arena, "boundary_offsets"):
+            world.arena.boundary_offsets = offsets
+        else:
+            for k, v in offsets.items():
+                world.arena.boundary_offsets[k] = v
+
 GAME_MODES = {
+    'crumbling_arena': CrumblingArenaMode(),
     'cursed_altar': CursedAltarMode(),
     'healing_rain': HealingRainMode(),
     "boss_escort": BossEscortMode(),
