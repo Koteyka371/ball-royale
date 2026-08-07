@@ -59207,7 +59207,134 @@ class HealingRainMode extends GameMode:
 							b.set("speed", base_speed)
 							b.set_meta("_healing_rain_slowed", false)
 
+
+class CursedAltarMode extends GameMode:
+	func _init():
+		self.name = "Cursed Altar"
+		self.description = "An altar that occasionally applies negative modifiers to players trying to capture it."
+
+	func setup(world, balls=null) -> void:
+		var arena_w = 1000.0
+		var arena_h = 1000.0
+		if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+			arena_w = world.arena.get("width", 1000.0)
+			arena_h = world.arena.get("height", 1000.0)
+		elif typeof(world) == TYPE_DICTIONARY and world.has("arena") and world["arena"] != null:
+			var ar = world["arena"]
+			if typeof(ar) == TYPE_OBJECT:
+				arena_w = ar.get("width", 1000.0)
+				arena_h = ar.get("height", 1000.0)
+			else:
+				arena_w = ar.get("width", 1000.0)
+				arena_h = ar.get("height", 1000.0)
+
+		var altars = [{
+			"x": arena_w / 2,
+			"y": arena_h / 2,
+			"radius": 150.0,
+			"capture_progress": 0.0,
+			"owner": null,
+			"curse_timer": 3.0
+		}]
+		set_meta("altars", altars)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if world != null and typeof(world) == TYPE_OBJECT and world.has_method("tick"):
+			super.tick(world, balls, delta)
+
+		var altars = []
+		if has_meta("altars"):
+			altars = get_meta("altars")
+
+		for altar in altars:
+			var team_counts = {}
+			var balls_inside = []
+
+			if balls != null:
+				for b in balls:
+					if typeof(b) == TYPE_OBJECT and b.get("alive"):
+						var bx = b.get("x")
+						if bx == null: bx = 0.0
+						var by = b.get("y")
+						if by == null: by = 0.0
+						var br = b.get("radius")
+						if br == null: br = 10.0
+						var dist_sq = (bx - altar["x"]) * (bx - altar["x"]) + (by - altar["y"]) * (by - altar["y"])
+						if dist_sq <= (altar["radius"] + br) * (altar["radius"] + br):
+							var team = b.get("team")
+							if team != null:
+								if team_counts.has(team):
+									team_counts[team] += 1
+								else:
+									team_counts[team] = 1
+								balls_inside.append(b)
+					elif typeof(b) == TYPE_DICTIONARY and b.get("alive", false):
+						var bx = b.get("x", 0.0)
+						var by = b.get("y", 0.0)
+						var br = b.get("radius", 10.0)
+						var dist_sq = (bx - altar["x"]) * (bx - altar["x"]) + (by - altar["y"]) * (by - altar["y"])
+						if dist_sq <= (altar["radius"] + br) * (altar["radius"] + br):
+							var team = b.get("team", null)
+							if team != null:
+								if team_counts.has(team):
+									team_counts[team] += 1
+								else:
+									team_counts[team] = 1
+								balls_inside.append(b)
+
+			if team_counts.size() == 1:
+				var team = team_counts.keys()[0]
+				if altar["owner"] != team and altar["owner"] != null:
+					# Contested/Decaying
+					altar["capture_progress"] -= 20.0 * delta
+					if altar["capture_progress"] <= 0:
+						altar["owner"] = null
+						altar["capture_progress"] = 0.0
+				else:
+					altar["owner"] = team
+					altar["capture_progress"] = min(100.0, altar["capture_progress"] + 20.0 * delta)
+			else:
+				# Decaying
+				altar["capture_progress"] = max(0.0, altar["capture_progress"] - 10.0 * delta)
+				if altar["capture_progress"] <= 0:
+					altar["owner"] = null
+
+			if altar["owner"] != null and altar["capture_progress"] > 0:
+				altar["curse_timer"] -= delta
+				if altar["curse_timer"] <= 0:
+					altar["curse_timer"] = 3.0
+					for b in balls_inside:
+						var b_team = null
+						if typeof(b) == TYPE_OBJECT:
+							b_team = b.get("team")
+						elif typeof(b) == TYPE_DICTIONARY:
+							b_team = b.get("team", null)
+
+						if b_team == altar["owner"]:
+							if typeof(b) == TYPE_OBJECT:
+								if b.has_method("take_damage"):
+									b.take_damage(5.0)
+								else:
+									var hp = b.get("hp")
+									if hp == null: hp = 100.0
+									b.set("hp", max(0.0, hp - 5.0))
+								if "speed" in b:
+									var spd = b.get("speed")
+									if spd == null: spd = 100.0
+									b.set("speed", spd * 0.8)
+							elif typeof(b) == TYPE_DICTIONARY:
+								b["hp"] = max(0.0, b.get("hp", 100.0) - 5.0)
+								if b.has("speed"):
+									b["speed"] *= 0.8
+
+							if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+								var bid = null
+								if typeof(b) == TYPE_OBJECT: bid = b.get("id")
+								else: bid = b.get("id", null)
+								world.add_event("altar_curse", {"ball_id": bid})
+
 var GAME_MODES = {
+	"cursed_altar": CursedAltarMode.new(),
 	"healing_rain": HealingRainMode.new(),
 	"color_swap_team": ColorSwapTeamMode.new(),
 	"extreme_microclimate": ExtremeMicroclimateMode.new(),
