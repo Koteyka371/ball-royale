@@ -59618,6 +59618,7 @@ class CrumblingArenaMode extends GameMode:
 		world.arena.set_meta("boundary_offsets", offsets)
 
 var GAME_MODES = {
+	"clan_hub": ClanHubMode.new(),
 	"crumbling_arena": CrumblingArenaMode.new(),
 	"cursed_altar": CursedAltarMode.new(),
 	"healing_rain": HealingRainMode.new(),
@@ -79678,6 +79679,265 @@ class StaticFieldMutatorMode extends GameMode:
 
 GAME_MODES["super_vortex"] = SuperVortexMode.new()
 GAME_MODES["static_field_mutator"] = StaticFieldMutatorMode.new()
+
+
+class ClanHubMode extends GameMode:
+	var hub_clan: String = ""
+
+	func _init():
+		name = "clan_hub"
+		description = "Clan social hub and physical stash."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		hub_clan = ""
+
+		if typeof(world) == TYPE_DICTIONARY and world.has("hub_clan"):
+			hub_clan = world["hub_clan"]
+		elif typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("hub_clan") != null:
+			hub_clan = world.get("hub_clan")
+
+		if hub_clan == "":
+			for b in balls:
+				if typeof(b) == TYPE_DICTIONARY and b.has("clan") and b["clan"] != null and b["clan"] != "":
+					hub_clan = b["clan"]
+					break
+				elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("clan") != null and b.get("clan") != "":
+					hub_clan = b.get("clan")
+					break
+
+		for b in balls:
+			if typeof(b) == TYPE_DICTIONARY:
+				b["base_damage"] = 0.0
+				b["damage"] = 0.0
+			elif typeof(b) == TYPE_OBJECT:
+				b.base_damage = 0.0
+				b.damage = 0.0
+
+		if hub_clan == "":
+			return
+
+		var clan_manager = null
+		if typeof(world) == TYPE_DICTIONARY:
+			if world.has("clan_manager"):
+				clan_manager = world["clan_manager"]
+			elif world.has("profile_manager") and typeof(world["profile_manager"]) == TYPE_DICTIONARY and world["profile_manager"].has("clan_manager"):
+				clan_manager = world["profile_manager"]["clan_manager"]
+			elif world.has("profile_manager") and typeof(world["profile_manager"]) == TYPE_OBJECT and world["profile_manager"].get("clan_manager") != null:
+				clan_manager = world["profile_manager"].get("clan_manager")
+		elif typeof(world) == TYPE_OBJECT:
+			if world.get("clan_manager") != null:
+				clan_manager = world.get("clan_manager")
+			elif world.get("profile_manager") != null:
+				var pm = world.get("profile_manager")
+				if typeof(pm) == TYPE_DICTIONARY and pm.has("clan_manager"):
+					clan_manager = pm["clan_manager"]
+				elif typeof(pm) == TYPE_OBJECT and pm.get("clan_manager") != null:
+					clan_manager = pm.get("clan_manager")
+
+		if clan_manager == null:
+			return
+
+		var clans = {}
+		if typeof(clan_manager) == TYPE_DICTIONARY and clan_manager.has("data") and typeof(clan_manager["data"]) == TYPE_DICTIONARY and clan_manager["data"].has("clans"):
+			clans = clan_manager["data"]["clans"]
+		elif typeof(clan_manager) == TYPE_OBJECT and clan_manager.get("data") != null and typeof(clan_manager.get("data")) == TYPE_DICTIONARY and clan_manager.get("data").has("clans"):
+			clans = clan_manager.get("data")["clans"]
+
+		if not clans.has(hub_clan):
+			return
+
+		var clan_data = clans[hub_clan]
+
+		var arena_hazards = []
+		if typeof(world) == TYPE_DICTIONARY and world.has("arena") and typeof(world["arena"]) == TYPE_DICTIONARY and world["arena"].has("hazards"):
+			arena_hazards = world["arena"]["hazards"]
+		elif typeof(world) == TYPE_OBJECT and world.get("arena") != null and typeof(world.get("arena")) == TYPE_DICTIONARY and world.get("arena").has("hazards"):
+			arena_hazards = world.get("arena")["hazards"]
+		elif typeof(world) == TYPE_OBJECT and world.get("arena") != null and typeof(world.get("arena")) == TYPE_OBJECT and world.get("arena").get("hazards") != null:
+			arena_hazards = world.get("arena").get("hazards")
+
+		if clan_data.has("hub"):
+			var hub_decorations = clan_data["hub"]
+			for dec in hub_decorations:
+				var dec_name = "Unknown"
+				if typeof(dec) == TYPE_DICTIONARY and dec.has("decoration"): dec_name = dec["decoration"]
+				var x = 0.0
+				if typeof(dec) == TYPE_DICTIONARY and dec.has("x"): x = float(dec["x"])
+				var y = 0.0
+				if typeof(dec) == TYPE_DICTIONARY and dec.has("y"): y = float(dec["y"])
+
+				arena_hazards.append({
+					"kind": "clan_decoration",
+					"name": dec_name,
+					"x": x,
+					"y": y,
+					"radius": 20.0
+				})
+
+		if clan_data.has("stash"):
+			var stash = clan_data["stash"]
+			var stash_x = 200.0
+			var stash_y = 200.0
+			for item_name in stash.keys():
+				var amount = stash[item_name]
+				if amount > 0:
+					arena_hazards.append({
+						"kind": "clan_stash_pile",
+						"item": item_name,
+						"amount": amount,
+						"x": stash_x,
+						"y": stash_y,
+						"radius": 15.0
+					})
+					stash_x += 40.0
+
+		arena_hazards.append({
+			"kind": "clan_npc",
+			"role": "stash_master",
+			"x": 400.0,
+			"y": 100.0,
+			"radius": 30.0
+		})
+		arena_hazards.append({
+			"kind": "clan_npc",
+			"role": "quest_master",
+			"x": 100.0,
+			"y": 400.0,
+			"radius": 30.0
+		})
+
+	func tick(world, delta: float) -> void:
+		if hub_clan == "":
+			return
+
+		var clan_manager = null
+		if typeof(world) == TYPE_DICTIONARY:
+			if world.has("clan_manager"):
+				clan_manager = world["clan_manager"]
+			elif world.has("profile_manager") and typeof(world["profile_manager"]) == TYPE_DICTIONARY and world["profile_manager"].has("clan_manager"):
+				clan_manager = world["profile_manager"]["clan_manager"]
+			elif world.has("profile_manager") and typeof(world["profile_manager"]) == TYPE_OBJECT and world["profile_manager"].get("clan_manager") != null:
+				clan_manager = world["profile_manager"].get("clan_manager")
+		elif typeof(world) == TYPE_OBJECT:
+			if world.get("clan_manager") != null:
+				clan_manager = world.get("clan_manager")
+			elif world.get("profile_manager") != null:
+				var pm = world.get("profile_manager")
+				if typeof(pm) == TYPE_DICTIONARY and pm.has("clan_manager"):
+					clan_manager = pm["clan_manager"]
+				elif typeof(pm) == TYPE_OBJECT and pm.get("clan_manager") != null:
+					clan_manager = pm.get("clan_manager")
+
+		var hub_buffs = []
+		if clan_manager != null:
+			if typeof(clan_manager) == TYPE_OBJECT and clan_manager.has_method("get_hub_buffs"):
+				hub_buffs = clan_manager.get_hub_buffs(hub_clan)
+
+		var balls = []
+		if typeof(world) == TYPE_DICTIONARY and world.has("balls"):
+			balls = world["balls"]
+		elif typeof(world) == TYPE_OBJECT and world.get("balls") != null:
+			balls = world.get("balls")
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY and b.has("alive"): is_alive = b["alive"]
+			elif typeof(b) == TYPE_OBJECT and b.get("alive") != null: is_alive = b.get("alive")
+
+			if is_alive:
+				for buff in hub_buffs:
+					if buff == "Hub_Speed_Boost":
+						if typeof(b) == TYPE_DICTIONARY and b.has("base_speed"):
+							b["speed"] = b["base_speed"] + 20.0
+						elif typeof(b) == TYPE_OBJECT and b.get("base_speed") != null:
+							b.speed = b.base_speed + 20.0
+					elif buff == "Hub_Health_Regen":
+						if typeof(b) == TYPE_DICTIONARY and b.has("hp") and b.has("max_hp") and b["hp"] < b["max_hp"]:
+							b["hp"] = min(b["max_hp"], b["hp"] + 5.0 * delta)
+						elif typeof(b) == TYPE_OBJECT and b.get("hp") != null and b.get("max_hp") != null and b.hp < b.max_hp:
+							b.hp = min(b.max_hp, b.hp + 5.0 * delta)
+
+		var hazards = []
+		if typeof(world) == TYPE_DICTIONARY and world.has("arena") and typeof(world["arena"]) == TYPE_DICTIONARY and world["arena"].has("hazards"):
+			hazards = world["arena"]["hazards"]
+		elif typeof(world) == TYPE_OBJECT and world.get("arena") != null and typeof(world.get("arena")) == TYPE_DICTIONARY and world.get("arena").has("hazards"):
+			hazards = world.get("arena")["hazards"]
+		elif typeof(world) == TYPE_OBJECT and world.get("arena") != null and typeof(world.get("arena")) == TYPE_OBJECT and world.get("arena").get("hazards") != null:
+			hazards = world.get("arena").get("hazards")
+
+		for h in hazards:
+			var h_kind = ""
+			if typeof(h) == TYPE_DICTIONARY and h.has("kind"): h_kind = h["kind"]
+			elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("kind"): h_kind = h.get_meta("kind")
+			elif typeof(h) == TYPE_OBJECT and h.get("kind") != null: h_kind = h.get("kind")
+
+			if h_kind == "clan_npc":
+				var hx = 0.0
+				if typeof(h) == TYPE_DICTIONARY and h.has("x"): hx = h["x"]
+				elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("x"): hx = h.get_meta("x")
+				elif typeof(h) == TYPE_OBJECT and h.get("x") != null: hx = h.get("x")
+
+				var hy = 0.0
+				if typeof(h) == TYPE_DICTIONARY and h.has("y"): hy = h["y"]
+				elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("y"): hy = h.get_meta("y")
+				elif typeof(h) == TYPE_OBJECT and h.get("y") != null: hy = h.get("y")
+
+				var hr = 30.0
+				if typeof(h) == TYPE_DICTIONARY and h.has("radius"): hr = h["radius"]
+				elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("radius"): hr = h.get_meta("radius")
+				elif typeof(h) == TYPE_OBJECT and h.get("radius") != null: hr = h.get("radius")
+
+				var role = "npc"
+				if typeof(h) == TYPE_DICTIONARY and h.has("role"): role = h["role"]
+				elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("role"): role = h.get_meta("role")
+				elif typeof(h) == TYPE_OBJECT and h.get("role") != null: role = h.get("role")
+
+				for b in balls:
+					var is_alive = false
+					if typeof(b) == TYPE_DICTIONARY and b.has("alive"): is_alive = b["alive"]
+					elif typeof(b) == TYPE_OBJECT and b.get("alive") != null: is_alive = b.get("alive")
+
+					if not is_alive: continue
+
+					var bx = 0.0
+					if typeof(b) == TYPE_DICTIONARY and b.has("x"): bx = b["x"]
+					elif typeof(b) == TYPE_OBJECT and b.get("x") != null: bx = b.get("x")
+
+					var by = 0.0
+					if typeof(b) == TYPE_DICTIONARY and b.has("y"): by = b["y"]
+					elif typeof(b) == TYPE_OBJECT and b.get("y") != null: by = b.get("y")
+
+					var br = 10.0
+					if typeof(b) == TYPE_DICTIONARY and b.has("radius"): br = b["radius"]
+					elif typeof(b) == TYPE_OBJECT and b.get("radius") != null: br = b.get("radius")
+
+					var dx = bx - hx
+					var dy = by - hy
+					var dist = sqrt(dx * dx + dy * dy)
+
+					if dist < (br + hr + 10.0):
+						var b_id = ""
+						if typeof(b) == TYPE_DICTIONARY and b.has("id"): b_id = b["id"]
+						elif typeof(b) == TYPE_OBJECT and b.get("id") != null: b_id = b.get("id")
+
+						var current_time = 0.0
+						if typeof(world) == TYPE_DICTIONARY and world.has("time"): current_time = world["time"]
+						elif typeof(world) == TYPE_OBJECT and world.get("time") != null: current_time = world.get("time")
+
+						var last_interaction = 0.0
+						if typeof(b) == TYPE_DICTIONARY and b.has("last_npc_interaction"): last_interaction = b["last_npc_interaction"]
+						elif typeof(b) == TYPE_OBJECT and b.get("last_npc_interaction") != null: last_interaction = b.get("last_npc_interaction")
+
+						if current_time - last_interaction > 1.0:
+							if typeof(b) == TYPE_DICTIONARY: b["last_npc_interaction"] = current_time
+							elif typeof(b) == TYPE_OBJECT: b.set("last_npc_interaction", current_time)
+
+							if typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+								pass # Can't call method on dict
+							elif typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+								world.add_event("npc_interaction", {"npc": role, "player": b_id})
+
 
 class OrbitalBlackHoleEventMode extends GameMode:
 	var active = false
