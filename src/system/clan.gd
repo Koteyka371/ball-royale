@@ -29,6 +29,10 @@ func load_clans():
                     clan["pets"] = []
                 if not clan.has("hub_pets"):
                     clan["hub_pets"] = []
+                if not clan.has("allies"):
+                    clan["allies"] = []
+                if not clan.has("mega_quests"):
+                    clan["mega_quests"] = []
             return
 
     data = {"clans": {}}
@@ -53,7 +57,9 @@ func create_clan(clan_name: String, creator_id: String) -> bool:
 		"decorations": [],
 		"hub": [],
 		"pets": [],
-		"hub_pets": []
+		"hub_pets": [],
+		"allies": [],
+		"mega_quests": []
 	}
     save_clans()
     return true
@@ -517,3 +523,159 @@ func end_weekly_tournament() -> bool:
     data["tournament_scores"] = {}
     save_clans()
     return true
+
+func get_alliance_cluster(clan_name: String) -> Array:
+	if not data["clans"].has(clan_name):
+		return []
+	var visited = []
+	var queue = [clan_name]
+	while queue.size() > 0:
+		var current = queue.pop_front()
+		if not visited.has(current):
+			visited.append(current)
+			if data["clans"].has(current):
+				var clan_allies = []
+				if data["clans"][current].has("allies"):
+					clan_allies = data["clans"][current]["allies"]
+				for ally in clan_allies:
+					if not visited.has(ally):
+						queue.append(ally)
+	return visited
+
+func form_alliance(clan1_name: String, clan2_name: String) -> bool:
+	if data["clans"].has(clan1_name) and data["clans"].has(clan2_name) and clan1_name != clan2_name:
+		var cluster1 = get_alliance_cluster(clan1_name)
+		var cluster2 = get_alliance_cluster(clan2_name)
+		if cluster2.has(clan1_name) or cluster1.has(clan2_name):
+			return false
+		var combined_size = cluster1.size()
+		for c in cluster2:
+			if not cluster1.has(c):
+				combined_size += 1
+		if combined_size > 3:
+			return false
+
+		var clan1 = data["clans"][clan1_name]
+		var clan2 = data["clans"][clan2_name]
+		if not clan1.has("allies"):
+			clan1["allies"] = []
+		if not clan2.has("allies"):
+			clan2["allies"] = []
+
+		if not clan1["allies"].has(clan2_name) and not clan2["allies"].has(clan1_name):
+			clan1["allies"].append(clan2_name)
+			clan2["allies"].append(clan1_name)
+			save_clans()
+			return true
+	return false
+
+func break_alliance(clan1_name: String, clan2_name: String) -> bool:
+	if data["clans"].has(clan1_name) and data["clans"].has(clan2_name):
+		var clan1 = data["clans"][clan1_name]
+		var clan2 = data["clans"][clan2_name]
+		var success = false
+		if clan1.has("allies") and clan1["allies"].has(clan2_name):
+			clan1["allies"].erase(clan2_name)
+			success = true
+		if clan2.has("allies") and clan2["allies"].has(clan1_name):
+			clan2["allies"].erase(clan1_name)
+			success = true
+		if success:
+			save_clans()
+		return success
+	return false
+
+func get_shared_territories(clan_name: String) -> Array:
+	var shared = []
+	var cluster = get_alliance_cluster(clan_name)
+	for c in cluster:
+		if data["clans"].has(c):
+			var t = []
+			if data["clans"][c].has("territories"):
+				t = data["clans"][c]["territories"]
+			for terr in t:
+				if not shared.has(terr):
+					shared.append(terr)
+	return shared
+
+func add_mega_quest(clan_name: String, description: String, required_progress: int, rewards: Array = []) -> bool:
+	if data["clans"].has(clan_name):
+		var clan = data["clans"][clan_name]
+		if not clan.has("mega_quests"):
+			clan["mega_quests"] = []
+		clan["mega_quests"].append({
+			"description": description,
+			"required": required_progress,
+			"current": 0,
+			"completed": false,
+			"rewards": rewards,
+			"contributors": {}
+		})
+		save_clans()
+		return true
+	return false
+
+func get_mega_quests(clan_name: String) -> Array:
+	if data["clans"].has(clan_name):
+		var clan = data["clans"][clan_name]
+		if clan.has("mega_quests"):
+			return clan["mega_quests"]
+	return []
+
+func progress_mega_quest(clan_name: String, quest_index: int, amount: int, player_id: String = "") -> bool:
+	if data["clans"].has(clan_name):
+		var clan = data["clans"][clan_name]
+		if not clan.has("mega_quests"):
+			clan["mega_quests"] = []
+		if quest_index >= 0 and quest_index < clan["mega_quests"].size():
+			var quest = clan["mega_quests"][quest_index]
+			if not quest["completed"]:
+				quest["current"] += amount
+				if player_id != "":
+					if not quest.has("contributors"):
+						quest["contributors"] = {}
+					if not quest["contributors"].has(player_id):
+						quest["contributors"][player_id] = 0
+					quest["contributors"][player_id] += amount
+				if quest["current"] >= quest["required"]:
+					quest["current"] = quest["required"]
+					quest["completed"] = true
+
+					var rewards = []
+					if quest.has("rewards"):
+						rewards = quest["rewards"]
+
+					var cluster = get_alliance_cluster(clan_name)
+					for ally_name in cluster:
+						if data["clans"].has(ally_name):
+							var ally = data["clans"][ally_name]
+							if not ally.has("points"):
+								ally["points"] = 0
+							ally["points"] += 50
+							for reward in rewards:
+								var rtype = reward["type"]
+								var rval = reward["value"]
+								if rtype == "points":
+									ally["points"] += rval
+								elif rtype == "buff":
+									if not ally.has("buffs"):
+										ally["buffs"] = []
+									if not ally["buffs"].has(rval):
+										ally["buffs"].append(rval)
+								elif rtype == "cosmetic":
+									if not ally.has("cosmetics"):
+										ally["cosmetics"] = []
+									if not ally["cosmetics"].has(rval):
+										ally["cosmetics"].append(rval)
+								elif rtype == "stash_item":
+									if not ally.has("stash"):
+										ally["stash"] = {}
+									if not ally["stash"].has(rval):
+										ally["stash"][rval] = 0
+									var amt = 1
+									if reward.has("amount"):
+										amt = reward["amount"]
+									ally["stash"][rval] += amt
+					save_clans()
+					return true
+	return false
