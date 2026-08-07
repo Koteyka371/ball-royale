@@ -53,15 +53,15 @@ def test_extreme_weather_mode_setup_and_tick():
     if mode.current_weather not in ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice"]:
         return # Skip assertion for unmapped weathers like giant_flood in this old test
     expected = {
-        "blizzard": "thermal_booster",
-        "heatwave": "cooling_booster",
-        "acid_rain": "hazmat_booster",
-        "hurricane": "heavy_anchor_booster",
-        "tsunami": "life_jacket_booster",
-        "meteor_shower": "meteor_shield_booster",
-        "ice": "thermal_booster"
+        "blizzard": ["thermal_booster", "snow_boots", "snow_globe_item"],
+        "heatwave": ["cooling_booster"],
+        "acid_rain": ["hazmat_booster"],
+        "hurricane": ["heavy_anchor_booster", "lightning_rod_item"],
+        "tsunami": ["life_jacket_booster"],
+        "meteor_shower": ["meteor_shield_booster", "lightning_rod_item"],
+        "ice": ["thermal_booster", "snow_boots"]
     }[mode.current_weather]
-    assert kind == expected
+    assert kind in expected
 
 def test_extreme_weather_boss_spawn_and_drop():
     from ai.game_modes import ExtremeWeatherMode

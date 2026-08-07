@@ -22849,14 +22849,16 @@ class ExtremeWeatherMode(GameMode):
             # Spawn the corresponding booster
             booster_kind = None
             if self.current_weather == "blizzard":
-                if self.random.random() < 0.3: booster_kind = "snow_globe_item"
+                rnd = self.random.random()
+                if rnd < 0.3: booster_kind = "snow_globe_item"
+                elif rnd < 0.6: booster_kind = "snow_boots"
                 else: booster_kind = "thermal_booster"
             elif self.current_weather == "heatwave": booster_kind = "cooling_booster"
             elif self.current_weather == "acid_rain": booster_kind = "hazmat_booster"
-            elif self.current_weather == "hurricane": booster_kind = "heavy_anchor_booster"
+            elif self.current_weather == "hurricane": booster_kind = self.random.choice(["heavy_anchor_booster", "lightning_rod_item"])
             elif self.current_weather == "tsunami": booster_kind = "life_jacket_booster"
-            elif self.current_weather == "meteor_shower": booster_kind = "meteor_shield_booster"
-            elif self.current_weather == "ice": booster_kind = "thermal_booster"
+            elif self.current_weather == "meteor_shower": booster_kind = self.random.choice(["meteor_shield_booster", "lightning_rod_item"])
+            elif self.current_weather == "ice": booster_kind = self.random.choice(["thermal_booster", "snow_boots"])
             elif self.current_weather == "earthquake": booster_kind = "seismic_booster"
             elif self.current_weather == "violent_quake": booster_kind = "seismic_booster"
             elif self.current_weather == "giant_flood": booster_kind = "life_jacket_booster"

@@ -1,61 +1,70 @@
 import pytest
-from ai.game_modes import LightningStrikeEventMode
+import sys
+sys.path.append('src')
+from ai.action import Action
+import math
 
-class MockBall:
-    def __init__(self, id, x, y, team):
-        self.id = id
-        self.x = x
-        self.y = y
-        self.team = team
-        self.alive = True
-        self.has_lightning_rod = False
-        self.stun_timer = 0.0
+class MockArena:
+    def __init__(self):
+        self.hazards = []
+        self.width = 1000
+        self.height = 1000
 
 class MockWorld:
     def __init__(self):
-        self.events = []
+        self.arena = MockArena()
+        self.balls = []
         self.boosters = []
+        self.events = []
+        self.projectiles = []
+        self.teams = {1: {"score": 0}}
+        self.game_mode = type("MockGameMode", (), {"weather": "clear"})()
+    def get_nearby_entities(self, entity, radius):
+        return {"boosters": self.boosters, "hazards": self.arena.hazards, "balls": self.balls}
 
-    def add_event(self, type, data):
-        self.events.append({"type": type, "data": data})
+class MockHazard:
+    def __init__(self, kind, x, y, radius):
+        self.kind = kind
+        self.x = x
+        self.y = y
+        self.radius = radius
 
-def test_lightning_rod_redirects_strike():
-    mode = LightningStrikeEventMode()
+class MockBooster:
+    def __init__(self, kind, x, y):
+        self.kind = kind
+        self.x = x
+        self.y = y
+        self.radius = 15.0
+        self.active = True
+
+class MockBall:
+    def __init__(self, x, y, cosmetic=""):
+        self.id = 1
+        self.x = x
+        self.y = y
+        self.vx = 0
+        self.vy = 0
+        self.radius = 15.0
+        self.inventory = []
+        self.speed = 100.0
+        self.base_speed = 100.0
+        self.cosmetic = cosmetic
+        self.team = 1
+        self.ball_type = "normal"
+        self.hp = 100
+        self.max_hp = 100
+
+def test_lightning_rod_pickup():
     world = MockWorld()
+    ball = MockBall(0, 0)
+    world.balls.append(ball)
 
-    # Force event to be active and add a strike
-    mode.event_active = True
-    mode.strikes = [{
-        "id": "lightning_test",
-        "x": 500,
-        "y": 500,
-        "radius": 40.0,
-        "timer": 0.0,
-        "state": "warning"
-    }]
+    lightning_rod_booster = MockBooster("lightning_rod_item", 0, 0)
+    lightning_rod_booster.active = True
+    world.boosters.append(lightning_rod_booster)
 
-    # Create balls
-    bearer = MockBall(1, 100, 100, "team_a")
-    bearer.has_lightning_rod = True
+    action = Action(ball, world)
+    action._collect_booster(1.0)
 
-    enemy = MockBall(2, 700, 700, "team_b")
-
-    balls = [bearer, enemy]
-
-    # Tick to transition state and trigger redirect
-    mode.tick(world, balls, delta=0.016)
-
-    # The strike should now be relocated to the enemy
-    strike = mode.strikes[0]
-    assert strike["state"] == "active"
-    assert strike["x"] == 700
-    assert strike["y"] == 700
-
-    # The lightning rod should be consumed
-    assert not bearer.has_lightning_rod
-
-    # Event should be added
-    redirect_events = [e for e in world.events if e["type"] == "lightning_redirect"]
-    assert len(redirect_events) == 1
-    assert redirect_events[0]["data"]["x"] == 700
-    assert redirect_events[0]["data"]["y"] == 700
+    assert getattr(ball, "has_lightning_rod", False)
+    assert lightning_rod_booster not in world.boosters

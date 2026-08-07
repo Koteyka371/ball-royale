@@ -36265,15 +36265,26 @@ class ExtremeWeatherMode extends GameMode:
 
 			var booster_kind = ""
 			if current_weather == "blizzard":
-				if randf() < 0.3:
+				var rnd = randf()
+				if rnd < 0.3:
 					booster_kind = "snow_globe_item"
+				elif rnd < 0.6:
+					booster_kind = "snow_boots"
 				else:
 					booster_kind = "thermal_booster"
 			elif current_weather == "heatwave": booster_kind = "cooling_booster"
 			elif current_weather == "acid_rain": booster_kind = "hazmat_booster"
-			elif current_weather == "hurricane": booster_kind = "heavy_anchor_booster"
+			elif current_weather == "hurricane":
+				if randf() < 0.5:
+					booster_kind = "heavy_anchor_booster"
+				else:
+					booster_kind = "lightning_rod_item"
 			elif current_weather == "tsunami": booster_kind = "life_jacket_booster"
-			elif current_weather == "ice": booster_kind = "thermal_booster"
+			elif current_weather == "ice":
+				if randf() < 0.5:
+					booster_kind = "thermal_booster"
+				else:
+					booster_kind = "snow_boots"
 			elif current_weather == "earthquake": booster_kind = "seismic_booster"
 			elif current_weather == "violent_quake": booster_kind = "seismic_booster"
 			elif current_weather == "giant_flood": booster_kind = "life_jacket_booster"
