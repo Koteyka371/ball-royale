@@ -28771,12 +28771,14 @@ class FrictionlessArenaModifierMode(GameMode):
                     if getattr(b, "frictionless_modifier_applied", False):
                         b.is_frictionless = False
                         b.frictionless_modifier_applied = False
+                        b.friction_multiplier = 1.0
             else:
                 # Continuously apply frictionless
                 for b in balls:
                     if getattr(b, "alive", False):
                         b.is_frictionless = True
                         b.frictionless_modifier_applied = True
+                        b.friction_multiplier = 0.05
         else:
             self.event_timer -= delta
             if self.event_timer <= 0:
@@ -28788,6 +28790,7 @@ class FrictionlessArenaModifierMode(GameMode):
                     if getattr(b, "alive", False):
                         b.is_frictionless = True
                         b.frictionless_modifier_applied = True
+                        b.friction_multiplier = 0.05
 
 class SweepingRotatingLasersMode(GameMode):
     def __init__(self):

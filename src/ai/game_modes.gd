@@ -47810,13 +47810,17 @@ class FrictionlessArenaModifierMode extends GameMode:
 						if b.has("frictionless_modifier_applied") and b["frictionless_modifier_applied"]:
 							b.erase("frictionless_modifier_applied")
 							b["is_frictionless"] = false
+							b["friction_multiplier"] = 1.0
 					elif typeof(b) == TYPE_OBJECT:
 						if b.has_meta("frictionless_modifier_applied") and b.get_meta("frictionless_modifier_applied"):
 							b.remove_meta("frictionless_modifier_applied")
 							if "is_frictionless" in b:
 								b.is_frictionless = false
+								if "friction_multiplier" in b:
+									b.friction_multiplier = 1.0
 							else:
 								b.set_meta("is_frictionless", false)
+								b.set_meta("friction_multiplier", 1.0)
 			else:
 				# Continuously apply frictionless
 				for b in balls:
@@ -47824,12 +47828,16 @@ class FrictionlessArenaModifierMode extends GameMode:
 						if b.get("alive", false):
 							b["is_frictionless"] = true
 							b["frictionless_modifier_applied"] = true
+							b["friction_multiplier"] = 0.05
 					elif typeof(b) == TYPE_OBJECT:
 						if b.get("alive") if "alive" in b else false:
 							b.set_meta("is_frictionless", true)
 							if "is_frictionless" in b:
 								b.is_frictionless = true
 							b.set_meta("frictionless_modifier_applied", true)
+							b.set_meta("friction_multiplier", 0.05)
+							if "friction_multiplier" in b:
+								b.friction_multiplier = 0.05
 		else:
 			event_timer -= delta
 			if event_timer <= 0:
@@ -47842,12 +47850,16 @@ class FrictionlessArenaModifierMode extends GameMode:
 						if b.get("alive", false):
 							b["is_frictionless"] = true
 							b["frictionless_modifier_applied"] = true
+							b["friction_multiplier"] = 0.05
 					elif typeof(b) == TYPE_OBJECT:
 						if b.get("alive") if "alive" in b else false:
 							b.set_meta("is_frictionless", true)
 							if "is_frictionless" in b:
 								b.is_frictionless = true
 							b.set_meta("frictionless_modifier_applied", true)
+							b.set_meta("friction_multiplier", 0.05)
+							if "friction_multiplier" in b:
+								b.friction_multiplier = 0.05
 
 
 
