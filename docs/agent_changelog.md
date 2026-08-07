@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1876] Momentum Reversal Trap — *2026-08-07 23:57:43 UTC*
+
+A deployable trap that functions like a portal but reverses the momentum of any ball entering it. Useful for throwing balls back into hazards.
+
+---
+
 ## [idea-1884] Quantum Swap Mutator — *2026-08-07 23:05:20 UTC*
 
 A mutator where any ball dropping below 30% HP instantly swaps positions with the highest HP enemy in the arena.
