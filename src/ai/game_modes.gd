@@ -80226,3 +80226,147 @@ class PeriodicGhostMutatorMode extends GameMode:
 						b["ghost_mode_timer"] = 3.0
 
 GAME_MODES['periodic_ghost_mutator'] = PeriodicGhostMutatorMode.new()
+
+
+class LowHpSwapMutator extends GameMode:
+	func _init():
+		name = "Low HP Swap"
+		description = "Balls dropping below 30% HP swap positions with the highest HP enemy."
+		mutators_active = true
+		mutators = ["low_hp_swap"]
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		# Decrement cooldowns
+		for b in balls:
+			if typeof(b) == TYPE_OBJECT:
+				var cooldown = 0.0
+				if "low_hp_swap_cooldown" in b:
+					cooldown = b.low_hp_swap_cooldown
+				elif b.has_method("has_meta") and b.has_meta("low_hp_swap_cooldown"):
+					cooldown = b.get_meta("low_hp_swap_cooldown")
+				if cooldown > 0:
+					if "low_hp_swap_cooldown" in b:
+						b.low_hp_swap_cooldown = cooldown - delta
+					elif b.has_method("set_meta"):
+						b.set_meta("low_hp_swap_cooldown", cooldown - delta)
+			elif typeof(b) == TYPE_DICTIONARY:
+				if b.has("low_hp_swap_cooldown") and b["low_hp_swap_cooldown"] > 0:
+					b["low_hp_swap_cooldown"] -= delta
+
+		for b in balls:
+			var is_alive = false
+			var ball_type = ""
+			var b_team = ""
+			var hp = 0.0
+			var max_hp = 1.0
+			var cooldown = 0.0
+
+			if typeof(b) == TYPE_OBJECT:
+				if "alive" in b: is_alive = b.alive
+				elif b.has_method("has_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
+				if "ball_type" in b: ball_type = b.ball_type
+				elif b.has_method("has_meta") and b.has_meta("ball_type"): ball_type = b.get_meta("ball_type")
+				if "team" in b: b_team = b.team
+				elif b.has_method("has_meta") and b.has_meta("team"): b_team = b.get_meta("team")
+				if "hp" in b: hp = b.hp
+				elif b.has_method("has_meta") and b.has_meta("hp"): hp = b.get_meta("hp")
+				if "max_hp" in b: max_hp = b.max_hp
+				elif b.has_method("has_meta") and b.has_meta("max_hp"): max_hp = b.get_meta("max_hp")
+				if "low_hp_swap_cooldown" in b: cooldown = b.low_hp_swap_cooldown
+				elif b.has_method("has_meta") and b.has_meta("low_hp_swap_cooldown"): cooldown = b.get_meta("low_hp_swap_cooldown")
+			elif typeof(b) == TYPE_DICTIONARY:
+				if b.has("alive"): is_alive = b["alive"]
+				if b.has("ball_type"): ball_type = b["ball_type"]
+				if b.has("team"): b_team = b["team"]
+				if b.has("hp"): hp = b["hp"]
+				if b.has("max_hp"): max_hp = b["max_hp"]
+				if b.has("low_hp_swap_cooldown"): cooldown = b["low_hp_swap_cooldown"]
+
+			if not is_alive or ball_type == "spectator":
+				continue
+
+			if hp < max_hp * 0.3 and cooldown <= 0:
+				var highest_hp_enemy = null
+				var highest_hp = -1.0
+
+				for other in balls:
+					if other == b:
+						continue
+
+					var o_alive = false
+					var o_type = ""
+					var o_team = ""
+					var o_hp = 0.0
+
+					if typeof(other) == TYPE_OBJECT:
+						if "alive" in other: o_alive = other.alive
+						elif other.has_method("has_meta") and other.has_meta("alive"): o_alive = other.get_meta("alive")
+						if "ball_type" in other: o_type = other.ball_type
+						elif other.has_method("has_meta") and other.has_meta("ball_type"): o_type = other.get_meta("ball_type")
+						if "team" in other: o_team = other.team
+						elif other.has_method("has_meta") and other.has_meta("team"): o_team = other.get_meta("team")
+						if "hp" in other: o_hp = other.hp
+						elif other.has_method("has_meta") and other.has_meta("hp"): o_hp = other.get_meta("hp")
+					elif typeof(other) == TYPE_DICTIONARY:
+						if other.has("alive"): o_alive = other["alive"]
+						if other.has("ball_type"): o_type = other["ball_type"]
+						if other.has("team"): o_team = other["team"]
+						if other.has("hp"): o_hp = other["hp"]
+
+					if not o_alive or o_type == "spectator":
+						continue
+
+					if o_team == b_team and o_team != "":
+						continue
+
+					if o_hp > highest_hp:
+						highest_hp = o_hp
+						highest_hp_enemy = other
+
+				if highest_hp_enemy != null:
+					var bx = 0.0
+					var by = 0.0
+					if typeof(b) == TYPE_OBJECT:
+						if "x" in b: bx = b.x
+						if "y" in b: by = b.y
+					elif typeof(b) == TYPE_DICTIONARY:
+						if b.has("x"): bx = b["x"]
+						if b.has("y"): by = b["y"]
+
+					var ex = 0.0
+					var ey = 0.0
+					if typeof(highest_hp_enemy) == TYPE_OBJECT:
+						if "x" in highest_hp_enemy: ex = highest_hp_enemy.x
+						if "y" in highest_hp_enemy: ey = highest_hp_enemy.y
+					elif typeof(highest_hp_enemy) == TYPE_DICTIONARY:
+						if highest_hp_enemy.has("x"): ex = highest_hp_enemy["x"]
+						if highest_hp_enemy.has("y"): ey = highest_hp_enemy["y"]
+
+					if typeof(b) == TYPE_OBJECT:
+						if "x" in b: b.x = ex
+						if "y" in b: b.y = ey
+						if "low_hp_swap_cooldown" in b: b.low_hp_swap_cooldown = 5.0
+						elif b.has_method("set_meta"): b.set_meta("low_hp_swap_cooldown", 5.0)
+					elif typeof(b) == TYPE_DICTIONARY:
+						b["x"] = ex
+						b["y"] = ey
+						b["low_hp_swap_cooldown"] = 5.0
+
+					if typeof(highest_hp_enemy) == TYPE_OBJECT:
+						if "x" in highest_hp_enemy: highest_hp_enemy.x = bx
+						if "y" in highest_hp_enemy: highest_hp_enemy.y = by
+						if "low_hp_swap_cooldown" in highest_hp_enemy: highest_hp_enemy.low_hp_swap_cooldown = 5.0
+						elif highest_hp_enemy.has_method("set_meta"): highest_hp_enemy.set_meta("low_hp_swap_cooldown", 5.0)
+					elif typeof(highest_hp_enemy) == TYPE_DICTIONARY:
+						highest_hp_enemy["x"] = bx
+						highest_hp_enemy["y"] = by
+						highest_hp_enemy["low_hp_swap_cooldown"] = 5.0
+
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						world.add_event("position_swap", {
+							"message": "A low HP ball swapped positions with an enemy!"
+						})
+
+GAME_MODES['low_hp_swap_mutator'] = LowHpSwapMutator.new()

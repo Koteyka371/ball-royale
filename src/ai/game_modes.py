@@ -51124,3 +51124,68 @@ class PeriodicGhostMutatorMode(GameMode):
                     b.ghost_mode_timer = 3.0
 
 GAME_MODES['periodic_ghost_mutator'] = PeriodicGhostMutatorMode()
+
+class LowHpSwapMutator(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Low HP Swap"
+        self.description = "Balls dropping below 30% HP swap positions with the highest HP enemy."
+        self.mutators_active = True
+        self.mutators = ["low_hp_swap"]
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        # Decrement cooldowns
+        for b in balls:
+            cooldown = getattr(b, "low_hp_swap_cooldown", 0.0)
+            if cooldown > 0:
+                b.low_hp_swap_cooldown = cooldown - delta
+
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", "") == "spectator":
+                continue
+
+            cooldown = getattr(b, "low_hp_swap_cooldown", 0.0)
+            hp = getattr(b, "hp", 0.0)
+            max_hp = getattr(b, "max_hp", 1.0)
+
+            if hp < max_hp * 0.3 and cooldown <= 0:
+                # Find highest HP enemy
+                highest_hp_enemy = None
+                highest_hp = -1.0
+
+                for other in balls:
+                    if not getattr(other, "alive", False) or getattr(other, "ball_type", "") == "spectator":
+                        continue
+                    if other == b:
+                        continue
+                    if getattr(other, "team", "") == getattr(b, "team", "") and getattr(other, "team", "") != "":
+                        continue
+
+                    other_hp = getattr(other, "hp", 0.0)
+                    if other_hp > highest_hp:
+                        highest_hp = other_hp
+                        highest_hp_enemy = other
+
+                if highest_hp_enemy:
+                    # Swap positions
+                    bx, by = getattr(b, "x", 0.0), getattr(b, "y", 0.0)
+                    ex, ey = getattr(highest_hp_enemy, "x", 0.0), getattr(highest_hp_enemy, "y", 0.0)
+
+                    b.x, b.y = ex, ey
+                    highest_hp_enemy.x, highest_hp_enemy.y = bx, by
+
+                    # Apply cooldowns
+                    b.low_hp_swap_cooldown = 5.0
+                    highest_hp_enemy.low_hp_swap_cooldown = 5.0
+
+                    if hasattr(world, "add_event"):
+                        world.add_event("position_swap", {
+                            "message": f"A low HP ball swapped positions with an enemy!",
+                            "ball1_id": getattr(b, "id", None),
+                            "ball2_id": getattr(highest_hp_enemy, "id", None)
+                        })
+
+
+GAME_MODES['low_hp_swap_mutator'] = LowHpSwapMutator()
