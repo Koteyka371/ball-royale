@@ -288,6 +288,33 @@ class CrowdSystem:
             except ValueError:
                 pass
 
+        elif cmd == "!aura" and len(parts) >= 3:
+            color = parts[1]
+            try:
+                target_id = int(parts[2])
+            except ValueError:
+                target_id = parts[2]
+
+            if self.viewer_loyalty.get(user, 0) >= 20:
+                target = next((b for b in alive_balls if str(getattr(b, "id", "")) == str(target_id)), None)
+                if target:
+                    # Apply cosmetic aura
+                    target.aura_color = color
+
+                    # Apply minor one-time buff (heal 25 HP)
+                    if hasattr(target, "hp") and hasattr(target, "max_hp"):
+                        target.hp = min(getattr(target, "hp", 100) + 25.0, getattr(target, "max_hp", 100))
+
+                    # Deduct points
+                    self._add_viewer_loyalty(user, -20)
+                    self.excitement_level += 5.0
+
+                    # Announce event
+                    if hasattr(self.world, 'add_event'):
+                        self.world.add_event("visual_effect", {"type": "aura_applied", "color": color, "target_id": target_id})
+                        b_type = getattr(target, 'ball_type', 'Player')
+                        self.world.add_event("crowd_cheer", {"message": f"Viewer {self._get_user_display(user)} granted a {color} aura to {b_type} {target_id}!"})
+
         elif cmd == "!bounty" and len(parts) >= 2:
             target_id = None
             try:
