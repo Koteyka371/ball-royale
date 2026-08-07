@@ -58573,6 +58573,93 @@ class FrictionZonesMode extends GameMode:
 					b.set("friction_multiplier", base_fm)
 					b.set("is_frictionless", base_f)
 
+class DenseRegionMode extends GameMode:
+	var region_radius = 300.0
+	var pull_strength = 150.0
+
+	func _init():
+		super()
+		name = "Dense Region"
+		description = "A dense region that pulls entities inwards, greatly increasing friction and heavily penalizing movement abilities."
+
+	func tick(world, balls, delta = 0.016):
+		super.tick(world, balls, delta)
+
+		var cx = 500.0
+		var cy = 500.0
+
+		if typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				cx = world.arena.get("width", 1000.0) / 2.0
+				cy = world.arena.get("height", 1000.0) / 2.0
+			elif typeof(world.arena) == TYPE_OBJECT:
+				cx = world.arena.get("width") / 2.0 if world.arena.get("width") != null else 500.0
+				cy = world.arena.get("height") / 2.0 if world.arena.get("height") != null else 500.0
+		elif typeof(world) == TYPE_OBJECT and world.get("arena") != null:
+			var arena = world.get("arena")
+			if typeof(arena) == TYPE_DICTIONARY:
+				cx = arena.get("width", 1000.0) / 2.0
+				cy = arena.get("height", 1000.0) / 2.0
+			elif typeof(arena) == TYPE_OBJECT:
+				cx = arena.get("width") / 2.0 if arena.get("width") != null else 500.0
+				cy = arena.get("height") / 2.0 if arena.get("height") != null else 500.0
+
+		for b in balls:
+			var alive = true
+			if typeof(b) == TYPE_DICTIONARY and b.has("alive"):
+				alive = b.get("alive", true)
+			elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("alive") != null:
+				alive = b.get("alive")
+
+			if not alive:
+				continue
+
+			var bx = 0.0
+			var by = 0.0
+			if typeof(b) == TYPE_DICTIONARY:
+				bx = b.get("x", 0.0)
+				by = b.get("y", 0.0)
+			elif typeof(b) == TYPE_OBJECT and b.has_method("get"):
+				bx = b.get("x")
+				by = b.get("y")
+
+			var dx = cx - bx
+			var dy = cy - by
+			var dist = sqrt(dx*dx + dy*dy)
+
+			if dist < region_radius:
+				if dist > 0:
+					if typeof(b) == TYPE_DICTIONARY and b.has("vx") and b.has("vy"):
+						b["vx"] += (dx / dist) * pull_strength * delta
+						b["vy"] += (dy / dist) * pull_strength * delta
+					elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("vx") != null and b.get("vy") != null:
+						b.set("vx", b.get("vx") + (dx / dist) * pull_strength * delta)
+						b.set("vy", b.get("vy") + (dy / dist) * pull_strength * delta)
+
+				# Apply friction penalty
+				if typeof(b) == TYPE_DICTIONARY:
+					if not b.has("_orig_friction_multiplier"):
+						b["_orig_friction_multiplier"] = b.get("friction_multiplier", 1.0)
+					b["friction_multiplier"] = 3.0
+
+					if b.has("skill_timer") and b["skill_timer"] > 0.0:
+						b["skill_timer"] += delta * 2.0
+				elif typeof(b) == TYPE_OBJECT:
+					if not b.has_meta("_orig_friction_multiplier"):
+						b.set_meta("_orig_friction_multiplier", b.get("friction_multiplier") if b.get("friction_multiplier") != null else 1.0)
+					b.set("friction_multiplier", 3.0)
+
+					var st = b.get("skill_timer")
+					if st != null and st > 0.0:
+						b.set("skill_timer", st + delta * 2.0)
+			else:
+				if typeof(b) == TYPE_DICTIONARY and b.has("_orig_friction_multiplier"):
+					b["friction_multiplier"] = b["_orig_friction_multiplier"]
+					b.erase("_orig_friction_multiplier")
+				elif typeof(b) == TYPE_OBJECT and b.has_meta("_orig_friction_multiplier"):
+					b.set("friction_multiplier", b.get_meta("_orig_friction_multiplier"))
+					b.remove_meta("_orig_friction_multiplier")
+
 class SolarRadiationStormMode extends GameMode:
 	var flare_timer: float = 0.0
 	var flare_interval: float = 20.0
@@ -59275,6 +59362,7 @@ var GAME_MODES = {
 	"time_rewind_altar": TimeRewindAltarMode.new(),
 	"random_teleport_dash": RandomTeleportDashMode.new(),
 	"personal_doppelganger": PersonalDoppelgangerMode.new(),
+	"dense_region": DenseRegionMode.new(),
 	"solar_radiation_storm": SolarRadiationStormMode.new(),
 }
 
