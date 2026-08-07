@@ -3033,24 +3033,29 @@ class Action:
                                 e.y += ny * push_strength
 
             # Pull boosters and items
+            boosters_and_items = []
             if hasattr(self.world, "boosters"):
-                for b in self.world.boosters:
-                    bx = getattr(b, "x", 0.0) if not isinstance(b, dict) else b.get("x", 0.0)
-                    by = getattr(b, "y", 0.0) if not isinstance(b, dict) else b.get("y", 0.0)
-                    dx = self.ball.x - bx
-                    dy = self.ball.y - by
-                    dist_sq = dx*dx + dy*dy
-                    if 0.0001 < dist_sq <= pull_radius*pull_radius:
-                        import math as _math
-                        dist = _math.sqrt(dist_sq)
-                        nx = dx / dist
-                        ny = dy / dist
-                        if not isinstance(b, dict):
-                            if hasattr(b, "x"): b.x += nx * pull_strength
-                            if hasattr(b, "y"): b.y += ny * pull_strength
-                        else:
-                            b["x"] = bx + nx * pull_strength
-                            b["y"] = by + ny * pull_strength
+                boosters_and_items.extend(self.world.boosters)
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "items"):
+                boosters_and_items.extend(self.world.arena.items)
+
+            for b in boosters_and_items:
+                bx = getattr(b, "x", 0.0) if not isinstance(b, dict) else b.get("x", 0.0)
+                by = getattr(b, "y", 0.0) if not isinstance(b, dict) else b.get("y", 0.0)
+                dx = self.ball.x - bx
+                dy = self.ball.y - by
+                dist_sq = dx*dx + dy*dy
+                if 0.0001 < dist_sq <= pull_radius*pull_radius:
+                    import math as _math
+                    dist = _math.sqrt(dist_sq)
+                    nx = dx / dist
+                    ny = dy / dist
+                    if not isinstance(b, dict):
+                        if hasattr(b, "x"): b.x += nx * pull_strength
+                        if hasattr(b, "y"): b.y += ny * pull_strength
+                    else:
+                        b["x"] = bx + nx * pull_strength
+                        b["y"] = by + ny * pull_strength
 
         if getattr(self.ball, "tracker_booster_timer", 0.0) > 0:
             self.ball.tracker_booster_timer -= delta

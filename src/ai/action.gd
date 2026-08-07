@@ -48953,32 +48953,37 @@ func _update_skill_timer(delta: float):
                                 if "x" in e: e.x += nx * push_strength
                                 if "y" in e: e.y += ny * push_strength
 
+        var boosters_and_items = []
         if self.world != null and "boosters" in self.world:
-            for b in self.world.boosters:
-                var bx = 0.0
-                var by = 0.0
-                if typeof(b) == TYPE_DICTIONARY:
-                    if b.has("x"): bx = b.x
-                    if b.has("y"): by = b.y
-                else:
-                    if "x" in b: bx = b.x
-                    elif b.has_method("get_meta") and b.has_meta("x"): bx = b.get_meta("x")
-                    if "y" in b: by = b.y
-                    elif b.has_method("get_meta") and b.has_meta("y"): by = b.get_meta("y")
+            boosters_and_items.append_array(self.world.boosters)
+        if self.world != null and "arena" in self.world and "items" in self.world.arena:
+            boosters_and_items.append_array(self.world.arena.items)
 
-                var dx = ball_x - bx
-                var dy = ball_y - by
-                var dist_sq = dx*dx + dy*dy
-                if dist_sq > 0.0001 and dist_sq <= pull_radius*pull_radius:
-                    var dist = sqrt(dist_sq)
-                    var nx = dx / dist
-                    var ny = dy / dist
-                    if typeof(b) == TYPE_DICTIONARY:
-                        if b.has("x"): b.x += nx * pull_strength
-                        if b.has("y"): b.y += ny * pull_strength
-                    elif typeof(b) == TYPE_OBJECT:
-                        if "x" in b: b.x += nx * pull_strength
-                        if "y" in b: b.y += ny * pull_strength
+        for b in boosters_and_items:
+            var bx = 0.0
+            var by = 0.0
+            if typeof(b) == TYPE_DICTIONARY:
+                if b.has("x"): bx = b.x
+                if b.has("y"): by = b.y
+            else:
+                if "x" in b: bx = b.x
+                elif b.has_method("get_meta") and b.has_meta("x"): bx = b.get_meta("x")
+                if "y" in b: by = b.y
+                elif b.has_method("get_meta") and b.has_meta("y"): by = b.get_meta("y")
+
+            var dx = ball_x - bx
+            var dy = ball_y - by
+            var dist_sq = dx*dx + dy*dy
+            if dist_sq > 0.0001 and dist_sq <= pull_radius*pull_radius:
+                var dist = sqrt(dist_sq)
+                var nx = dx / dist
+                var ny = dy / dist
+                if typeof(b) == TYPE_DICTIONARY:
+                    if b.has("x"): b.x += nx * pull_strength
+                    if b.has("y"): b.y += ny * pull_strength
+                elif typeof(b) == TYPE_OBJECT:
+                    if "x" in b: b.x += nx * pull_strength
+                    if "y" in b: b.y += ny * pull_strength
 
     var anchor_repulsor_timer = 0.0
     if "anchor_repulsor_timer" in self.ball:
