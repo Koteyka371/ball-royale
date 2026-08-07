@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1864] Black Hole Gravity Modifier — *2026-08-07 05:07:52 UTC*
+
+A random mutator event where a massive central black hole occasionally spawns, heavily modifying the trajectory of all projectiles and slightly pulling balls inward while providing an orbit-like speed boost to tangential movement.
+
+---
+
 ## [idea-1846] Magnetic Pull Booster — *2026-08-07 05:07:47 UTC*
 
 A rare booster that upon collection spawns a miniature magnetic field around the ball for a short duration, pulling in nearby items and boosters while slightly repelling enemy balls.
