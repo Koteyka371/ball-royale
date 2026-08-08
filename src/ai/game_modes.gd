@@ -60607,6 +60607,7 @@ var GAME_MODES = {
 	"clan_hub": ClanHubMode.new(),
 	"crumbling_arena": CrumblingArenaMode.new(),
 	"cursed_altar": CursedAltarMode.new(),
+	"split_screen_mirror": SplitScreenMirrorMode.new(),
 	"healing_rain": HealingRainMode.new(),
 	"color_swap_team": ColorSwapTeamMode.new(),
 	"extreme_microclimate": ExtremeMicroclimateMode.new(),
@@ -82137,3 +82138,100 @@ class ExpandingAuraEventMode extends GameMode:
 				b.set_meta("_aura_prev_hp", current_hp)
 				b.set("cosmetic_aura_scale", aura_scale)
 				b.set("damage_multiplier", new_dmg_mult)
+class SplitScreenMirrorMode extends GameMode:
+	var mid_x = 0.0
+
+	func _init() -> void:
+		name = "Split Screen Mirror"
+		description = "An arena mode where the screen is split down the middle. Passing through the central divide mirrors all properties (speed, health changes) until returning to the original side."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+
+		var arena_left = -1000.0
+		var arena_right = 1000.0
+		if typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				arena_left = world.arena.get("left", -1000.0)
+				arena_right = world.arena.get("right", 1000.0)
+		elif typeof(world) == TYPE_OBJECT and "arena" in world:
+			if typeof(world.arena) == TYPE_OBJECT:
+				arena_left = world.arena.get("left") if "left" in world.arena else -1000.0
+				arena_right = world.arena.get("right") if "right" in world.arena else 1000.0
+
+		mid_x = (arena_left + arena_right) / 2.0
+
+		for b in balls:
+			var b_x = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.x
+			var b_hp = b.get("hp") if typeof(b) == TYPE_DICTIONARY else b.hp
+			var b_speed_mult = b.get("speed_multiplier") if typeof(b) == TYPE_DICTIONARY else b.speed_multiplier
+
+			var original_side = "left" if b_x < mid_x else "right"
+
+			if typeof(b) == TYPE_DICTIONARY:
+				b["_original_side"] = original_side
+				b["_prev_tick_hp"] = b_hp
+				b["_mirror_inverted"] = false
+				b["_orig_speed_multiplier"] = b_speed_mult
+			else:
+				b.set_meta("_original_side", original_side)
+				b.set_meta("_prev_tick_hp", b_hp)
+				b.set_meta("_mirror_inverted", false)
+				b.set_meta("_orig_speed_multiplier", b_speed_mult)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		for b in balls:
+			var alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else b.alive
+			if not alive:
+				continue
+
+			var b_x = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.x
+			var current_side = "left" if b_x < mid_x else "right"
+
+			var original_side = b.get("_original_side", current_side) if typeof(b) == TYPE_DICTIONARY else (b.get_meta("_original_side") if b.has_meta("_original_side") else current_side)
+			var is_inverted = (current_side != original_side)
+
+			var current_hp = b.get("hp") if typeof(b) == TYPE_DICTIONARY else b.hp
+			var prev_hp = b.get("_prev_tick_hp", current_hp) if typeof(b) == TYPE_DICTIONARY else (b.get_meta("_prev_tick_hp") if b.has_meta("_prev_tick_hp") else current_hp)
+			var hp_diff = current_hp - prev_hp
+
+			var mirror_inverted = b.get("_mirror_inverted", false) if typeof(b) == TYPE_DICTIONARY else (b.get_meta("_mirror_inverted") if b.has_meta("_mirror_inverted") else false)
+
+			if is_inverted:
+				if not mirror_inverted:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["_mirror_inverted"] = true
+						var orig = b.get("speed_multiplier", 1.0)
+						b["_orig_speed_multiplier"] = orig
+						b["speed_multiplier"] = orig * -1.0
+					else:
+						b.set_meta("_mirror_inverted", true)
+						var orig = b.speed_multiplier
+						b.set_meta("_orig_speed_multiplier", orig)
+						b.speed_multiplier = orig * -1.0
+
+				if hp_diff != 0:
+					var inverted_hp = prev_hp - hp_diff
+					var max_hp = b.get("max_hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.max_hp
+					inverted_hp = min(inverted_hp, max_hp)
+
+					if typeof(b) == TYPE_DICTIONARY:
+						b["hp"] = inverted_hp
+					else:
+						b.hp = inverted_hp
+					current_hp = inverted_hp
+			else:
+				if mirror_inverted:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["_mirror_inverted"] = false
+						b["speed_multiplier"] = b.get("_orig_speed_multiplier", 1.0)
+					else:
+						b.set_meta("_mirror_inverted", false)
+						b.speed_multiplier = b.get_meta("_orig_speed_multiplier") if b.has_meta("_orig_speed_multiplier") else 1.0
+
+			if typeof(b) == TYPE_DICTIONARY:
+				b["_prev_tick_hp"] = current_hp
+			else:
+				b.set_meta("_prev_tick_hp", current_hp)
