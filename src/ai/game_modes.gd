@@ -82679,9 +82679,14 @@ class AuraWellHazardMode extends GameMode:
 								if typeof(b) == TYPE_DICTIONARY:
 									if b.has("hp"):
 										b["hp"] = min(bmax_hp, bhp + 20.0)
+									b["aura_well_buff_timer"] = 3.0
 								elif typeof(b) == TYPE_OBJECT:
 									if "hp" in b:
 										b.set("hp", min(bmax_hp, bhp + 20.0))
+									if b.has_method("set"):
+										b.set("aura_well_buff_timer", 3.0)
+									else:
+										b.set_meta("aura_well_buff_timer", 3.0)
 							else:
 								# Damage
 								if has_take_damage:

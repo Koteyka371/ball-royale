@@ -52528,6 +52528,8 @@ class AuraWellHazardMode(GameMode):
                                 # Heal
                                 if hasattr(b, "hp") and hasattr(b, "max_hp"):
                                     b.hp = min(getattr(b, "max_hp", 100.0), b.hp + 20.0)
+                                # Speed and damage increase by 50%
+                                setattr(b, "aura_well_buff_timer", 3.0)
                             else:
                                 # Damage
                                 if hasattr(b, "take_damage"):
