@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1913] Projectile Overload — *2026-08-08 21:26:56 UTC*
+
+A survival mode where invincible turrets constantly spawn projectiles that bounce around the map. Players cannot destroy the turrets and must solely rely on dodging, perfect blocks, and positioning to survive as the arena fills with chaotic projectiles.
+
+---
+
 ## [idea-1880] Inverted control schemes mutator — *2026-08-08 20:07:02 UTC*
 
 A mutator that inverts all control schemes momentarily for a duration.
