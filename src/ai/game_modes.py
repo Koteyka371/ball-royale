@@ -51883,3 +51883,111 @@ class ReviveAltarMode(GameMode):
                     altar["channeling_ball"] = None
 
 GAME_MODES['revive_altar'] = ReviveAltarMode()
+
+
+class AuraWellHazardMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Aura Well Hazard"
+        self.description = "A new hazard that absorbs the aura color of the first ball that touches it. Once charged, it pulses in waves, healing players with the matching aura and damaging those with different auras, encouraging territory control."
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        import random
+        # Spawn some aura wells
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            try:
+                from arena.procedural_arena import Hazard
+                hazard_class = Hazard
+            except ImportError:
+                class FallbackHazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
+                        self.active = True
+                hazard_class = FallbackHazard
+
+            arena_width = getattr(world.arena, "width", 2000.0)
+            arena_height = getattr(world.arena, "height", 2000.0)
+
+            for _ in range(3):
+                x = random.uniform(200.0, arena_width - 200.0)
+                y = random.uniform(200.0, arena_height - 200.0)
+                well_id = 93000 + len(world.arena.hazards)
+                well = hazard_class(id=well_id, x=x, y=y, radius=60.0, kind="aura_well", damage=0.0)
+                setattr(well, "absorbed_aura", None)
+                setattr(well, "pulse_timer", 0.0)
+                setattr(well, "pulse_interval", 3.0)
+                setattr(well, "pulse_radius", 250.0)
+                world.arena.hazards.append(well)
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        if not hasattr(world, "arena") or not hasattr(world.arena, "hazards"):
+            return
+
+        for hazard in world.arena.hazards:
+            if getattr(hazard, "kind", "") != "aura_well" or not getattr(hazard, "active", True):
+                continue
+
+            hx = getattr(hazard, "x", 0.0)
+            hy = getattr(hazard, "y", 0.0)
+            hradius = getattr(hazard, "radius", 60.0)
+
+            absorbed_aura = getattr(hazard, "absorbed_aura", None)
+
+            if absorbed_aura is None:
+                # Check for first ball to touch
+                for b in balls:
+                    if not getattr(b, "alive", False):
+                        continue
+                    bx = getattr(b, "x", 0.0)
+                    by = getattr(b, "y", 0.0)
+                    bradius = getattr(b, "radius", 20.0)
+
+                    dist = ((bx - hx)**2 + (by - hy)**2)**0.5
+                    if dist < (hradius + bradius):
+                        b_aura = getattr(b, "aura_color", getattr(b, "team", "neutral"))
+                        setattr(hazard, "absorbed_aura", b_aura)
+                        if hasattr(world, "add_event"):
+                            world.add_event("aura_well_charged", {"hazard_id": getattr(hazard, "id", -1), "aura": b_aura})
+                        break
+            else:
+                # Charged, pulse
+                timer = getattr(hazard, "pulse_timer", 0.0)
+                timer -= delta
+                if timer <= 0:
+                    timer = getattr(hazard, "pulse_interval", 3.0)
+                    if hasattr(world, "add_event"):
+                        world.add_event("aura_well_pulse", {"hazard_id": getattr(hazard, "id", -1), "aura": absorbed_aura})
+
+                    pulse_radius = getattr(hazard, "pulse_radius", 250.0)
+
+                    for b in balls:
+                        if not getattr(b, "alive", False):
+                            continue
+                        bx = getattr(b, "x", 0.0)
+                        by = getattr(b, "y", 0.0)
+
+                        dist = ((bx - hx)**2 + (by - hy)**2)**0.5
+                        if dist <= pulse_radius:
+                            b_aura = getattr(b, "aura_color", getattr(b, "team", "neutral"))
+                            if b_aura == absorbed_aura:
+                                # Heal
+                                if hasattr(b, "hp") and hasattr(b, "max_hp"):
+                                    b.hp = min(getattr(b, "max_hp", 100.0), b.hp + 20.0)
+                            else:
+                                # Damage
+                                if hasattr(b, "take_damage"):
+                                    b.take_damage(20.0)
+                                else:
+                                    if hasattr(b, "hp"):
+                                        b.hp -= 20.0
+                                        if b.hp <= 0:
+                                            b.alive = False
+                                            if hasattr(world, "add_event"):
+                                                world.add_event("ball_died", {"id": getattr(b, "id", -1), "killer_id": -1, "reason": "aura_well_pulse"})
+
+                setattr(hazard, "pulse_timer", timer)
+
+GAME_MODES['aura_well_hazard'] = AuraWellHazardMode()
