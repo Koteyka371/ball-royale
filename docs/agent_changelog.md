@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1900] Aura Pulse Bomb — *2026-08-08 07:32:43 UTC*
+
+A new hazard that absorbs the aura color of the first ball that touches it. Once charged, it pulses in waves, healing players with the matching aura and damaging those with different auras, encouraging territory control.
+
+---
+
 ## [idea-1897] Ghost Revival Altars — *2026-08-08 06:27:19 UTC*
 
 Living players can bring a specific item to designated altars on the map to revive ghost teammates, but doing so takes time and makes them vulnerable.
