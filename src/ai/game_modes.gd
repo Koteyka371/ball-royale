@@ -43299,6 +43299,7 @@ class DynamicWeatherTransitionsMode extends GameMode:
 	var weather_sequence = ["clear", "cloudy", "storm", "blizzard"]
 	var current_stage = 0
 	var weather_timer = 20.0
+	var shelters = []
 
 	func _init():
 		name = "Dynamic Weather Transitions"
@@ -43395,6 +43396,30 @@ class DynamicWeatherTransitionsMode extends GameMode:
 				weather = weather_sequence[current_stage]
 				weather_timer = 20.0
 
+				if weather == "storm" or weather == "blizzard":
+					var aw = 1000
+					var ah = 1000
+					if world.get("arena") != null:
+						if typeof(world.arena) == TYPE_DICTIONARY:
+							aw = world.arena.get("width", 1000)
+							ah = world.arena.get("height", 1000)
+						else:
+							aw = world.arena.width if "width" in world.arena else 1000
+							ah = world.arena.height if "height" in world.arena else 1000
+
+					var num_shelters = randi() % 3 + 3 # 3 to 5
+					shelters.clear()
+					for _i in range(num_shelters):
+						var capacity = randi() % 3 + 1
+						shelters.append({
+							"x": randf_range(100.0, float(aw) - 100.0),
+							"y": randf_range(100.0, float(ah) - 100.0),
+							"radius": randf_range(50.0, 80.0),
+							"capacity": capacity
+						})
+				else:
+					shelters.clear()
+
 				for b in balls:
 					var is_active = false
 					if typeof(b) == TYPE_DICTIONARY:
@@ -43429,7 +43454,126 @@ class DynamicWeatherTransitionsMode extends GameMode:
 			else:
 				weather_timer = 9999.0
 
+		if weather == "storm" or weather == "blizzard":
+			var shelter_occupancy = {}
+			for i in range(shelters.size()):
+				shelter_occupancy[i] = 0
+			var safe_balls = []
 
+			for b in balls:
+				var is_alive = false
+				if typeof(b) == TYPE_DICTIONARY:
+					is_alive = b.get("alive", false)
+				else:
+					is_alive = b.alive if "alive" in b else false
+
+				if not is_alive:
+					continue
+
+				var immunity = 0.0
+				if typeof(b) == TYPE_DICTIONARY:
+					immunity = b.get("weather_immunity_timer", 0.0)
+				else:
+					immunity = b.weather_immunity_timer if "weather_immunity_timer" in b else 0.0
+
+				if immunity > 0.0:
+					safe_balls.append(b)
+					continue
+
+				var bx = 0.0
+				var by = 0.0
+				if typeof(b) == TYPE_DICTIONARY:
+					bx = b.get("x", 0.0)
+					by = b.get("y", 0.0)
+				else:
+					bx = b.x if "x" in b else 0.0
+					by = b.y if "y" in b else 0.0
+
+				var best_shelter_idx = -1
+				var best_dist = 999999.0
+
+				for i in range(shelters.size()):
+					var shelter = shelters[i]
+					var dx = bx - shelter["x"]
+					var dy = by - shelter["y"]
+					var dist = sqrt(dx*dx + dy*dy)
+
+					if dist <= shelter["radius"] and dist < best_dist and shelter_occupancy[i] < shelter["capacity"]:
+						best_dist = dist
+						best_shelter_idx = i
+
+				var is_safe = false
+				if best_shelter_idx != -1:
+					shelter_occupancy[best_shelter_idx] += 1
+					safe_balls.append(b)
+					is_safe = true
+
+				if not is_safe and world.get("arena") != null and world.arena.get("hazards") != null:
+					for h in world.arena.hazards:
+						var hk = ""
+						if typeof(h) == TYPE_DICTIONARY: hk = h.get("kind", "")
+						else: hk = h.kind if "kind" in h else ""
+						var hactive = true
+						if typeof(h) == TYPE_DICTIONARY: hactive = h.get("active", true)
+						else: hactive = h.active if "active" in h else true
+
+						if (hk == "shelter" or hk == "flare") and hactive:
+							var hx = 0.0
+							var hy = 0.0
+							var hr = 0.0
+							if typeof(h) == TYPE_DICTIONARY:
+								hx = h.get("x", 0.0)
+								hy = h.get("y", 0.0)
+								hr = h.get("radius", 0.0)
+							else:
+								hx = h.x if "x" in h else 0.0
+								hy = h.y if "y" in h else 0.0
+								hr = h.radius if "radius" in h else 0.0
+
+							var dx = bx - hx
+							var dy = by - hy
+							var dist_sq = dx*dx + dy*dy
+							if dist_sq <= hr*hr:
+								safe_balls.append(b)
+								break
+
+			var damage_rate = 10.0
+			if weather == "blizzard":
+				damage_rate = 15.0
+
+			for b in balls:
+				var is_alive = false
+				if typeof(b) == TYPE_DICTIONARY:
+					is_alive = b.get("alive", false)
+				else:
+					is_alive = b.alive if "alive" in b else false
+
+				if not is_alive:
+					continue
+
+				var is_b_safe = false
+				for sb in safe_balls:
+					if typeof(b) == TYPE_OBJECT and typeof(sb) == TYPE_OBJECT and b == sb:
+						is_b_safe = true
+						break
+					elif typeof(b) == TYPE_DICTIONARY and typeof(sb) == TYPE_DICTIONARY:
+						# For dictionary balls (used in networking mostly), check ID to verify equality
+						if b.has("id") and sb.has("id") and b["id"] == sb["id"]:
+							is_b_safe = true
+							break
+						# fallback if no id exists, which is unlikely but we need a safer check than hash()
+						elif not b.has("id") and not sb.has("id"):
+							if b.hash() == sb.hash():
+								is_b_safe = true
+								break
+
+				if not is_b_safe:
+					if typeof(b) == TYPE_DICTIONARY:
+						if "hp" in b:
+							b["hp"] -= damage_rate * delta
+					else:
+						if "hp" in b:
+							b.hp -= damage_rate * delta
 
 class SlipperyArenaMode extends GameMode:
 	func _init():
