@@ -35,6 +35,11 @@ class Platform:
     var height: float
     var vx: float
     var vy: float
+    var shake_timer: float = 0.0
+    var is_shaking: bool = false
+    var is_broken: bool = false
+    var base_x: float = -1.0
+    var base_y: float = -1.0
 
     func _init(_x: float, _y: float, _w: float, _h: float, _vx: float, _vy: float):
         x = _x
@@ -43,6 +48,8 @@ class Platform:
         height = _h
         vx = _vx
         vy = _vy
+        base_x = _x
+        base_y = _y
 
 class Hazard:
     var id: int
@@ -776,26 +783,39 @@ func update_zone(current_tick: int, delta: float) -> void:
 
         # Update platforms
         for p in platforms:
+            if p.is_broken:
+                continue
+
+            # Always move platform
             p.x += p.vx * delta
             p.y += p.vy * delta
 
-            # Simple bounds collision
-            if p.x - p.width/2 < 0:
-                p.x = p.width/2
+            if p.x < p.width / 2:
+                p.x = p.width / 2
                 p.vx *= -1
-            elif p.x + p.width/2 > width:
-                p.x = width - p.width/2
+            elif p.x > width - p.width / 2:
+                p.x = width - p.width / 2
                 p.vx *= -1
 
-            if p.y - p.height/2 < 0:
-                p.y = p.height/2
+            if p.y < p.height / 2:
+                p.y = p.height / 2
                 p.vy *= -1
-            elif p.y + p.height/2 > height:
-                p.y = height - p.height/2
+            elif p.y > height - p.height / 2:
+                p.y = height - p.height / 2
                 p.vy *= -1
 
-        if "hazards" in self:
-            for hazard in hazards:
+            if p.is_shaking:
+                p.shake_timer += delta
+                if p.shake_timer >= 3.0: # Break after 3 seconds
+                    p.is_broken = true
+                    p.x = -9999.0
+                    p.y = -9999.0
+                    p.width = 0.0
+                    p.height = 0.0
+                    p.vx = 0.0
+                    p.vy = 0.0
+
+        for hazard in hazards:
                 if hazard.kind == "bounce_laser":
                     var speed = 300.0
                     if hazard.has_method("has_meta") and hazard.has_meta("speed"):

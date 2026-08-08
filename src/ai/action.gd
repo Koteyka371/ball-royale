@@ -8836,16 +8836,37 @@ func execute(strategy: String, delta: float):
     # Platforms
     if typeof(self.world) == TYPE_OBJECT and "arena" in self.world and self.world.arena != null and "platforms" in self.world.arena:
         for p in self.world.arena.platforms:
+            if "is_broken" in p and p.is_broken:
+                continue
             # Simple AABB collision
+            var px = p.x
+            var py = p.y
+
             var bx = self.ball.x if typeof(self.ball) == TYPE_OBJECT else self.ball["x"]
             var by = self.ball.y if typeof(self.ball) == TYPE_OBJECT else self.ball["y"]
-            if (p.x - p.width/2 <= bx and bx <= p.x + p.width/2) and (p.y - p.height/2 <= by and by <= p.y + p.height/2):
+            if (px - p.width/2 <= bx and bx <= px + p.width/2) and (py - p.height/2 <= by and by <= py + p.height/2):
                 if typeof(self.ball) == TYPE_OBJECT:
                     self.ball.x += p.vx * delta
                     self.ball.y += p.vy * delta
                 else:
                     self.ball["x"] += p.vx * delta
                     self.ball["y"] += p.vy * delta
+
+                if not ("is_shaking" in p and p.is_shaking):
+                    p.is_shaking = true
+                    if typeof(self.world) == TYPE_OBJECT and self.world.has_method("add_event"):
+                        self.world.add_event("platform_shake", {"x": px, "y": py})
+                    elif typeof(self.world) == TYPE_DICTIONARY and "events" in self.world:
+                        self.world["events"].append({"type": "platform_shake", "x": px, "y": py})
+
+                # Apply tiny visual jitter to ball
+                if "is_shaking" in p and p.is_shaking:
+                    if typeof(self.ball) == TYPE_OBJECT:
+                        self.ball.x += randf_range(-1.0, 1.0)
+                        self.ball.y += randf_range(-1.0, 1.0)
+                    else:
+                        self.ball["x"] += randf_range(-1.0, 1.0)
+                        self.ball["y"] += randf_range(-1.0, 1.0)
 
     if typeof(self.world) == TYPE_OBJECT and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
         for hazard in self.world.arena.hazards:

@@ -5,6 +5,7 @@ from ai.game_modes import HealingRainMode
 def test_healing_rain():
     mode = HealingRainMode()
     world = Mock()
+    world.projectiles = []
     world.add_event = Mock()
     world.dead_balls = []
     world.mutators = []
