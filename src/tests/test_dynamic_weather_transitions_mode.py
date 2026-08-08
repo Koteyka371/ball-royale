@@ -14,10 +14,14 @@ class MockWorld:
         self.events.append((name, data))
 
 class MockBall:
-    def __init__(self):
+    def __init__(self, id_val=1):
+        self.id = id_val
         self.alive = True
         self.speed = 100.0
         self.base_speed = 100.0
+        self.x = 0.0
+        self.y = 0.0
+        self.hp = 100.0
 
 def test_dynamic_weather_transitions_setup():
     mode = GAME_MODES["dynamic_weather_transitions"]
@@ -116,3 +120,39 @@ def test_dynamic_weather_transitions_apply_traits():
 
     expected_clear = getattr(ball, "base_speed", 100.0)
     assert abs(ball.speed - expected_clear) < 0.1
+
+def test_dynamic_weather_transitions_damage_and_shelter():
+    mode = GAME_MODES["dynamic_weather_transitions"]
+    world = MockWorld()
+
+    ball1 = MockBall(1)
+    ball1.x, ball1.y = 50.0, 50.0
+
+    ball2 = MockBall(2)
+    ball2.x, ball2.y = 500.0, 500.0
+
+    balls = [ball1, ball2]
+
+    mode.setup(world, balls)
+    mode.weather = "storm"
+
+    # Create shelter right on ball 1
+    mode.shelters = [{
+        "x": 50.0,
+        "y": 50.0,
+        "radius": 100.0,
+        "capacity": 5
+    }]
+
+    mode.tick(world, balls, delta=1.0)
+
+    assert ball1.hp == 100.0  # Safely inside shelter
+    assert ball2.hp < 100.0   # Taking storm damage (10/sec)
+    assert abs(ball2.hp - 90.0) < 0.1
+
+    mode.weather = "blizzard"
+    mode.tick(world, balls, delta=1.0)
+
+    assert ball1.hp == 100.0  # Still safe
+    assert ball2.hp < 90.0    # Taking blizzard damage (15/sec)
+    assert abs(ball2.hp - 75.0) < 0.1

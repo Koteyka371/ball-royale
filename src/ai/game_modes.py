@@ -26569,6 +26569,7 @@ class DynamicWeatherTransitionsMode(GameMode):
         self.current_stage = 0
         self.weather = self.weather_sequence[self.current_stage]
         self.weather_timer = 20.0  # Time before next transition
+        self.shelters = []
 
     def setup(self, world: 'Any', balls: 'List[Any]') -> None:
         super().setup(world, balls)
@@ -26643,6 +26644,22 @@ class DynamicWeatherTransitionsMode(GameMode):
                 self.weather = self.weather_sequence[self.current_stage]
                 self.weather_timer = 20.0  # Reset timer for next stage
 
+                # Setup extreme weather if it's storm or blizzard
+                if self.weather in ["storm", "blizzard"]:
+                    arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+                    arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+                    num_shelters = random.randint(3, 5)
+                    self.shelters = []
+                    for _ in range(num_shelters):
+                        self.shelters.append({
+                            "x": random.uniform(100, arena_width - 100),
+                            "y": random.uniform(100, arena_height - 100),
+                            "radius": random.uniform(50.0, 80.0),
+                            "capacity": random.randint(1, 3)
+                        })
+                else:
+                    self.shelters = []
+
                 # Apply forecast immunity
                 for b in balls:
                     if getattr(b, "forecast_booster_active", False):
@@ -26659,6 +26676,63 @@ class DynamicWeatherTransitionsMode(GameMode):
                 # Keep it at the final weather
                 self.weather_timer = 9999.0
 
+        # Apply shelter logic and extreme damage during storm or blizzard
+        if self.weather in ["storm", "blizzard"]:
+            shelter_occupancy = {i: 0 for i in range(len(getattr(self, "shelters", [])))}
+            safe_balls = set()
+
+            for b in balls:
+                if not getattr(b, "alive", False):
+                    continue
+
+                # Weather specific immunity
+                if getattr(b, "weather_immunity_timer", 0.0) > 0:
+                    safe_balls.add(id(b))
+                    continue
+
+                best_shelter_idx = -1
+                best_dist = float('inf')
+
+                shelters = getattr(self, "shelters", [])
+                bx = getattr(b, "x", 0.0)
+                by = getattr(b, "y", 0.0)
+                for i, shelter in enumerate(shelters):
+                    dx = bx - shelter["x"]
+                    dy = by - shelter["y"]
+                    dist = math.sqrt(dx*dx + dy*dy)
+
+                    if dist <= shelter["radius"] and dist < best_dist and shelter_occupancy[i] < shelter["capacity"]:
+                        best_dist = dist
+                        best_shelter_idx = i
+
+                if best_shelter_idx != -1:
+                    shelter_occupancy[best_shelter_idx] += 1
+                    safe_balls.add(id(b))
+
+                # Extra check for permanent shelter or flare hazards (fallback)
+                if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                    for h in world.arena.hazards:
+                        hk = getattr(h, "kind", "")
+                        if hk in ["shelter", "flare"] and getattr(h, "active", True):
+                            hx = getattr(h, "x", 0)
+                            hy = getattr(h, "y", 0)
+                            hr = getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            dist_sq = dx*dx + dy*dy
+                            if dist_sq <= hr*hr:
+                                safe_balls.add(id(b))
+                                break
+
+            # Apply damage to exposed balls
+            for b in balls:
+                if not getattr(b, "alive", False):
+                    continue
+                if id(b) not in safe_balls:
+                    # heavy damage during storm, freezing damage in blizzard
+                    damage_rate = 10.0 if self.weather == "storm" else 15.0
+                    if hasattr(b, "hp"):
+                        b.hp -= damage_rate * delta
 
 class SlipperyArenaMode(GameMode):
     def __init__(self):
