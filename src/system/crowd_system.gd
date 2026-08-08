@@ -1616,6 +1616,11 @@ func _resolve_vote(balls: Array):
     for u in current_vote_participants:
         if viewer_vote_streaks.has(u):
             viewer_vote_streaks[u] += 1
+            var streak = viewer_vote_streaks[u]
+            if streak >= 3 and streak % 3 == 0:
+                if world != null and world.has_method("add_event"):
+                    world.add_event("chat_badge", {"user": u, "badge": "vote_streak_" + str(streak), "message": "Viewer " + _get_user_display(u) + " achieved a " + str(streak) + "-vote streak!"})
+                    world.add_event("visual_effect", {"type": "confetti", "message": "Viewer " + _get_user_display(u) + " has a " + str(streak) + " vote streak!"})
         else:
             viewer_vote_streaks[u] = 1
 
