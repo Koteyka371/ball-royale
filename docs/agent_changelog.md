@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1905] Chroma Dash Mutator — *2026-08-08 12:17:53 UTC*
+
+A mutator where dashing leaves a trail matching your current cosmetic aura color. Stepping on trails of different colors causes a short stun, while stepping on trails of the same color grants a temporary speed boost.
+
+---
+
 ## [idea-1903] Aura Overload Event — *2026-08-08 09:13:32 UTC*
 
 An event where player auras rapidly expand over time. The larger the aura, the more damage you deal, but taking damage instantly reduces the aura size back to minimum.
