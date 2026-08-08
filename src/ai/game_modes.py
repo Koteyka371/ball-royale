@@ -35085,11 +35085,15 @@ class PeriodicVisionReductionEventMode(GameMode):
                 b["vision_reduction_timer"] = 0.0
                 if b.get("vision_reduction_applied", False):
                     b["perception_radius"] = b.get("base_perception_radius", 500)
+                    if "orig_vision_radius" in b:
+                        b["vision_radius"] = b["orig_vision_radius"]
                     b["vision_reduction_applied"] = False
             else:
                 b.vision_reduction_timer = 0.0
                 if getattr(b, "vision_reduction_applied", False):
                     b.perception_radius = getattr(b, "base_perception_radius", 500)
+                    if hasattr(b, "orig_vision_radius"):
+                        b.vision_radius = b.orig_vision_radius
                     b.vision_reduction_applied = False
 
     def tick(self, world, balls, delta):
@@ -35104,11 +35108,15 @@ class PeriodicVisionReductionEventMode(GameMode):
                         b["vision_reduction_timer"] = 0.0
                         if b.get("vision_reduction_applied", False):
                             b["perception_radius"] = b.get("base_perception_radius", 500)
+                            if "orig_vision_radius" in b:
+                                b["vision_radius"] = b["orig_vision_radius"]
                             b["vision_reduction_applied"] = False
                     else:
                         b.vision_reduction_timer = 0.0
                         if getattr(b, "vision_reduction_applied", False):
                             b.perception_radius = getattr(b, "base_perception_radius", 500)
+                            if hasattr(b, "orig_vision_radius"):
+                                b.vision_radius = b.orig_vision_radius
                             b.vision_reduction_applied = False
 
                 if isinstance(world, dict):
@@ -35128,6 +35136,9 @@ class PeriodicVisionReductionEventMode(GameMode):
                         b.vision_reduction_timer = self.effect_timer
                         if not getattr(b, "vision_reduction_applied", False) and hasattr(b, "base_perception_radius"):
                             b.perception_radius = b.base_perception_radius * 0.5
+                            if not hasattr(b, "orig_vision_radius"):
+                                b.orig_vision_radius = getattr(b, "vision_radius", 500.0)
+                            b.vision_radius = b.orig_vision_radius * 0.5
                             b.vision_reduction_applied = True
 
                     # Counters
@@ -35141,6 +35152,8 @@ class PeriodicVisionReductionEventMode(GameMode):
                     if has_counter and getattr(b, "vision_reduction_applied", False):
                         b.vision_reduction_timer = 0.0
                         b.perception_radius = getattr(b, "base_perception_radius", 500)
+                        if hasattr(b, "orig_vision_radius"):
+                            b.vision_radius = b.orig_vision_radius
                         b.vision_reduction_applied = False
         else:
             self.timer -= delta
@@ -35165,6 +35178,9 @@ class PeriodicVisionReductionEventMode(GameMode):
                             b.vision_reduction_timer = self.duration
                             if not getattr(b, "vision_reduction_applied", False):
                                 b.perception_radius = b.base_perception_radius * 0.5
+                                if not hasattr(b, "orig_vision_radius"):
+                                    b.orig_vision_radius = getattr(b, "vision_radius", 500.0)
+                                b.vision_radius = b.orig_vision_radius * 0.5
                                 b.vision_reduction_applied = True
 
                 if isinstance(world, dict):

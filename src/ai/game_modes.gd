@@ -56740,6 +56740,8 @@ class PeriodicVisionReductionEventMode extends GameMode:
 				b["vision_reduction_timer"] = 0.0
 				if b.get("vision_reduction_applied", false):
 					b["perception_radius"] = b.get("base_perception_radius", 500.0)
+					if b.has("orig_vision_radius"):
+						b["vision_radius"] = b["orig_vision_radius"]
 					b["vision_reduction_applied"] = false
 			else:
 				if "vision_reduction_timer" in b:
@@ -56751,6 +56753,10 @@ class PeriodicVisionReductionEventMode extends GameMode:
 				if v_applied:
 					if "perception_radius" in b and "base_perception_radius" in b:
 						b.perception_radius = b.base_perception_radius
+					if "vision_radius" in b and b.has_meta("orig_vision_radius"):
+						b.vision_radius = b.get_meta("orig_vision_radius")
+					elif "vision_radius" in b and "orig_vision_radius" in b:
+						b.vision_radius = b.orig_vision_radius
 					if "vision_reduction_applied" in b:
 						b.vision_reduction_applied = false
 					elif b.has_method("set_meta"):
@@ -56767,6 +56773,8 @@ class PeriodicVisionReductionEventMode extends GameMode:
 						b["vision_reduction_timer"] = 0.0
 						if b.get("vision_reduction_applied", false):
 							b["perception_radius"] = b.get("base_perception_radius", 500.0)
+							if b.has("orig_vision_radius"):
+								b["vision_radius"] = b["orig_vision_radius"]
 							b["vision_reduction_applied"] = false
 					else:
 						if "vision_reduction_timer" in b:
@@ -56778,6 +56786,10 @@ class PeriodicVisionReductionEventMode extends GameMode:
 						if v_applied:
 							if "perception_radius" in b and "base_perception_radius" in b:
 								b.perception_radius = b.base_perception_radius
+							if "vision_radius" in b and b.has_meta("orig_vision_radius"):
+								b.vision_radius = b.get_meta("orig_vision_radius")
+							elif "vision_radius" in b and "orig_vision_radius" in b:
+								b.vision_radius = b.orig_vision_radius
 							if "vision_reduction_applied" in b:
 								b.vision_reduction_applied = false
 							elif b.has_method("set_meta"):
@@ -56808,6 +56820,11 @@ class PeriodicVisionReductionEventMode extends GameMode:
 						if not v_applied and "base_perception_radius" in b:
 							if "perception_radius" in b:
 								b.perception_radius = b.base_perception_radius * 0.5
+							if "vision_radius" in b:
+								if not b.has_meta("orig_vision_radius") and not "orig_vision_radius" in b:
+									b.set_meta("orig_vision_radius", b.vision_radius)
+								var orig = b.get_meta("orig_vision_radius") if b.has_meta("orig_vision_radius") else b.orig_vision_radius
+								b.vision_radius = orig * 0.5
 							if "vision_reduction_applied" in b:
 								b.vision_reduction_applied = true
 							elif b.has_method("set_meta"):
@@ -56830,6 +56847,10 @@ class PeriodicVisionReductionEventMode extends GameMode:
 
 						if "perception_radius" in b and "base_perception_radius" in b:
 							b.perception_radius = b.base_perception_radius
+						if "vision_radius" in b and b.has_meta("orig_vision_radius"):
+							b.vision_radius = b.get_meta("orig_vision_radius")
+						elif "vision_radius" in b and "orig_vision_radius" in b:
+							b.vision_radius = b.orig_vision_radius
 
 						if "vision_reduction_applied" in b:
 							b.vision_reduction_applied = false
@@ -56879,6 +56900,11 @@ class PeriodicVisionReductionEventMode extends GameMode:
 									if not v_applied:
 										if "perception_radius" in b:
 											b.perception_radius = b.base_perception_radius * 0.5
+										if "vision_radius" in b:
+											if not b.has_meta("orig_vision_radius") and not "orig_vision_radius" in b:
+												b.set_meta("orig_vision_radius", b.vision_radius)
+											var orig = b.get_meta("orig_vision_radius") if b.has_meta("orig_vision_radius") else b.orig_vision_radius
+											b.vision_radius = orig * 0.5
 										if "vision_reduction_applied" in b:
 											b.vision_reduction_applied = true
 										elif b.has_method("set_meta"):
