@@ -19233,6 +19233,13 @@ class Action:
                         if dist_sq < 250000: # 500 range
                             grapple_targets.append(("hazard", h, dist_sq))
 
+                if hasattr(self.world, "balls"):
+                    for b in self.world.balls:
+                        if b != self.ball and getattr(b, "alive", True) and getattr(b, "team", None) != getattr(self.ball, "team", None):
+                            dist_sq = (b.x - self.ball.x)**2 + (b.y - self.ball.y)**2
+                            if dist_sq < 250000: # 500 range
+                                grapple_targets.append(("enemy", b, dist_sq))
+
                 closest_target = None
                 closest_target_dist_sq = 999999.0
                 for t_type, t, dist_sq in grapple_targets:
@@ -19283,6 +19290,13 @@ class Action:
                         dist_sq = (h.x - self.ball.x)**2 + (h.y - self.ball.y)**2
                         if dist_sq < 250000: # 500 range
                             grapple_targets.append(("hazard", h, dist_sq))
+
+                if hasattr(self.world, "balls"):
+                    for b in self.world.balls:
+                        if b != self.ball and getattr(b, "alive", True) and getattr(b, "team", None) != getattr(self.ball, "team", None):
+                            dist_sq = (b.x - self.ball.x)**2 + (b.y - self.ball.y)**2
+                            if dist_sq < 250000: # 500 range
+                                grapple_targets.append(("enemy", b, dist_sq))
 
                 closest_target = None
                 closest_target_type = None
@@ -26956,7 +26970,22 @@ class Action:
                     self.ball.vx += (dx / dist) * spring_force
                     self.ball.vy += (dy / dist) * spring_force
 
-            self.ball.elastic_tether_timer = elastic_tether_timer - delta
+                    # If target is a ball (has team) we pull it towards us too
+                    if hasattr(target, "team") and hasattr(target, "id"):
+                        if not hasattr(target, "vx"): target.vx = 0.0
+                        if not hasattr(target, "vy"): target.vy = 0.0
+                        target.vx -= (dx / dist) * spring_force
+                        target.vy -= (dy / dist) * spring_force
+
+                        # Check for collision
+                        if dist < getattr(self.ball, "radius", 20.0) + getattr(target, "radius", 20.0) + 10.0:
+                            # Stun both
+                            self.ball.stun_timer = max(getattr(self.ball, "stun_timer", 0.0), 1.0)
+                            target.stun_timer = max(getattr(target, "stun_timer", 0.0), 1.0)
+                            # Remove tether early
+                            elastic_tether_timer = 0.0
+
+            self.ball.elastic_tether_timer = max(0.0, elastic_tether_timer - delta)
 
         magnet_tether_timer = getattr(self.ball, "magnet_tether_timer", 0.0)
         if magnet_tether_timer > 0:
