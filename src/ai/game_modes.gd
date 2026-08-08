@@ -7398,7 +7398,7 @@ class BattleRoyaleMode extends GameMode:
 					if typeof(p) == TYPE_DICTIONARY and p.has("is_delayed_clone"): p_is_clone = p.is_delayed_clone
 					elif typeof(p) == TYPE_OBJECT and "is_delayed_clone" in p: p_is_clone = p.is_delayed_clone
 
-					if p_is_alive and p_type != "spectator" and p_type != "loot_goblin" and not p_is_clone:
+					if p_is_alive and p_type != "spectator" and p_type != "loot_goblin" and p_type != "juggernaut" and not p_is_clone:
 						var clone = {}
 						if typeof(p) == TYPE_DICTIONARY:
 							clone = p.duplicate()
@@ -7565,7 +7565,7 @@ class BattleRoyaleMode extends GameMode:
 					if typeof(p) == TYPE_DICTIONARY and p.has("ball_type"): p_type = p.ball_type
 					elif typeof(p) == TYPE_OBJECT and "ball_type" in p: p_type = p.ball_type
 
-					if p_alive and p_type != "spectator" and p_type != "loot_goblin":
+					if p_alive and p_type != "spectator" and p_type != "loot_goblin" and p_type != "juggernaut":
 						var px = 0.0
 						var py = 0.0
 						if typeof(p) == TYPE_DICTIONARY:

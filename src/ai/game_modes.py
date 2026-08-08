@@ -4585,7 +4585,7 @@ class BattleRoyaleMode(GameMode):
 
             elif event_type == "delayed_clones":
                 for p in list(balls):
-                    if getattr(p, "alive", False) and getattr(p, "ball_type", None) not in ["spectator", "loot_goblin"] and not getattr(p, "is_delayed_clone", False):
+                    if getattr(p, "alive", False) and getattr(p, "ball_type", None) not in ["spectator", "loot_goblin", "juggernaut"] and not getattr(p, "is_delayed_clone", False):
                         import copy
                         try:
                             clone = copy.copy(p)
@@ -4668,7 +4668,7 @@ class BattleRoyaleMode(GameMode):
                 nearest_player = None
                 min_dist = float('inf')
                 for p in balls:
-                    if getattr(p, "alive", False) and getattr(p, "ball_type", None) not in ["spectator", "loot_goblin"]:
+                    if getattr(p, "alive", False) and getattr(p, "ball_type", None) not in ["spectator", "loot_goblin", "juggernaut"]:
                         dx = p.x - b.x
                         dy = p.y - b.y
                         dist = dx*dx + dy*dy
