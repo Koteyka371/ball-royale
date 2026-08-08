@@ -40999,10 +40999,6 @@ class FreezeTagMode extends GameMode:
 		return null
 
 class ShrinkingBoundaryMode extends GameMode:
-	var min_x: float = 0.0
-	var max_x: float = 1000.0
-	var min_y: float = 0.0
-	var max_y: float = 1000.0
 	var shrink_rate: float = 10.0
 
 	func _init() -> void:
@@ -41174,27 +41170,72 @@ class ShrinkingBoundaryMode extends GameMode:
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
-		var arena_width = 1000.0
-		var arena_height = 1000.0
-		if "arena" in world and world.arena:
-			if "width" in world.arena:
-				arena_width = world.arena.width
-			if "height" in world.arena:
-				arena_height = world.arena.height
-		min_x = 0.0
-		max_x = arena_width
-		min_y = 0.0
-		max_y = arena_height
+		if world != null and "arena" in world and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				if not world.arena.has("boundary_offsets"):
+					world.arena["boundary_offsets"] = {"top": 0.0, "bottom": 0.0, "left": 0.0, "right": 0.0}
+				else:
+					world.arena["boundary_offsets"]["top"] = 0.0
+					world.arena["boundary_offsets"]["bottom"] = 0.0
+					world.arena["boundary_offsets"]["left"] = 0.0
+					world.arena["boundary_offsets"]["right"] = 0.0
+			elif typeof(world.arena) == TYPE_OBJECT:
+				if not world.arena.has_meta("boundary_offsets"):
+					world.arena.set_meta("boundary_offsets", {"top": 0.0, "bottom": 0.0, "left": 0.0, "right": 0.0})
+				else:
+					var offsets = world.arena.get_meta("boundary_offsets")
+					offsets["top"] = 0.0
+					offsets["bottom"] = 0.0
+					offsets["left"] = 0.0
+					offsets["right"] = 0.0
+					world.arena.set_meta("boundary_offsets", offsets)
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
-		# Shrink map boundaries inward
-		if max_x - min_x > 50.0:
-			min_x += shrink_rate * delta
-			max_x -= shrink_rate * delta
+		if world == null or not ("arena" in world) or world.arena == null:
+			return
 
-		if max_y - min_y > 50.0:
-			min_y += shrink_rate * delta
-			max_y -= shrink_rate * delta
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if typeof(world.arena) == TYPE_DICTIONARY:
+			arena_width = world.arena.get("width", 1000.0)
+			arena_height = world.arena.get("height", 1000.0)
+		else:
+			if "width" in world.arena: arena_width = world.arena.width
+			if "height" in world.arena: arena_height = world.arena.height
+
+		var offsets = {"top": 0.0, "bottom": 0.0, "left": 0.0, "right": 0.0}
+		var is_dict_arena = typeof(world.arena) == TYPE_DICTIONARY
+
+		if is_dict_arena:
+			if world.arena.has("boundary_offsets"):
+				offsets = world.arena["boundary_offsets"]
+			else:
+				world.arena["boundary_offsets"] = offsets
+		else:
+			if world.arena.has_meta("boundary_offsets"):
+				offsets = world.arena.get_meta("boundary_offsets")
+			else:
+				world.arena.set_meta("boundary_offsets", offsets)
+
+		var total_x_offset = offsets["left"] + offsets["right"]
+		if arena_width - total_x_offset > 50.0:
+			offsets["left"] += shrink_rate * delta * 0.5
+			offsets["right"] += shrink_rate * delta * 0.5
+
+		var total_y_offset = offsets["top"] + offsets["bottom"]
+		if arena_height - total_y_offset > 50.0:
+			offsets["top"] += shrink_rate * delta * 0.5
+			offsets["bottom"] += shrink_rate * delta * 0.5
+
+		if is_dict_arena:
+			world.arena["boundary_offsets"] = offsets
+		else:
+			world.arena.set_meta("boundary_offsets", offsets)
+
+		var top_bound = offsets["top"]
+		var bottom_bound = arena_height - offsets["bottom"]
+		var left_bound = offsets["left"]
+		var right_bound = arena_width - offsets["right"]
 
 		for b in balls:
 			var b_dict = b
@@ -41206,17 +41247,44 @@ class ShrinkingBoundaryMode extends GameMode:
 			if alive and btype != "spectator":
 				var bx = b_dict.get("x", 0.0) if is_dict else b.get("x")
 				var by = b_dict.get("y", 0.0) if is_dict else b.get("y")
+				var r = b_dict.get("radius", 10.0) if is_dict else (b.get("radius") if "radius" in b else 10.0)
+				var margin = r + 10.0
 
-				if bx < min_x or bx > max_x or by < min_y or by > max_y:
+				var touching = false
+
+				if bx <= left_bound + margin or bx >= right_bound - margin or by <= top_bound + margin or by >= bottom_bound - margin:
+					touching = true
+					if bx < left_bound + r:
+						bx = left_bound + r
+					elif bx > right_bound - r:
+						bx = right_bound - r
+
+					if by < top_bound + r:
+						by = top_bound + r
+					elif by > bottom_bound - r:
+						by = bottom_bound - r
+
 					if is_dict:
-						b["hp"] = b.get("hp", 100.0) - 10.0 * delta
+						b["x"] = bx
+						b["y"] = by
+					else:
+						b.set("x", bx)
+						b.set("y", by)
+
+				if touching:
+					if is_dict:
+						b["slow_timer"] = max(b.get("slow_timer", 0.0), 0.5)
+						b["hp"] = b.get("hp", 100.0) - 25.0 * delta
 						if b["hp"] <= 0.0:
 							b["hp"] = 0.0
 							b["alive"] = false
 							b["killer"] = "Shrinking Boundary"
 					else:
+						var current_slow = b.get("slow_timer") if b.has_method("get") and "slow_timer" in b else 0.0
+						b.set("slow_timer", max(current_slow, 0.5))
+
 						var current_hp = b.get("hp") if b.has_method("get") else 100.0
-						b.set("hp", current_hp - 10.0 * delta)
+						b.set("hp", current_hp - 25.0 * delta)
 						if b.get("hp") <= 0.0:
 							b.set("hp", 0.0)
 							b.set("alive", false)

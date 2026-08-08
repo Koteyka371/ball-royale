@@ -49,7 +49,7 @@ def test_shrinking_boundary_damage():
     assert ball_in.alive == True
 
     # Ball outside should take damage (10.0 per second)
-    assert ball_out.hp == 90.0
+    assert ball_out.hp == 75.0
     assert ball_out.alive == True
 
     # Spectator should be untouched

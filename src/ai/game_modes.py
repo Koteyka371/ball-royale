@@ -25375,33 +25375,41 @@ class ShrinkingBoundaryMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "Shrinking Boundary"
-        self.description = "The boundaries of the arena slowly shrink over time, dealing continuous damage to anyone caught outside the safe area."
-        self.min_x = 0.0
-        self.max_x = 1000.0
-        self.min_y = 0.0
-        self.max_y = 1000.0
+        self.description = "The arena boundaries slowly constrict over time, pushing all balls towards the center. Touching the outer boundary applies a severe slow and damages over time."
         self.shrink_rate = 10.0
 
     def setup(self, world, balls):
         super().setup(world, balls)
-        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
-        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
-        self.min_x = 0.0
-        self.max_x = arena_width
-        self.min_y = 0.0
-        self.max_y = arena_height
+        if hasattr(world, "arena") and world.arena:
+            if not hasattr(world.arena, "boundary_offsets"):
+                world.arena.boundary_offsets = {"top": 0.0, "bottom": 0.0, "left": 0.0, "right": 0.0}
+            else:
+                world.arena.boundary_offsets["top"] = 0.0
+                world.arena.boundary_offsets["bottom"] = 0.0
+                world.arena.boundary_offsets["left"] = 0.0
+                world.arena.boundary_offsets["right"] = 0.0
 
     def tick(self, world, balls, delta=0.016):
-        # Shrink map boundaries inward
-        if self.max_x - self.min_x > 50.0:
-            self.min_x += self.shrink_rate * delta
-            self.max_x -= self.shrink_rate * delta
+        if not hasattr(world, "arena") or not world.arena:
+            return
 
-        if self.max_y - self.min_y > 50.0:
-            self.min_y += self.shrink_rate * delta
-            self.max_y -= self.shrink_rate * delta
+        if not hasattr(world.arena, "boundary_offsets"):
+            world.arena.boundary_offsets = {"top": 0.0, "bottom": 0.0, "left": 0.0, "right": 0.0}
 
-        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+        arena_width = getattr(world.arena, "width", 1000.0)
+        arena_height = getattr(world.arena, "height", 1000.0)
+
+        total_x_offset = world.arena.boundary_offsets.get("left", 0.0) + world.arena.boundary_offsets.get("right", 0.0)
+        if arena_width - total_x_offset > 50.0:
+            world.arena.boundary_offsets["left"] = world.arena.boundary_offsets.get("left", 0.0) + self.shrink_rate * delta * 0.5
+            world.arena.boundary_offsets["right"] = world.arena.boundary_offsets.get("right", 0.0) + self.shrink_rate * delta * 0.5
+
+        total_y_offset = world.arena.boundary_offsets.get("top", 0.0) + world.arena.boundary_offsets.get("bottom", 0.0)
+        if arena_height - total_y_offset > 50.0:
+            world.arena.boundary_offsets["top"] = world.arena.boundary_offsets.get("top", 0.0) + self.shrink_rate * delta * 0.5
+            world.arena.boundary_offsets["bottom"] = world.arena.boundary_offsets.get("bottom", 0.0) + self.shrink_rate * delta * 0.5
+
+        if hasattr(world.arena, "hazards"):
             hazards_to_remove = []
             for h in world.arena.hazards:
                 if getattr(h, "explodes", False) and getattr(h, "kind", "") == "gravity_well":
@@ -25414,7 +25422,7 @@ class ShrinkingBoundaryMode(GameMode):
                                 from arena.procedural_arena import Hazard
                                 exp_id = len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(10000, 99999)
                                 # Massive explosion radius and damage
-                                exp = Hazard(exp_id, h.x, h.y, h.radius, "explosion", 150.0)
+                                exp = Hazard(exp_id, getattr(h, "x", 0.0), getattr(h, "y", 0.0), getattr(h, "radius", 50.0), "explosion", 150.0)
                                 setattr(exp, "duration", 0.5)
                                 world.arena.hazards.append(exp)
                             except ImportError:
@@ -25422,11 +25430,31 @@ class ShrinkingBoundaryMode(GameMode):
             for h in hazards_to_remove:
                 if h in world.arena.hazards:
                     world.arena.hazards.remove(h)
+
+        top_bound = world.arena.boundary_offsets.get("top", 0.0)
+        bottom_bound = arena_height - world.arena.boundary_offsets.get("bottom", 0.0)
+        left_bound = world.arena.boundary_offsets.get("left", 0.0)
+        right_bound = arena_width - world.arena.boundary_offsets.get("right", 0.0)
+
         for b in balls:
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
-                if b.x < self.min_x or b.x > self.max_x or b.y < self.min_y or b.y > self.max_y:
-                    # Deal continuous damage rather than instant elimination
-                    b.hp -= 10.0 * delta
+                r = getattr(b, "radius", 10.0)
+                margin = r + 10.0
+                bx = getattr(b, "x", 0.0)
+                by = getattr(b, "y", 0.0)
+
+                touching = False
+                if bx <= left_bound + margin or bx >= right_bound - margin or by <= top_bound + margin or by >= bottom_bound - margin:
+                    touching = True
+
+                    if bx < left_bound + r: b.x = left_bound + r
+                    elif bx > right_bound - r: b.x = right_bound - r
+                    if by < top_bound + r: b.y = top_bound + r
+                    elif by > bottom_bound - r: b.y = bottom_bound - r
+
+                if touching:
+                    b.slow_timer = max(getattr(b, "slow_timer", 0.0), 0.5)
+                    b.hp -= 25.0 * delta
                     if b.hp <= 0:
                         b.hp = 0
                         b.alive = False
