@@ -35038,77 +35038,116 @@ class FrozenGroundEventMode(GameMode):
                     if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
                         b.friction_multiplier = 0.1
 
-class VisionReductionEventMode(GameMode):
+class PeriodicVisionReductionEventMode(GameMode):
     def __init__(self):
         super().__init__()
-        self.name = "Vision Reduction Event"
-        self.description = "A dense fog reduces vision range by 50% for 30 seconds. Stealth items become powerful!"
-        self.duration = 30.0
+        self.name = "Periodic Vision Reduction"
+        self.description = "A dense fog periodically reduces vision range by 50% for 5 seconds."
+        self.interval = 15.0
+        self.duration = 5.0
         self.timer = 0.0
-        self.active = True
+        self.active_effect = False
+        self.effect_timer = 0.0
 
     def setup(self, world, balls):
-        self.timer = self.duration
+        super().setup(world, balls)
+        self.timer = self.interval
+        self.active_effect = False
+        self.effect_timer = 0.0
         for b in balls:
             if isinstance(b, dict):
-                pass
-            elif hasattr(b, "base_perception_radius") and getattr(b, "vision_reduction_timer", 0) <= 0:
-                b.vision_reduction_timer = self.duration
-                if not getattr(b, "vision_reduction_applied", False):
-                    b.perception_radius = b.base_perception_radius * 0.5
-                    b.vision_reduction_applied = True
-
-        world["events"].append({
-            "type": "visual_effect",
-            "data": {"type": "thick_fog_start", "x": 0, "y": 0}
-        })
+                b["vision_reduction_timer"] = 0.0
+                if b.get("vision_reduction_applied", False):
+                    b["perception_radius"] = b.get("base_perception_radius", 500)
+                    b["vision_reduction_applied"] = False
+            else:
+                b.vision_reduction_timer = 0.0
+                if getattr(b, "vision_reduction_applied", False):
+                    b.perception_radius = getattr(b, "base_perception_radius", 500)
+                    b.vision_reduction_applied = False
 
     def tick(self, world, balls, delta):
-        if not self.active:
-            return
+        super().tick(world, balls, delta)
 
-        self.timer -= delta
-        if self.timer <= 0:
-            self.active = False
-            for b in balls:
-                if isinstance(b, dict):
-                    pass
-                else:
-                    b.vision_reduction_timer = 0.0
-                    if getattr(b, "vision_reduction_applied", False):
+        if self.active_effect:
+            self.effect_timer -= delta
+            if self.effect_timer <= 0:
+                self.active_effect = False
+                for b in balls:
+                    if isinstance(b, dict):
+                        b["vision_reduction_timer"] = 0.0
+                        if b.get("vision_reduction_applied", False):
+                            b["perception_radius"] = b.get("base_perception_radius", 500)
+                            b["vision_reduction_applied"] = False
+                    else:
+                        b.vision_reduction_timer = 0.0
+                        if getattr(b, "vision_reduction_applied", False):
+                            b.perception_radius = getattr(b, "base_perception_radius", 500)
+                            b.vision_reduction_applied = False
+
+                if isinstance(world, dict):
+                    world.setdefault("events", []).append({
+                        "type": "visual_effect",
+                        "data": {"type": "thick_fog_end", "x": 0, "y": 0}
+                    })
+                elif hasattr(world, "add_event"):
+                    world.add_event("visual_effect", {"type": "thick_fog_end", "x": 0, "y": 0})
+            else:
+                # Maintain the effect for the duration
+                for b in balls:
+                    if isinstance(b, dict):
+                        continue
+
+                    if getattr(b, "vision_reduction_timer", 0) <= 0:
+                        b.vision_reduction_timer = self.effect_timer
+                        if not getattr(b, "vision_reduction_applied", False) and hasattr(b, "base_perception_radius"):
+                            b.perception_radius = b.base_perception_radius * 0.5
+                            b.vision_reduction_applied = True
+
+                    # Counters
+                    has_counter = False
+                    if hasattr(b, "inventory") and getattr(b, "inventory", None):
+                        if b.inventory in ["decoy_flare_item", "decoy_volatile_barrel_item"]:
+                            has_counter = True
+                    if getattr(b, "mutated_env", "") == "vision_booster":
+                        has_counter = True
+
+                    if has_counter and getattr(b, "vision_reduction_applied", False):
+                        b.vision_reduction_timer = 0.0
                         b.perception_radius = getattr(b, "base_perception_radius", 500)
                         b.vision_reduction_applied = False
+        else:
+            self.timer -= delta
+            if self.timer <= 0:
+                self.timer = self.interval
+                self.active_effect = True
+                self.effect_timer = self.duration
 
-            world["events"].append({
-                "type": "visual_effect",
-                "data": {"type": "thick_fog_end", "x": 0, "y": 0}
-            })
-            return
+                for b in balls:
+                    if isinstance(b, dict):
+                        pass
+                    elif hasattr(b, "base_perception_radius") and getattr(b, "vision_reduction_timer", 0) <= 0:
+                        # Counters
+                        has_counter = False
+                        if hasattr(b, "inventory") and getattr(b, "inventory", None):
+                            if b.inventory in ["decoy_flare_item", "decoy_volatile_barrel_item"]:
+                                has_counter = True
+                        if getattr(b, "mutated_env", "") == "vision_booster":
+                            has_counter = True
 
-        for b in balls:
-            if isinstance(b, dict):
-                continue
+                        if not has_counter:
+                            b.vision_reduction_timer = self.duration
+                            if not getattr(b, "vision_reduction_applied", False):
+                                b.perception_radius = b.base_perception_radius * 0.5
+                                b.vision_reduction_applied = True
 
-            # Reapply if not active or timer ran out
-            if getattr(b, "vision_reduction_timer", 0) <= 0:
-                b.vision_reduction_timer = self.timer
-                if not getattr(b, "vision_reduction_applied", False) and hasattr(b, "base_perception_radius"):
-                    b.perception_radius = b.base_perception_radius * 0.5
-                    b.vision_reduction_applied = True
-
-            # Flares and torches counter effect
-            has_counter = False
-            if hasattr(b, "inventory") and getattr(b, "inventory", None):
-                if b.inventory in ["decoy_flare_item", "decoy_volatile_barrel_item"]:
-                    has_counter = True
-            if getattr(b, "mutated_env", "") == "vision_booster":
-                has_counter = True
-
-            if has_counter and getattr(b, "vision_reduction_applied", False):
-                b.vision_reduction_timer = 0.0
-                b.perception_radius = getattr(b, "base_perception_radius", 500)
-                b.vision_reduction_applied = False
-
+                if isinstance(world, dict):
+                    world.setdefault("events", []).append({
+                        "type": "visual_effect",
+                        "data": {"type": "thick_fog_start", "x": 0, "y": 0}
+                    })
+                elif hasattr(world, "add_event"):
+                    world.add_event("visual_effect", {"type": "thick_fog_start", "x": 0, "y": 0})
 
 class SupercellStormMode(GameMode):
     def __init__(self):
@@ -37012,7 +37051,7 @@ GAME_MODES = {
     'mini_black_holes': MiniBlackHolesMode(),
     'supercell_storm': SupercellStormMode(),
     'ice_floor': IceFloorMode(),
-    'vision_reduction_event': VisionReductionEventMode(),
+    'vision_reduction_event': PeriodicVisionReductionEventMode(),
     'frozen_ground_event': FrozenGroundEventMode(),
     'wall_leapers': WallLeapersMode(),
     'networked_black_holes': NetworkedBlackHolesMode(),
