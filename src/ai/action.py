@@ -8248,6 +8248,10 @@ class Action:
                                                 other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 2.0
                                                 if getattr(b, "proximity_detonated", False):
                                                     other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 3.0
+                                                if getattr(b, "from_decoy_item", False):
+                                                    other.base_speed = getattr(other, "base_speed", getattr(other, "speed", 100.0))
+                                                    other.speed = other.base_speed * 0.5
+                                                    other.snare_timer = getattr(other, "snare_timer", 0.0) + 3.0
                                             else:
                                                 actual_damage = explosion_damage
                                                 if getattr(b, "rearm_damage_boost", False):
@@ -8269,6 +8273,10 @@ class Action:
                                                 other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 2.0
                                                 if getattr(b, "proximity_detonated", False):
                                                     other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 3.0
+                                                if getattr(b, "from_decoy_item", False):
+                                                    other.base_speed = getattr(other, "base_speed", getattr(other, "speed", 100.0))
+                                                    other.speed = other.base_speed * 0.5
+                                                    other.snare_timer = getattr(other, "snare_timer", 0.0) + 3.0
 
                                             import random
                                             import math
@@ -16745,6 +16753,7 @@ class Action:
                         decoy.decoy_timer = 5.0
                         decoy.owner_id = getattr(self.ball, "id", None)
                         decoy.decoy_type = "explosive" # make the pickup decoy explode automatically
+                        decoy.from_decoy_item = True
                         self.world.balls.append(decoy)
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
