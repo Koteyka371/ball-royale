@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1861] Decoy Entanglement Mode — *2026-08-08 00:37:18 UTC*
+
+Balls can spawn temporary decoys. Any damage or buffs applied to the decoy are partially shared back to the creator, acting as a two-way street for risk/reward mechanics.
+
+---
+
 ## [idea-1890] Reverse Grapple Node Mode — *2026-08-08 00:27:38 UTC*
 
 Nodes that pull you towards them when you shoot a grappling hook, but when another player touches them, they reverse and push you away at high speeds.
