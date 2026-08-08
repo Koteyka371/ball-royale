@@ -67,10 +67,10 @@
     "agent-8": {
       "name": "Jules Worker 8",
       "area": "tests",
-      "task_id": "idea-1836",
-      "status": "working",
-      "started_at": "2026-08-07T23:34:26.690648+00:00",
-      "cycles_today": 0
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
+      "cycles_today": 2
     },
     "agent-9": {
       "name": "Jules Worker 9",
