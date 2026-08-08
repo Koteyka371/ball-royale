@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1895] Vote Streaks Cosmetics — *2026-08-08 12:43:09 UTC*
+
+Give viewers special shiny chat badges or effects if they maintain a high voting streak across multiple games.
+
+---
+
 ## [idea-1886] Supply Drops that can be Shot Down — *2026-08-08 12:38:53 UTC*
 
 Supply drops currently drop slowly from the sky on a timer. Allow players to shoot them down mid-air with projectiles to force them to land early or break them open mid-air, showering items below.
