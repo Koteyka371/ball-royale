@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1908] Decoy Bomb — *2026-08-08 23:39:55 UTC*
+
+A new item that drops a decoy which explodes when hit, dealing damage and slowing enemies in a radius.
+
+---
+
 ## [idea-1874] Magnetic Grapple Hook Skill — *2026-08-08 22:44:27 UTC*
 
 A new skill that allows a ball to fire a tether towards a solid object or enemy. If it hits an enemy, both are rapidly pulled towards each other, stunning them on collision. If it hits a wall, the ball is pulled to safety. Good for initiating or escaping.
