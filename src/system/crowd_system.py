@@ -1052,6 +1052,11 @@ class CrowdSystem:
                 self.viewer_vote_streaks[u] = 0
         for u in participants:
             self.viewer_vote_streaks[u] = self.viewer_vote_streaks.get(u, 0) + 1
+            streak = self.viewer_vote_streaks[u]
+            if streak >= 3 and streak % 3 == 0:
+                if hasattr(self.world, 'add_event'):
+                    self.world.add_event("chat_badge", {"user": u, "badge": f"vote_streak_{streak}", "message": f"Viewer {self._get_user_display(u)} achieved a {streak}-vote streak!"})
+                    self.world.add_event("visual_effect", {"type": "confetti", "message": f"Viewer {self._get_user_display(u)} has a {streak} vote streak!"})
         self.current_vote_participants = set()
 
         self.active_vote = None
