@@ -52232,3 +52232,58 @@ class AuraWellHazardMode(GameMode):
                 setattr(hazard, "pulse_timer", timer)
 
 GAME_MODES['aura_well_hazard'] = AuraWellHazardMode()
+
+class SplitScreenMirrorMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Split Screen Mirror"
+        self.description = "An arena mode where the screen is split down the middle. Passing through the central divide mirrors all properties (speed, health changes) until returning to the original side."
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        arena_left = world.arena.get("left", -1000) if hasattr(world, "arena") and isinstance(world.arena, dict) else -1000
+        arena_right = world.arena.get("right", 1000) if hasattr(world, "arena") and isinstance(world.arena, dict) else 1000
+
+        if hasattr(world, "arena") and not isinstance(world.arena, dict):
+            arena_left = getattr(world.arena, "left", -1000)
+            arena_right = getattr(world.arena, "right", 1000)
+
+        self.mid_x = (arena_left + arena_right) / 2.0
+
+        for b in balls:
+            b._original_side = "left" if getattr(b, "x", 0.0) < self.mid_x else "right"
+            b._prev_tick_hp = getattr(b, "hp", 100.0)
+            b._mirror_inverted = False
+            b._orig_speed_multiplier = getattr(b, "speed_multiplier", 1.0)
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        for b in balls:
+            if not getattr(b, "alive", True):
+                continue
+
+            current_side = "left" if getattr(b, "x", 0.0) < self.mid_x else "right"
+            is_inverted = (current_side != getattr(b, "_original_side", current_side))
+
+            b_prev_hp = getattr(b, "_prev_tick_hp", getattr(b, "hp", 100.0))
+            current_hp = getattr(b, "hp", 100.0)
+            hp_diff = current_hp - b_prev_hp
+
+            if is_inverted:
+                if not getattr(b, "_mirror_inverted", False):
+                    b._mirror_inverted = True
+                    b._orig_speed_multiplier = getattr(b, "speed_multiplier", 1.0)
+                    b.speed_multiplier = b._orig_speed_multiplier * -1.0
+
+                if hp_diff != 0:
+                    inverted_hp = b_prev_hp - hp_diff
+                    max_hp = getattr(b, "max_hp", 100.0)
+                    b.hp = min(inverted_hp, max_hp)
+            else:
+                if getattr(b, "_mirror_inverted", False):
+                    b._mirror_inverted = False
+                    b.speed_multiplier = getattr(b, "_orig_speed_multiplier", 1.0)
+
+            b._prev_tick_hp = getattr(b, "hp", 100.0)
+
+GAME_MODES["split_screen_mirror"] = SplitScreenMirrorMode()
