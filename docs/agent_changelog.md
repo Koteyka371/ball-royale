@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1872] Quantum Recall Traps — *2026-08-08 08:02:46 UTC*
+
+A new hazard that occasionally pulses, marking all 'quantum state' teleporting entities. If they teleport while marked, they are recalled to their starting position after 3 seconds, forcing them to re-evaluate their dash trajectory.
+
+---
+
 ## [idea-1900] Aura Pulse Bomb — *2026-08-08 07:32:43 UTC*
 
 A new hazard that absorbs the aura color of the first ball that touches it. Once charged, it pulses in waves, healing players with the matching aura and damaging those with different auras, encouraging territory control.
