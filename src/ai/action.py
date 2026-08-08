@@ -2716,6 +2716,9 @@ class Action:
                 return
 
 
+        if hasattr(self.ball, "orbital_strike_reflector_timer"):
+            if getattr(self.ball, "orbital_strike_reflector_timer", 0.0) > 0.0:
+                self.ball.orbital_strike_reflector_timer -= delta
         if hasattr(self.ball, "orbital_link_timer"):
             if getattr(self.ball, "orbital_link_timer", 0.0) > 0.0:
                 self.ball.orbital_link_timer -= delta
@@ -16531,6 +16534,15 @@ class Action:
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
                     self.ball.inventory.append("geyser_boots")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "orbital_strike_reflector":
+                    self.ball.orbital_strike_reflector_timer = 15.0
+                    if hasattr(self.world, "events"):
+                        self.world.events.append({"type": "orbital_strike_reflector", "x": self.ball.x, "y": self.ball.y})
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)

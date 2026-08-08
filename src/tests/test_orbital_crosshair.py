@@ -11,7 +11,7 @@ class TestOrbitalCrosshair(unittest.TestCase):
         world.next_id = 1
         world.season = 1
         world.leaderboard_manager = MagicMock()
-        world.leaderboard_manager.data = {"matches_played": 0}
+        world.leaderboard_manager.data = {"matches_played": 0, "current_season": 1}
 
         b1 = MagicMock()
         b1.id = 1
@@ -24,6 +24,8 @@ class TestOrbitalCrosshair(unittest.TestCase):
         b1.hp = 100
         b1.base_speed_multiplier = 1.0
         b1.speed_multiplier = 1.0
+        b1.orbital_strike_reflector_timer = 0.0
+        b1.orbital_link_timer = 0.0
 
         b2 = MagicMock()
         b2.id = 2
@@ -36,6 +38,8 @@ class TestOrbitalCrosshair(unittest.TestCase):
         b2.hp = 100
         b2.base_speed_multiplier = 1.0
         b2.speed_multiplier = 1.0
+        b2.orbital_strike_reflector_timer = 0.0
+        b2.orbital_link_timer = 0.0
 
         balls = [b1, b2]
         mode.setup(world, balls)
