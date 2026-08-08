@@ -82685,3 +82685,29 @@ class SplitScreenMirrorMode extends GameMode:
 				b["_prev_tick_hp"] = current_hp
 			else:
 				b.set_meta("_prev_tick_hp", current_hp)
+
+class InvertControlsMutator extends "res://src/ai/game_modes.gd".GameMode:
+	var trigger_timer = 0.0
+
+	func _init():
+		name = "Invert Controls Mutator"
+		description = "A mutator that periodically inverts all players' movement controls for a short duration."
+
+	func apply_dynamic_traits(world, balls, delta):
+		trigger_timer += delta
+		if trigger_timer >= 15.0:
+			trigger_timer -= 15.0
+			for b in balls:
+				if typeof(b) == TYPE_DICTIONARY:
+					if not b.get("is_ghost", false):
+						b["invert_timer"] = max(b.get("invert_timer", 0.0), 3.0)
+				else:
+					var is_ghost = b.get("is_ghost") if "is_ghost" in b else (b.get_meta("is_ghost") if b.has_method("has_meta") and b.has_meta("is_ghost") else false)
+					if not is_ghost:
+						var inv_timer = b.get("invert_timer") if "invert_timer" in b else (b.get_meta("invert_timer") if b.has_method("has_meta") and b.has_meta("invert_timer") else 0.0)
+						if "invert_timer" in b:
+							b.invert_timer = max(inv_timer, 3.0)
+						elif b.has_method("set_meta"):
+							b.set_meta("invert_timer", max(inv_timer, 3.0))
+
+GAME_MODES['invert_controls_mutator'] = InvertControlsMutator.new()
