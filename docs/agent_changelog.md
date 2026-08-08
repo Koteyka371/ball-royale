@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1898] Possession Mechanic for Ghosts — *2026-08-08 12:25:51 UTC*
+
+Ghosts can temporarily possess hazards or traps to manually trigger them when enemies are near, adding a strategic layer to post-death gameplay.
+
+---
+
 ## [idea-1905] Chroma Dash Mutator — *2026-08-08 12:17:53 UTC*
 
 A mutator where dashing leaves a trail matching your current cosmetic aura color. Stepping on trails of different colors causes a short stun, while stepping on trails of the same color grants a temporary speed boost.
