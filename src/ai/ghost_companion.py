@@ -44,10 +44,15 @@ class GhostCompanionMode(GameMode):
                 b_id = getattr(b, "id", None)
                 target_id = getattr(b, "ghost_target_id", None)
 
-                # Unattach if target died
+                # Unattach if target died or is triggered hazard
                 if target_id is not None:
                     target_b = next((x for x in balls if getattr(x, "id", None) == target_id), None)
-                    if not target_b or not getattr(target_b, "alive", False) or getattr(target_b, "is_ghost", False):
+                    if not target_b and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                        target_b = next((x for x in world.arena.hazards if getattr(x, "id", None) == target_id), None)
+                        if target_b and (getattr(target_b, "triggered", False) or getattr(target_b, "active", False)):
+                            target_b = None
+
+                    if not target_b or (target_b in balls and (not getattr(target_b, "alive", False) or getattr(target_b, "is_ghost", False))):
                         b.ghost_target_id = None
                         target_id = None
 
@@ -62,35 +67,61 @@ class GhostCompanionMode(GameMode):
                                 min_dist = d
                                 best_target = ob
 
+                    if not best_target and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                        for h in world.arena.hazards:
+                            if not getattr(h, "triggered", False) and not getattr(h, "active", False):
+                                d = (getattr(h, "x", 0) - b.x)**2 + (getattr(h, "y", 0) - b.y)**2
+                                if d < min_dist:
+                                    min_dist = d
+                                    best_target = h
+
                     if best_target:
                         # Fix threshold for attachment
-                        b.ghost_target_id = best_target.id
+                        b.ghost_target_id = getattr(best_target, "id", None)
                 else:
                     # Attached to target
                     target_b = next((x for x in balls if getattr(x, "id", None) == target_id), None)
+                    if not target_b and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                        target_b = next((x for x in world.arena.hazards if getattr(x, "id", None) == target_id), None)
+
                     if target_b:
                         # Snap to target position
-                        b.x = target_b.x
-                        b.y = target_b.y
+                        b.x = getattr(target_b, "x", b.x)
+                        b.y = getattr(target_b, "y", b.y)
                         b.vx = 0.0
                         b.vy = 0.0
 
-                        # Apply buff/debuff
-                        if getattr(b, "team", None) == getattr(target_b, "team", None):
-                            # Buff teammate
-                            target_b.speed = getattr(target_b, "base_speed", 100.0) * 1.2
-                            if hasattr(target_b, "take_damage"):
-                                target_b.hp = min(getattr(target_b, "max_hp", 100.0), getattr(target_b, "hp", 100.0) + 2.0 * delta)
-                        else:
-                            # Debuff enemy
-                            target_b.speed = getattr(target_b, "base_speed", 100.0) * 0.8
-                            if hasattr(target_b, "take_damage"):
-                                target_b.take_damage(5.0 * delta)
+                        if target_b in balls:
+                            # Apply buff/debuff
+                            if getattr(b, "team", None) == getattr(target_b, "team", None):
+                                # Buff teammate
+                                target_b.speed = getattr(target_b, "base_speed", 100.0) * 1.2
+                                if hasattr(target_b, "take_damage"):
+                                    target_b.hp = min(getattr(target_b, "max_hp", 100.0), getattr(target_b, "hp", 100.0) + 2.0 * delta)
                             else:
-                                target_b.hp -= 5.0 * delta
-                                if target_b.hp <= 0:
-                                    target_b.hp = 0
-                                    target_b.alive = False
+                                # Debuff enemy
+                                target_b.speed = getattr(target_b, "base_speed", 100.0) * 0.8
+                                if hasattr(target_b, "take_damage"):
+                                    target_b.take_damage(5.0 * delta)
+                                else:
+                                    target_b.hp -= 5.0 * delta
+                                    if target_b.hp <= 0:
+                                        target_b.hp = 0
+                                        target_b.alive = False
+                        else:
+                            # Attached to hazard
+                            enemy_near = False
+                            for ob in balls:
+                                if getattr(ob, "alive", True) and not getattr(ob, "is_ghost", False) and getattr(ob, "ball_type", None) != "spectator":
+                                    if getattr(ob, "team", None) != getattr(b, "team", None):
+                                        d = (ob.x - b.x)**2 + (ob.y - b.y)**2
+                                        if d < 10000.0: # within 100 units
+                                            enemy_near = True
+                                            break
+                            if enemy_near:
+                                target_b.active = True
+                                target_b.triggered = True
+                                b.ghost_target_id = None
 
     def check_winner(self, world: 'Any', balls: 'List[Any]') -> 'Optional[str]':
         alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator" and not getattr(b, "is_ghost", False)]
