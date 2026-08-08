@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1889] Shrinking Horizon Event — *2026-08-08 08:28:10 UTC*
+
+An event that periodically reduces the camera/vision range of all players by 50% for 5 seconds.
+
+---
+
 ## [idea-1872] Quantum Recall Traps — *2026-08-08 08:02:46 UTC*
 
 A new hazard that occasionally pulses, marking all 'quantum state' teleporting entities. If they teleport while marked, they are recalled to their starting position after 3 seconds, forcing them to re-evaluate their dash trajectory.
