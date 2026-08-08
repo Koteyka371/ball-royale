@@ -37667,6 +37667,19 @@ func _use_skill():
                     if dist_sq < 250000:
                         grapple_targets.append({"target": h, "dist_sq": dist_sq, "x": hx, "y": hy})
 
+            if "balls" in world and world.balls != null:
+                for b in world.balls:
+                    if typeof(b) == TYPE_DICTIONARY:
+                        if b.id != ball.id and b.get("alive", true) and b.get("team") != ball.get("team"):
+                            var dist_sq = pow(b.x - ball.x, 2) + pow(b.y - ball.y, 2)
+                            if dist_sq < 250000:
+                                grapple_targets.append({"target": b, "dist_sq": dist_sq, "x": b.x, "y": b.y})
+                    else:
+                        if b != ball and b.get("alive", true) and b.get("team") != ball.get("team"):
+                            var dist_sq = pow(b.x - ball.x, 2) + pow(b.y - ball.y, 2)
+                            if dist_sq < 250000:
+                                grapple_targets.append({"target": b, "dist_sq": dist_sq, "x": b.x, "y": b.y})
+
             var closest_target = null
             var closest_target_dist_sq = 999999.0
             for t in grapple_targets:
@@ -49438,7 +49451,43 @@ func _update_skill_timer(delta: float):
                 if "vy" in self.ball: self.ball.vy = bvy
                 elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("vy", bvy)
 
-        e_tether_timer -= delta
+                # Check if target is another ball (has team or id)
+                var is_enemy_ball = false
+                if typeof(target) == TYPE_DICTIONARY and target.has("team") and target.has("id"):
+                    is_enemy_ball = true
+                elif typeof(target) != TYPE_DICTIONARY and "team" in target and "id" in target:
+                    is_enemy_ball = true
+
+                if is_enemy_ball:
+                    var tvx = target.vx if "vx" in target else target.get_meta("vx") if (typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("vx")) else 0.0
+                    var tvy = target.vy if "vy" in target else target.get_meta("vy") if (typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("vy")) else 0.0
+
+                    tvx -= (dx / dist) * spring_force
+                    tvy -= (dy / dist) * spring_force
+
+                    if "vx" in target: target.vx = tvx
+                    elif typeof(target) != TYPE_DICTIONARY and target.has_method("set_meta"): target.set_meta("vx", tvx)
+                    if "vy" in target: target.vy = tvy
+                    elif typeof(target) != TYPE_DICTIONARY and target.has_method("set_meta"): target.set_meta("vy", tvy)
+
+                    var b_radius = self.ball.radius if "radius" in self.ball else self.ball.get_meta("radius") if (typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("radius")) else 20.0
+                    var t_radius = target.radius if "radius" in target else target.get_meta("radius") if (typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("radius")) else 20.0
+
+                    if dist < b_radius + t_radius + 10.0:
+                        var b_stun = self.ball.stun_timer if "stun_timer" in self.ball else self.ball.get_meta("stun_timer") if (typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("stun_timer")) else 0.0
+                        b_stun = max(b_stun, 1.0)
+                        if "stun_timer" in self.ball: self.ball.stun_timer = b_stun
+                        elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("stun_timer", b_stun)
+
+                        var t_stun = target.stun_timer if "stun_timer" in target else target.get_meta("stun_timer") if (typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("stun_timer")) else 0.0
+                        t_stun = max(t_stun, 1.0)
+                        if "stun_timer" in target: target.stun_timer = t_stun
+                        elif typeof(target) != TYPE_DICTIONARY and target.has_method("set_meta"): target.set_meta("stun_timer", t_stun)
+                        elif typeof(target) == TYPE_DICTIONARY: target["stun_timer"] = t_stun
+
+                        e_tether_timer = 0.0
+
+        e_tether_timer = max(0.0, e_tether_timer - delta)
         if "elastic_tether_timer" in self.ball: self.ball.elastic_tether_timer = e_tether_timer
         elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("elastic_tether_timer", e_tether_timer)
 
