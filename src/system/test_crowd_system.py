@@ -739,3 +739,23 @@ def test_aura_command_invalid_target():
 
     assert system.viewer_loyalty["testuser"] == 100
     assert not hasattr(b1, "aura_color")
+
+def test_extreme_event_vote():
+    world = MockWorld()
+    system = CrowdSystem(world)
+    balls = [MockBall(1, 100, 100)]
+
+    system.active_vote = {"type": "extreme_event", "options": ["massive_black_hole", "extreme_weather"]}
+
+    # Test black hole
+    system.votes = {"massive_black_hole": 2, "extreme_weather": 1}
+    system._resolve_vote(balls)
+    assert any(e[0] == "spawn_hazard" and e[1]["kind"] == "massive_black_hole" for e in world.events)
+
+    world.events.clear()
+
+    # Test weather
+    system.active_vote = {"type": "extreme_event", "options": ["massive_black_hole", "extreme_weather"]}
+    system.votes = {"massive_black_hole": 1, "extreme_weather": 2}
+    system._resolve_vote(balls)
+    assert any(e[0] == "weather_transition" for e in world.events)
