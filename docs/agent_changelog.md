@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1897] Ghost Revival Altars — *2026-08-08 06:27:19 UTC*
+
+Living players can bring a specific item to designated altars on the map to revive ghost teammates, but doing so takes time and makes them vulnerable.
+
+---
+
 ## [idea-1901] Aura Harmony Mode — *2026-08-08 05:00:23 UTC*
 
 A new game mode where teams are formed dynamically based on players acquiring the same aura color. Players with matching auras cannot damage each other and instead form powerful tethered energy links that damage any non-matching players caught between them.
