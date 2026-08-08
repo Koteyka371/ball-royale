@@ -52490,3 +52490,20 @@ class SplitScreenMirrorMode(GameMode):
             b._prev_tick_hp = getattr(b, "hp", 100.0)
 
 GAME_MODES["split_screen_mirror"] = SplitScreenMirrorMode()
+
+class InvertControlsMutator(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Invert Controls Mutator"
+        self.description = "A mutator that periodically inverts all players' movement controls for a short duration."
+        self.trigger_timer = 0.0
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        self.trigger_timer += delta
+        if self.trigger_timer >= 15.0:
+            self.trigger_timer -= 15.0
+            for b in balls:
+                if not getattr(b, "is_ghost", False):
+                    b.invert_timer = max(getattr(b, "invert_timer", 0.0), 3.0)
+
+GAME_MODES['invert_controls_mutator'] = InvertControlsMutator()
