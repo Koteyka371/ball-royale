@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1893] Sabotage Vote Option — *2026-08-08 12:58:56 UTC*
+
+A rare vote option that allows viewers to vote to spawn a black hole or extreme weather effect to shake up the battlefield.
+
+---
+
 ## [idea-1895] Vote Streaks Cosmetics — *2026-08-08 12:43:09 UTC*
 
 Give viewers special shiny chat badges or effects if they maintain a high voting streak across multiple games.
