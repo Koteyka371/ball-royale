@@ -832,6 +832,55 @@ class GameMode:
 
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        # Supply Drop Mid-Air Shoot Down
+        if hasattr(world, "projectiles") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            projs_to_remove = []
+            drops_to_remove = []
+            import math
+            for p in world.projectiles:
+                if not getattr(p, "active", True):
+                    continue
+                for h in getattr(world.arena, "hazards", []):
+                    if getattr(h, "kind", "") == "supply_drop":
+                        dx = getattr(p, "x", 0.0) - getattr(h, "x", 0.0)
+                        dy = getattr(p, "y", 0.0) - getattr(h, "y", 0.0)
+                        if math.hypot(dx, dy) <= getattr(h, "radius", 40.0) + getattr(p, "radius", 10.0):
+                            projs_to_remove.append(p)
+                            drops_to_remove.append(h)
+
+            for p in projs_to_remove:
+                if p in world.projectiles:
+                    world.projectiles.remove(p)
+                if hasattr(p, 'active'):
+                    p.active = False
+
+            for h in drops_to_remove:
+                if h in world.arena.hazards:
+                    world.arena.hazards.remove(h)
+                    if hasattr(world, "add_event"):
+                        world.add_event("supply_drop_shot_down", {"x": getattr(h, "x", 0.0), "y": getattr(h, "y", 0.0)})
+
+                    import random
+                    if not hasattr(world.arena, "items"):
+                        world.arena.items = []
+
+                    num_items = random.randint(3, 5)
+                    for _ in range(num_items):
+                        booster_kind = random.choice(["stamina_booster", "vision_booster", "nemesis_booster", "healing_spring"])
+                        try:
+                            from arena.procedural_arena import Hazard
+                            item = Hazard(id=random.randint(10000, 99999), x=getattr(h, "x", 0.0) + random.uniform(-30, 30), y=getattr(h, "y", 0.0) + random.uniform(-30, 30), radius=15.0, kind=booster_kind, damage=0.0)
+                            world.arena.hazards.append(item)
+                        except ImportError:
+                            world.arena.hazards.append({
+                                "id": random.randint(10000, 99999),
+                                "x": getattr(h, "x", 0.0) + random.uniform(-30, 30),
+                                "y": getattr(h, "y", 0.0) + random.uniform(-30, 30),
+                                "radius": 15.0,
+                                "kind": booster_kind,
+                                "damage": 0.0
+                            })
+
         # Quantum Marker Hazard Pulsing
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
             for hazard in world.arena.hazards:
@@ -49434,6 +49483,7 @@ class OrbitalDebrisMode(GameMode):
                     force = (pull_strength * delta) / dist
                     b.vx += dx * force
                     b.vy += dy * force
+
 
         # Projectile blocking
         if hasattr(world, "projectiles"):

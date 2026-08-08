@@ -1474,6 +1474,179 @@ class GameMode:
 
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		# Supply Drop Mid-Air Shoot Down
+		if world != null and typeof(world) == TYPE_DICTIONARY and world.has("projectiles") and world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+			var projs_to_remove = []
+			var drops_to_remove = []
+			for p in world.projectiles:
+				var p_active = true
+				if typeof(p) == TYPE_DICTIONARY and p.has("active"): p_active = p.active
+				elif typeof(p) == TYPE_OBJECT and p.has_method("get") and p.get("active") != null: p_active = p.active
+				if not p_active:
+					continue
+
+				var px = 0.0
+				if typeof(p) == TYPE_DICTIONARY and p.has("x"): px = p.x
+				elif typeof(p) == TYPE_OBJECT and p.has_method("get_meta") and p.has_meta("x"): px = p.get_meta("x")
+
+				var py = 0.0
+				if typeof(p) == TYPE_DICTIONARY and p.has("y"): py = p.y
+				elif typeof(p) == TYPE_OBJECT and p.has_method("get_meta") and p.has_meta("y"): py = p.get_meta("y")
+
+				var pr = 10.0
+				if typeof(p) == TYPE_DICTIONARY and p.has("radius"): pr = p.radius
+				elif typeof(p) == TYPE_OBJECT and p.has_method("get_meta") and p.has_meta("radius"): pr = p.get_meta("radius")
+
+				for h in world.arena.hazards:
+					var h_kind = ""
+					if typeof(h) == TYPE_DICTIONARY and h.has("kind"): h_kind = h.kind
+					elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("kind"): h_kind = h.get_meta("kind")
+
+					if h_kind == "supply_drop":
+						var hx = 0.0
+						if typeof(h) == TYPE_DICTIONARY and h.has("x"): hx = h.x
+						elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("x"): hx = h.get_meta("x")
+
+						var hy = 0.0
+						if typeof(h) == TYPE_DICTIONARY and h.has("y"): hy = h.y
+						elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("y"): hy = h.get_meta("y")
+
+						var hr = 40.0
+						if typeof(h) == TYPE_DICTIONARY and h.has("radius"): hr = h.radius
+						elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("radius"): hr = h.get_meta("radius")
+
+						var dist = sqrt(pow(px - hx, 2) + pow(py - hy, 2))
+						if dist <= hr + pr:
+							projs_to_remove.append(p)
+							drops_to_remove.append(h)
+
+			for p in projs_to_remove:
+				if p in world.projectiles:
+					world.projectiles.erase(p)
+				if typeof(p) == TYPE_DICTIONARY: p["active"] = false
+				elif typeof(p) == TYPE_OBJECT and p.has_method("set"): p.set("active", false)
+
+			for h in drops_to_remove:
+				if h in world.arena.hazards:
+					world.arena.hazards.erase(h)
+
+					var hx = 0.0
+					if typeof(h) == TYPE_DICTIONARY and h.has("x"): hx = h.x
+					elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("x"): hx = h.get_meta("x")
+
+					var hy = 0.0
+					if typeof(h) == TYPE_DICTIONARY and h.has("y"): hy = h.y
+					elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("y"): hy = h.get_meta("y")
+
+					if world.has("add_event"):
+						var Callable = funcref(world, "add_event") if Engine.get_version_info().major < 4 else Callable(world, "add_event")
+						Callable.call("supply_drop_shot_down", {"x": hx, "y": hy})
+
+					var num_items = randi() % 3 + 3
+					var item_choices = ["stamina_booster", "vision_booster", "nemesis_booster", "healing_spring"]
+					for i in range(num_items):
+						var booster_kind = item_choices[randi() % item_choices.size()]
+						var item = {
+							"id": randi() % 90000 + 10000,
+							"x": hx + randf_range(-30, 30),
+							"y": hy + randf_range(-30, 30),
+							"radius": 15.0,
+							"kind": booster_kind,
+							"damage": 0.0
+						}
+						world.arena.hazards.append(item)
+		elif world != null and typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("projectiles") != null and world.has_method("get") and world.get("arena") != null and world.arena != null and typeof(world.arena) == TYPE_OBJECT and world.arena.has_method("get") and world.arena.get("hazards") != null:
+			var projs_to_remove = []
+			var drops_to_remove = []
+			for p in world.projectiles:
+				var p_active = true
+				if typeof(p) == TYPE_DICTIONARY and p.has("active"): p_active = p.active
+				elif typeof(p) == TYPE_OBJECT and p.has_method("get") and p.get("active") != null: p_active = p.active
+				elif typeof(p) == TYPE_OBJECT and "active" in p: p_active = p.active
+				if not p_active:
+					continue
+
+				var px = 0.0
+				if typeof(p) == TYPE_DICTIONARY and p.has("x"): px = p.x
+				elif typeof(p) == TYPE_OBJECT and p.has_method("get_meta") and p.has_meta("x"): px = p.get_meta("x")
+				elif typeof(p) == TYPE_OBJECT and "x" in p: px = p.x
+
+				var py = 0.0
+				if typeof(p) == TYPE_DICTIONARY and p.has("y"): py = p.y
+				elif typeof(p) == TYPE_OBJECT and p.has_method("get_meta") and p.has_meta("y"): py = p.get_meta("y")
+				elif typeof(p) == TYPE_OBJECT and "y" in p: py = p.y
+
+				var pr = 10.0
+				if typeof(p) == TYPE_DICTIONARY and p.has("radius"): pr = p.radius
+				elif typeof(p) == TYPE_OBJECT and p.has_method("get_meta") and p.has_meta("radius"): pr = p.get_meta("radius")
+				elif typeof(p) == TYPE_OBJECT and "radius" in p: pr = p.radius
+
+				for h in world.arena.hazards:
+					var h_kind = ""
+					if typeof(h) == TYPE_DICTIONARY and h.has("kind"): h_kind = h.kind
+					elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("kind"): h_kind = h.get_meta("kind")
+					elif typeof(h) == TYPE_OBJECT and "kind" in h: h_kind = h.kind
+
+					if h_kind == "supply_drop":
+						var hx = 0.0
+						if typeof(h) == TYPE_DICTIONARY and h.has("x"): hx = h.x
+						elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("x"): hx = h.get_meta("x")
+						elif typeof(h) == TYPE_OBJECT and "x" in h: hx = h.x
+
+						var hy = 0.0
+						if typeof(h) == TYPE_DICTIONARY and h.has("y"): hy = h.y
+						elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("y"): hy = h.get_meta("y")
+						elif typeof(h) == TYPE_OBJECT and "y" in h: hy = h.y
+
+						var hr = 40.0
+						if typeof(h) == TYPE_DICTIONARY and h.has("radius"): hr = h.radius
+						elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("radius"): hr = h.get_meta("radius")
+						elif typeof(h) == TYPE_OBJECT and "radius" in h: hr = h.radius
+
+						var dist = sqrt(pow(px - hx, 2) + pow(py - hy, 2))
+						if dist <= hr + pr:
+							projs_to_remove.append(p)
+							drops_to_remove.append(h)
+
+			for p in projs_to_remove:
+				var found_idx = world.projectiles.find(p)
+				if found_idx != -1:
+					world.projectiles.erase(p)
+				if typeof(p) == TYPE_DICTIONARY: p["active"] = false
+				elif typeof(p) == TYPE_OBJECT and p.has_method("set"): p.set("active", false)
+				elif typeof(p) == TYPE_OBJECT and "active" in p: p.active = false
+
+			for h in drops_to_remove:
+				var h_idx = world.arena.hazards.find(h)
+				if h_idx != -1:
+					world.arena.hazards.erase(h)
+
+					var hx = 0.0
+					if typeof(h) == TYPE_DICTIONARY and h.has("x"): hx = h.x
+					elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("x"): hx = h.get_meta("x")
+					elif typeof(h) == TYPE_OBJECT and "x" in h: hx = h.x
+
+					var hy = 0.0
+					if typeof(h) == TYPE_DICTIONARY and h.has("y"): hy = h.y
+					elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("y"): hy = h.get_meta("y")
+					elif typeof(h) == TYPE_OBJECT and "y" in h: hy = h.y
+
+					if world.has_method("add_event"):
+						world.add_event("supply_drop_shot_down", {"x": hx, "y": hy})
+
+					var num_items = randi() % 3 + 3
+					var item_choices = ["stamina_booster", "vision_booster", "nemesis_booster", "healing_spring"]
+					for i in range(num_items):
+						var booster_kind = item_choices[randi() % item_choices.size()]
+						var item = {
+							"id": randi() % 90000 + 10000,
+							"x": hx + randf_range(-30, 30),
+							"y": hy + randf_range(-30, 30),
+							"radius": 15.0,
+							"kind": booster_kind,
+							"damage": 0.0
+						}
+						world.arena.hazards.append(item)
 
 		if not world.get("dead_balls"):
 			world.set("dead_balls", [])
