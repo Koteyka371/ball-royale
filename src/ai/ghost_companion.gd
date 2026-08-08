@@ -40,20 +40,34 @@ func tick(world, balls, delta = 0.016):
         if "is_ghost" in b and b.is_ghost:
             var target_id = b.ghost_target_id if "ghost_target_id" in b else null
 
-            # Check if target is alive
+            # Check if target is alive or triggered hazard
             if target_id != null:
                 var target_b = null
+                var is_hazard = false
                 for ob in balls:
                     if ("id" in ob) and ob.id == target_id:
                         target_b = ob
                         break
 
-                var t_alive = target_b.alive if target_b and "alive" in target_b else false
-                var t_ghost = target_b.is_ghost if target_b and "is_ghost" in target_b else false
+                if target_b == null and "arena" in world and world.arena != null and "hazards" in world.arena:
+                    for h in world.arena.hazards:
+                        if ("id" in h) and h.id == target_id:
+                            target_b = h
+                            is_hazard = true
+                            break
 
-                if not target_b or not t_alive or t_ghost:
-                    b.ghost_target_id = null
-                    target_id = null
+                if is_hazard:
+                    var t_triggered = target_b.triggered if "triggered" in target_b else false
+                    var t_active = target_b.active if "active" in target_b else false
+                    if t_triggered or t_active:
+                        b.ghost_target_id = null
+                        target_id = null
+                else:
+                    var t_alive = target_b.alive if target_b and "alive" in target_b else false
+                    var t_ghost = target_b.is_ghost if target_b and "is_ghost" in target_b else false
+                    if not target_b or not t_alive or t_ghost:
+                        b.ghost_target_id = null
+                        target_id = null
 
             if target_id == null:
                 var min_dist = 999999.0
@@ -72,14 +86,36 @@ func tick(world, balls, delta = 0.016):
                             min_dist = d
                             best_target = ob
 
+                if best_target == null and "arena" in world and world.arena != null and "hazards" in world.arena:
+                    for h in world.arena.hazards:
+                        var h_triggered = h.triggered if "triggered" in h else false
+                        var h_active = h.active if "active" in h else false
+                        if not h_triggered and not h_active:
+                            var h_x = h.x if "x" in h else 0.0
+                            var h_y = h.y if "y" in h else 0.0
+                            var dx = h_x - b.x
+                            var dy = h_y - b.y
+                            var d = dx*dx + dy*dy
+                            if d < min_dist:
+                                min_dist = d
+                                best_target = h
+
                 if best_target != null:
                     b.ghost_target_id = best_target.id if "id" in best_target else null
             else:
                 var target_b = null
+                var is_hazard = false
                 for ob in balls:
                     if ("id" in ob) and ob.id == target_id:
                         target_b = ob
                         break
+
+                if target_b == null and "arena" in world and world.arena != null and "hazards" in world.arena:
+                    for h in world.arena.hazards:
+                        if ("id" in h) and h.id == target_id:
+                            target_b = h
+                            is_hazard = true
+                            break
 
                 if target_b != null:
                     b.x = target_b.x if "x" in target_b else b.x
@@ -87,25 +123,54 @@ func tick(world, balls, delta = 0.016):
                     b.vx = 0.0
                     b.vy = 0.0
 
-                    var b_team = b.team if "team" in b else null
-                    var t_team = target_b.team if "team" in target_b else null
-                    var t_base_speed = target_b.base_speed if "base_speed" in target_b else 100.0
+                    if not is_hazard:
+                        var b_team = b.team if "team" in b else null
+                        var t_team = target_b.team if "team" in target_b else null
+                        var t_base_speed = target_b.base_speed if "base_speed" in target_b else 100.0
 
-                    if b_team == t_team:
-                        target_b.speed = t_base_speed * 1.2
-                        var max_hp = target_b.max_hp if "max_hp" in target_b else 100.0
-                        var cur_hp = target_b.hp if "hp" in target_b else 100.0
-                        target_b.hp = min(max_hp, cur_hp + 2.0 * delta)
-                    else:
-                        target_b.speed = t_base_speed * 0.8
-                        if target_b.has_method("take_damage"):
-                            target_b.take_damage(5.0 * delta)
-                        else:
+                        if b_team == t_team:
+                            target_b.speed = t_base_speed * 1.2
+                            var max_hp = target_b.max_hp if "max_hp" in target_b else 100.0
                             var cur_hp = target_b.hp if "hp" in target_b else 100.0
-                            target_b.hp = cur_hp - 5.0 * delta
-                            if target_b.hp <= 0:
-                                target_b.hp = 0
-                                target_b.alive = false
+                            target_b.hp = min(max_hp, cur_hp + 2.0 * delta)
+                        else:
+                            target_b.speed = t_base_speed * 0.8
+                            if target_b.has_method("take_damage"):
+                                target_b.take_damage(5.0 * delta)
+                            else:
+                                var cur_hp = target_b.hp if "hp" in target_b else 100.0
+                                target_b.hp = cur_hp - 5.0 * delta
+                                if target_b.hp <= 0:
+                                    target_b.hp = 0
+                                    target_b.alive = false
+                    else:
+                        var enemy_near = false
+                        var b_team = b.team if "team" in b else null
+                        for ob in balls:
+                            var o_alive = ob.alive if "alive" in ob else false
+                            var o_ghost = ob.is_ghost if "is_ghost" in ob else false
+                            var o_type = ob.ball_type if "ball_type" in ob else null
+                            var o_team = ob.team if "team" in ob else null
+
+                            if o_alive and not o_ghost and o_type != "spectator":
+                                if o_team != b_team:
+                                    var dx = ob.x - b.x
+                                    var dy = ob.y - b.y
+                                    var d = dx*dx + dy*dy
+                                    if d < 10000.0:
+                                        enemy_near = true
+                                        break
+
+                        if enemy_near:
+                            if typeof(target_b) == TYPE_OBJECT:
+                                if "active" in target_b: target_b.active = true
+                                elif target_b.has_method("set_meta"): target_b.set_meta("active", true)
+                                if "triggered" in target_b: target_b.triggered = true
+                                elif target_b.has_method("set_meta"): target_b.set_meta("triggered", true)
+                            elif typeof(target_b) == TYPE_DICTIONARY:
+                                target_b["active"] = true
+                                target_b["triggered"] = true
+                            b.ghost_target_id = null
 
 func check_winner(world, balls):
     var alive_teams = {}
