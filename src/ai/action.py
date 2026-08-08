@@ -2016,6 +2016,28 @@ class Action:
 
     def _execute_internal(self, strategy: str, delta: float) -> None:
 
+        aura_well_buff_timer = getattr(self.ball, "aura_well_buff_timer", 0.0)
+        if aura_well_buff_timer > 0.0 or getattr(self.ball, "aura_well_buff_applied", False):
+            if aura_well_buff_timer > 0.0 and not getattr(self.ball, "aura_well_buff_applied", False):
+                self.ball.speed_multiplier = getattr(self.ball, "speed_multiplier", 1.0) * 1.5
+                if not hasattr(self.ball, "base_damage_multiplier"):
+                    self.ball.base_damage_multiplier = getattr(self.ball, "damage_multiplier", 1.0)
+                self.ball.base_damage_multiplier *= 1.5
+                self.ball.damage_multiplier = getattr(self.ball, "damage_multiplier", 1.0) * 1.5
+                self.ball.aura_well_buff_applied = True
+
+            if getattr(self.ball, "aura_well_buff_timer", 0.0) > 0.0:
+                self.ball.aura_well_buff_timer -= delta
+
+            if getattr(self.ball, "aura_well_buff_timer", 0.0) <= 0.0:
+                self.ball.aura_well_buff_timer = 0.0
+                if getattr(self.ball, "aura_well_buff_applied", False):
+                    self.ball.speed_multiplier = getattr(self.ball, "speed_multiplier", 1.5) / 1.5
+                    if hasattr(self.ball, "base_damage_multiplier"):
+                        self.ball.base_damage_multiplier /= 1.5
+                    self.ball.damage_multiplier = getattr(self.ball, "damage_multiplier", 1.5) / 1.5
+                    self.ball.aura_well_buff_applied = False
+
         self.ball.in_gravity_nullifier_zone = False
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for hazard in self.world.arena.hazards:
