@@ -37344,7 +37344,7 @@ class SolarFlareMode extends GameMode:
 	var flare_interval: float = 20.0
 	var flare_duration: float = 5.0
 	var is_flaring: bool = false
-	var excluded_hazards = ["safe_zone_teleport_booster", "damage_link_booster", "healing_spring", "booster", "drone_item", "reverse_gravity_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "laser_sight_attachment", "anchor_booster", "disruptor_booster", "hazard_immunity_booster", "emp_booster", "cursed_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "shield_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_shield_booster", "nemesis_drone_booster", "invert_booster", "aura_booster", "exploding_booster", "debuff_booster", "forecast_booster", "teleporter", "quantum_teleporter", "grapple_node", "slingshot_node", "decoy_flare_item", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "deployable_time_anomaly", "deployable_decoy_swap_item", "pet_item", "artillery_pet_item", "hazard_jar_item", "ammo_pack", "orbital_mine_immunity_booster", "safe_zone_radar"]
+	var excluded_hazards = ["safe_zone_teleport_booster", "damage_link_booster", "healing_spring", "booster", "drone_item", "reverse_gravity_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "laser_sight_attachment", "anchor_booster", "disruptor_booster", "hazard_immunity_booster", "emp_booster", "cursed_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "shield_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_shield_booster", "nemesis_drone_booster", "invert_booster", "aura_booster", "exploding_booster", "debuff_booster", "forecast_booster", "teleporter", "quantum_teleporter", "grapple_node", "slingshot_node", "reversing_grapple_node", "reversing_grapple_node", "decoy_flare_item", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "deployable_time_anomaly", "deployable_decoy_swap_item", "pet_item", "artillery_pet_item", "hazard_jar_item", "ammo_pack", "orbital_mine_immunity_booster", "safe_zone_radar"]
 
 	func _init():
 		super()
@@ -80901,3 +80901,55 @@ class SwapLowestHPMutatorMode extends GameMode:
 					elif b.has_method("set_meta"): b.set_meta("low_hp_swap_triggered", false)
 
 GAME_MODES["low_hp_swap_mutator"] = SwapLowestHPMutatorMode.new()
+
+class ReversingGrappleNodeMode extends GameMode:
+	var spawn_timer = 5.0
+
+	func _init():
+		super._init()
+		self.name = "Reversing Grapple Nodes"
+		self.description = "Specific reversing grapple nodes floating in the arena. They pull you towards them when you shoot a grappling hook, but when another player touches them, they reverse and push you away at high speeds."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		spawn_timer = 5.0
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+		spawn_timer -= delta
+		if spawn_timer <= 0.0:
+			spawn_timer = 15.0
+			if "arena" in world and world.arena != null and "hazards" in world.arena:
+				var arena_width = 1000.0
+				var arena_height = 1000.0
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					if world.arena.has("width"): arena_width = float(world.arena.width)
+					if world.arena.has("height"): arena_height = float(world.arena.height)
+				else:
+					if "width" in world.arena: arena_width = float(world.arena.width)
+					if "height" in world.arena: arena_height = float(world.arena.height)
+
+				var nx = float(randi() % int(max(1.0, arena_width - 400.0)) + 200.0)
+				var ny = float(randi() % int(max(1.0, arena_height - 400.0)) + 200.0)
+				var n_id = randi() % 10000 + 9999
+
+				var HazardType = null
+				if Engine.has_singleton("ProceduralArena"):
+					var p = Engine.get_singleton("ProceduralArena")
+					if p.has_method("Hazard_new"):
+						pass
+
+				var new_node = {"id": n_id, "x": nx, "y": ny, "radius": 15.0, "kind": "reversing_grapple_node", "damage": 0.0, "is_reversed": false, "active": true}
+
+				if typeof(world.arena.hazards) == TYPE_ARRAY:
+					world.arena.hazards.append(new_node)
+
+				if "events" in world:
+					world.events.append({
+						"type": "hazard_spawn",
+						"kind": "reversing_grapple_node",
+						"x": nx,
+						"y": ny
+					})
+
+GAME_MODES["reversing_grapple_node"] = ReversingGrappleNodeMode.new()
