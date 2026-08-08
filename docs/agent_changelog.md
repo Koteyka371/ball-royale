@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1910] Orbital Laser Reflector Powerup — *2026-08-08 17:52:14 UTC*
+
+Add a new powerup or buff that allows a player to perfectly reflect the orbital laser's irradiated zone back to its origin or redirect it onto another player when locked on.
+
+---
+
 ## [idea-1911] Dynamic Weather Events — *2026-08-08 16:20:52 UTC*
 
 Add rare in-match dynamic weather transitions (e.g. going from clear to blizzard abruptly) that require players to quickly adapt by finding shelter or equipping weather-specific boosters.
