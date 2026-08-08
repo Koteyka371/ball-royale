@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1903] Aura Overload Event — *2026-08-08 09:13:32 UTC*
+
+An event where player auras rapidly expand over time. The larger the aura, the more damage you deal, but taking damage instantly reduces the aura size back to minimum.
+
+---
+
 ## [idea-1889] Shrinking Horizon Event — *2026-08-08 08:28:10 UTC*
 
 An event that periodically reduces the camera/vision range of all players by 50% for 5 seconds.
