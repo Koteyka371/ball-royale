@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1880] Inverted control schemes mutator — *2026-08-08 20:07:02 UTC*
+
+A mutator that inverts all control schemes momentarily for a duration.
+
+---
+
 ## [idea-1910] Orbital Laser Reflector Powerup — *2026-08-08 17:52:14 UTC*
 
 Add a new powerup or buff that allows a player to perfectly reflect the orbital laser's irradiated zone back to its origin or redirect it onto another player when locked on.
