@@ -4457,7 +4457,8 @@ class BattleRoyaleMode(GameMode):
             import datetime
             is_weekend = datetime.datetime.now().weekday() >= 5
             if is_weekend:
-                if getattr(self, "random", __import__("random")).random() < 0.2: # 20% chance
+                rnd = getattr(self, "random", __import__("random"))
+                if hasattr(rnd, "random") and rnd.random() < 0.2 or hasattr(rnd, "uniform") and rnd.uniform(0, 1) < 0.2:
                     self._weekend_boss_spawned = True
 
                     class WeekendBoss:

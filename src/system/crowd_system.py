@@ -936,7 +936,7 @@ class CrowdSystem:
             self.crowd_mood = 0
         else:
             vote_types = [
-                {"type": "spawn_hazard", "options": ["lava_pit", "spike_trap", "poison_cloud"]},
+                {"type": "spawn_hazard", "options": ["lava_pit", "spike_trap", "poison_cloud"]}, {"type": "extreme_event", "options": ["spawn_black_hole", "extreme_weather"]},
                 {"type": "player_buff", "options": ["speed", "damage", "shield"]},
                 {"type": "global_stat_modifier", "options": ["global_speed_up", "global_damage_up", "global_shield_up"]},
                 {"type": "global_hazard_zone", "options": ["low_gravity", "slippery_ice", "magnetic_field"]}
@@ -986,8 +986,30 @@ class CrowdSystem:
         # Apply the result
         alive_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator"]
 
+
         if alive_balls:
-            if vote_type == "spawn_hazard":
+            if vote_type == "extreme_event":
+                self.crowd_mood = 0
+                if winning_option == "spawn_black_hole":
+                    if hasattr(self.world, 'add_event'):
+                        cx, cy = 500.0, 500.0
+                        if hasattr(self.world, 'arena'):
+                            cx = getattr(self.world.arena, 'width', 1000) / 2.0
+                            cy = getattr(self.world.arena, 'height', 1000) / 2.0
+                        self.world.add_event("spawn_hazard", {
+                            "x": cx,
+                            "y": cy,
+                            "kind": "massive_black_hole",
+                            "radius": 200.0
+                        })
+                        self.world.add_event("crowd_cheer", {"message": "A MASSIVE BLACK HOLE has appeared!", "volume": 2.0})
+                elif winning_option == "extreme_weather":
+                    if hasattr(self.world, 'add_event'):
+                        new_weather = random.choice(["thunderstorm", "blizzard", "acid_rain"])
+                        self.world.add_event("weather_transition", {"new_weather": new_weather})
+                        self.world.add_event("crowd_cheer", {"message": f"EXTREME WEATHER incoming: {new_weather.upper()}!", "volume": 1.5})
+            elif vote_type == "spawn_hazard":
+
                 self.crowd_mood = max(0, self.crowd_mood - 1)
                 target = random.choice(alive_balls)
                 if hasattr(self.world, 'add_event'):

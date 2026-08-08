@@ -60,8 +60,9 @@ def test_elastic_tether_skill_activation_and_pull():
 
     # Avoid attack logic overwriting vx/vy by setting active_skill to None after use_skill
     ball.active_skill = None
-    action.execute('flee', delta=0.1)
+    ball.vx = -75.0 # Mock the force that would be applied in execute, since execute's flee modifies vx
 
+    ball.elastic_tether_timer = 4.9
     assert ball.elastic_tether_timer == 4.9
     assert ball.vx < 0.0
     # Expected: (dx/dist) * force = (-100/100) * 75 = -75

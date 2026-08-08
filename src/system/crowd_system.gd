@@ -1458,7 +1458,7 @@ func _start_vote(balls: Array):
         crowd_mood = 0
     else:
         var vote_types = [
-            {"type": "spawn_hazard", "options": ["lava_pit", "spike_trap", "poison_cloud"]},
+            {"type": "spawn_hazard", "options": ["lava_pit", "spike_trap", "poison_cloud"]}, {"type": "extreme_event", "options": ["spawn_black_hole", "extreme_weather"]},
             {"type": "player_buff", "options": ["speed", "damage", "shield"]},
             {"type": "global_stat_modifier", "options": ["global_speed_up", "global_damage_up", "global_shield_up"]},
             {"type": "global_hazard_zone", "options": ["low_gravity", "slippery_ice", "magnetic_field"]}
@@ -1525,6 +1525,7 @@ func _resolve_vote(balls: Array):
         elif typeof(b) == TYPE_DICTIONARY and b.has("alive") and b["alive"] and b.get("ball_type") != "spectator":
             alive_balls.append(b)
 
+
     if not alive_balls.is_empty():
         var target = alive_balls[randi() % alive_balls.size()]
 
@@ -1537,7 +1538,40 @@ func _resolve_vote(balls: Array):
             t_x = float(target.get("x", 0.0))
             t_y = float(target.get("y", 0.0))
 
-        if vote_type == "spawn_hazard":
+        if vote_type == "extreme_event":
+            crowd_mood = 0
+            if winning_option == "spawn_black_hole":
+                if world != null and world.has_method("add_event"):
+                    var cx = 500.0
+                    var cy = 500.0
+                    if typeof(world) == TYPE_OBJECT and world.get("arena") != null:
+                        var arena = world.get("arena")
+                        var w = arena.get("width") if arena.get("width") != null else 1000.0
+                        var h = arena.get("height") if arena.get("height") != null else 1000.0
+                        cx = w / 2.0
+                        cy = h / 2.0
+                    elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+                        var arena = world["arena"]
+                        var w = arena.get("width", 1000.0)
+                        var h = arena.get("height", 1000.0)
+                        cx = w / 2.0
+                        cy = h / 2.0
+
+                    world.add_event("spawn_hazard", {
+                        "x": cx,
+                        "y": cy,
+                        "kind": "massive_black_hole",
+                        "radius": 200.0
+                    })
+                    world.add_event("crowd_cheer", {"message": "A MASSIVE BLACK HOLE has appeared!", "volume": 2.0})
+            elif winning_option == "extreme_weather":
+                if world != null and world.has_method("add_event"):
+                    var weathers = ["thunderstorm", "blizzard", "acid_rain"]
+                    var new_weather = weathers[randi() % weathers.size()]
+                    world.add_event("weather_transition", {"new_weather": new_weather})
+                    world.add_event("crowd_cheer", {"message": "EXTREME WEATHER incoming: " + new_weather.to_upper() + "!", "volume": 1.5})
+        elif vote_type == "spawn_hazard":
+
             crowd_mood = max(0, crowd_mood - 1)
             if world != null and world.has_method("add_event"):
                 world.add_event("spawn_hazard", {
