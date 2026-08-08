@@ -60075,6 +60075,67 @@ class BoundaryBuilderMode extends ShrinkingBoundaryMode:
 					if haz.has(r):
 						haz.erase(r)
 
+
+class PeriodicInvertControlsMutatorMode extends GameMode:
+	var duration: float = 5.0
+	var interval: float = 10.0
+
+	func _init() -> void:
+		name = "Periodic Invert Controls"
+		description = "Intermittently inverts all controls for a chaotic few seconds."
+		mutators_active = true
+		mutators = []
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		var w_is_dict = typeof(world) == TYPE_DICTIONARY
+		var timer: float = 0.0
+		var active: bool = false
+
+		if w_is_dict:
+			timer = world.get("periodic_invert_timer", 0.0) + delta
+			active = world.get("periodic_invert_active", false)
+		else:
+			timer = (world.get_meta("periodic_invert_timer") if world.has_method("get_meta") and world.has_meta("periodic_invert_timer") else 0.0) + delta
+			active = world.get_meta("periodic_invert_active") if world.has_method("get_meta") and world.has_meta("periodic_invert_active") else false
+
+		if active:
+			if timer >= duration:
+				active = false
+				timer = 0.0
+				if w_is_dict:
+					pass # Dictionaries don't have add_event usually, but just in case
+				elif typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("message", {"text": "Controls restored!"})
+			else:
+				for b in balls:
+					var is_alive = b.get("alive", true) if typeof(b) == TYPE_DICTIONARY else b.alive
+					var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else b.ball_type
+					if is_alive and b_type != "spectator":
+						if typeof(b) == TYPE_DICTIONARY:
+							b["invert_timer"] = max(b.get("invert_timer", 0.0), 0.1)
+						else:
+							var cur_inv = b.get_meta("invert_timer") if b.has_method("get_meta") and b.has_meta("invert_timer") else 0.0
+							if "invert_timer" in b: cur_inv = b.invert_timer
+							var new_inv = max(cur_inv, 0.1)
+							if "invert_timer" in b: b.invert_timer = new_inv
+							elif b.has_method("set_meta"): b.set_meta("invert_timer", new_inv)
+		else:
+			if timer >= interval:
+				active = true
+				timer = 0.0
+				if not w_is_dict and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("message", {"text": "Controls inverted!"})
+
+		if w_is_dict:
+			world["periodic_invert_timer"] = timer
+			world["periodic_invert_active"] = active
+		else:
+			if world.has_method("set_meta"):
+				world.set_meta("periodic_invert_timer", timer)
+				world.set_meta("periodic_invert_active", active)
+
 var GAME_MODES = {
 	"boundary_builder": BoundaryBuilderMode.new(),
     "crimson_fog_event": CrimsonFogEventMode.new(),
@@ -80674,6 +80735,7 @@ class PeriodicGhostMutatorMode extends GameMode:
 						b["ghost_mode_timer"] = 3.0
 
 GAME_MODES['periodic_ghost_mutator'] = PeriodicGhostMutatorMode.new()
+GAME_MODES['periodic_invert_controls_mutator'] = PeriodicInvertControlsMutatorMode.new()
 
 class ConfettiCelebrationMode extends GameMode:
 	func _init() -> void:

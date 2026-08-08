@@ -4457,7 +4457,8 @@ class BattleRoyaleMode(GameMode):
             import datetime
             is_weekend = datetime.datetime.now().weekday() >= 5
             if is_weekend:
-                if getattr(self, "random", __import__("random")).random() < 0.2: # 20% chance
+                rnd = getattr(self, "random", __import__("random"))
+                if (rnd.random() if hasattr(rnd, "random") else rnd.uniform(0.0, 1.0)) < 0.2: # 20% chance
                     self._weekend_boss_spawned = True
 
                     class WeekendBoss:
@@ -51356,6 +51357,44 @@ class PeriodicGhostMutatorMode(GameMode):
                     b.ghost_mode_timer = 3.0
 
 GAME_MODES['periodic_ghost_mutator'] = PeriodicGhostMutatorMode()
+
+class PeriodicInvertControlsMutatorMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Periodic Invert Controls"
+        self.description = "Intermittently inverts all controls for a chaotic few seconds."
+        self.mutators_active = True
+        self.mutators = []
+        self.duration = 5.0
+        self.interval = 10.0
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        timer = getattr(world, "periodic_invert_timer", 0.0) + delta
+        active = getattr(world, "periodic_invert_active", False)
+
+        if active:
+            if timer >= self.duration:
+                active = False
+                timer = 0.0
+                if hasattr(world, "add_event"):
+                    world.add_event("message", {"text": "Controls restored!"})
+            else:
+                for b in balls:
+                    if getattr(b, "alive", True) and getattr(b, "ball_type", "") != "spectator":
+                        b.invert_timer = max(getattr(b, "invert_timer", 0.0), 0.1)
+        else:
+            if timer >= self.interval:
+                active = True
+                timer = 0.0
+                if hasattr(world, "add_event"):
+                    world.add_event("message", {"text": "Controls inverted!"})
+
+        world.periodic_invert_timer = timer
+        world.periodic_invert_active = active
+
+GAME_MODES['periodic_invert_controls_mutator'] = PeriodicInvertControlsMutatorMode()
 
 class ConfettiCelebrationMode(GameMode):
     def __init__(self):
