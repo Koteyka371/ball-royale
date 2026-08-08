@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1874] Magnetic Grapple Hook Skill — *2026-08-08 22:44:27 UTC*
+
+A new skill that allows a ball to fire a tether towards a solid object or enemy. If it hits an enemy, both are rapidly pulled towards each other, stunning them on collision. If it hits a wall, the ball is pulled to safety. Good for initiating or escaping.
+
+---
+
 ## [idea-1913] Projectile Overload — *2026-08-08 21:26:56 UTC*
 
 A survival mode where invincible turrets constantly spawn projectiles that bounce around the map. Players cannot destroy the turrets and must solely rely on dodging, perfect blocks, and positioning to survive as the arena fills with chaotic projectiles.
