@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1911] Dynamic Weather Events — *2026-08-08 16:20:52 UTC*
+
+Add rare in-match dynamic weather transitions (e.g. going from clear to blizzard abruptly) that require players to quickly adapt by finding shelter or equipping weather-specific boosters.
+
+---
+
 ## [idea-1823] Gravity Nullifier Zone — *2026-08-08 15:44:46 UTC*
 
 A hazard zone that disables all localized gravity pulls (from black holes, gravity wells, etc.) for entities inside it, allowing for safe passage through highly congested gravitational anomalies.
