@@ -80901,3 +80901,59 @@ class SwapLowestHPMutatorMode extends GameMode:
 					elif b.has_method("set_meta"): b.set_meta("low_hp_swap_triggered", false)
 
 GAME_MODES["low_hp_swap_mutator"] = SwapLowestHPMutatorMode.new()
+
+class InverseControlsMutatorMode extends GameMode:
+	var inversion_duration = 3.0
+	var inversion_cooldown = 15.0
+	var timer = 0.0
+	var currently_inverted = false
+
+	func _init() -> void:
+		name = "Inverse Controls Mutator"
+		description = "A mutator that intermittently inverts all movement controls for a brief duration."
+		mutators_active = true
+		mutators = []
+
+	func tick(world, balls: Array, delta: float) -> void:
+		timer -= delta
+		if timer <= 0:
+			if currently_inverted:
+				currently_inverted = false
+				timer = inversion_cooldown
+				if "inverse_controls" in mutators:
+					mutators.erase("inverse_controls")
+			else:
+				currently_inverted = true
+				timer = inversion_duration
+				if not ("inverse_controls" in mutators):
+					mutators.append("inverse_controls")
+
+				for b in balls:
+					var alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else b.get("alive") if b.has_method("get") else true
+					if alive == null: alive = true
+					var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type") if b.has_method("get") else ""
+					if b_type == null: b_type = ""
+
+					if alive and b_type != "spectator":
+						var cur_timer = 0.0
+						if typeof(b) == TYPE_DICTIONARY and b.has("invert_timer"):
+							cur_timer = float(b["invert_timer"])
+						elif typeof(b) == TYPE_OBJECT:
+							if "invert_timer" in b:
+								cur_timer = float(b.invert_timer)
+							elif b.has_method("get_meta") and b.has_meta("invert_timer"):
+								cur_timer = float(b.get_meta("invert_timer"))
+
+						var new_timer = cur_timer
+						if inversion_duration > cur_timer:
+							new_timer = inversion_duration
+
+						if typeof(b) == TYPE_DICTIONARY:
+							b["invert_timer"] = new_timer
+						elif typeof(b) == TYPE_OBJECT:
+							if "invert_timer" in b:
+								b.invert_timer = new_timer
+							elif b.has_method("set_meta"):
+								b.set_meta("invert_timer", new_timer)
+
+GAME_MODES['inverse_controls_mutator'] = InverseControlsMutatorMode.new()

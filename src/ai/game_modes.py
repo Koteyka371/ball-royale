@@ -51582,3 +51582,35 @@ class SwapLowestHPMutator(GameMode):
                 b.low_hp_swap_triggered = False
 
 GAME_MODES['low_hp_swap_mutator'] = SwapLowestHPMutator()
+
+class InverseControlsMutatorMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Inverse Controls Mutator"
+        self.description = "A mutator that intermittently inverts all movement controls for a brief duration."
+        self.mutators_active = True
+        self.mutators = []
+        self.inversion_duration = 3.0
+        self.inversion_cooldown = 15.0
+        self.timer = 0.0
+        self.currently_inverted = False
+
+    def tick(self, world, balls, delta=0.016):
+        self.timer -= delta
+        if self.timer <= 0:
+            if self.currently_inverted:
+                self.currently_inverted = False
+                self.timer = self.inversion_cooldown
+                if "inverse_controls" in self.mutators:
+                    self.mutators.remove("inverse_controls")
+            else:
+                self.currently_inverted = True
+                self.timer = self.inversion_duration
+                if "inverse_controls" not in self.mutators:
+                    self.mutators.append("inverse_controls")
+                # Apply inversion timer to all balls. action.py/action.gd already use this timer to invert movement steps.
+                for b in balls:
+                    if getattr(b, "alive", True) and getattr(b, "ball_type", "") != "spectator":
+                        b.invert_timer = max(getattr(b, "invert_timer", 0.0), self.inversion_duration)
+
+GAME_MODES['inverse_controls_mutator'] = InverseControlsMutatorMode()
