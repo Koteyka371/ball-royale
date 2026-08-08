@@ -1,3 +1,130 @@
+
+class ConstrictingArenaMode extends GameMode:
+	var min_width = 200.0
+	var min_height = 200.0
+	var shrink_speed = 10.0
+	var damage_per_second = 20.0
+	var slow_duration = 1.0
+
+	func _init().():
+		name = "Constricting Arena"
+		description = "The arena boundaries slowly constrict over time, pushing all balls towards the center. Touching the outer boundary applies a severe slow and damages over time."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		.tick(world, balls, delta)
+
+		if world != null and ("arena" in world) and world.arena != null:
+			var current_w = 1000.0
+			var current_h = 1000.0
+
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				current_w = world.arena.get("width", 1000.0)
+				current_h = world.arena.get("height", 1000.0)
+			else:
+				if "width" in world.arena: current_w = world.arena.width
+				if "height" in world.arena: current_h = world.arena.height
+
+			var new_w = max(min_width, current_w - shrink_speed * delta)
+			var new_h = max(min_height, current_h - shrink_speed * delta)
+
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				world.arena["width"] = new_w
+				world.arena["height"] = new_h
+			else:
+				world.arena.width = new_w
+				world.arena.height = new_h
+
+			for b in balls:
+				var is_alive = true
+				if typeof(b) == TYPE_DICTIONARY:
+					is_alive = b.get("alive", true)
+				else:
+					if "alive" in b: is_alive = b.alive
+
+				if not is_alive:
+					continue
+
+				var radius = 15.0
+				var bx = 0.0
+				var by = 0.0
+				var hp = 100.0
+
+				if typeof(b) == TYPE_DICTIONARY:
+					radius = b.get("radius", 15.0)
+					bx = b.get("x", 0.0)
+					by = b.get("y", 0.0)
+					hp = b.get("hp", 100.0)
+				else:
+					if "radius" in b: radius = b.radius
+					if "x" in b: bx = b.x
+					if "y" in b: by = b.y
+					if "hp" in b: hp = b.hp
+
+				var touching_boundary = false
+
+				if bx < radius:
+					bx = radius
+					touching_boundary = true
+				elif bx > new_w - radius:
+					bx = new_w - radius
+					touching_boundary = true
+
+				if by < radius:
+					by = radius
+					touching_boundary = true
+				elif by > new_h - radius:
+					by = new_h - radius
+					touching_boundary = true
+
+				if typeof(b) == TYPE_DICTIONARY:
+					b["x"] = bx
+					b["y"] = by
+				else:
+					b.x = bx
+					b.y = by
+
+				if touching_boundary:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["slow_timer"] = slow_duration
+						var new_hp = max(0.0, hp - damage_per_second * delta)
+						b["hp"] = new_hp
+						if new_hp <= 0.0:
+							b["alive"] = false
+					else:
+						b.slow_timer = slow_duration
+						var new_hp = max(0.0, hp - damage_per_second * delta)
+						b.hp = new_hp
+						if new_hp <= 0.0:
+							b.alive = false
+
+			var hazards = []
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				hazards = world.arena.get("hazards", [])
+			else:
+				if "hazards" in world.arena: hazards = world.arena.hazards
+
+			if typeof(hazards) == TYPE_ARRAY:
+				for h in hazards:
+					var radius = 0.0
+					var hx = 0.0
+					var hy = 0.0
+					if typeof(h) == TYPE_DICTIONARY:
+						radius = h.get("radius", 0.0)
+						hx = h.get("x", 0.0)
+						hy = h.get("y", 0.0)
+						if hx < radius: h["x"] = radius
+						elif hx > new_w - radius: h["x"] = new_w - radius
+						if hy < radius: h["y"] = radius
+						elif hy > new_h - radius: h["y"] = new_h - radius
+					elif typeof(h) == TYPE_OBJECT:
+						if "radius" in h: radius = h.radius
+						if "x" in h: hx = h.x
+						if "y" in h: hy = h.y
+						if hx < radius: h.x = radius
+						elif hx > new_w - radius: h.x = new_w - radius
+						if hy < radius: h.y = radius
+						elif hy > new_h - radius: h.y = new_h - radius
+
 class_name GameModes
 
 
@@ -61066,6 +61193,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"temporal_rifts": TemporalRiftsMode.new(),
 		"sector_collapse": SectorCollapseMode.new(),
 	"constricting_boundary_trap": ConstrictingBoundaryTrapMode.new(),
+	"constricting_arena": ConstrictingArenaMode.new(),
 	"sacrifice_altar": SacrificeAltarMode.new(),
 	"bermuda_triangle": BermudaTriangleMode.new(),
 	"color_trail": ColorTrailMode.new(),
