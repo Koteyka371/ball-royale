@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1901] Aura Harmony Mode — *2026-08-08 05:00:23 UTC*
+
+A new game mode where teams are formed dynamically based on players acquiring the same aura color. Players with matching auras cannot damage each other and instead form powerful tethered energy links that damage any non-matching players caught between them.
+
+---
+
 ## [idea-1861] Decoy Entanglement Mode — *2026-08-08 00:37:18 UTC*
 
 Balls can spawn temporary decoys. Any damage or buffs applied to the decoy are partially shared back to the creator, acting as a two-way street for risk/reward mechanics.
