@@ -3667,6 +3667,45 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+
+	var in_gravity_nullifier_zone = false
+	if typeof(world) == TYPE_DICTIONARY and "arena" in world and "hazards" in world.arena:
+		var ball_x = self.ball.get("x", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.x
+		var ball_y = self.ball.get("y", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.y
+		var ball_rad = self.ball.get("radius", 15.0) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.radius
+		for hazard in world.arena.hazards:
+			var h_kind = hazard.get("kind", "") if typeof(hazard) == TYPE_DICTIONARY else hazard.kind
+			var h_active = hazard.get("active", true) if typeof(hazard) == TYPE_DICTIONARY else hazard.active
+			if h_kind == "gravity_nullifier_zone" and h_active:
+				var h_x = hazard.get("x", 0.0) if typeof(hazard) == TYPE_DICTIONARY else hazard.x
+				var h_y = hazard.get("y", 0.0) if typeof(hazard) == TYPE_DICTIONARY else hazard.y
+				var h_r = hazard.get("radius", 150.0) if typeof(hazard) == TYPE_DICTIONARY else hazard.radius
+				var dx = h_x - ball_x
+				var dy = h_y - ball_y
+				var dist_sq = dx*dx + dy*dy
+				var eff_r = h_r + ball_rad
+				if dist_sq <= eff_r * eff_r:
+					in_gravity_nullifier_zone = true
+					break
+	elif typeof(world) == TYPE_OBJECT and "arena" in world and "hazards" in world.arena:
+		var ball_x = self.ball.get("x", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.x
+		var ball_y = self.ball.get("y", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.y
+		var ball_rad = self.ball.get("radius", 15.0) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.radius
+		for hazard in world.arena.hazards:
+			var h_kind = hazard.get("kind", "") if typeof(hazard) == TYPE_DICTIONARY else hazard.kind
+			var h_active = hazard.get("active", true) if typeof(hazard) == TYPE_DICTIONARY else hazard.active
+			if h_kind == "gravity_nullifier_zone" and h_active:
+				var h_x = hazard.get("x", 0.0) if typeof(hazard) == TYPE_DICTIONARY else hazard.x
+				var h_y = hazard.get("y", 0.0) if typeof(hazard) == TYPE_DICTIONARY else hazard.y
+				var h_r = hazard.get("radius", 150.0) if typeof(hazard) == TYPE_DICTIONARY else hazard.radius
+				var dx = h_x - ball_x
+				var dy = h_y - ball_y
+				var dist_sq = dx*dx + dy*dy
+				var eff_r = h_r + ball_rad
+				if dist_sq <= eff_r * eff_r:
+					in_gravity_nullifier_zone = true
+					break
+
 	if "out_of_combat_timer" in self.ball:
 		self.ball.out_of_combat_timer += delta
 
@@ -21258,7 +21297,7 @@ func execute(strategy: String, delta: float):
                             if "anchor_booster_timer" in self.ball: anchor_timer = float(self.ball.anchor_booster_timer)
                             elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("anchor_booster_timer"): anchor_timer = float(self.ball.get_meta("anchor_booster_timer"))
                             elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("anchor_booster_timer"): anchor_timer = float(self.ball["anchor_booster_timer"])
-                            if anchor_timer <= 0:
+                            if anchor_timer <= 0 and not in_gravity_nullifier_zone:
                                 var cb = ""
                                 if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("cosmetic"): cb = str(self.ball["cosmetic"]).to_lower().replace(" ", "_")
                                 elif typeof(self.ball) == TYPE_OBJECT and "cosmetic" in self.ball: cb = str(self.ball.cosmetic).to_lower().replace(" ", "_")
@@ -21266,7 +21305,7 @@ func execute(strategy: String, delta: float):
                                 var mod = 0.05 if cb == "rooted_boots" else (0.1 if cb == "grounded_boots" else 1.0)
                                 self.ball.x += nx * pull_strength * mod
                                 self.ball.y += ny * pull_strength * mod
-                            if hazard.kind in ["black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole", "gravity_well"]:
+                            if hazard.kind in ["black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole", "gravity_well"] and not in_gravity_nullifier_zone:
                                 var has_vx = false
                                 if "vx" in self.ball: has_vx = true
                                 elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("vx"): has_vx = true

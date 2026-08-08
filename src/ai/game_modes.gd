@@ -26715,6 +26715,37 @@ class LocalizedZeroGravityZoneMode extends GameMode:
 						b.set("is_frictionless", false)
 						b.set("friction_multiplier", 1.0)
 
+class GravityNullifierZoneMode extends GameMode:
+	var zone_timer: float = 0.0
+
+	func _init() -> void:
+		name = "Gravity Nullifier Zone"
+		description = "A hazard zone that disables all localized gravity pulls (from black holes, gravity wells, etc.) for entities inside it."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+		if not "arena" in world or not "hazards" in world.arena:
+			return
+
+		zone_timer += delta
+		if zone_timer >= 5.0:
+			zone_timer = 0.0
+			var arena_width = world.arena.get("width", 1000.0) if typeof(world.arena) == TYPE_DICTIONARY else (world.arena.width if "width" in world.arena else 1000.0)
+			var arena_height = world.arena.get("height", 1000.0) if typeof(world.arena) == TYPE_DICTIONARY else (world.arena.height if "height" in world.arena else 1000.0)
+
+			var x = randf_range(150.0, arena_width - 150.0)
+			var y = randf_range(150.0, arena_height - 150.0)
+			var h_id = "gravity_nullifier_zone_" + str(randi() % 90000 + 10000)
+
+			var ProceduralArena = load("res://src/arena/procedural_arena.gd")
+			if ProceduralArena:
+				var zone = ProceduralArena.Hazard.new(h_id, x, y, 150.0, "gravity_nullifier_zone", 0.0)
+				zone.duration = 10.0
+				zone.active = true
+				world.arena.hazards.append(zone)
+			else:
+				world.arena.hazards.append({"id": h_id, "x": x, "y": y, "radius": 150.0, "kind": "gravity_nullifier_zone", "damage": 0.0, "active": true, "duration": 10.0})
+
 class ZeroGravityMode extends GameMode:
 	func _init() -> void:
 		name = "Zero Gravity"
@@ -61093,6 +61124,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"mirror_walls": MirrorWallsMode.new(),
 	"stamina_regen": StaminaRegenMode.new(),
 	"localized_zero_gravity_zone": LocalizedZeroGravityZoneMode.new(),
+	"gravity_nullifier_zone": GravityNullifierZoneMode.new(),
 	"zero_gravity": ZeroGravityMode.new(),
 	"magnetic_collisions": MagneticCollisionsMode.new(),
 	"polarity_shift": PolarityShiftMode.new(),
