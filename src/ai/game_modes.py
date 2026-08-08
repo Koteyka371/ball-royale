@@ -45081,6 +45081,17 @@ class OrbitalCrosshairMode(GameMode):
 
 
                 ol_t = getattr(target, "orbital_link_timer", 0.0)
+                if target and getattr(target, "orbital_strike_reflector_timer", 0.0) > 0.0:
+                    enemies = [b for b in balls if getattr(b, "alive", False) and getattr(b, "team", "") != getattr(target, "team", "") and getattr(b, "ball_type", "") != "spectator"]
+                    if enemies:
+                        closest_enemy = min(enemies, key=lambda e: (e.x - target.x)**2 + (e.y - target.y)**2)
+                        target = closest_enemy
+                        ch["target_id"] = getattr(target, "id", None)
+                    else:
+                        ch["state"] = "hunting"
+                        ch["target_id"] = None
+
+                ol_t = getattr(target, "orbital_link_timer", 0.0)
                 if target and isinstance(ol_t, (int, float)) and ol_t > 0.0:
                     # orbital link redirects
                     enemies = [b for b in balls if getattr(b, "alive", False) and getattr(b, "team", "") != getattr(target, "team", "") and getattr(b, "ball_type", "") != "spectator"]
@@ -45147,6 +45158,9 @@ class OrbitalCrosshairMode(GameMode):
             for h in world.arena.hazards:
                 if getattr(h, "kind", "") == "irradiated_zone" and getattr(h, "active", True):
                     for b in balls:
+                        osr_t = getattr(b, "orbital_strike_reflector_timer", 0.0)
+                        if isinstance(osr_t, (int, float)) and osr_t > 0.0:
+                            continue
                         ol_t = getattr(b, "orbital_link_timer", 0.0)
                         if isinstance(ol_t, (int, float)) and ol_t > 0.0:
                             continue
@@ -45231,6 +45245,16 @@ class SiphonBeamMode(GameMode):
                         target = highest_scoring_ball
                         ch["target_id"] = getattr(target, "id", None)
 
+                if target and getattr(target, "orbital_strike_reflector_timer", 0.0) > 0.0:
+                    enemies = [b for b in balls if getattr(b, "alive", False) and getattr(b, "team", "") != getattr(target, "team", "") and getattr(b, "ball_type", "") != "spectator"]
+                    if enemies:
+                        closest_enemy = min(enemies, key=lambda e: (e.x - target.x)**2 + (e.y - target.y)**2)
+                        target = closest_enemy
+                        ch["target_id"] = getattr(target, "id", None)
+                    else:
+                        ch["state"] = "hunting"
+                        ch["target_id"] = None
+
                 ol_t = getattr(target, "orbital_link_timer", 0.0)
                 if target and isinstance(ol_t, (int, float)) and ol_t > 0.0:
                     enemies = [b for b in balls if getattr(b, "alive", False) and getattr(b, "team", "") != getattr(target, "team", "") and getattr(b, "ball_type", "") != "spectator"]
@@ -45295,6 +45319,9 @@ class SiphonBeamMode(GameMode):
                 if getattr(h, "kind", "") == "siphon_zone" and getattr(h, "active", True):
                     total_siphoned = 0.0
                     for b in balls:
+                        osr_t = getattr(b, "orbital_strike_reflector_timer", 0.0)
+                        if isinstance(osr_t, (int, float)) and osr_t > 0.0:
+                            continue
                         ol_t = getattr(b, "orbital_link_timer", 0.0)
                         if isinstance(ol_t, (int, float)) and ol_t > 0.0:
                             continue
