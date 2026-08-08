@@ -37500,6 +37500,114 @@ class ConstrictingArenaMode(GameMode):
                     if hy < radius: h.y = radius
                     elif hy > new_h - radius: h.y = new_h - radius
 
+class BulletHellSurvivalMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Bullet Hell Survival"
+        self.description = "A survival mode where invincible turrets constantly spawn projectiles that bounce around the map. Players cannot destroy the turrets and must solely rely on dodging, perfect blocks, and positioning to survive as the arena fills with chaotic projectiles."
+        self.turrets = []
+        self.spawn_timer = 0.0
+        self.spawn_interval = 8.0
+        self.max_turrets = 8
+        self.turret_fire_interval = 1.5
+        self.projectile_speed = 350.0
+
+    class _InvincibleTurret:
+        def __init__(self, id_val, x, y):
+            self.id = id_val
+            self.x = x
+            self.y = y
+            self.radius = 40.0
+            self.team = "Turrets"
+            self.fire_timer = 0.0
+            self.damage = 15.0
+            self.kind = "invincible_turret"
+            self.hp = 999999.0
+            self.max_hp = 999999.0
+            self.alive = True
+
+    class _BouncingProjectile:
+        def __init__(self, id_val, x, y, vx, vy, radius, damage):
+            self.id = id_val
+            self.x = x
+            self.y = y
+            self.vx = vx
+            self.vy = vy
+            self.radius = radius
+            self.damage = damage
+            self.kind = "projectile"
+            self.hp = 1.0
+            self.alive = True
+            self.team = "Turrets"
+            self.bounces = 0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import random
+        import math
+
+        arena_w = getattr(world.arena, "width", 1000) if hasattr(world, "arena") else 1000
+        arena_h = getattr(world.arena, "height", 1000) if hasattr(world, "arena") else 1000
+
+        if len(self.turrets) < self.max_turrets:
+            self.spawn_timer += delta
+            if self.spawn_timer >= self.spawn_interval:
+                self.spawn_timer = 0.0
+                tx = random.uniform(200, arena_w - 200)
+                ty = random.uniform(200, arena_h - 200)
+                tid = random.randint(100000, 999999)
+                new_turret = self._InvincibleTurret(tid, tx, ty)
+                self.turrets.append(new_turret)
+                if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                    world.arena.hazards.append(new_turret)
+
+        for t in self.turrets:
+            t.hp = 999999.0
+            t.alive = True
+
+            t.fire_timer += delta
+            if t.fire_timer >= self.turret_fire_interval:
+                t.fire_timer -= self.turret_fire_interval
+                angle = random.uniform(0, 2 * math.pi)
+                vx = math.cos(angle) * self.projectile_speed
+                vy = math.sin(angle) * self.projectile_speed
+                pid = random.randint(100000, 999999)
+                new_proj = self._BouncingProjectile(pid, t.x, t.y, vx, vy, 10.0, t.damage)
+                if not hasattr(world, "projectiles"):
+                    world.projectiles = []
+                world.projectiles.append(new_proj)
+
+        for proj in getattr(world, "projectiles", []) + (getattr(world.arena, "hazards", []) if hasattr(world, "arena") else []):
+            if not getattr(proj, "alive", True) and not getattr(proj, "hp", 1.0) > 0:
+                continue
+
+            b_type = getattr(proj, "ball_type", getattr(proj, "kind", ""))
+            is_proj = b_type in ["projectile", "spell", "fireball", "bullet", "snipe", "laser_beam"] or getattr(proj, "is_projectile", False) or getattr(proj, "is_spell", False)
+
+            if not is_proj:
+                continue
+
+            x = getattr(proj, "x", 0)
+            y = getattr(proj, "y", 0)
+            radius = getattr(proj, "radius", 5.0)
+            vx = getattr(proj, "vx", 0)
+            vy = getattr(proj, "vy", 0)
+
+            if x - radius < 0 and vx < 0:
+                proj.vx = -vx
+                proj.x = radius
+            elif x + radius > arena_w and vx > 0:
+                proj.vx = -vx
+                proj.x = arena_w - radius
+
+            if y - radius < 0 and vy < 0:
+                proj.vy = -vy
+                proj.y = radius
+            elif y + radius > arena_h and vy > 0:
+                proj.vy = -vy
+                proj.y = arena_h - radius
+
+
 GAME_MODES = {
     'dash_aura_trail': DashAuraTrailMode(),
     "expanding_aura_event": ExpandingAuraEventMode(),
@@ -52507,3 +52615,4 @@ class InvertControlsMutator(GameMode):
                     b.invert_timer = max(getattr(b, "invert_timer", 0.0), 3.0)
 
 GAME_MODES['invert_controls_mutator'] = InvertControlsMutator()
+GAME_MODES["bullet_hell_survival"] = BulletHellSurvivalMode()
