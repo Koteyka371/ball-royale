@@ -60598,6 +60598,7 @@ class DashAuraTrailMode extends GameMode:
 
 var GAME_MODES = {
 	"dash_aura_trail": DashAuraTrailMode.new(),
+	"global_silence_event": GlobalSilenceEventMode.new(),
 	"expanding_aura_event": ExpandingAuraEventMode.new(),
 	"aura_well_hazard": AuraWellHazardMode.new(),
     "aura_link_royale": AuraLinkRoyaleMode.new(),
@@ -82137,3 +82138,58 @@ class ExpandingAuraEventMode extends GameMode:
 				b.set_meta("_aura_prev_hp", current_hp)
 				b.set("cosmetic_aura_scale", aura_scale)
 				b.set("damage_multiplier", new_dmg_mult)
+
+
+class GlobalSilenceEventMode extends GameMode:
+	var event_timer: float = 20.0
+	var event_duration: float = 5.0
+	var is_active: bool = false
+
+	func _init() -> void:
+		name = "Global Silence Event"
+		description = "Occasionally a global event triggers that silences all abilities for a short period."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		event_timer = 20.0
+		event_duration = 5.0
+		is_active = false
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		pass
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		if not is_active:
+			event_timer -= delta
+			if event_timer <= 0:
+				is_active = true
+				event_duration = 5.0
+				if world != null and world.has_method("add_event"):
+					world.add_event("global_silence_start", {"message": "Global Silence!"})
+		else:
+			event_duration -= delta
+			for b in balls:
+				var is_alive = false
+				if typeof(b) == TYPE_DICTIONARY:
+					is_alive = b.get("alive", false)
+				else:
+					is_alive = b.get("alive") if "alive" in b else false
+
+				if not is_alive:
+					continue
+
+				if typeof(b) == TYPE_DICTIONARY:
+					b["silence_timer"] = max(b.get("silence_timer", 0.0), 0.5)
+				else:
+					if "silence_timer" in b:
+						b.silence_timer = max(b.silence_timer, 0.5)
+					elif b.has_method("set_meta"):
+						b.set_meta("silence_timer", max(b.get_meta("silence_timer", 0.0), 0.5))
+
+			if event_duration <= 0:
+				is_active = false
+				event_timer = randf_range(20.0, 40.0)
+				if world != null and world.has_method("add_event"):
+					world.add_event("global_silence_end", {"message": "Silence lifted!"})

@@ -52232,3 +52232,44 @@ class AuraWellHazardMode(GameMode):
                 setattr(hazard, "pulse_timer", timer)
 
 GAME_MODES['aura_well_hazard'] = AuraWellHazardMode()
+
+
+class GlobalSilenceEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Global Silence Event"
+        self.description = "Occasionally a global event triggers that silences all abilities for a short period."
+        self.event_timer = 20.0
+        self.event_duration = 5.0
+        self.is_active = False
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.event_timer = 20.0
+        self.event_duration = 5.0
+        self.is_active = False
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import random
+
+        if not self.is_active:
+            self.event_timer -= delta
+            if self.event_timer <= 0:
+                self.is_active = True
+                self.event_duration = 5.0
+                if hasattr(world, "add_event"):
+                    world.add_event("global_silence_start", {"message": "Global Silence!"})
+        else:
+            self.event_duration -= delta
+            for b in balls:
+                if getattr(b, "alive", False):
+                    b.silence_timer = max(getattr(b, "silence_timer", 0.0), 0.5)
+
+            if self.event_duration <= 0:
+                self.is_active = False
+                self.event_timer = random.uniform(20.0, 40.0)
+                if hasattr(world, "add_event"):
+                    world.add_event("global_silence_end", {"message": "Silence lifted!"})
+
+GAME_MODES['global_silence_event'] = GlobalSilenceEventMode()
