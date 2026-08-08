@@ -4654,6 +4654,12 @@ class Action:
                             other.vx += (dx / dist) * pull_strength * 2 * delta
                             other.vy += (dy / dist) * pull_strength * 2 * delta
 
+        if getattr(self.ball, "silence_immunity_timer", 0.0) > 0:
+            self.ball.silence_immunity_timer -= delta
+            self.ball.silence_timer = 0.0
+            if self.ball.silence_immunity_timer < 0:
+                self.ball.silence_immunity_timer = 0.0
+
         if getattr(self.ball, "silence_timer", 0.0) > 0:
             self.ball.silence_timer -= delta
             if self.ball.silence_timer < 0:
@@ -16092,6 +16098,15 @@ class Action:
                     if dist <= getattr(self.ball, "radius", 10.0) + getattr(b, "radius", 15.0) + 5.0:
                         self.ball.anchor_booster_timer = max(getattr(self.ball, "anchor_booster_timer", 0.0), 10.0)
                         self.ball.anchor_repulsor_timer = max(getattr(self.ball, "anchor_repulsor_timer", 0.0), 10.0)
+                        b.active = False
+                        if hasattr(self.world, "boosters") and b in self.world.boosters:
+                            self.world.boosters.remove(b)
+                        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and b in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(b)
+                elif getattr(b, "kind", "") == "silence_immunity_booster":
+                    dist = __import__('math').sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
+                    if dist <= getattr(self.ball, "radius", 10.0) + getattr(b, "radius", 15.0) + 5.0:
+                        self.ball.silence_immunity_timer = 15.0
                         b.active = False
                         if hasattr(self.world, "boosters") and b in self.world.boosters:
                             self.world.boosters.remove(b)
