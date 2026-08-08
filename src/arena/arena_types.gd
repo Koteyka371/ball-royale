@@ -1121,3 +1121,5 @@ class ShiftingBoundariesArena extends ProceduralArena:
 			proc_bounced = true
 
 		return [final_x, final_y, bounced or proc_bounced]
+
+# (Note: In GDScript procedural hazards are created dynamically, usually via ProceduralArena.Hazard.new() in the arena files. A distinct class is sometimes made if necessary. For now, quantum_marker can just be instantiated in procedural_arena.gd or basic_arena.gd.)

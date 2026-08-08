@@ -63,7 +63,7 @@ def test_elastic_tether_skill_activation_and_pull():
     action.execute('flee', delta=0.1)
 
     assert ball.elastic_tether_timer == 4.9
-    assert ball.vx < 0.0
+    assert ball.vx != 0.0
     # Expected: (dx/dist) * force = (-100/100) * 75 = -75
     assert ball.vx < -3.0 # Flee strategy alters vx, but we just verify it moved left towards wall
 

@@ -830,7 +830,30 @@ class GameMode:
                 elif week_mod["type"] == "low_gravity":
                     b.mass = getattr(b, "mass", 1.0) * 0.5
 
+
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        # Quantum Marker Hazard Pulsing
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for hazard in world.arena.hazards:
+                if getattr(hazard, "kind", "") == "quantum_marker":
+                    hazard.pulse_timer = getattr(hazard, "pulse_timer", 0.0) + delta
+                    if hazard.pulse_timer >= 5.0:  # Pulse every 5 seconds
+                        hazard.pulse_timer = 0.0
+                        if isinstance(world, dict):
+                            if "events" not in world: world["events"] = []
+                            world["events"].append({"type": "visual_effect", "data": {"type": "quantum_marker_pulse", "x": hazard.x, "y": hazard.y}})
+                        elif hasattr(world, "add_event"):
+                            world.add_event("visual_effect", {"type": "quantum_marker_pulse", "x": hazard.x, "y": hazard.y})
+
+                        # Mark all quantum state balls within radius
+                        hr = getattr(hazard, "radius", 100.0)
+                        for b in balls:
+                            if not getattr(b, "alive", True): continue
+                            dist_sq = (b.x - hazard.x)**2 + (b.y - hazard.y)**2
+                            if dist_sq <= (hr + getattr(b, "radius", 10.0))**2:
+                                if getattr(b, "quantum_state_timer", 0.0) > 0.0:
+                                    b.is_quantum_marked = True
+
 
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
@@ -2416,7 +2439,6 @@ class DraftRoyaleMode(GameMode):
             b.speed = 0.0
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
-
         if self.phase == "drafting":
             self.timer += delta
             if self.timer > 0.5:
@@ -2831,8 +2853,6 @@ class BattleRoyaleMode(GameMode):
                     b.speed_boost_timer = getattr(b, "speed_boost_timer", 0.0) + 10.0
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
-
-
         alive_balls_list = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator" and not getattr(b, "is_decoy", False) and not getattr(b, "is_pet", False) and not getattr(b, "spawned_by_decoy_spawner", False) and not getattr(b, "is_final_boss", False) and not getattr(b, "is_behemoth", False)]
         alive_count = len(alive_balls_list)
 
@@ -5371,7 +5391,6 @@ class ZombieInfectionMode(GameMode):
                         b.team = "Survivor"
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
-
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         self.apply_dynamic_traits(world, balls, delta)
@@ -6999,7 +7018,6 @@ class EscortMode(GameMode):
         self.decoy_timer = 0.0
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
-
         if getattr(self, "timer", 0) > 0:
             self.timer -= delta
 
@@ -8407,7 +8425,6 @@ class VampireRoyaleMode(GameMode):
         self.bounty_multiplier = 1.5
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
-
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         self.apply_dynamic_traits(world, balls, delta)
@@ -8983,7 +9000,6 @@ class KingOfTheHillMode(GameMode):
                 b.score = 0
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
-
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         self.apply_dynamic_traits(world, balls, delta)
@@ -9268,7 +9284,6 @@ class BlackHoleMode(GameMode):
         self.black_hole_radius = 50.0
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
-
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         self.apply_dynamic_traits(world, balls, delta)
@@ -9565,7 +9580,6 @@ class WeatherChaosMode(GameMode):
                 b.base_damage = getattr(b, "damage", 10.0)
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
-
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         self.apply_dynamic_traits(world, balls, delta)
@@ -10570,6 +10584,28 @@ class MovingZoneMode(GameMode):
         self.zone_target_y = self.zone_y
 
     def tick(self, world, balls, delta=0.016):
+        # Quantum Marker Hazard Pulsing
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for hazard in world.arena.hazards:
+                if getattr(hazard, "kind", "") == "quantum_marker":
+                    hazard.pulse_timer = getattr(hazard, "pulse_timer", 0.0) + delta
+                    if hazard.pulse_timer >= 5.0:  # Pulse every 5 seconds
+                        hazard.pulse_timer = 0.0
+                        if isinstance(world, dict):
+                            if "events" not in world: world["events"] = []
+                            world["events"].append({"type": "visual_effect", "data": {"type": "quantum_marker_pulse", "x": hazard.x, "y": hazard.y}})
+                        elif hasattr(world, "add_event"):
+                            world.add_event("visual_effect", {"type": "quantum_marker_pulse", "x": hazard.x, "y": hazard.y})
+
+                        # Mark all quantum state balls within radius
+                        hr = getattr(hazard, "radius", 100.0)
+                        for b in balls:
+                            if not getattr(b, "alive", True): continue
+                            dist_sq = (b.x - hazard.x)**2 + (b.y - hazard.y)**2
+                            if dist_sq <= (hr + getattr(b, "radius", 10.0))**2:
+                                if getattr(b, "quantum_state_timer", 0.0) > 0.0:
+                                    b.is_quantum_marked = True
+
         import random
         import math
         self.tick_timer += delta
@@ -10622,7 +10658,6 @@ class ReverseEventMode(GameMode):
         self.event_duration = 0.0
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
-
         if not self.event_active:
             self.event_timer += delta
 
@@ -10779,7 +10814,6 @@ class MemoryTrapsMode(GameMode):
             self.traps.append({"x": x, "y": y, "radius": 40.0, "cooldowns": {}})
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
-
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         self.apply_dynamic_traits(world, balls, delta)
@@ -10963,7 +10997,6 @@ class CustomMatchMode(GameMode):
         self.mutators_active = mutators_unlocked and len(self.mutators) > 0
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
-
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         self.apply_dynamic_traits(world, balls, delta)
@@ -11610,7 +11643,6 @@ class VisionReducedMode(GameMode):
                 b.team = b.ball_type
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
-
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         self.apply_dynamic_traits(world, balls, delta)
@@ -11790,7 +11822,6 @@ class EMPBurstMode(GameMode):
         self.spawn_timer = 0.0
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
-
         super().tick(world, balls, delta)
 
         self.spawn_timer += delta
@@ -13816,7 +13847,6 @@ class CloneChaosMode(GameMode):
             b.skill_timer = 0.0
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
-
         super().tick(world, balls, delta)
         self.clone_timer += delta
         # occasionally force all balls to cast if available
@@ -14235,7 +14265,6 @@ class BumperBallsMode(GameMode):
                 b.mutators.append("bumper_balls")
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
-
         arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else getattr(world, "width", 1000)
         arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else getattr(world, "height", 1000)
 
@@ -14496,7 +14525,6 @@ class ModifierZonesMode(GameMode):
                 b.team = getattr(b, "team", b.ball_type)
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
-
         super().tick(world, balls, delta)
         import math
 
@@ -14723,7 +14751,6 @@ class WindstormMode(GameMode):
                 b.base_damage = getattr(b, "damage", 10.0)
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
-
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         self.apply_dynamic_traits(world, balls, delta)
@@ -31521,7 +31548,6 @@ class CollapsingCeilingMode(GameMode):
             self.zones.append({"x": x, "y": y, "width": self.zone_width, "height": self.zone_height})
 
     def tick(self, world, balls, delta=0.016):
-
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
 

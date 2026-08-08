@@ -2041,3 +2041,8 @@ class ShiftingBoundariesArena(ProceduralArena):
             proc_bounced = True
 
         return final_x, final_y, bounced or proc_bounced
+
+class QuantumMarkerHazard(Hazard):
+    def __init__(self, id: int, x: float, y: float, radius: float):
+        super().__init__(id, x, y, radius, 'quantum_marker', 0.0)
+        self.pulse_timer = 0.0
