@@ -37171,7 +37171,114 @@ class ExpandingAuraEventMode(GameMode):
             # Store HP for next tick
             b._aura_prev_hp = current_hp
 
+
+class DashAuraTrailMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Dash Aura Trail"
+        self.description = "Dashing leaves a trail matching your aura. Touching a trail of a different color stuns you, while touching a trail of the same color grants a speed boost."
+
+        class AuraTrailHazard:
+            def __init__(self, x, y, color, source_id):
+                self.x = x
+                self.y = y
+                self.color = color
+                self.radius = 15.0
+                self.active = True
+                self.life_timer = 2.0
+                self.source_id = source_id
+
+        self.hazard_class = AuraTrailHazard
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        import random
+        # Initialize colors and track trails
+        colors = [(1.0, 0.0, 0.0, 1.0), (0.0, 1.0, 0.0, 1.0), (0.0, 0.0, 1.0, 1.0), (1.0, 1.0, 0.0, 1.0)]
+        for b in balls:
+            if not getattr(b, "cosmetic_aura_color", None):
+                b.cosmetic_aura_color = random.choice(colors)
+
+        if not hasattr(world, "aura_trails"):
+            world.aura_trails = []
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import math
+
+        if not hasattr(world, "aura_trails"):
+            world.aura_trails = []
+
+        trails = world.aura_trails
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            # Apply speed buffs if active
+            aura_buff_timer = getattr(b, "aura_speed_buff_timer", 0.0)
+            if aura_buff_timer > 0:
+                b.aura_speed_buff_timer -= delta
+                if not hasattr(b, "_orig_speed_aura_buff"):
+                    b._orig_speed_aura_buff = getattr(b, "speed", 250.0)
+                b.speed = b._orig_speed_aura_buff + 200.0
+            else:
+                if hasattr(b, "_orig_speed_aura_buff"):
+                    b.speed = b._orig_speed_aura_buff
+                    delattr(b, "_orig_speed_aura_buff")
+
+            # Check if dashing and spawn trails
+            is_dashing = getattr(b, "is_dashing", False)
+            if is_dashing:
+                last_spawn = getattr(b, "last_aura_trail_spawn", 0.0)
+                if world.time - last_spawn >= 0.1:
+                    b.last_aura_trail_spawn = world.time
+                    color = getattr(b, "cosmetic_aura_color", (1.0, 1.0, 1.0, 1.0))
+                    trails.append(self.hazard_class(b.x, b.y, color, id(b)))
+
+        # Process trails
+        active_trails = []
+        for t in trails:
+            t.life_timer -= delta
+            if t.life_timer > 0:
+                active_trails.append(t)
+        world.aura_trails = active_trails
+
+        # Handle collisions
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            color = getattr(b, "cosmetic_aura_color", (1.0, 1.0, 1.0, 1.0))
+            last_interact = getattr(b, "last_aura_trail_interact", 0.0)
+
+            if world.time - last_interact < 0.5:
+                continue # Debounce
+
+            hit_trail = False
+            for t in active_trails:
+                if t.source_id == id(b):
+                    continue # Don't interact with your own immediate trail segments from this dash if you're standing still? Wait, let's just let it be, but if they just created it they are inside it.
+
+                dx = b.x - t.x
+                dy = b.y - t.y
+                dist_sq = dx*dx + dy*dy
+                rad_sum = getattr(b, "radius", 15.0) + t.radius
+                if dist_sq < rad_sum * rad_sum:
+                    hit_trail = True
+                    if tuple(t.color) == tuple(color):
+                        # Same color: speed boost
+                        b.aura_speed_buff_timer = 2.0
+                    else:
+                        # Different color: stun
+                        b.stun_timer = max(getattr(b, "stun_timer", 0.0), 1.0)
+                    break
+
+            if hit_trail:
+                b.last_aura_trail_interact = world.time
+
 GAME_MODES = {
+    'dash_aura_trail': DashAuraTrailMode(),
     "expanding_aura_event": ExpandingAuraEventMode(),
     "aura_link_royale": AuraLinkRoyaleMode(),
     "crimson_fog_event": CrimsonFogEventMode(),
