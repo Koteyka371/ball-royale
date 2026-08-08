@@ -81123,3 +81123,351 @@ class ReversingGrappleNodeMode extends GameMode:
 					})
 
 GAME_MODES["reversing_grapple_node"] = ReversingGrappleNodeMode.new()
+
+class ReviveAltarMode extends GameMode:
+	var token_spawn_timer = 0.0
+
+	func _init():
+		self.name = "Revive Altar"
+		self.description = "Living players can bring a specific item to designated altars on the map to revive ghost teammates, but doing so takes time and makes them vulnerable."
+		self.token_spawn_timer = 0.0
+
+	func setup(world, balls) -> void:
+		super.setup(world, balls)
+		var is_dict = typeof(world) == TYPE_DICTIONARY
+
+		var arena = null
+		if is_dict:
+			arena = world.get("arena")
+		else:
+			arena = world.arena
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+
+		if arena != null:
+			if typeof(arena) == TYPE_DICTIONARY:
+				arena_width = arena.get("width", 1000.0)
+				arena_height = arena.get("height", 1000.0)
+				if not arena.has("items"):
+					arena["items"] = []
+			else:
+				arena_width = arena.width if "width" in arena else 1000.0
+				arena_height = arena.height if "height" in arena else 1000.0
+				if not ("items" in arena):
+					arena.items = []
+
+		var altars = [{"x": arena_width / 2.0, "y": arena_height / 2.0, "radius": 100.0, "channeling_ball": null, "progress": 0.0}]
+
+		if is_dict:
+			world["revive_altars"] = altars
+		else:
+			world.set_meta("revive_altars", altars)
+
+	func tick(world, balls, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		var is_dict = typeof(world) == TYPE_DICTIONARY
+		var altars = null
+		if is_dict:
+			if not world.has("revive_altars"):
+				return
+			altars = world["revive_altars"]
+		else:
+			if not world.has_meta("revive_altars"):
+				return
+			altars = world.get_meta("revive_altars")
+
+		var arena = null
+		if is_dict:
+			arena = world.get("arena")
+		else:
+			arena = world.arena
+
+		self.token_spawn_timer -= delta
+		if self.token_spawn_timer <= 0.0:
+			self.token_spawn_timer = 10.0
+
+			if arena != null:
+				var arena_is_dict = typeof(arena) == TYPE_DICTIONARY
+				var items = null
+				if arena_is_dict:
+					items = arena.get("items", [])
+				else:
+					items = arena.items if "items" in arena else []
+
+				var token_count = 0
+				for item in items:
+					var item_is_dict = typeof(item) == TYPE_DICTIONARY
+					var kind = ""
+					if item_is_dict:
+						kind = item.get("kind", "")
+					else:
+						kind = item.kind if "kind" in item else ""
+					if kind == "revive_token":
+						token_count += 1
+
+				if token_count < 5:
+					var aw = 1000.0
+					var ah = 1000.0
+					if arena_is_dict:
+						aw = arena.get("width", 1000.0)
+						ah = arena.get("height", 1000.0)
+					else:
+						aw = arena.width if "width" in arena else 1000.0
+						ah = arena.height if "height" in arena else 1000.0
+
+					var token = {
+						"kind": "revive_token",
+						"x": 100.0 + randf() * (aw - 200.0),
+						"y": 100.0 + randf() * (ah - 200.0),
+						"radius": 15.0,
+						"active": true
+					}
+
+					if arena_is_dict:
+						if not arena.has("items"):
+							arena["items"] = []
+						arena["items"].append(token)
+					else:
+						if not ("items" in arena):
+							arena.items = []
+						arena.items.append(token)
+
+		if arena != null:
+			var arena_is_dict = typeof(arena) == TYPE_DICTIONARY
+			var items = null
+			if arena_is_dict:
+				items = arena.get("items", [])
+			else:
+				items = arena.items if "items" in arena else []
+
+			for b in balls:
+				var b_is_dict = typeof(b) == TYPE_DICTIONARY
+				var b_alive = false
+				if b_is_dict:
+					b_alive = b.get("alive", false)
+				else:
+					b_alive = b.alive if "alive" in b else false
+
+				if not b_alive:
+					continue
+
+				var bx = 0.0
+				var by = 0.0
+				var br = 10.0
+				if b_is_dict:
+					bx = b.get("x", 0.0)
+					by = b.get("y", 0.0)
+					br = b.get("radius", 10.0)
+				else:
+					bx = b.x if "x" in b else 0.0
+					by = b.y if "y" in b else 0.0
+					br = b.radius if "radius" in b else 10.0
+
+				for item in items:
+					var item_is_dict = typeof(item) == TYPE_DICTIONARY
+					var kind = ""
+					var active = true
+					var ix = 0.0
+					var iy = 0.0
+					var ir = 15.0
+					if item_is_dict:
+						kind = item.get("kind", "")
+						active = item.get("active", true)
+						ix = item.get("x", 0.0)
+						iy = item.get("y", 0.0)
+						ir = item.get("radius", 15.0)
+					else:
+						kind = item.kind if "kind" in item else ""
+						active = item.active if "active" in item else true
+						ix = item.x if "x" in item else 0.0
+						iy = item.y if "y" in item else 0.0
+						ir = item.radius if "radius" in item else 15.0
+
+					if kind == "revive_token" and active:
+						var dist_sq = (bx - ix) * (bx - ix) + (by - iy) * (by - iy)
+						if dist_sq <= (br + ir) * (br + ir):
+							if item_is_dict:
+								item["active"] = false
+							else:
+								item.active = false
+
+							if b_is_dict:
+								b["has_revive_token"] = true
+							else:
+								b.set_meta("has_revive_token", true)
+
+			var filtered_items = []
+			for i in items:
+				var is_active = true
+				if typeof(i) == TYPE_DICTIONARY:
+					is_active = i.get("active", true)
+				else:
+					is_active = i.active if "active" in i else true
+				if is_active:
+					filtered_items.append(i)
+
+			if arena_is_dict:
+				arena["items"] = filtered_items
+			else:
+				arena.items = filtered_items
+
+		for altar in altars:
+			var altar_is_dict = typeof(altar) == TYPE_DICTIONARY
+			var ax = 0.0
+			var ay = 0.0
+			var ar = 100.0
+			if altar_is_dict:
+				ax = altar.get("x", 0.0)
+				ay = altar.get("y", 0.0)
+				ar = altar.get("radius", 100.0)
+			else:
+				ax = altar.x if "x" in altar else 0.0
+				ay = altar.y if "y" in altar else 0.0
+				ar = altar.radius if "radius" in altar else 100.0
+
+			var channeling_ball = null
+			for b in balls:
+				var b_is_dict = typeof(b) == TYPE_DICTIONARY
+				var b_alive = false
+				var has_token = false
+				if b_is_dict:
+					b_alive = b.get("alive", false)
+					has_token = b.get("has_revive_token", false)
+				else:
+					b_alive = b.alive if "alive" in b else false
+					has_token = b.get_meta("has_revive_token") if b.has_meta("has_revive_token") else false
+
+				if (not b_alive) or (not has_token):
+					continue
+
+				var bx = 0.0
+				var by = 0.0
+				if b_is_dict:
+					bx = b.get("x", 0.0)
+					by = b.get("y", 0.0)
+				else:
+					bx = b.x if "x" in b else 0.0
+					by = b.y if "y" in b else 0.0
+
+				var dist_sq = (bx - ax) * (bx - ax) + (by - ay) * (by - ay)
+				if dist_sq <= ar * ar:
+					channeling_ball = b
+					break
+
+			if channeling_ball != null:
+				var cb_is_dict = typeof(channeling_ball) == TYPE_DICTIONARY
+
+				if cb_is_dict:
+					var st = channeling_ball.get("silence_timer", 0.0)
+					if st < 0.5:
+						channeling_ball["silence_timer"] = 0.5
+					channeling_ball["vx"] = channeling_ball.get("vx", 0.0) * 0.5
+					channeling_ball["vy"] = channeling_ball.get("vy", 0.0) * 0.5
+				else:
+					var st = channeling_ball.silence_timer if "silence_timer" in channeling_ball else 0.0
+					if st < 0.5:
+						channeling_ball.silence_timer = 0.5
+					if "vx" in channeling_ball:
+						channeling_ball.vx *= 0.5
+					if "vy" in channeling_ball:
+						channeling_ball.vy *= 0.5
+
+				var current_cb = null
+				var prog = 0.0
+				if altar_is_dict:
+					current_cb = altar.get("channeling_ball")
+					prog = altar.get("progress", 0.0)
+				else:
+					current_cb = altar.channeling_ball if "channeling_ball" in altar else null
+					prog = altar.progress if "progress" in altar else 0.0
+
+				if current_cb == channeling_ball:
+					prog += delta
+				else:
+					current_cb = channeling_ball
+					prog = delta
+
+				if altar_is_dict:
+					altar["channeling_ball"] = current_cb
+					altar["progress"] = prog
+				else:
+					altar.channeling_ball = current_cb
+					altar.progress = prog
+
+				if prog >= 3.0:
+					var revived_any = false
+					var team = null
+					if cb_is_dict:
+						team = channeling_ball.get("team")
+					else:
+						team = channeling_ball.team if "team" in channeling_ball else null
+
+					if team != null:
+						for b in balls:
+							var b_is_dict = typeof(b) == TYPE_DICTIONARY
+							var b_alive = false
+							var b_team = null
+							if b_is_dict:
+								b_alive = b.get("alive", false)
+								b_team = b.get("team")
+							else:
+								b_alive = b.alive if "alive" in b else false
+								b_team = b.team if "team" in b else null
+
+							if (not b_alive) and b_team == team:
+								var mh = 100.0
+								if b_is_dict:
+									mh = b.get("max_hp", 100.0)
+									b["alive"] = true
+									b["hp"] = mh * 0.5
+									b["x"] = ax
+									b["y"] = ay
+									b["intangible_timer"] = 2.0
+									b["intangible"] = true
+								else:
+									mh = b.max_hp if "max_hp" in b else 100.0
+									b.alive = true
+									b.hp = mh * 0.5
+									b.x = ax
+									b.y = ay
+									b.intangible_timer = 2.0
+									b.intangible = true
+								revived_any = true
+
+					if revived_any:
+						if cb_is_dict:
+							channeling_ball["has_revive_token"] = false
+						else:
+							channeling_ball.set_meta("has_revive_token", false)
+
+						if is_dict and world.has("add_event"):
+							world.add_event.call("teammate_revived", {"team": team, "reviver": channeling_ball})
+						elif (not is_dict) and world.has_method("add_event"):
+							world.add_event("teammate_revived", {"team": team, "reviver": channeling_ball})
+
+					if altar_is_dict:
+						altar["progress"] = 0.0
+						altar["channeling_ball"] = null
+					else:
+						altar.progress = 0.0
+						altar.channeling_ball = null
+			else:
+				var prog = 0.0
+				if altar_is_dict:
+					prog = altar.get("progress", 0.0) - delta
+					if prog < 0.0:
+						prog = 0.0
+					altar["progress"] = prog
+					if prog == 0.0:
+						altar["channeling_ball"] = null
+				else:
+					prog = (altar.progress if "progress" in altar else 0.0) - delta
+					if prog < 0.0:
+						prog = 0.0
+					altar.progress = prog
+					if prog == 0.0:
+						altar.channeling_ball = null
+
+GAME_MODES["revive_altar"] = ReviveAltarMode.new()

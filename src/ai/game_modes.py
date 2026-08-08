@@ -51740,3 +51740,146 @@ class SwapLowestHPMutator(GameMode):
                 b.low_hp_swap_triggered = False
 
 GAME_MODES['low_hp_swap_mutator'] = SwapLowestHPMutator()
+
+class ReviveAltarMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Revive Altar"
+        self.description = "Living players can bring a specific item to designated altars on the map to revive ghost teammates, but doing so takes time and makes them vulnerable."
+        self.token_spawn_timer = 0.0
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        world.revive_altars = []
+        arena_width = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") else 1000.0
+        arena_height = getattr(world.arena, "height", 1000.0) if hasattr(world, "arena") else 1000.0
+
+        world.revive_altars.append({
+            "x": arena_width / 2,
+            "y": arena_height / 2,
+            "radius": 100.0,
+            "channeling_ball": None,
+            "progress": 0.0
+        })
+
+        if hasattr(world, "arena") and not hasattr(world.arena, "items"):
+            world.arena.items = []
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import random
+        if not hasattr(world, "revive_altars"):
+            return
+
+        self.token_spawn_timer -= delta
+        if self.token_spawn_timer <= 0:
+            self.token_spawn_timer = 10.0
+            if hasattr(world, "arena") and hasattr(world.arena, "items"):
+                arena_w = getattr(world.arena, "width", 1000.0)
+                arena_h = getattr(world.arena, "height", 1000.0)
+
+                # Check for existing tokens to avoid spawning too many
+                tokens = []
+                for item in getattr(world.arena, "items", []):
+                    if isinstance(item, dict) and item.get("kind") == "revive_token":
+                        tokens.append(item)
+                    elif hasattr(item, "kind") and getattr(item, "kind") == "revive_token":
+                        tokens.append(item)
+
+                if len(tokens) < 5:
+                    world.arena.items.append({
+                        "kind": "revive_token",
+                        "x": random.uniform(100.0, arena_w - 100.0),
+                        "y": random.uniform(100.0, arena_h - 100.0),
+                        "radius": 15.0,
+                        "active": True
+                    })
+
+        if hasattr(world, "arena") and hasattr(world.arena, "items"):
+            for b in balls:
+                if not getattr(b, "alive", False):
+                    continue
+                bx = getattr(b, "x", 0.0)
+                by = getattr(b, "y", 0.0)
+                br = getattr(b, "radius", 10.0)
+                for item in world.arena.items:
+                    is_dict = isinstance(item, dict)
+                    kind = item.get("kind") if is_dict else getattr(item, "kind", None)
+                    active = item.get("active", True) if is_dict else getattr(item, "active", True)
+
+                    if kind == "revive_token" and active:
+                        ix = item.get("x", 0.0) if is_dict else getattr(item, "x", 0.0)
+                        iy = item.get("y", 0.0) if is_dict else getattr(item, "y", 0.0)
+                        ir = item.get("radius", 15.0) if is_dict else getattr(item, "radius", 15.0)
+                        dist_sq = (bx - ix)**2 + (by - iy)**2
+                        if dist_sq <= (br + ir)**2:
+                            if is_dict:
+                                item["active"] = False
+                            else:
+                                item.active = False
+                            b.has_revive_token = True
+
+            # Remove inactive
+            filtered_items = []
+            for i in world.arena.items:
+                is_active = i.get("active", True) if isinstance(i, dict) else getattr(i, "active", True)
+                if is_active:
+                    filtered_items.append(i)
+            world.arena.items = filtered_items
+
+        for altar in world.revive_altars:
+            ax = altar.get("x", 0.0)
+            ay = altar.get("y", 0.0)
+            ar = altar.get("radius", 100.0)
+
+            channeling_ball = None
+            for b in balls:
+                if not getattr(b, "alive", False) or not getattr(b, "has_revive_token", False):
+                    continue
+                bx = getattr(b, "x", 0.0)
+                by = getattr(b, "y", 0.0)
+                dist_sq = (bx - ax)**2 + (by - ay)**2
+                if dist_sq <= ar**2:
+                    channeling_ball = b
+                    break
+
+            if channeling_ball:
+                channeling_ball.silence_timer = max(getattr(channeling_ball, "silence_timer", 0.0), 0.5)
+                if hasattr(channeling_ball, "vx"):
+                    channeling_ball.vx *= 0.5
+                if hasattr(channeling_ball, "vy"):
+                    channeling_ball.vy *= 0.5
+
+                if altar.get("channeling_ball") == id(channeling_ball):
+                    altar["progress"] += delta
+                else:
+                    altar["channeling_ball"] = id(channeling_ball)
+                    altar["progress"] = delta
+
+                if altar["progress"] >= 3.0:
+                    revived_any = False
+                    team = getattr(channeling_ball, "team", None)
+                    if team:
+                        for b in balls:
+                            if not getattr(b, "alive", False) and getattr(b, "team") == team:
+                                b.alive = True
+                                b.hp = getattr(b, "max_hp", 100.0) * 0.5
+                                b.x = ax
+                                b.y = ay
+                                b.intangible_timer = 2.0
+                                b.intangible = True
+                                revived_any = True
+
+                    if revived_any:
+                        channeling_ball.has_revive_token = False
+                        if hasattr(world, "add_event"):
+                            world.add_event("teammate_revived", {"team": team, "reviver": channeling_ball})
+
+                    altar["progress"] = 0.0
+                    altar["channeling_ball"] = None
+            else:
+                altar["progress"] = max(0.0, altar.get("progress", 0.0) - delta)
+                if altar["progress"] == 0.0:
+                    altar["channeling_ball"] = None
+
+GAME_MODES['revive_altar'] = ReviveAltarMode()
