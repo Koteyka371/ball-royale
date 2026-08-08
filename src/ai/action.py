@@ -4052,11 +4052,30 @@ class Action:
 
         # Platforms
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "platforms"):
+            import random
             for p in self.world.arena.platforms:
+                if getattr(p, "is_broken", False):
+                    continue
                 # Simple AABB collision
-                if (p.x - p.width/2 <= self.ball.x <= p.x + p.width/2) and (p.y - p.height/2 <= self.ball.y <= p.y + p.height/2):
+
+                # Check actual boundaries (ignoring jitter)
+                px = p.x
+                py = p.y
+                if (px - p.width/2 <= self.ball.x <= px + p.width/2) and (py - p.height/2 <= self.ball.y <= py + p.height/2):
                     self.ball.x += p.vx * delta
                     self.ball.y += p.vy * delta
+
+                    if not getattr(p, "is_shaking", False):
+                        p.is_shaking = True
+                        if hasattr(self.world, "add_event"):
+                            self.world.add_event("platform_shake", {"x": px, "y": py})
+                        elif isinstance(self.world, dict) and "events" in self.world:
+                            self.world["events"].append({"type": "platform_shake", "x": px, "y": py})
+
+                    # Apply a tiny random jitter to ball if platform is shaking, to simulate shake visually without affecting core collision
+                    if getattr(p, "is_shaking", False):
+                        self.ball.x += random.uniform(-1.0, 1.0)
+                        self.ball.y += random.uniform(-1.0, 1.0)
 
         if getattr(self.ball, "quantum_state_timer", 0.0) > 0:
             self.ball.quantum_state_timer -= delta

@@ -44,6 +44,11 @@ class Platform:
     height: float
     vx: float
     vy: float
+    shake_timer: float = 0.0
+    is_shaking: bool = False
+    is_broken: bool = False
+    base_x: float = -1.0
+    base_y: float = -1.0
 
 class ProceduralArena:
     def __init__(self, arena_size: float = 2000.0, num_rooms: int = 5, seed: int | None = None):
@@ -659,7 +664,12 @@ class ProceduralArena:
 
             # Update platforms
             if hasattr(self, "platforms"):
+                import random
                 for p in self.platforms:
+                    if p.is_broken:
+                        continue
+
+                    # Always move platform
                     p.x += p.vx * delta
                     p.y += p.vy * delta
 
@@ -677,6 +687,16 @@ class ProceduralArena:
                         p.y = self.height - p.height / 2
                         p.vy *= -1
 
+                    if p.is_shaking:
+                        p.shake_timer += delta
+                        if p.shake_timer >= 3.0: # Break after 3 seconds
+                            p.is_broken = True
+                            p.x = -9999.0
+                            p.y = -9999.0
+                            p.width = 0.0
+                            p.height = 0.0
+                            p.vx = 0.0
+                            p.vy = 0.0
 
             if hasattr(self, "hazards"):
                 for hazard in self.hazards:
