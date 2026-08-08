@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1886] Supply Drops that can be Shot Down — *2026-08-08 12:38:53 UTC*
+
+Supply drops currently drop slowly from the sky on a timer. Allow players to shoot them down mid-air with projectiles to force them to land early or break them open mid-air, showering items below.
+
+---
+
 ## [idea-1898] Possession Mechanic for Ghosts — *2026-08-08 12:25:51 UTC*
 
 Ghosts can temporarily possess hazards or traps to manually trigger them when enemies are near, adding a strategic layer to post-death gameplay.
