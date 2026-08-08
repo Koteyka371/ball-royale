@@ -60211,6 +60211,7 @@ class AuraLinkRoyaleMode extends GameMode:
                                     target.killer = b1_id
 
 var GAME_MODES = {
+	"aura_well_hazard": AuraWellHazardMode.new(),
     "aura_link_royale": AuraLinkRoyaleMode.new(),
 	"boundary_builder": BoundaryBuilderMode.new(),
     "crimson_fog_event": CrimsonFogEventMode.new(),
@@ -81471,3 +81472,214 @@ class ReviveAltarMode extends GameMode:
 						altar.channeling_ball = null
 
 GAME_MODES["revive_altar"] = ReviveAltarMode.new()
+
+
+class AuraWellHazardMode extends GameMode:
+	func _init() -> void:
+		name = "Aura Well Hazard"
+		description = "A new hazard that absorbs the aura color of the first ball that touches it. Once charged, it pulses in waves, healing players with the matching aura and damaging those with different auras, encouraging territory control."
+
+	func setup(world: Dictionary, balls: Array) -> void:
+		super.setup(world, balls)
+
+		if not world.has("arena") or typeof(world.arena) != TYPE_DICTIONARY or not world.arena.has("hazards"):
+			return
+
+		var arena_width = world.arena.get("width", 2000.0)
+		var arena_height = world.arena.get("height", 2000.0)
+
+		for i in range(3):
+			var x = randf_range(200.0, arena_width - 200.0)
+			var y = randf_range(200.0, arena_height - 200.0)
+
+			var well_id = 94000 + world.arena.hazards.size()
+			var well = {
+				"id": well_id,
+				"x": x,
+				"y": y,
+				"radius": 60.0,
+				"kind": "aura_well",
+				"damage": 0.0,
+				"active": true,
+				"absorbed_aura": null,
+				"pulse_timer": 0.0,
+				"pulse_interval": 3.0,
+				"pulse_radius": 250.0
+			}
+			world.arena.hazards.append(well)
+
+	func tick(world: Dictionary, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		if not world.has("arena") or typeof(world.arena) != TYPE_DICTIONARY or not world.arena.has("hazards"):
+			return
+
+		for hazard in world.arena.hazards:
+			var h_kind = ""
+			var h_active = true
+			if typeof(hazard) == TYPE_DICTIONARY:
+				if hazard.has("kind"): h_kind = hazard.kind
+				if hazard.has("active"): h_active = hazard.active
+			elif typeof(hazard) == TYPE_OBJECT:
+				if "kind" in hazard: h_kind = hazard.get("kind")
+				if "active" in hazard: h_active = hazard.get("active")
+
+			if h_kind != "aura_well" or not h_active:
+				continue
+
+			var hx = 0.0
+			var hy = 0.0
+			var hradius = 60.0
+			var absorbed_aura = null
+
+			if typeof(hazard) == TYPE_DICTIONARY:
+				hx = hazard.get("x", 0.0)
+				hy = hazard.get("y", 0.0)
+				hradius = hazard.get("radius", 60.0)
+				absorbed_aura = hazard.get("absorbed_aura", null)
+			elif typeof(hazard) == TYPE_OBJECT:
+				hx = hazard.get("x") if "x" in hazard else 0.0
+				hy = hazard.get("y") if "y" in hazard else 0.0
+				hradius = hazard.get("radius") if "radius" in hazard else 60.0
+				absorbed_aura = hazard.get_meta("absorbed_aura") if hazard.has_meta("absorbed_aura") else null
+				if absorbed_aura == null and "absorbed_aura" in hazard:
+					absorbed_aura = hazard.get("absorbed_aura")
+
+			if absorbed_aura == null:
+				for b in balls:
+					var b_alive = false
+					var bx = 0.0
+					var by = 0.0
+					var bradius = 20.0
+
+					if typeof(b) == TYPE_DICTIONARY:
+						b_alive = b.get("alive", false)
+						bx = b.get("x", 0.0)
+						by = b.get("y", 0.0)
+						bradius = b.get("radius", 20.0)
+					elif typeof(b) == TYPE_OBJECT:
+						b_alive = b.get("alive") if "alive" in b else false
+						bx = b.get("x") if "x" in b else 0.0
+						by = b.get("y") if "y" in b else 0.0
+						bradius = b.get("radius") if "radius" in b else 20.0
+
+					if not b_alive: continue
+
+					var dist = sqrt(pow(bx - hx, 2) + pow(by - hy, 2))
+					if dist < (hradius + bradius):
+						var b_aura = "neutral"
+						if typeof(b) == TYPE_DICTIONARY:
+							b_aura = b.get("aura_color", b.get("team", "neutral"))
+						elif typeof(b) == TYPE_OBJECT:
+							b_aura = b.get("aura_color") if "aura_color" in b else (b.get("team") if "team" in b else "neutral")
+
+						if typeof(hazard) == TYPE_DICTIONARY:
+							hazard["absorbed_aura"] = b_aura
+						elif typeof(hazard) == TYPE_OBJECT:
+							if "absorbed_aura" in hazard:
+								hazard.set("absorbed_aura", b_aura)
+							else:
+								hazard.set_meta("absorbed_aura", b_aura)
+
+						if world.has("add_event"):
+							var h_id = -1
+							if typeof(hazard) == TYPE_DICTIONARY:
+								h_id = hazard.get("id", -1)
+							elif typeof(hazard) == TYPE_OBJECT:
+								h_id = hazard.get("id") if "id" in hazard else -1
+							world.add_event("aura_well_charged", {"hazard_id": h_id, "aura": b_aura})
+						break
+			else:
+				var timer = 0.0
+				var pulse_interval = 3.0
+				var pulse_radius = 250.0
+
+				if typeof(hazard) == TYPE_DICTIONARY:
+					timer = hazard.get("pulse_timer", 0.0)
+					pulse_interval = hazard.get("pulse_interval", 3.0)
+					pulse_radius = hazard.get("pulse_radius", 250.0)
+				elif typeof(hazard) == TYPE_OBJECT:
+					timer = hazard.get_meta("pulse_timer") if hazard.has_meta("pulse_timer") else (hazard.get("pulse_timer") if "pulse_timer" in hazard else 0.0)
+					pulse_interval = hazard.get_meta("pulse_interval") if hazard.has_meta("pulse_interval") else (hazard.get("pulse_interval") if "pulse_interval" in hazard else 3.0)
+					pulse_radius = hazard.get_meta("pulse_radius") if hazard.has_meta("pulse_radius") else (hazard.get("pulse_radius") if "pulse_radius" in hazard else 250.0)
+
+				timer -= delta
+
+				if timer <= 0:
+					timer = pulse_interval
+					if world.has("add_event"):
+						var h_id = -1
+						if typeof(hazard) == TYPE_DICTIONARY:
+							h_id = hazard.get("id", -1)
+						elif typeof(hazard) == TYPE_OBJECT:
+							h_id = hazard.get("id") if "id" in hazard else -1
+						world.add_event("aura_well_pulse", {"hazard_id": h_id, "aura": absorbed_aura})
+
+					for b in balls:
+						var b_alive = false
+						var bx = 0.0
+						var by = 0.0
+						var bhp = 0.0
+						var bmax_hp = 100.0
+						var has_take_damage = false
+
+						if typeof(b) == TYPE_DICTIONARY:
+							b_alive = b.get("alive", false)
+							bx = b.get("x", 0.0)
+							by = b.get("y", 0.0)
+							bhp = b.get("hp", 0.0)
+							bmax_hp = b.get("max_hp", 100.0)
+						elif typeof(b) == TYPE_OBJECT:
+							b_alive = b.get("alive") if "alive" in b else false
+							bx = b.get("x") if "x" in b else 0.0
+							by = b.get("y") if "y" in b else 0.0
+							bhp = b.get("hp") if "hp" in b else 0.0
+							bmax_hp = b.get("max_hp") if "max_hp" in b else 100.0
+							has_take_damage = b.has_method("take_damage")
+
+						if not b_alive: continue
+
+						var dist = sqrt(pow(bx - hx, 2) + pow(by - hy, 2))
+						if dist <= pulse_radius:
+							var b_aura = "neutral"
+							if typeof(b) == TYPE_DICTIONARY:
+								b_aura = b.get("aura_color", b.get("team", "neutral"))
+							elif typeof(b) == TYPE_OBJECT:
+								b_aura = b.get("aura_color") if "aura_color" in b else (b.get("team") if "team" in b else "neutral")
+
+							if b_aura == absorbed_aura:
+								# Heal
+								if typeof(b) == TYPE_DICTIONARY:
+									if b.has("hp"):
+										b["hp"] = min(bmax_hp, bhp + 20.0)
+								elif typeof(b) == TYPE_OBJECT:
+									if "hp" in b:
+										b.set("hp", min(bmax_hp, bhp + 20.0))
+							else:
+								# Damage
+								if has_take_damage:
+									b.take_damage(20.0)
+								else:
+									if typeof(b) == TYPE_DICTIONARY:
+										if b.has("hp"):
+											b["hp"] -= 20.0
+											if b["hp"] <= 0:
+												b["alive"] = false
+												if world.has("add_event"):
+													world.add_event("ball_died", {"id": b.get("id", -1), "killer_id": -1, "reason": "aura_well_pulse"})
+									elif typeof(b) == TYPE_OBJECT:
+										if "hp" in b:
+											var new_hp = bhp - 20.0
+											b.set("hp", new_hp)
+											if new_hp <= 0:
+												if "alive" in b: b.set("alive", false)
+												if world.has("add_event"):
+													world.add_event("ball_died", {"id": b.get("id", -1) if "id" in b else -1, "killer_id": -1, "reason": "aura_well_pulse"})
+
+				if typeof(hazard) == TYPE_DICTIONARY:
+					hazard["pulse_timer"] = timer
+				elif typeof(hazard) == TYPE_OBJECT:
+					if "pulse_timer" in hazard:
+						hazard.set("pulse_timer", timer)
+					else:
+						hazard.set_meta("pulse_timer", timer)
