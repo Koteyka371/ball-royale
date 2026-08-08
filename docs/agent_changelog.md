@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1882] Silence Immunity Booster — *2026-08-08 00:07:04 UTC*
+
+A booster that gives the player immunity to silence effects for 15 seconds.
+
+---
+
 ## [idea-1876] Momentum Reversal Trap — *2026-08-07 23:57:43 UTC*
 
 A deployable trap that functions like a portal but reverses the momentum of any ball entering it. Useful for throwing balls back into hazards.
