@@ -60898,6 +60898,194 @@ class DashAuraTrailMode extends GameMode:
 				if hit_trail:
 					b["last_aura_trail_interact"] = w_time
 
+class BulletHellSurvivalMode extends GameMode:
+	var turrets = []
+	var spawn_timer = 0.0
+	var spawn_interval = 8.0
+	var max_turrets = 8
+	var turret_fire_interval = 1.5
+	var projectile_speed = 350.0
+
+	func _init() -> void:
+		name = "Bullet Hell Survival"
+		description = "A survival mode where invincible turrets constantly spawn projectiles that bounce around the map. Players cannot destroy the turrets and must solely rely on dodging, perfect blocks, and positioning to survive as the arena fills with chaotic projectiles."
+
+	func tick(world, balls: Array, delta: float) -> void:
+		super.tick(world, balls, delta)
+
+		var arena_w = 1000.0
+		var arena_h = 1000.0
+		if typeof(world) == TYPE_DICTIONARY:
+			if ("arena" in world) and typeof(world.arena) == TYPE_DICTIONARY:
+				arena_w = world.arena.get("width", 1000.0)
+				arena_h = world.arena.get("height", 1000.0)
+		else:
+			if "arena" in world:
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					arena_w = world.arena.get("width", 1000.0)
+					arena_h = world.arena.get("height", 1000.0)
+				else:
+					arena_w = world.arena.width if "width" in world.arena else 1000.0
+					arena_h = world.arena.height if "height" in world.arena else 1000.0
+
+		if turrets.size() < max_turrets:
+			spawn_timer += delta
+			if spawn_timer >= spawn_interval:
+				spawn_timer = 0.0
+				var tx = randf_range(200.0, arena_w - 200.0)
+				var ty = randf_range(200.0, arena_h - 200.0)
+				var tid = randi() % 900000 + 100000
+
+				var new_turret = {
+					"id": tid,
+					"x": tx,
+					"y": ty,
+					"radius": 40.0,
+					"team": "Turrets",
+					"fire_timer": 0.0,
+					"damage": 15.0,
+					"hp": 999999.0,
+					"max_hp": 999999.0,
+					"alive": true,
+					"kind": "invincible_turret"
+				}
+				turrets.append(new_turret)
+
+				if typeof(world) == TYPE_DICTIONARY:
+					if ("arena" in world) and typeof(world.arena) == TYPE_DICTIONARY and ("hazards" in world.arena):
+						world.arena.hazards.append(new_turret)
+				else:
+					if "arena" in world and world.arena != null:
+						if typeof(world.arena) == TYPE_DICTIONARY and ("hazards" in world.arena):
+							world.arena.hazards.append(new_turret)
+						elif "hazards" in world.arena:
+							world.arena.hazards.append(new_turret)
+
+		for t in turrets:
+			t["hp"] = 999999.0
+			t["alive"] = true
+
+			t["fire_timer"] += delta
+			if t["fire_timer"] >= turret_fire_interval:
+				t["fire_timer"] -= turret_fire_interval
+				var angle = randf_range(0.0, 2.0 * PI)
+				var vx = cos(angle) * projectile_speed
+				var vy = sin(angle) * projectile_speed
+				var pid = randi() % 900000 + 100000
+
+				var new_proj = {
+					"id": pid,
+					"x": t["x"],
+					"y": t["y"],
+					"vx": vx,
+					"vy": vy,
+					"radius": 10.0,
+					"damage": t["damage"],
+					"kind": "projectile",
+					"hp": 1.0,
+					"alive": true,
+					"team": "Turrets",
+					"bounces": 0
+				}
+
+				if typeof(world) == TYPE_DICTIONARY:
+					if not ("projectiles" in world):
+						world["projectiles"] = []
+					world["projectiles"].append(new_proj)
+				else:
+					if not ("projectiles" in world):
+						world.projectiles = []
+					world.projectiles.append(new_proj)
+
+		var all_projs = []
+		if typeof(world) == TYPE_DICTIONARY:
+			if "projectiles" in world:
+				all_projs.append_array(world["projectiles"])
+			if ("arena" in world) and typeof(world.arena) == TYPE_DICTIONARY and ("hazards" in world.arena):
+				all_projs.append_array(world.arena["hazards"])
+		else:
+			if "projectiles" in world:
+				all_projs.append_array(world.projectiles)
+			if "arena" in world and world.arena != null:
+				if typeof(world.arena) == TYPE_DICTIONARY and ("hazards" in world.arena):
+					all_projs.append_array(world.arena["hazards"])
+				elif "hazards" in world.arena:
+					all_projs.append_array(world.arena.hazards)
+
+		for proj in all_projs:
+			var p_alive = true
+			var p_hp = 1.0
+			var p_type = ""
+			var p_is_proj = false
+
+			if typeof(proj) == TYPE_DICTIONARY:
+				p_alive = proj.get("alive", true)
+				p_hp = proj.get("hp", 1.0)
+				p_type = proj.get("ball_type", proj.get("kind", ""))
+				p_is_proj = proj.get("is_projectile", false) or proj.get("is_spell", false)
+			else:
+				p_alive = proj.alive if "alive" in proj else true
+				p_hp = proj.hp if "hp" in proj else 1.0
+				p_type = proj.ball_type if "ball_type" in proj else (proj.kind if "kind" in proj else "")
+				p_is_proj = (proj.is_projectile if "is_projectile" in proj else false) or (proj.is_spell if "is_spell" in proj else false)
+
+			if not p_alive and not (p_hp > 0):
+				continue
+
+			var is_proj_valid = p_type in ["projectile", "spell", "fireball", "bullet", "snipe", "laser_beam"] or p_is_proj
+			if not is_proj_valid:
+				continue
+
+			var x = 0.0
+			var y = 0.0
+			var radius = 5.0
+			var vx = 0.0
+			var vy = 0.0
+
+			if typeof(proj) == TYPE_DICTIONARY:
+				x = proj.get("x", 0.0)
+				y = proj.get("y", 0.0)
+				radius = proj.get("radius", 5.0)
+				vx = proj.get("vx", 0.0)
+				vy = proj.get("vy", 0.0)
+			else:
+				x = proj.x if "x" in proj else 0.0
+				y = proj.y if "y" in proj else 0.0
+				radius = proj.radius if "radius" in proj else 5.0
+				vx = proj.vx if "vx" in proj else 0.0
+				vy = proj.vy if "vy" in proj else 0.0
+
+			var updated = false
+			if x - radius < 0 and vx < 0:
+				vx = -vx
+				x = radius
+				updated = true
+			elif x + radius > arena_w and vx > 0:
+				vx = -vx
+				x = arena_w - radius
+				updated = true
+
+			if y - radius < 0 and vy < 0:
+				vy = -vy
+				y = radius
+				updated = true
+			elif y + radius > arena_h and vy > 0:
+				vy = -vy
+				y = arena_h - radius
+				updated = true
+
+			if updated:
+				if typeof(proj) == TYPE_DICTIONARY:
+					proj["vx"] = vx
+					proj["vy"] = vy
+					proj["x"] = x
+					proj["y"] = y
+				else:
+					if "vx" in proj: proj.vx = vx
+					if "vy" in proj: proj.vy = vy
+					if "x" in proj: proj.x = x
+					if "y" in proj: proj.y = y
+
 var GAME_MODES = {
 	"dash_aura_trail": DashAuraTrailMode.new(),
 	"expanding_aura_event": ExpandingAuraEventMode.new(),
@@ -82711,3 +82899,4 @@ class InvertControlsMutator extends "res://src/ai/game_modes.gd".GameMode:
 							b.set_meta("invert_timer", max(inv_timer, 3.0))
 
 GAME_MODES['invert_controls_mutator'] = InvertControlsMutator.new()
+GAME_MODES["bullet_hell_survival"] = BulletHellSurvivalMode.new()
