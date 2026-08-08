@@ -1970,7 +1970,52 @@ class Action:
         return pr
 
 
+
     def execute(self, strategy: str, delta: float) -> None:
+        old_x = getattr(self.ball, "x", 0.0)
+        old_y = getattr(self.ball, "y", 0.0)
+
+        # Handle quantum marker recall countdown
+        if getattr(self.ball, "quantum_marker_recall_timer", 0.0) > 0:
+            self.ball.quantum_marker_recall_timer -= delta
+            if self.ball.quantum_marker_recall_timer <= 0:
+                self.ball.quantum_marker_recall_timer = 0.0
+                if hasattr(self.ball, "quantum_marker_origin_x") and hasattr(self.ball, "quantum_marker_origin_y"):
+                    self.ball.x = self.ball.quantum_marker_origin_x
+                    self.ball.y = self.ball.quantum_marker_origin_y
+                    self.ball.vx = 0.0
+                    self.ball.vy = 0.0
+                    self.ball.is_quantum_marked = False
+
+                    if isinstance(self.world, dict):
+                        if "events" not in self.world: self.world["events"] = []
+                        self.world["events"].append({"type": "quantum_marker_recall", "ball_id": getattr(self.ball, "id", -1), "x": self.ball.x, "y": self.ball.y})
+                    elif hasattr(self.world, "add_event"):
+                        self.world.add_event("quantum_marker_recall", {"ball_id": getattr(self.ball, "id", -1), "x": self.ball.x, "y": self.ball.y})
+
+        self._execute_internal(strategy, delta)
+
+        new_x = getattr(self.ball, "x", 0.0)
+        new_y = getattr(self.ball, "y", 0.0)
+
+        # safely convert to float
+        try:
+            old_x = float(old_x)
+            old_y = float(old_y)
+            new_x = float(new_x)
+            new_y = float(new_y)
+            dist_sq = (new_x - old_x)**2 + (new_y - old_y)**2
+            if dist_sq > 22500: # 150 pixels
+                # Teleport detected!
+                if getattr(self.ball, "is_quantum_marked", False) and getattr(self.ball, "quantum_marker_recall_timer", 0.0) <= 0:
+                    self.ball.quantum_marker_recall_timer = 3.0
+                    self.ball.quantum_marker_origin_x = old_x
+                    self.ball.quantum_marker_origin_y = old_y
+        except (TypeError, ValueError):
+            pass
+
+    def _execute_internal(self, strategy: str, delta: float) -> None:
+
         if hasattr(self.ball, "out_of_combat_timer"):
             self.ball.out_of_combat_timer += delta
 

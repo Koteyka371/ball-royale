@@ -56,6 +56,7 @@ def test_battle_royale_shockwave():
 
     # Mock random to predictable location
     class PredictableRandom:
+        def random(self): return 0.5
         def uniform(self, a, b):
             return 500.0
         def choice(self, lst):
