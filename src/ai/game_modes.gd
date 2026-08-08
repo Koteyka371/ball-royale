@@ -60075,7 +60075,143 @@ class BoundaryBuilderMode extends ShrinkingBoundaryMode:
 					if haz.has(r):
 						haz.erase(r)
 
+
+class AuraLinkRoyaleMode extends GameMode:
+    func _init():
+        name = "Aura Link Royale"
+        description = "Players with matching auras cannot damage each other and form energy links that damage non-matching players caught between them."
+
+    func setup(world, balls):
+        super.setup(world, balls)
+        var colors = ["Red", "Blue", "Green"]
+        for b in balls:
+            if typeof(b) == TYPE_DICTIONARY:
+                if b.get("ball_type") != "spectator" and b.get("alive", true):
+                    var color = colors[randi() % colors.size()]
+                    b["aura_color"] = color
+                    b["team"] = "Aura " + color
+            else:
+                if b.get("ball_type") != "spectator" and b.get("alive"):
+                    var color = colors[randi() % colors.size()]
+                    b.set_meta("aura_color", color)
+                    if "team" in b:
+                        b.team = "Aura " + color
+
+    func point_line_distance(px, py, x1, y1, x2, y2):
+        var dx = x2 - x1
+        var dy = y2 - y1
+        if dx == 0 and dy == 0:
+            return sqrt(pow(px - x1, 2) + pow(py - y1, 2))
+        var t = ((px - x1) * dx + (py - y1) * dy) / (dx * dx + dy * dy)
+        t = max(0.0, min(1.0, t))
+        var cx = x1 + t * dx
+        var cy = y1 + t * dy
+        return sqrt(pow(px - cx, 2) + pow(py - cy, 2))
+
+    func tick(world, balls, delta: float = 0.016):
+        var alive_balls = []
+        for b in balls:
+            var alive = true
+            var is_spec = false
+            if typeof(b) == TYPE_DICTIONARY:
+                alive = b.get("alive", true)
+                is_spec = b.get("ball_type") == "spectator"
+                if alive and not is_spec:
+                    if b.has("aura_color"):
+                        b["team"] = "Aura " + b["aura_color"]
+                    alive_balls.append(b)
+            else:
+                alive = b.get("alive")
+                is_spec = b.get("ball_type") == "spectator"
+                if alive and not is_spec:
+                    if b.has_meta("aura_color"):
+                        var color = b.get_meta("aura_color")
+                        if "team" in b:
+                            b.team = "Aura " + color
+                    alive_balls.append(b)
+
+        for i in range(alive_balls.size()):
+            var b1 = alive_balls[i]
+            var c1 = null
+            var b1_x = 0
+            var b1_y = 0
+            var b1_id = null
+
+            if typeof(b1) == TYPE_DICTIONARY:
+                c1 = b1.get("aura_color")
+                b1_x = b1.get("x", 0)
+                b1_y = b1.get("y", 0)
+                b1_id = b1.get("id")
+            else:
+                c1 = b1.get_meta("aura_color") if b1.has_meta("aura_color") else null
+                b1_x = b1.get("x") if "x" in b1 else 0
+                b1_y = b1.get("y") if "y" in b1 else 0
+                b1_id = b1.get("id") if "id" in b1 else null
+
+            if c1 == null:
+                continue
+
+            for j in range(i + 1, alive_balls.size()):
+                var b2 = alive_balls[j]
+                var c2 = null
+                var b2_x = 0
+                var b2_y = 0
+
+                if typeof(b2) == TYPE_DICTIONARY:
+                    c2 = b2.get("aura_color")
+                    b2_x = b2.get("x", 0)
+                    b2_y = b2.get("y", 0)
+                else:
+                    c2 = b2.get_meta("aura_color") if b2.has_meta("aura_color") else null
+                    b2_x = b2.get("x") if "x" in b2 else 0
+                    b2_y = b2.get("y") if "y" in b2 else 0
+
+                if c2 == c1:
+                    for target in alive_balls:
+                        if typeof(target) == TYPE_DICTIONARY and typeof(b1) == TYPE_DICTIONARY and target.get("id") == b1.get("id"):
+                            continue
+                        elif typeof(target) != TYPE_DICTIONARY and typeof(b1) != TYPE_DICTIONARY and target == b1:
+                            continue
+
+                        if typeof(target) == TYPE_DICTIONARY and typeof(b2) == TYPE_DICTIONARY and target.get("id") == b2.get("id"):
+                            continue
+                        elif typeof(target) != TYPE_DICTIONARY and typeof(b2) != TYPE_DICTIONARY and target == b2:
+                            continue
+
+                        var target_c = null
+                        var target_x = 0
+                        var target_y = 0
+                        var target_radius = 20.0
+
+                        if typeof(target) == TYPE_DICTIONARY:
+                            target_c = target.get("aura_color")
+                            target_x = target.get("x", 0)
+                            target_y = target.get("y", 0)
+                            target_radius = target.get("radius", 20.0)
+                        else:
+                            target_c = target.get_meta("aura_color") if target.has_meta("aura_color") else null
+                            target_x = target.get("x") if "x" in target else 0
+                            target_y = target.get("y") if "y" in target else 0
+                            target_radius = target.get("radius") if "radius" in target else 20.0
+
+                        if target_c == c1:
+                            continue
+
+                        var dist = point_line_distance(target_x, target_y, b1_x, b1_y, b2_x, b2_y)
+                        var tether_width = 10.0
+
+                        if dist < target_radius + tether_width:
+                            if typeof(target) == TYPE_DICTIONARY:
+                                target["hp"] = target.get("hp", 100) - (50.0 * delta)
+                                target["killer"] = b1_id
+                            else:
+                                if "hp" in target:
+                                    target.hp = target.hp - (50.0 * delta)
+                                if "killer" in target:
+                                    target.killer = b1_id
+
 var GAME_MODES = {
+    "aura_link_royale": AuraLinkRoyaleMode.new(),
 	"boundary_builder": BoundaryBuilderMode.new(),
     "crimson_fog_event": CrimsonFogEventMode.new(),
     "nullification_zone": NullificationZoneMode.new(),

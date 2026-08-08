@@ -37028,7 +37028,68 @@ class CrimsonFogEventMode(GameMode):
                     b.hp -= 10.0 * delta
 
 
+
+class AuraLinkRoyaleMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Aura Link Royale"
+        self.description = "Players with matching auras cannot damage each other and form energy links that damage non-matching players caught between them."
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        import random
+        colors = ["Red", "Blue", "Green"]
+        alive_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        for b in alive_balls:
+            b.aura_color = random.choice(colors)
+            b.team = f"Aura {b.aura_color}"
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        import math
+        alive_balls = [b for b in balls if getattr(b, "alive", True) and getattr(b, "ball_type", None) != "spectator"]
+
+        # Ensure teams are accurate if aura changed
+        for b in alive_balls:
+            if hasattr(b, "aura_color"):
+                b.team = f"Aura {b.aura_color}"
+
+        def point_line_distance(px, py, x1, y1, x2, y2):
+            dx = x2 - x1
+            dy = y2 - y1
+            if dx == 0 and dy == 0:
+                return math.sqrt((px - x1)**2 + (py - y1)**2)
+            t = ((px - x1) * dx + (py - y1) * dy) / (dx * dx + dy * dy)
+            t = max(0.0, min(1.0, t))
+            cx = x1 + t * dx
+            cy = y1 + t * dy
+            return math.sqrt((px - cx)**2 + (py - cy)**2)
+
+        for i in range(len(alive_balls)):
+            b1 = alive_balls[i]
+            c1 = getattr(b1, "aura_color", None)
+            if not c1:
+                continue
+
+            for j in range(i + 1, len(alive_balls)):
+                b2 = alive_balls[j]
+                if getattr(b2, "aura_color", None) == c1:
+                    # Tether formed between b1 and b2
+                    # Check for targets intersecting
+                    for target in alive_balls:
+                        if target == b1 or target == b2:
+                            continue
+                        if getattr(target, "aura_color", None) == c1:
+                            continue
+
+                        dist = point_line_distance(target.x, target.y, b1.x, b1.y, b2.x, b2.y)
+                        tether_width = 10.0
+                        if dist < getattr(target, "radius", 20.0) + tether_width:
+                            target.hp = getattr(target, "hp", 100) - (50.0 * delta)
+                            target.killer = b1.id
+
+
 GAME_MODES = {
+    "aura_link_royale": AuraLinkRoyaleMode(),
     "crimson_fog_event": CrimsonFogEventMode(),
     "nullification_zone": NullificationZoneMode(),
     'crumbling_arena': CrumblingArenaMode(),
