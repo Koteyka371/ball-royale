@@ -61087,6 +61087,8 @@ class BulletHellSurvivalMode extends GameMode:
 					if "y" in proj: proj.y = y
 
 var GAME_MODES = {
+	"bullet_hell_survival": BulletHellSurvivalMode.new(),
+	"invert_controls_mutator": InvertControlsMutator.new(),
 	"dash_aura_trail": DashAuraTrailMode.new(),
 	"expanding_aura_event": ExpandingAuraEventMode.new(),
 	"aura_well_hazard": AuraWellHazardMode.new(),
@@ -82898,5 +82900,3 @@ class InvertControlsMutator extends "res://src/ai/game_modes.gd".GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("invert_timer", max(inv_timer, 3.0))
 
-GAME_MODES['invert_controls_mutator'] = InvertControlsMutator.new()
-GAME_MODES["bullet_hell_survival"] = BulletHellSurvivalMode.new()

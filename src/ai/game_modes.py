@@ -37609,6 +37609,7 @@ class BulletHellSurvivalMode(GameMode):
 
 
 GAME_MODES = {
+    "bullet_hell_survival": BulletHellSurvivalMode(),
     'dash_aura_trail': DashAuraTrailMode(),
     "expanding_aura_event": ExpandingAuraEventMode(),
     "aura_link_royale": AuraLinkRoyaleMode(),
@@ -52615,4 +52616,3 @@ class InvertControlsMutator(GameMode):
                     b.invert_timer = max(getattr(b, "invert_timer", 0.0), 3.0)
 
 GAME_MODES['invert_controls_mutator'] = InvertControlsMutator()
-GAME_MODES["bullet_hell_survival"] = BulletHellSurvivalMode()
