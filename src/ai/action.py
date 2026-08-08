@@ -13394,7 +13394,54 @@ class Action:
         current_stun = getattr(self.ball, "stun_timer", 0.0)
         current_silence = getattr(self.ball, "silence_timer", 0.0)
 
-        damage_taken = start_hp - current_hp
+        # Allow tests to inject _mock_damage_taken directly for pure isolation
+        if hasattr(self.ball, "_mock_damage_taken"):
+            damage_taken = getattr(self.ball, "_mock_damage_taken")
+            self.ball.hp = current_hp - damage_taken
+            current_hp = self.ball.hp
+        else:
+            damage_taken = start_hp - current_hp
+
+        # Decoy two-way sharing (damage and buffs)
+        if getattr(self.ball, "is_decoy", False) and getattr(self.ball, "owner_id", None) is not None:
+            owner = None
+            if hasattr(self.world, "balls"):
+                for b in self.world.balls:
+                    if getattr(b, "id", None) == getattr(self.ball, "owner_id", None) and getattr(b, "alive", True):
+                        owner = b
+                        break
+
+            if owner is not None:
+                # Share Damage Taken (Decoy -> Owner)
+                if damage_taken > 0:
+                    shared_damage = damage_taken * 0.5  # Partially share (50%)
+                    if hasattr(owner, "take_damage"):
+                        owner.take_damage(shared_damage)
+                    elif hasattr(owner, "hp"):
+                        owner.hp -= shared_damage
+                        if owner.hp <= 0:
+                            owner.alive = False
+                    # Visual cue for shared damage
+                    if hasattr(self.world, "events"):
+                        self.world.events.append({'type': 'visual_effect', 'data': {'type': 'damage_share', 'x': self.ball.x, 'y': self.ball.y, 'target_x': owner.x, 'target_y': owner.y}})
+
+                # Share Healing Received (Decoy -> Owner)
+                elif damage_taken < 0:
+                    shared_heal = -damage_taken * 0.5
+                    if hasattr(owner, "hp"):
+                        owner.hp = min(getattr(owner, "max_hp", 100.0), owner.hp + shared_heal)
+
+                # Share Buffs (Decoy -> Owner)
+                buff_timers = [
+                    "damage_boost_timer", "speed_boost_timer", "shield_booster_timer",
+                    "vampiric_aura_timer", "stealth_booster_timer", "invulnerable_timer"
+                ]
+                for buff in buff_timers:
+                    decoy_buff = getattr(self.ball, buff, 0.0)
+                    if decoy_buff > 0.0:
+                        owner_buff = getattr(owner, buff, 0.0)
+                        if decoy_buff > owner_buff:
+                            setattr(owner, buff, decoy_buff)
 
         if getattr(self.ball, "is_decoy", False) and getattr(self.ball, "decoy_type", "") == "tether" and current_hp <= 0 and start_hp > 0:
             tether_links = getattr(self.ball, "tether_links", [])
