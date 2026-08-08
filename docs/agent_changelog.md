@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1917] Aura Pulse Amplifier — *2026-08-08 23:50:10 UTC*
+
+An arena hazard or center objective that periodically pulses an aura color. If balls matching that color touch the pulse wave, their speed and damage are temporarily increased by 50%.
+
+---
+
 ## [idea-1908] Decoy Bomb — *2026-08-08 23:39:55 UTC*
 
 A new item that drops a decoy which explodes when hit, dealing damage and slowing enemies in a radius.
