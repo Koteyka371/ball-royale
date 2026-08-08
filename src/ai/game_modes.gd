@@ -60237,6 +60237,7 @@ class AuraLinkRoyaleMode extends GameMode:
                                     target.killer = b1_id
 
 var GAME_MODES = {
+	"expanding_aura_event": ExpandingAuraEventMode.new(),
 	"aura_well_hazard": AuraWellHazardMode.new(),
     "aura_link_royale": AuraLinkRoyaleMode.new(),
 	"boundary_builder": BoundaryBuilderMode.new(),
@@ -81709,3 +81710,69 @@ class AuraWellHazardMode extends GameMode:
 						hazard.set("pulse_timer", timer)
 					else:
 						hazard.set_meta("pulse_timer", timer)
+
+
+class ExpandingAuraEventMode extends GameMode:
+	var expand_rate: float = 0.5
+	var max_scale: float = 3.0
+
+	func _init() -> void:
+		name = "Expanding Aura Event"
+		description = "Player auras rapidly expand over time. The larger the aura, the more damage you deal, but taking damage instantly reduces the aura size back to minimum."
+
+	func tick(world: Dictionary, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+		for b in balls:
+			var is_dict = typeof(b) == TYPE_DICTIONARY
+
+			var alive = b.get("alive", true) if is_dict else b.get("alive")
+			if alive != null and not alive:
+				continue
+
+			var current_hp = b.get("hp", 100.0) if is_dict else b.get("hp")
+			if current_hp == null: current_hp = 100.0
+
+			var aura_scale = 1.0
+			var aura_prev_hp = current_hp
+			var orig_dmg_mult = 1.0
+
+			if is_dict:
+				if not b.has("_aura_scale"):
+					b["_aura_scale"] = 1.0
+				if not b.has("_aura_prev_hp"):
+					b["_aura_prev_hp"] = current_hp
+				if not b.has("_orig_damage_multiplier"):
+					b["_orig_damage_multiplier"] = b.get("damage_multiplier", 1.0)
+
+				aura_scale = b.get("_aura_scale", 1.0)
+				aura_prev_hp = b.get("_aura_prev_hp", current_hp)
+				orig_dmg_mult = b.get("_orig_damage_multiplier", 1.0)
+			else:
+				if not b.has_meta("_aura_scale"):
+					b.set_meta("_aura_scale", 1.0)
+				if not b.has_meta("_aura_prev_hp"):
+					b.set_meta("_aura_prev_hp", current_hp)
+				if not b.has_meta("_orig_damage_multiplier"):
+					b.set_meta("_orig_damage_multiplier", b.get("damage_multiplier") if b.get("damage_multiplier") != null else 1.0)
+
+				aura_scale = b.get_meta("_aura_scale")
+				aura_prev_hp = b.get_meta("_aura_prev_hp")
+				orig_dmg_mult = b.get_meta("_orig_damage_multiplier")
+
+			if current_hp < aura_prev_hp:
+				aura_scale = 1.0
+
+			aura_scale = min(max_scale, aura_scale + expand_rate * delta)
+
+			var new_dmg_mult = orig_dmg_mult * aura_scale
+
+			if is_dict:
+				b["_aura_scale"] = aura_scale
+				b["_aura_prev_hp"] = current_hp
+				b["cosmetic_aura_scale"] = aura_scale
+				b["damage_multiplier"] = new_dmg_mult
+			else:
+				b.set_meta("_aura_scale", aura_scale)
+				b.set_meta("_aura_prev_hp", current_hp)
+				b.set("cosmetic_aura_scale", aura_scale)
+				b.set("damage_multiplier", new_dmg_mult)
