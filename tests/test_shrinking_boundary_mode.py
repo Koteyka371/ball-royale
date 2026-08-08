@@ -31,17 +31,17 @@ def test_shrinking_boundary_mode():
     mode.setup(world, balls)
 
     # Initial boundaries
-    assert mode.min_x == 0.0
-    assert mode.max_x == 1000.0
-    assert mode.min_y == 0.0
-    assert mode.max_y == 1000.0
+    assert world.arena.boundary_offsets["left"] == 0.0
+    assert world.arena.boundary_offsets["right"] == 0.0
+    assert world.arena.boundary_offsets["top"] == 0.0
+    assert world.arena.boundary_offsets["bottom"] == 0.0
 
     # Tick and check shrinking
     mode.tick(world, balls, delta=1.0)
-    assert mode.min_x > 0.0
-    assert mode.max_x < 1000.0
-    assert mode.min_y > 0.0
-    assert mode.max_y < 1000.0
+    assert world.arena.boundary_offsets["left"] > 0.0
+    assert world.arena.boundary_offsets["right"] > 0.0
+    assert world.arena.boundary_offsets["top"] > 0.0
+    assert world.arena.boundary_offsets["bottom"] > 0.0
 
     # Balls inside should not take damage
     assert balls[0].hp == 100.0
@@ -53,7 +53,7 @@ def test_shrinking_boundary_mode():
     mode.tick(world, balls, delta=1.0)
 
     # Ball should have taken continuous damage
-    assert balls[0].hp == 90.0
+    assert balls[0].hp == 75.0
 
     # Deal enough damage to kill
     balls[0].hp = 1.0
