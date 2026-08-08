@@ -37435,6 +37435,71 @@ class DashAuraTrailMode(GameMode):
             if hit_trail:
                 b.last_aura_trail_interact = world.time
 
+
+class ConstrictingArenaMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Constricting Arena"
+        self.description = "The arena boundaries slowly constrict over time, pushing all balls towards the center. Touching the outer boundary applies a severe slow and damages over time."
+        self.min_width = 200.0
+        self.min_height = 200.0
+        self.shrink_speed = 10.0 # units per second
+        self.damage_per_second = 20.0
+        self.slow_duration = 1.0
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        self.apply_dynamic_traits(world, balls, delta)
+
+        if hasattr(world, "arena") and world.arena:
+            current_w = getattr(world.arena, "width", 1000.0)
+            current_h = getattr(world.arena, "height", 1000.0)
+
+            new_w = max(self.min_width, current_w - self.shrink_speed * delta)
+            new_h = max(self.min_height, current_h - self.shrink_speed * delta)
+
+            world.arena.width = new_w
+            world.arena.height = new_h
+
+            for b in balls:
+                if not getattr(b, "alive", True):
+                    continue
+
+                radius = getattr(b, "radius", 15.0)
+                bx = getattr(b, "x", 0.0)
+                by = getattr(b, "y", 0.0)
+
+                touching_boundary = False
+
+                if bx < radius:
+                    b.x = radius
+                    touching_boundary = True
+                elif bx > new_w - radius:
+                    b.x = new_w - radius
+                    touching_boundary = True
+
+                if by < radius:
+                    b.y = radius
+                    touching_boundary = True
+                elif by > new_h - radius:
+                    b.y = new_h - radius
+                    touching_boundary = True
+
+                if touching_boundary:
+                    b.slow_timer = self.slow_duration
+                    b.hp = max(0.0, getattr(b, "hp", 100.0) - self.damage_per_second * delta)
+                    if b.hp <= 0.0:
+                        b.alive = False
+
+            if hasattr(world.arena, "hazards"):
+                for h in world.arena.hazards:
+                    radius = getattr(h, "radius", 0.0)
+                    hx = getattr(h, "x", 0.0)
+                    hy = getattr(h, "y", 0.0)
+                    if hx < radius: h.x = radius
+                    elif hx > new_w - radius: h.x = new_w - radius
+                    if hy < radius: h.y = radius
+                    elif hy > new_h - radius: h.y = new_h - radius
+
 GAME_MODES = {
     'dash_aura_trail': DashAuraTrailMode(),
     "expanding_aura_event": ExpandingAuraEventMode(),
@@ -41187,6 +41252,7 @@ class ConstrictingBoundaryTrapMode(GameMode):
                         if hasattr(b, "vy") and b.vy > 0: b.vy *= -1
 
 GAME_MODES['constricting_boundary_trap'] = ConstrictingBoundaryTrapMode()
+GAME_MODES['constricting_arena'] = ConstrictingArenaMode()
 GAME_MODES['sacrifice_altar'] = SacrificeAltarMode()
 GAME_MODES['temporal_rifts'] = TemporalRiftsMode()
 GAME_MODES['sector_collapse'] = SectorCollapseMode()
