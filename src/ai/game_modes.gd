@@ -60236,7 +60236,195 @@ class AuraLinkRoyaleMode extends GameMode:
                                 if "killer" in target:
                                     target.killer = b1_id
 
+
+class DashAuraTrailMode extends GameMode:
+	func _init():
+		name = "Dash Aura Trail"
+		description = "Dashing leaves a trail matching your aura. Touching a trail of a different color stuns you, while touching a trail of the same color grants a speed boost."
+
+	class AuraTrailHazard:
+		var x: float
+		var y: float
+		var color: Array
+		var radius: float = 15.0
+		var active: bool = true
+		var life_timer: float = 2.0
+		var source_id: int
+
+		func _init(px, py, pcolor, psource_id):
+			x = px
+			y = py
+			color = pcolor
+			source_id = psource_id
+
+	func setup(world: Object, balls: Array) -> void:
+		super.setup(world, balls)
+		var colors = [[1.0, 0.0, 0.0, 1.0], [0.0, 1.0, 0.0, 1.0], [0.0, 0.0, 1.0, 1.0], [1.0, 1.0, 0.0, 1.0]]
+		for b in balls:
+			if typeof(b) == TYPE_OBJECT:
+				if not b.has_meta("cosmetic_aura_color"):
+					b.set_meta("cosmetic_aura_color", colors[randi() % colors.size()])
+			elif typeof(b) == TYPE_DICTIONARY:
+				if not b.has("cosmetic_aura_color"):
+					b["cosmetic_aura_color"] = colors[randi() % colors.size()]
+
+		if typeof(world) == TYPE_OBJECT:
+			if not world.has_meta("aura_trails"):
+				world.set_meta("aura_trails", [])
+		elif typeof(world) == TYPE_DICTIONARY:
+			if not world.has("aura_trails"):
+				world["aura_trails"] = []
+
+	func tick(world: Object, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		var trails = []
+		if typeof(world) == TYPE_OBJECT:
+			if not world.has_meta("aura_trails"):
+				world.set_meta("aura_trails", [])
+			trails = world.get_meta("aura_trails")
+		elif typeof(world) == TYPE_DICTIONARY:
+			if not world.has("aura_trails"):
+				world["aura_trails"] = []
+			trails = world["aura_trails"]
+
+		for b in balls:
+			if typeof(b) == TYPE_OBJECT:
+				if not b.alive:
+					continue
+
+				var aura_buff_timer = 0.0
+				if b.has_meta("aura_speed_buff_timer"):
+					aura_buff_timer = b.get_meta("aura_speed_buff_timer")
+
+				if aura_buff_timer > 0:
+					b.set_meta("aura_speed_buff_timer", aura_buff_timer - delta)
+					if not b.has_meta("_orig_speed_aura_buff"):
+						b.set_meta("_orig_speed_aura_buff", b.speed if "speed" in b else 250.0)
+					if "speed" in b:
+						b.speed = b.get_meta("_orig_speed_aura_buff") + 200.0
+				else:
+					if b.has_meta("_orig_speed_aura_buff"):
+						if "speed" in b:
+							b.speed = b.get_meta("_orig_speed_aura_buff")
+						b.remove_meta("_orig_speed_aura_buff")
+
+				var is_dashing = false
+				if "is_dashing" in b:
+					is_dashing = b.is_dashing
+
+				if is_dashing:
+					var last_spawn = b.get_meta("last_aura_trail_spawn") if b.has_meta("last_aura_trail_spawn") else 0.0
+					var w_time = world.time if "time" in world else 0.0
+					if w_time - last_spawn >= 0.1:
+						b.set_meta("last_aura_trail_spawn", w_time)
+						var color = b.get_meta("cosmetic_aura_color") if b.has_meta("cosmetic_aura_color") else [1.0, 1.0, 1.0, 1.0]
+						trails.append(AuraTrailHazard.new(b.x, b.y, color, b.get_instance_id()))
+			elif typeof(b) == TYPE_DICTIONARY:
+				if not b.get("alive", false):
+					continue
+
+				var aura_buff_timer = b.get("aura_speed_buff_timer", 0.0)
+				if aura_buff_timer > 0:
+					b["aura_speed_buff_timer"] = aura_buff_timer - delta
+					if not b.has("_orig_speed_aura_buff"):
+						b["_orig_speed_aura_buff"] = b.get("speed", 250.0)
+					b["speed"] = b["_orig_speed_aura_buff"] + 200.0
+				else:
+					if b.has("_orig_speed_aura_buff"):
+						b["speed"] = b["_orig_speed_aura_buff"]
+						b.erase("_orig_speed_aura_buff")
+
+				var is_dashing = b.get("is_dashing", false)
+				if is_dashing:
+					var last_spawn = b.get("last_aura_trail_spawn", 0.0)
+					var w_time = world.get("time", 0.0) if typeof(world) == TYPE_DICTIONARY else (world.time if "time" in world else 0.0)
+					if w_time - last_spawn >= 0.1:
+						b["last_aura_trail_spawn"] = w_time
+						var color = b.get("cosmetic_aura_color", [1.0, 1.0, 1.0, 1.0])
+						trails.append(AuraTrailHazard.new(b.get("x", 0.0), b.get("y", 0.0), color, b.hash()))
+
+		var active_trails = []
+		for t in trails:
+			t.life_timer -= delta
+			if t.life_timer > 0:
+				active_trails.append(t)
+
+		if typeof(world) == TYPE_OBJECT:
+			world.set_meta("aura_trails", active_trails)
+		elif typeof(world) == TYPE_DICTIONARY:
+			world["aura_trails"] = active_trails
+
+		for b in balls:
+			var w_time = world.get("time", 0.0) if typeof(world) == TYPE_DICTIONARY else (world.time if "time" in world else 0.0)
+
+			if typeof(b) == TYPE_OBJECT:
+				if not b.alive: continue
+				var last_interact = b.get_meta("last_aura_trail_interact") if b.has_meta("last_aura_trail_interact") else 0.0
+				if w_time - last_interact < 0.5: continue
+
+				var color = b.get_meta("cosmetic_aura_color") if b.has_meta("cosmetic_aura_color") else [1.0, 1.0, 1.0, 1.0]
+				var hit_trail = false
+				for t in active_trails:
+					if t.source_id == b.get_instance_id(): continue
+
+					var dx = b.x - t.x
+					var dy = b.y - t.y
+					var dist_sq = dx*dx + dy*dy
+					var rad = b.radius if "radius" in b else 15.0
+					var rad_sum = rad + t.radius
+
+					if dist_sq < rad_sum * rad_sum:
+						hit_trail = true
+						var same = true
+						for i in range(min(color.size(), t.color.size())):
+							if abs(color[i] - t.color[i]) > 0.01:
+								same = false
+								break
+						if same:
+							b.set_meta("aura_speed_buff_timer", 2.0)
+						else:
+							var stun = b.stun_timer if "stun_timer" in b else 0.0
+							if "stun_timer" in b:
+								b.stun_timer = max(stun, 1.0)
+						break
+				if hit_trail:
+					b.set_meta("last_aura_trail_interact", w_time)
+
+			elif typeof(b) == TYPE_DICTIONARY:
+				if not b.get("alive", false): continue
+				var last_interact = b.get("last_aura_trail_interact", 0.0)
+				if w_time - last_interact < 0.5: continue
+
+				var color = b.get("cosmetic_aura_color", [1.0, 1.0, 1.0, 1.0])
+				var hit_trail = false
+				for t in active_trails:
+					if t.source_id == b.hash(): continue
+
+					var dx = b.get("x", 0.0) - t.x
+					var dy = b.get("y", 0.0) - t.y
+					var dist_sq = dx*dx + dy*dy
+					var rad = b.get("radius", 15.0)
+					var rad_sum = rad + t.radius
+
+					if dist_sq < rad_sum * rad_sum:
+						hit_trail = true
+						var same = true
+						for i in range(min(color.size(), t.color.size())):
+							if abs(color[i] - t.color[i]) > 0.01:
+								same = false
+								break
+						if same:
+							b["aura_speed_buff_timer"] = 2.0
+						else:
+							var stun = b.get("stun_timer", 0.0)
+							b["stun_timer"] = max(stun, 1.0)
+						break
+				if hit_trail:
+					b["last_aura_trail_interact"] = w_time
+
 var GAME_MODES = {
+	"dash_aura_trail": DashAuraTrailMode.new(),
 	"expanding_aura_event": ExpandingAuraEventMode.new(),
 	"aura_well_hazard": AuraWellHazardMode.new(),
     "aura_link_royale": AuraLinkRoyaleMode.new(),
