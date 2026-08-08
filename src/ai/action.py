@@ -2016,6 +2016,20 @@ class Action:
 
     def _execute_internal(self, strategy: str, delta: float) -> None:
 
+        self.ball.in_gravity_nullifier_zone = False
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            for hazard in self.world.arena.hazards:
+                if getattr(hazard, "kind", "") == "gravity_nullifier_zone" and getattr(hazard, "active", True):
+                    import math
+                    dx = hazard.x - self.ball.x
+                    dy = hazard.y - self.ball.y
+                    dist_sq = dx*dx + dy*dy
+                    radius = getattr(hazard, "radius", 150.0)
+                    eff_radius = radius + getattr(self.ball, "radius", 15.0)
+                    if dist_sq <= eff_radius * eff_radius:
+                        self.ball.in_gravity_nullifier_zone = True
+                        break
+
         if hasattr(self.ball, "out_of_combat_timer"):
             self.ball.out_of_combat_timer += delta
 
@@ -7595,7 +7609,7 @@ class Action:
                                         b.x -= bnx * force
                                         b.y -= bny * force
 
-                    if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
+                    if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0 and not getattr(self.ball, "in_gravity_nullifier_zone", False):
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
                         dist_sq = dx*dx + dy*dy
@@ -11027,12 +11041,12 @@ class Action:
                                     if getattr(self.ball, "gravity_multiplier_timer", 0.0) > 0:
                                         pull_strength *= 10.0
 
-                                if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
+                                if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0 and not getattr(self.ball, "in_gravity_nullifier_zone", False):
                                     c = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
                                     mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else 1.0)
                                     self.ball.x += nx * pull_strength * mod
                                     self.ball.y += ny * pull_strength * mod
-                                if hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole", "gravity_well") and hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
+                                if hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole", "gravity_well") and hasattr(self.ball, "vx") and hasattr(self.ball, "vy") and not getattr(self.ball, "in_gravity_nullifier_zone", False):
                                     # Slingshot velocity addition
                                     import math as _math
                                     speed = _math.hypot(self.ball.vx, self.ball.vy)

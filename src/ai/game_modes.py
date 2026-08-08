@@ -17286,6 +17286,41 @@ class LocalizedZeroGravityZoneMode(GameMode):
                     b.is_frictionless = False
                     b.friction_multiplier = 1.0
 
+
+class GravityNullifierZoneMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Gravity Nullifier Zone"
+        self.description = "A hazard zone that disables all localized gravity pulls (from black holes, gravity wells, etc.) for entities inside it."
+        self.zone_timer = 0.0
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        if not hasattr(world, "arena") or not hasattr(world.arena, "hazards"):
+            return
+
+        self.zone_timer += delta
+        if self.zone_timer >= 5.0:
+            self.zone_timer = 0.0
+            import random
+            arena_width = getattr(world.arena, "width", 1000.0)
+            arena_height = getattr(world.arena, "height", 1000.0)
+
+            x = random.uniform(150.0, arena_width - 150.0)
+            y = random.uniform(150.0, arena_height - 150.0)
+            h_id = f"gravity_nullifier_zone_{random.randint(10000, 99999)}"
+
+            try:
+                from arena.procedural_arena import Hazard
+                zone = Hazard(id=h_id, x=x, y=y, radius=150.0, kind="gravity_nullifier_zone", damage=0.0)
+                zone.duration = 10.0
+                zone.active = True
+                world.arena.hazards.append(zone)
+            except ImportError:
+                zone = {"id": h_id, "x": x, "y": y, "radius": 150.0, "kind": "gravity_nullifier_zone", "damage": 0.0, "active": True, "duration": 10.0}
+                world.arena.hazards.append(zone)
+
 class ZeroGravityMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -37477,6 +37512,7 @@ GAME_MODES = {
     "mirror_walls": MirrorWallsMode(),
     "stamina_regen": StaminaRegenMode(),
     "localized_zero_gravity_zone": LocalizedZeroGravityZoneMode(),
+    "gravity_nullifier_zone": GravityNullifierZoneMode(),
     "zero_gravity": ZeroGravityMode(),
     "magnetic_collisions": MagneticCollisionsMode(),
     "cursed_aura_event": CursedAuraEventMode(),
