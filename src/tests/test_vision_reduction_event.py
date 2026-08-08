@@ -8,6 +8,7 @@ class MockBall:
         self.hp = 100
         self.base_perception_radius = 500
         self.perception_radius = 500
+        self.vision_radius = 500
         self.alive = True
         self.inventory = ""
         self.mutated_env = ""
@@ -45,20 +46,25 @@ def test_periodic_vision_reduction_event():
 
     assert ball1.vision_reduction_timer == 5.0
     assert ball1.perception_radius == 250.0
+    assert ball1.vision_radius == 250.0
     assert ball1.vision_reduction_applied == True
 
     assert ball2.vision_reduction_timer == 0.0 # countered
     assert ball2.perception_radius == 500.0
+    assert ball2.vision_radius == 500.0
 
     # Tick within the event
     event.tick(world, balls, 1.0)
     assert event.active_effect == True
     assert ball1.perception_radius == 250.0
-    assert ball2.perception_radius == 500.0  # Countered
+    assert ball1.vision_radius == 250.0
+    assert ball2.perception_radius == 500.0
+    assert ball2.vision_radius == 500.0  # Countered
     assert ball2.vision_reduction_applied == False
 
     # Tick past the event
     event.tick(world, balls, 4.1)
     assert event.active_effect == False
     assert ball1.perception_radius == 500.0
+    assert ball1.vision_radius == 500.0
     assert ball1.vision_reduction_applied == False
