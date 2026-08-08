@@ -37114,7 +37114,49 @@ class AuraLinkRoyaleMode(GameMode):
                             target.killer = b1.id
 
 
+
+class ExpandingAuraEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Expanding Aura Event"
+        self.description = "Player auras rapidly expand over time. The larger the aura, the more damage you deal, but taking damage instantly reduces the aura size back to minimum."
+        self.expand_rate = 0.5
+        self.max_scale = 3.0
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        for b in balls:
+            if not getattr(b, "alive", True):
+                continue
+
+            # Initialize state
+            if not hasattr(b, "_aura_scale"):
+                b._aura_scale = 1.0
+            if not hasattr(b, "_aura_prev_hp"):
+                b._aura_prev_hp = getattr(b, "hp", 100.0)
+            if not hasattr(b, "_orig_damage_multiplier"):
+                b._orig_damage_multiplier = getattr(b, "damage_multiplier", 1.0)
+
+            # Check for damage
+            current_hp = getattr(b, "hp", 100.0)
+            if current_hp < b._aura_prev_hp:
+                # Took damage, reset scale
+                b._aura_scale = 1.0
+
+            # Expand aura
+            b._aura_scale = min(self.max_scale, b._aura_scale + self.expand_rate * delta)
+
+            # Apply cosmetic scale
+            b.cosmetic_aura_scale = b._aura_scale
+
+            # Apply damage multiplier
+            b.damage_multiplier = b._orig_damage_multiplier * b._aura_scale
+
+            # Store HP for next tick
+            b._aura_prev_hp = current_hp
+
 GAME_MODES = {
+    "expanding_aura_event": ExpandingAuraEventMode(),
     "aura_link_royale": AuraLinkRoyaleMode(),
     "crimson_fog_event": CrimsonFogEventMode(),
     "nullification_zone": NullificationZoneMode(),
