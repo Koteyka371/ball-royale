@@ -26287,6 +26287,124 @@ func execute(strategy: String, delta: float):
         current_silence = float(self.ball.get_meta("silence_timer"))
 
     var damage_taken = start_hp - current_hp
+
+    # Allow tests to inject _mock_damage_taken directly for pure isolation
+    if "mock_damage_taken" in self.ball:
+        damage_taken = self.ball.mock_damage_taken
+        if "hp" in self.ball: self.ball.hp = current_hp - damage_taken
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("hp", current_hp - damage_taken)
+        elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["hp"] = current_hp - damage_taken
+        current_hp = current_hp - damage_taken
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("mock_damage_taken"):
+        damage_taken = self.ball.get_meta("mock_damage_taken")
+        if "hp" in self.ball: self.ball.hp = current_hp - damage_taken
+        elif self.ball.has_method("set_meta"): self.ball.set_meta("hp", current_hp - damage_taken)
+        current_hp = current_hp - damage_taken
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("mock_damage_taken"):
+        damage_taken = self.ball["mock_damage_taken"]
+        self.ball["hp"] = current_hp - damage_taken
+        current_hp = current_hp - damage_taken
+
+    # Decoy two-way sharing (damage and buffs)
+    var is_decoy = false
+    if "is_decoy" in self.ball: is_decoy = self.ball.is_decoy
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("is_decoy"): is_decoy = self.ball.get_meta("is_decoy")
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("is_decoy"): is_decoy = self.ball["is_decoy"]
+
+    var owner_id = null
+    if "owner_id" in self.ball: owner_id = self.ball.owner_id
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("owner_id"): owner_id = self.ball.get_meta("owner_id")
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("owner_id"): owner_id = self.ball["owner_id"]
+
+    if is_decoy and owner_id != null:
+        var owner = null
+        if "balls" in self.world:
+            for b in self.world.balls:
+                var bid = null
+                if "id" in b: bid = b.id
+                elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("id"): bid = b.get_meta("id")
+                elif typeof(b) == TYPE_DICTIONARY and b.has("id"): bid = b["id"]
+
+                var balive = true
+                if "alive" in b: balive = b.alive
+                elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("alive"): balive = b.get_meta("alive")
+                elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): balive = b["alive"]
+
+                if bid == owner_id and balive:
+                    owner = b
+                    break
+
+        if owner != null:
+            # Share Damage Taken (Decoy -> Owner)
+            if damage_taken > 0:
+                var shared_damage = damage_taken * 0.5
+                if typeof(owner) == TYPE_OBJECT and owner.has_method("take_damage"):
+                    owner.take_damage(shared_damage)
+                else:
+                    var ohp = 100.0
+                    if "hp" in owner: ohp = owner.hp
+                    elif typeof(owner) == TYPE_OBJECT and owner.has_method("has_meta") and owner.has_meta("hp"): ohp = owner.get_meta("hp")
+                    elif typeof(owner) == TYPE_DICTIONARY and owner.has("hp"): ohp = owner["hp"]
+
+                    ohp -= shared_damage
+
+                    if "hp" in owner: owner.hp = ohp
+                    elif typeof(owner) == TYPE_OBJECT and owner.has_method("set_meta"): owner.set_meta("hp", ohp)
+                    elif typeof(owner) == TYPE_DICTIONARY: owner["hp"] = ohp
+
+                    if ohp <= 0:
+                        if "alive" in owner: owner.alive = false
+                        elif typeof(owner) == TYPE_OBJECT and owner.has_method("set_meta"): owner.set_meta("alive", false)
+                        elif typeof(owner) == TYPE_DICTIONARY: owner["alive"] = false
+
+                if "events" in self.world:
+                    var dx = 0.0
+                    var dy = 0.0
+                    if "x" in self.ball: dx = self.ball.x
+                    if "y" in self.ball: dy = self.ball.y
+                    var ox = 0.0
+                    var oy = 0.0
+                    if "x" in owner: ox = owner.x
+                    if "y" in owner: oy = owner.y
+                    self.world.events.append({"type": "visual_effect", "data": {"type": "damage_share", "x": dx, "y": dy, "target_x": ox, "target_y": oy}})
+
+            # Share Healing Received
+            elif damage_taken < 0:
+                var shared_heal = -damage_taken * 0.5
+                var ohp = 100.0
+                var omax_hp = 100.0
+                if "hp" in owner: ohp = owner.hp
+                elif typeof(owner) == TYPE_OBJECT and owner.has_method("has_meta") and owner.has_meta("hp"): ohp = owner.get_meta("hp")
+                elif typeof(owner) == TYPE_DICTIONARY and owner.has("hp"): ohp = owner["hp"]
+
+                if "max_hp" in owner: omax_hp = owner.max_hp
+                elif typeof(owner) == TYPE_OBJECT and owner.has_method("has_meta") and owner.has_meta("max_hp"): omax_hp = owner.get_meta("max_hp")
+                elif typeof(owner) == TYPE_DICTIONARY and owner.has("max_hp"): omax_hp = owner["max_hp"]
+
+                ohp = min(omax_hp, ohp + shared_heal)
+
+                if "hp" in owner: owner.hp = ohp
+                elif typeof(owner) == TYPE_OBJECT and owner.has_method("set_meta"): owner.set_meta("hp", ohp)
+                elif typeof(owner) == TYPE_DICTIONARY: owner["hp"] = ohp
+
+            # Share Buffs
+            var buff_timers = ["damage_boost_timer", "speed_boost_timer", "shield_booster_timer", "vampiric_aura_timer", "stealth_booster_timer", "invulnerable_timer"]
+            for buff in buff_timers:
+                var decoy_buff = 0.0
+                if buff in self.ball: decoy_buff = self.ball.get(buff)
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta(buff): decoy_buff = self.ball.get_meta(buff)
+                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has(buff): decoy_buff = self.ball[buff]
+
+                if decoy_buff > 0.0:
+                    var owner_buff = 0.0
+                    if buff in owner: owner_buff = owner.get(buff)
+                    elif typeof(owner) == TYPE_OBJECT and owner.has_method("has_meta") and owner.has_meta(buff): owner_buff = owner.get_meta(buff)
+                    elif typeof(owner) == TYPE_DICTIONARY and owner.has(buff): owner_buff = owner[buff]
+
+                    if decoy_buff > owner_buff:
+                        if buff in owner: owner.set(buff, decoy_buff)
+                        elif typeof(owner) == TYPE_OBJECT and owner.has_method("set_meta"): owner.set_meta(buff, decoy_buff)
+                        elif typeof(owner) == TYPE_DICTIONARY: owner[buff] = decoy_buff
     var stun_taken = current_stun - start_stun
     var silence_taken = current_silence - start_silence
 
