@@ -47138,6 +47138,69 @@ class TornadoHazardMode(GameMode):
 
 GAME_MODES['tornado_hazard'] = TornadoHazardMode()
 
+class DimensionSplitMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Dimension Split"
+        self.description = "The arena is split down the middle. Passing through the central divide mirrors all properties (speed, health changes) until returning to the original side, creating mind-bending chase scenarios."
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        arena_width = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+        center_x = arena_width / 2.0
+
+        for b in balls:
+            if not getattr(b, "alive", True):
+                continue
+
+            # Determine which side the ball is currently on
+            current_side = "left" if getattr(b, "x", center_x) < center_x else "right"
+
+            # Track original side
+            if not hasattr(b, "split_origin_side"):
+                b.split_origin_side = current_side
+
+            is_on_original_side = (current_side == b.split_origin_side)
+
+            # HP diff inversion
+            current_hp = getattr(b, "hp", 100)
+            last_hp = getattr(b, "_split_last_hp", current_hp)
+            hp_diff = current_hp - last_hp
+
+            if not is_on_original_side:
+                # Mirror controls
+                b.invert_timer = max(getattr(b, "invert_timer", 0.0), 0.1)
+
+                if hp_diff != 0:
+                    # Invert health changes (damage heals, heals damage)
+                    b.hp = last_hp - hp_diff
+                    # Cap hp at max_hp to avoid infinite scaling from small damages
+                    if hasattr(b, "max_hp"):
+                        try:
+                            b.hp = min(float(b.hp), float(b.max_hp))
+                        except Exception:
+                            pass
+                    # Don't let it drop below 0 due to heal inversion
+                    b.hp = max(b.hp, 0.0)
+
+                # Mirror speed changes continuously
+                current_speed = getattr(b, "speed", 100.0)
+                last_speed = getattr(b, "_split_last_speed", current_speed)
+                speed_diff = current_speed - last_speed
+
+                if speed_diff != 0:
+                    # Invert the speed change
+                    b.speed = last_speed - speed_diff
+                    b.speed = max(b.speed, 10.0)  # Don't let speed go zero or negative
+
+
+            b._split_last_hp = getattr(b, "hp", 100)
+            b._split_last_speed = getattr(b, "speed", 100.0)
+
+GAME_MODES['dimension_split'] = DimensionSplitMode()
+
+
 class MirrorArenaMode(GameMode):
     def __init__(self):
         super().__init__()

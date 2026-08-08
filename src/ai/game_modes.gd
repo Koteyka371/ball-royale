@@ -60210,6 +60210,122 @@ class AuraLinkRoyaleMode extends GameMode:
                                 if "killer" in target:
                                     target.killer = b1_id
 
+
+class DimensionSplitMode extends GameMode:
+	func _init() -> void:
+		name = "Dimension Split"
+		description = "The arena is split down the middle. Passing through the central divide mirrors all properties (speed, health changes) until returning to the original side, creating mind-bending chase scenarios."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		var arena_width = 1000.0
+		if typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("width"):
+				arena_width = float(world.arena.width)
+			elif typeof(world.arena) == TYPE_OBJECT and "width" in world.arena:
+				arena_width = float(world.arena.width)
+		elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("width"):
+				arena_width = float(world.arena.width)
+			elif typeof(world.arena) == TYPE_OBJECT and "width" in world.arena:
+				arena_width = float(world.arena.width)
+
+		var center_x = arena_width / 2.0
+
+		for b in balls:
+			var is_alive = true
+			if typeof(b) == TYPE_DICTIONARY and b.has("alive"):
+				is_alive = b.alive
+			elif typeof(b) == TYPE_OBJECT and "alive" in b:
+				is_alive = b.alive
+
+			if not is_alive:
+				continue
+
+			var bx = center_x
+			if typeof(b) == TYPE_DICTIONARY and b.has("x"):
+				bx = b.x
+			elif typeof(b) == TYPE_OBJECT and "x" in b:
+				bx = b.x
+
+			var current_side = "left"
+			if bx >= center_x:
+				current_side = "right"
+
+			var split_origin_side = null
+			if typeof(b) == TYPE_DICTIONARY:
+				if not b.has("split_origin_side"):
+					b["split_origin_side"] = current_side
+				split_origin_side = b.split_origin_side
+			elif typeof(b) == TYPE_OBJECT:
+				if not b.has_meta("split_origin_side"):
+					b.set_meta("split_origin_side", current_side)
+				split_origin_side = b.get_meta("split_origin_side")
+
+			var is_on_original_side = (current_side == split_origin_side)
+
+			var current_hp = 100.0
+			var last_hp = 100.0
+			var max_hp = 100.0
+			var current_speed = 100.0
+			var base_speed = 100.0
+			var invert_timer = 0.0
+
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.has("hp"): current_hp = b.hp
+				if b.has("_split_last_hp"): last_hp = b._split_last_hp
+				else: last_hp = current_hp
+				if b.has("max_hp"): max_hp = b.max_hp
+				if b.has("speed"): current_speed = b.speed
+				if b.has("base_speed"): base_speed = b.base_speed
+				if b.has("invert_timer"): invert_timer = b.invert_timer
+			elif typeof(b) == TYPE_OBJECT:
+				if "hp" in b: current_hp = b.hp
+				if b.has_meta("_split_last_hp"): last_hp = b.get_meta("_split_last_hp")
+				else: last_hp = current_hp
+				if "max_hp" in b: max_hp = b.max_hp
+				if "speed" in b: current_speed = b.speed
+				if "base_speed" in b: base_speed = b.base_speed
+				if "invert_timer" in b: invert_timer = b.invert_timer
+
+			var hp_diff = current_hp - last_hp
+
+			if not is_on_original_side:
+				invert_timer = max(invert_timer, 0.1)
+
+				if hp_diff != 0:
+					current_hp = last_hp - hp_diff
+					current_hp = min(current_hp, max_hp)
+					current_hp = max(current_hp, 0.0)
+
+				var last_speed = current_speed
+				if typeof(b) == TYPE_DICTIONARY:
+					if b.has("_split_last_speed"): last_speed = b._split_last_speed
+				elif typeof(b) == TYPE_OBJECT:
+					if b.has_meta("_split_last_speed"): last_speed = b.get_meta("_split_last_speed")
+
+				var speed_diff = current_speed - last_speed
+				if speed_diff != 0:
+					current_speed = last_speed - speed_diff
+					current_speed = max(current_speed, 10.0)
+
+				if typeof(b) == TYPE_DICTIONARY:
+					b["hp"] = current_hp
+					b["speed"] = current_speed
+					b["invert_timer"] = invert_timer
+				elif typeof(b) == TYPE_OBJECT:
+					b.hp = current_hp
+					b.speed = current_speed
+					b.invert_timer = invert_timer
+
+			if typeof(b) == TYPE_DICTIONARY:
+				b["_split_last_hp"] = current_hp
+				b["_split_last_speed"] = current_speed
+			elif typeof(b) == TYPE_OBJECT:
+				b.set_meta("_split_last_hp", current_hp)
+				b.set_meta("_split_last_speed", current_speed)
+
 var GAME_MODES = {
     "aura_link_royale": AuraLinkRoyaleMode.new(),
 	"boundary_builder": BoundaryBuilderMode.new(),
@@ -81123,3 +81239,5 @@ class ReversingGrappleNodeMode extends GameMode:
 					})
 
 GAME_MODES["reversing_grapple_node"] = ReversingGrappleNodeMode.new()
+
+GAME_MODES["dimension_split"] = DimensionSplitMode.new()
