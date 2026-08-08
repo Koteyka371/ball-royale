@@ -60236,7 +60236,231 @@ class AuraLinkRoyaleMode extends GameMode:
                                 if "killer" in target:
                                     target.killer = b1_id
 
+
+class MeteorFragmentsMode extends GameMode:
+	var meteor_timer: float = 2.0
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		meteor_timer -= delta
+
+		if meteor_timer <= 0.0:
+			meteor_timer = randf_range(2.0, 4.0)
+			if typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+				var aw = 2000.0
+				var ah = 2000.0
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					aw = world.arena.get("width", 2000.0)
+					ah = world.arena.get("height", 2000.0)
+				else:
+					aw = world.arena.get("width") if "width" in world.arena else 2000.0
+					ah = world.arena.get("height") if "height" in world.arena else 2000.0
+
+				var h_x = randf_range(200.0, aw - 200.0)
+				var h_y = randf_range(200.0, ah - 200.0)
+
+				var new_meteor = {
+					"id": randi() % 900000 + 100000,
+					"x": h_x,
+					"y": h_y,
+					"radius": 25.0,
+					"kind": "meteor_falling",
+					"damage": 0.0,
+					"timer": 1.0
+				}
+
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					if not world.arena.has("hazards"):
+						world.arena["hazards"] = []
+					world.arena.hazards.append(new_meteor)
+				else:
+					if "hazards" in world.arena:
+						world.arena.hazards.append(new_meteor)
+			elif typeof(world) == TYPE_OBJECT and world.get("arena") != null:
+				var aw = 2000.0
+				var ah = 2000.0
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					aw = world.arena.get("width", 2000.0)
+					ah = world.arena.get("height", 2000.0)
+				else:
+					aw = world.arena.get("width") if "width" in world.arena else 2000.0
+					ah = world.arena.get("height") if "height" in world.arena else 2000.0
+
+				var h_x = randf_range(200.0, aw - 200.0)
+				var h_y = randf_range(200.0, ah - 200.0)
+
+				var new_meteor = {
+					"id": randi() % 900000 + 100000,
+					"x": h_x,
+					"y": h_y,
+					"radius": 25.0,
+					"kind": "meteor_falling",
+					"damage": 0.0,
+					"timer": 1.0
+				}
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					if not world.arena.has("hazards"):
+						world.arena["hazards"] = []
+					world.arena.hazards.append(new_meteor)
+				else:
+					if "hazards" in world.arena:
+						world.arena.hazards.append(new_meteor)
+
+		var hazards_to_remove = []
+		var new_fragments = []
+
+		var arena_hazards = []
+		if typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+				arena_hazards = world.arena.hazards
+			elif typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+				arena_hazards = world.arena.hazards
+		elif typeof(world) == TYPE_OBJECT and world.get("arena") != null:
+			if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+				arena_hazards = world.arena.hazards
+			elif typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+				arena_hazards = world.arena.hazards
+
+		for h in arena_hazards:
+			var h_kind = ""
+			if typeof(h) == TYPE_DICTIONARY:
+				h_kind = h.get("kind", "")
+			else:
+				h_kind = h.get("kind") if "kind" in h else ""
+
+			if h_kind == "meteor_falling":
+				var timer = 0.0
+				if typeof(h) == TYPE_DICTIONARY:
+					timer = h.get("timer", 0.0)
+					timer -= delta
+					if timer <= 0.0:
+						hazards_to_remove.append(h)
+						var frag = {
+							"id": randi() % 900000 + 100000,
+							"x": h.get("x", 0.0),
+							"y": h.get("y", 0.0),
+							"radius": 30.0,
+							"kind": "glowing_fragment",
+							"damage": 0.0,
+							"duration": 10.0
+						}
+						new_fragments.append(frag)
+					else:
+						h["timer"] = timer
+				else:
+					timer = h.get("timer") if "timer" in h else 0.0
+					timer -= delta
+					if timer <= 0.0:
+						hazards_to_remove.append(h)
+						var frag = {
+							"id": randi() % 900000 + 100000,
+							"x": h.get("x") if "x" in h else 0.0,
+							"y": h.get("y") if "y" in h else 0.0,
+							"radius": 30.0,
+							"kind": "glowing_fragment",
+							"damage": 0.0,
+							"duration": 10.0
+						}
+						new_fragments.append(frag)
+					else:
+						if h.has_method("set"): h.set("timer", timer)
+						elif "timer" in h: h.timer = timer
+
+			elif h_kind == "glowing_fragment":
+				var duration = 0.0
+				if typeof(h) == TYPE_DICTIONARY:
+					duration = h.get("duration", 0.0)
+					duration -= delta
+					if duration <= 0.0:
+						hazards_to_remove.append(h)
+					else:
+						h["duration"] = duration
+						var h_x = h.get("x", 0.0)
+						var h_y = h.get("y", 0.0)
+						var h_rad = h.get("radius", 30.0)
+						var absorbed = false
+						for b in balls:
+							var alive = false
+							if typeof(b) == TYPE_DICTIONARY: alive = b.get("alive", true)
+							else: alive = b.get("alive") if "alive" in b else true
+
+							if not alive: continue
+
+							var b_x = 0.0
+							var b_y = 0.0
+							var b_rad = 15.0
+
+							if typeof(b) == TYPE_DICTIONARY:
+								b_x = b.get("x", 0.0)
+								b_y = b.get("y", 0.0)
+								b_rad = b.get("radius", 15.0)
+							else:
+								b_x = b.get("x") if "x" in b else 0.0
+								b_y = b.get("y") if "y" in b else 0.0
+								b_rad = b.get("radius") if "radius" in b else 15.0
+
+							var dist_sq = (b_x - h_x)*(b_x - h_x) + (b_y - h_y)*(b_y - h_y)
+							if dist_sq <= (b_rad + h_rad)*(b_rad + h_rad):
+								if typeof(b) == TYPE_DICTIONARY:
+									b["damage_boost_timer"] = 5.0
+								else:
+									if "damage_boost_timer" in b: b.damage_boost_timer = 5.0
+									elif b.has_method("set"): b.set("damage_boost_timer", 5.0)
+								absorbed = true
+								break
+						if absorbed:
+							hazards_to_remove.append(h)
+				else:
+					duration = h.get("duration") if "duration" in h else 0.0
+					duration -= delta
+					if duration <= 0.0:
+						hazards_to_remove.append(h)
+					else:
+						if h.has_method("set"): h.set("duration", duration)
+						elif "duration" in h: h.duration = duration
+
+						var h_x = h.get("x") if "x" in h else 0.0
+						var h_y = h.get("y") if "y" in h else 0.0
+						var h_rad = h.get("radius") if "radius" in h else 30.0
+						var absorbed = false
+						for b in balls:
+							var alive = false
+							if typeof(b) == TYPE_DICTIONARY: alive = b.get("alive", true)
+							else: alive = b.get("alive") if "alive" in b else true
+
+							if not alive: continue
+
+							var b_x = 0.0
+							var b_y = 0.0
+							var b_rad = 15.0
+
+							if typeof(b) == TYPE_DICTIONARY:
+								b_x = b.get("x", 0.0)
+								b_y = b.get("y", 0.0)
+								b_rad = b.get("radius", 15.0)
+							else:
+								b_x = b.get("x") if "x" in b else 0.0
+								b_y = b.get("y") if "y" in b else 0.0
+								b_rad = b.get("radius") if "radius" in b else 15.0
+
+							var dist_sq = (b_x - h_x)*(b_x - h_x) + (b_y - h_y)*(b_y - h_y)
+							if dist_sq <= (b_rad + h_rad)*(b_rad + h_rad):
+								if typeof(b) == TYPE_DICTIONARY:
+									b["damage_boost_timer"] = 5.0
+								else:
+									if "damage_boost_timer" in b: b.damage_boost_timer = 5.0
+									elif b.has_method("set"): b.set("damage_boost_timer", 5.0)
+								absorbed = true
+								break
+						if absorbed:
+							hazards_to_remove.append(h)
+
+		for h in hazards_to_remove:
+			arena_hazards.erase(h)
+		for f in new_fragments:
+			arena_hazards.append(f)
+
 var GAME_MODES = {
+	"meteor_fragments": MeteorFragmentsMode.new(),
 	"expanding_aura_event": ExpandingAuraEventMode.new(),
 	"aura_well_hazard": AuraWellHazardMode.new(),
     "aura_link_royale": AuraLinkRoyaleMode.new(),

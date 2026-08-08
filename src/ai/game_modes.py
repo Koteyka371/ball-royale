@@ -37171,7 +37171,115 @@ class ExpandingAuraEventMode(GameMode):
             # Store HP for next tick
             b._aura_prev_hp = current_hp
 
+
+class MeteorFragmentsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.meteor_timer = 2.0
+
+    def tick(self, world, balls, delta=0.016):
+        import math, random
+
+        # We need a hazard class fallback if ProceduralArena Hazard doesn't fit
+        class _DynamicHazard:
+            def __init__(self, id, x, y, radius, kind, damage):
+                self.id = id
+                self.x = x
+                self.y = y
+                self.radius = radius
+                self.kind = kind
+                self.damage = damage
+
+        self.meteor_timer -= delta
+        if self.meteor_timer <= 0.0:
+            self.meteor_timer = random.uniform(2.0, 4.0)
+            if hasattr(world, "arena"):
+                ax = getattr(world.arena, "x", 0.0)
+                ay = getattr(world.arena, "y", 0.0)
+                aw = getattr(world.arena, "width", 2000.0)
+                ah = getattr(world.arena, "height", 2000.0)
+
+                h_x = ax + random.uniform(200, aw - 200)
+                h_y = ay + random.uniform(200, ah - 200)
+
+                h_id = random.randint(100000, 999999)
+                new_meteor = _DynamicHazard(h_id, h_x, h_y, 25.0, "meteor_falling", 0.0)
+                setattr(new_meteor, "timer", 1.0)
+
+                if not hasattr(world.arena, "hazards"):
+                    world.arena.hazards = []
+                world.arena.hazards.append(new_meteor)
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            hazards_to_remove = []
+            new_fragments = []
+
+            for h in world.arena.hazards:
+                is_dict = isinstance(h, dict)
+                h_kind = h.get("kind", "") if is_dict else getattr(h, "kind", "")
+
+                if h_kind == "meteor_falling":
+                    timer = h.get("timer", 0.0) if is_dict else getattr(h, "timer", 0.0)
+                    timer -= delta
+                    if timer <= 0.0:
+                        hazards_to_remove.append(h)
+
+                        hx = h.get("x", 0.0) if is_dict else getattr(h, "x", 0.0)
+                        hy = h.get("y", 0.0) if is_dict else getattr(h, "y", 0.0)
+
+                        f_id = random.randint(100000, 999999)
+                        frag = _DynamicHazard(f_id, hx, hy, 30.0, "glowing_fragment", 0.0)
+                        setattr(frag, "duration", 10.0)
+                        new_fragments.append(frag)
+                    else:
+                        if is_dict:
+                            h["timer"] = timer
+                        else:
+                            setattr(h, "timer", timer)
+
+                elif h_kind == "glowing_fragment":
+                    duration = h.get("duration", 0.0) if is_dict else getattr(h, "duration", 0.0)
+                    duration -= delta
+
+                    if duration <= 0.0:
+                        hazards_to_remove.append(h)
+                    else:
+                        if is_dict:
+                            h["duration"] = duration
+                        else:
+                            setattr(h, "duration", duration)
+
+                        # Collision check with balls
+                        hx = h.get("x", 0.0) if is_dict else getattr(h, "x", 0.0)
+                        hy = h.get("y", 0.0) if is_dict else getattr(h, "y", 0.0)
+                        h_rad = h.get("radius", 30.0) if is_dict else getattr(h, "radius", 30.0)
+
+                        absorbed = False
+                        for b in balls:
+                            if not getattr(b, "alive", True):
+                                continue
+                            b_rad = getattr(b, "radius", 15.0)
+                            b_x = getattr(b, "x", 0.0)
+                            b_y = getattr(b, "y", 0.0)
+
+                            dist_sq = (b_x - hx)**2 + (b_y - hy)**2
+                            if dist_sq <= (b_rad + h_rad)**2:
+                                # Absorb
+                                b.damage_boost_timer = 5.0
+                                absorbed = True
+                                break
+
+                        if absorbed:
+                            hazards_to_remove.append(h)
+
+            for h in hazards_to_remove:
+                if h in world.arena.hazards:
+                    world.arena.hazards.remove(h)
+            for f in new_fragments:
+                world.arena.hazards.append(f)
+
 GAME_MODES = {
+    'meteor_fragments': MeteorFragmentsMode(),
     "expanding_aura_event": ExpandingAuraEventMode(),
     "aura_link_royale": AuraLinkRoyaleMode(),
     "crimson_fog_event": CrimsonFogEventMode(),
