@@ -1463,7 +1463,10 @@ func _start_vote(balls: Array):
             {"type": "global_stat_modifier", "options": ["global_speed_up", "global_damage_up", "global_shield_up"]},
             {"type": "global_hazard_zone", "options": ["low_gravity", "slippery_ice", "magnetic_field"]}
         ]
-        chosen_vote = vote_types[randi() % vote_types.size()]
+        if randf() < 0.05:
+            chosen_vote = {"type": "extreme_event", "options": ["massive_black_hole", "extreme_weather"]}
+        else:
+            chosen_vote = vote_types[randi() % vote_types.size()]
 
     active_vote = {
         "type": chosen_vote["type"],
@@ -1572,6 +1575,36 @@ func _resolve_vote(balls: Array):
                     elif typeof(b) == TYPE_DICTIONARY:
                         b_id = b.get("id", -1)
                     world.add_event("visual_effect", {"type": "fireworks", "target_id": b_id})
+        elif vote_type == "extreme_event":
+            if world != null and world.has_method("add_event"):
+                if winning_option == "massive_black_hole":
+                    var cx = 500.0
+                    var cy = 500.0
+                    var r = 2000.0
+                    if typeof(world) == TYPE_OBJECT and world.get("arena") != null:
+                        var arena = world.get("arena")
+                        var w = arena.get("width") if arena.get("width") != null else 1000.0
+                        var h = arena.get("height") if arena.get("height") != null else 1000.0
+                        cx = w / 2.0
+                        cy = h / 2.0
+                    elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+                        var arena = world["arena"]
+                        var w = arena.get("width", 1000.0)
+                        var h = arena.get("height", 1000.0)
+                        cx = w / 2.0
+                        cy = h / 2.0
+                    world.add_event("spawn_hazard", {
+                        "x": cx,
+                        "y": cy,
+                        "kind": "massive_black_hole",
+                        "radius": r
+                    })
+                    world.add_event("crowd_cheer", {"message": "A MASSIVE BLACK HOLE HAS BEEN SPAWNED!", "volume": 2.0})
+                elif winning_option == "extreme_weather":
+                    var ext_weathers = ["hurricane", "blizzard", "meteor_shower", "tsunami"]
+                    var new_weather = ext_weathers[randi() % ext_weathers.size()]
+                    world.add_event("weather_transition", {"new_weather": new_weather})
+                    world.add_event("crowd_cheer", {"message": "EXTREME WEATHER INCOMING!", "volume": 2.0})
         elif vote_type == "global_hazard_zone":
             if world != null and world.has_method("add_event"):
                 var cx = 500.0
