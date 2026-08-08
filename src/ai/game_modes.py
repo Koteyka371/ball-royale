@@ -39455,7 +39455,7 @@ class SolarFlareMode(GameMode):
         self.flare_interval = 20.0
         self.flare_duration = 5.0
         self.is_flaring = False
-        self.excluded_hazards = ["safe_zone_teleport_booster", "breaching_booster", "damage_link_booster", "healing_spring", "booster", "drone_item", "reverse_gravity_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "laser_sight_attachment", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "shield_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_shield_booster", "nemesis_drone_booster", "invert_booster", "aura_booster", "aura_amplifier_trap_booster", "exploding_booster", "debuff_booster", "forecast_booster", "teleporter", "quantum_teleporter", "grapple_node", "slingshot_node", "decoy_flare_item", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "deployable_time_anomaly", "deployable_decoy_swap_item", "pet_item", "artillery_pet_item", "hazard_jar_item", "ammo_pack", "orbital_mine_immunity_booster", "safe_zone_radar"]
+        self.excluded_hazards = ["safe_zone_teleport_booster", "breaching_booster", "damage_link_booster", "healing_spring", "booster", "drone_item", "reverse_gravity_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "laser_sight_attachment", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "shield_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_shield_booster", "nemesis_drone_booster", "invert_booster", "aura_booster", "aura_amplifier_trap_booster", "exploding_booster", "debuff_booster", "forecast_booster", "teleporter", "quantum_teleporter", "grapple_node", "slingshot_node", "reversing_grapple_node", "reversing_grapple_node", "decoy_flare_item", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "deployable_time_anomaly", "deployable_decoy_swap_item", "pet_item", "artillery_pet_item", "hazard_jar_item", "ammo_pack", "orbital_mine_immunity_booster", "safe_zone_radar"]
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
@@ -42344,6 +42344,64 @@ class SlingshotNodeMode(GameMode):
                     world.arena.hazards.append(new_node)
 
 GAME_MODES["slingshot_node"] = SlingshotNodeMode()
+
+class ReversingGrappleNodeMode(GameMode):
+    """Spawns reversing grapple nodes periodically."""
+    def __init__(self):
+        super().__init__()
+        self.name = "Reversing Grapple Nodes"
+        self.description = "Specific reversing grapple nodes floating in the arena. They pull you towards them when you shoot a grappling hook, but when another player touches them, they reverse and push you away at high speeds."
+        self.spawn_timer = 5.0
+        import random
+        self.random = random
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.spawn_timer = 5.0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        self.spawn_timer -= delta
+        if self.spawn_timer <= 0:
+            self.spawn_timer = 15.0
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                arena_width = getattr(world.arena, "width", 1000)
+                arena_height = getattr(world.arena, "height", 1000)
+
+                class ReversingGrappleNode:
+                    def __init__(self, id, x, y):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.kind = "reversing_grapple_node"
+                        self.radius = 15.0
+                        self.active = True
+                        self.damage = 0.0
+                        self.is_reversed = False
+
+                if hasattr(self.random, "randint"):
+                    n_id = getattr(world, "next_id", 9999) + self.random.randint(1, 10000)
+                    nx = float(self.random.randint(200, int(arena_width) - 200))
+                    ny = float(self.random.randint(200, int(arena_height) - 200))
+
+                    try:
+                        from arena.arena_types import Hazard
+                        new_node = Hazard(id=n_id, x=nx, y=ny, radius=15.0, kind="reversing_grapple_node", damage=0.0)
+                        new_node.is_reversed = False
+                    except:
+                        new_node = ReversingGrappleNode(n_id, nx, ny)
+
+                    world.arena.hazards.append(new_node)
+
+                    if hasattr(world, "events"):
+                        world.events.append({
+                            "type": "hazard_spawn",
+                            "kind": "reversing_grapple_node",
+                            "x": nx,
+                            "y": ny
+                        })
+
+GAME_MODES["reversing_grapple_node"] = ReversingGrappleNodeMode()
 
 
 class OrbitalMinesMode(GameMode):

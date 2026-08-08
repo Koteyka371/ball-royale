@@ -5539,7 +5539,7 @@ class Action:
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for h in self.world.arena.hazards:
                     # Large environmental hazard or grapple_node
-                    if getattr(h, "radius", 0) >= 30.0 or getattr(h, "kind", "") in ["grapple_node", "slingshot_node"]:
+                    if getattr(h, "radius", 0) >= 30.0 or getattr(h, "kind", "") in ["grapple_node", "slingshot_node", "reversing_grapple_node", "reversing_grapple_node"]:
                         dist_sq = (h.x - self.ball.x)**2 + (h.y - self.ball.y)**2
                         grapple_targets.append({"target": h, "type": "hazard", "dist_sq": dist_sq, "x": h.x, "y": h.y})
 
@@ -5575,14 +5575,23 @@ class Action:
                         target_b.x -= (dx / dist) * (pull_dist * 0.2)
                         target_b.y -= (dy / dist) * (pull_dist * 0.2)
                     else:
-                        if closest_target_data["type"] == "hazard" and getattr(closest_target_data["target"], "kind", "") == "slingshot_node":
+                        is_hazard = (closest_target_data["type"] == "hazard")
+                        hazard_kind = getattr(closest_target_data["target"], "kind", "") if is_hazard else ""
+
+                        if is_hazard and hazard_kind == "slingshot_node":
                             # Slingshot user away from target at extreme speed
                             slingshot_boost = 3000.0
                             self.ball.vx = getattr(self.ball, "vx", 0.0) - (dx / dist) * slingshot_boost
                             self.ball.vy = getattr(self.ball, "vy", 0.0) - (dy / dist) * slingshot_boost
                             self.ball.is_frictionless = True # To allow extreme launch without immediate drag stop
+                        elif is_hazard and hazard_kind == "reversing_grapple_node" and getattr(closest_target_data["target"], "is_reversed", False):
+                            # Slingshot user away from reversed grapple node
+                            slingshot_boost = 3000.0
+                            self.ball.vx = getattr(self.ball, "vx", 0.0) - (dx / dist) * slingshot_boost
+                            self.ball.vy = getattr(self.ball, "vy", 0.0) - (dy / dist) * slingshot_boost
+                            self.ball.is_frictionless = True
                         else:
-                            # Pull user towards geometry (hazard/grapple_node)
+                            # Pull user towards geometry (hazard/grapple_node/unreversed reversing_grapple_node)
                             self.ball.x += (dx / dist) * pull_dist
                             self.ball.y += (dy / dist) * pull_dist
 
@@ -19106,14 +19115,31 @@ class Action:
                         dx = closest_target.x - self.ball.x
                         dy = closest_target.y - self.ball.y
 
-                        # Pull self towards hazard quickly
-                        pull_speed = 800.0
+                        if getattr(closest_target, "kind", "") == "reversing_grapple_node" and getattr(closest_target, "is_reversed", False):
+                            # Slingshot push away
+                            push_speed = 3000.0
+                            nx = dx / dist
+                            ny = dy / dist
+                            self.ball.vx = -nx * push_speed
+                            self.ball.vy = -ny * push_speed
+                            self.ball.is_frictionless = True
+                        elif getattr(closest_target, "kind", "") == "slingshot_node":
+                            # Slingshot push away
+                            push_speed = 3000.0
+                            nx = dx / dist
+                            ny = dy / dist
+                            self.ball.vx = -nx * push_speed
+                            self.ball.vy = -ny * push_speed
+                            self.ball.is_frictionless = True
+                        else:
+                            # Pull self towards hazard quickly
+                            pull_speed = 800.0
 
-                        nx = dx / dist
-                        ny = dy / dist
+                            nx = dx / dist
+                            ny = dy / dist
 
-                        self.ball.vx = nx * pull_speed
-                        self.ball.vy = ny * pull_speed
+                            self.ball.vx = nx * pull_speed
+                            self.ball.vy = ny * pull_speed
 
                         if hasattr(self.world, "events"):
                             self.world.events.append({
@@ -21832,6 +21858,11 @@ class Action:
                                 self.ball.vx = getattr(self.ball, "vx", 0.0) - (dx / dist) * slingshot_boost
                                 self.ball.vy = getattr(self.ball, "vy", 0.0) - (dy / dist) * slingshot_boost
                                 self.ball.is_frictionless = True
+                            elif getattr(closest_target, "kind", "") == "reversing_grapple_node" and getattr(closest_target, "is_reversed", False):
+                                slingshot_boost = 3000.0
+                                self.ball.vx = getattr(self.ball, "vx", 0.0) - (dx / dist) * slingshot_boost
+                                self.ball.vy = getattr(self.ball, "vy", 0.0) - (dy / dist) * slingshot_boost
+                                self.ball.is_frictionless = True
                             else:
                                 # Tangential swing around hazard
                                 # Instead of pulling towards the target, we swing around it tangentially.
@@ -21856,7 +21887,13 @@ class Action:
                                             self.ball.vx += (t_x / t_len) * speed_boost
                                             self.ball.vy += (t_y / t_len) * speed_boost
                         else:
+                            is_reversing_node = closest_target_type == "hazard" and getattr(closest_target, "kind", "") == "reversing_grapple_node"
                             if closest_target_type == "hazard" and getattr(closest_target, "kind", "") == "slingshot_node":
+                                slingshot_boost = 3000.0
+                                self.ball.vx = getattr(self.ball, "vx", 0.0) - (dx / dist) * slingshot_boost
+                                self.ball.vy = getattr(self.ball, "vy", 0.0) - (dy / dist) * slingshot_boost
+                                self.ball.is_frictionless = True
+                            elif is_reversing_node and getattr(closest_target, "is_reversed", False):
                                 slingshot_boost = 3000.0
                                 self.ball.vx = getattr(self.ball, "vx", 0.0) - (dx / dist) * slingshot_boost
                                 self.ball.vy = getattr(self.ball, "vy", 0.0) - (dy / dist) * slingshot_boost
@@ -23620,7 +23657,7 @@ class Action:
         # Add solid hazards like kinetic_absorber to the collision check
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for h in self.world.arena.hazards:
-                if getattr(h, "kind", "") == "kinetic_absorber":
+                if getattr(h, "kind", "") in ["kinetic_absorber", "reversing_grapple_node"]:
                     # Check distance roughly before adding to nearby
                     dist_sq = (self.ball.x - h.x)**2 + (self.ball.y - h.y)**2
                     if dist_sq <= (ball_radius + getattr(h, "radius", 30.0))**2 * 4:
@@ -23759,6 +23796,21 @@ class Action:
                         self.ball.vx = 0.0
                         self.ball.vy = 0.0
 
+
+                # Handle reversing_grapple_node collision
+                if getattr(other, "kind", "") == "reversing_grapple_node":
+                    other.is_reversed = True
+                    # Push ball away at high speeds
+                    nx, ny = 0, 0
+                    dx = self.ball.x - other.x
+                    dy = self.ball.y - other.y
+                    dist = math.sqrt(dx*dx + dy*dy)
+                    if dist > 0.0001:
+                        nx, ny = dx/dist, dy/dist
+                    push_speed = 3000.0
+                    self.ball.vx = getattr(self.ball, "vx", 0.0) + nx * push_speed
+                    self.ball.vy = getattr(self.ball, "vy", 0.0) + ny * push_speed
+                    self.ball.is_frictionless = True
 
                 # Secondary stun explosion on collision
                 speed_self = math.sqrt(getattr(self.ball, "vx", 0.0)**2 + getattr(self.ball, "vy", 0.0)**2)

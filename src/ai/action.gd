@@ -12971,7 +12971,7 @@ func execute(strategy: String, delta: float):
 					var r = 0.0
 					if typeof(h) == TYPE_DICTIONARY and h.has("radius"): r = float(h.radius)
 					elif typeof(h) != TYPE_DICTIONARY and "radius" in h: r = float(h.radius)
-					if r >= 30.0 or h.get("kind", "") == "slingshot_node":
+					if r >= 30.0 or h.get("kind", "") in ["slingshot_node", "reversing_grapple_node"]:
 						var hx = 0.0
 						var hy = 0.0
 						if typeof(h) == TYPE_DICTIONARY:
@@ -42197,9 +42197,19 @@ func _use_skill():
                             self.ball.y = max(0.0, min(arena_height, self.ball.y))
                     elif closest_target_type == "hazard":
                         var is_slingshot = false
-                        if typeof(closest_target) == TYPE_DICTIONARY and closest_target.get("kind", "") == "slingshot_node": is_slingshot = true
-                        elif typeof(closest_target) != TYPE_DICTIONARY and "kind" in closest_target and closest_target.kind == "slingshot_node": is_slingshot = true
-                        if is_slingshot:
+                        var is_reversing = false
+                        var is_reversed = false
+                        if typeof(closest_target) == TYPE_DICTIONARY:
+                            if closest_target.get("kind", "") == "slingshot_node": is_slingshot = true
+                            if closest_target.get("kind", "") == "reversing_grapple_node": is_reversing = true
+                            if closest_target.get("is_reversed", false): is_reversed = true
+                        elif typeof(closest_target) != TYPE_DICTIONARY:
+                            if "kind" in closest_target and closest_target.kind == "slingshot_node": is_slingshot = true
+                            if "kind" in closest_target and closest_target.kind == "reversing_grapple_node": is_reversing = true
+                            if closest_target.has_method("get_meta") and closest_target.has_meta("is_reversed"): is_reversed = closest_target.get_meta("is_reversed")
+                            elif "is_reversed" in closest_target: is_reversed = closest_target.is_reversed
+
+                        if is_slingshot or (is_reversing and is_reversed):
                             var slingshot_boost = 3000.0
                             var b_vx = 0.0
                             var b_vy = 0.0
@@ -42257,10 +42267,19 @@ func _use_skill():
                     else:
                         var is_slingshot = false
                         if closest_target_type == "hazard":
-                            if typeof(closest_target) == TYPE_DICTIONARY and closest_target.get("kind", "") == "slingshot_node": is_slingshot = true
-                            elif typeof(closest_target) != TYPE_DICTIONARY and "kind" in closest_target and closest_target.kind == "slingshot_node": is_slingshot = true
+                            var is_reversing = false
+                            var is_reversed = false
+                            if typeof(closest_target) == TYPE_DICTIONARY:
+                                if closest_target.get("kind", "") == "slingshot_node": is_slingshot = true
+                                if closest_target.get("kind", "") == "reversing_grapple_node": is_reversing = true
+                                if closest_target.get("is_reversed", false): is_reversed = true
+                            elif typeof(closest_target) != TYPE_DICTIONARY:
+                                if "kind" in closest_target and closest_target.kind == "slingshot_node": is_slingshot = true
+                                if "kind" in closest_target and closest_target.kind == "reversing_grapple_node": is_reversing = true
+                                if closest_target.has_method("get_meta") and closest_target.has_meta("is_reversed"): is_reversed = closest_target.get_meta("is_reversed")
+                                elif "is_reversed" in closest_target: is_reversed = closest_target.is_reversed
 
-                        if is_slingshot:
+                        if is_slingshot or (is_reversing and is_reversed):
                             var slingshot_boost = 3000.0
                             var b_vx = 0.0
                             var b_vy = 0.0
@@ -46625,6 +46644,29 @@ func _resolve_collisions() -> bool:
                             var new_st = max(current_st, 2.0)
                             if "silence_timer" in entity: entity.silence_timer = new_st
                             elif entity.has_method("set_meta"): entity.set_meta("silence_timer", new_st)
+
+            # Handle reversing_grapple_node collision
+            var kind = ""
+            if typeof(other) == TYPE_DICTIONARY:
+                kind = other.get("kind", "")
+            else:
+                if "kind" in other: kind = other.kind
+            if kind == "reversing_grapple_node":
+                if typeof(other) == TYPE_DICTIONARY:
+                    other["is_reversed"] = true
+                elif other.has_method("set_meta"):
+                    other.set_meta("is_reversed", true)
+                elif "is_reversed" in other:
+                    other.is_reversed = true
+                var push_speed = 3000.0
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["vx"] = self.ball.get("vx", 0.0) + nx * push_speed
+                    self.ball["vy"] = self.ball.get("vy", 0.0) + ny * push_speed
+                    self.ball["is_frictionless"] = true
+                else:
+                    if "vx" in self.ball: self.ball.vx += nx * push_speed
+                    if "vy" in self.ball: self.ball.vy += ny * push_speed
+                    if "is_frictionless" in self.ball: self.ball.is_frictionless = true
 
             # Secondary stun explosion on collision
 
