@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1823] Gravity Nullifier Zone — *2026-08-08 15:44:46 UTC*
+
+A hazard zone that disables all localized gravity pulls (from black holes, gravity wells, etc.) for entities inside it, allowing for safe passage through highly congested gravitational anomalies.
+
+---
+
 ## [idea-1730] Weather-Specific Boosters — *2026-08-08 15:10:51 UTC*
 
 Introduce a new class of boosters that only spawn during certain weather conditions (e.g., 'Lightning Rod Booster' during thunderstorms that absorbs electric attacks to heal the player, or 'Snowshoes' during blizzards that negate slipping and provide a speed boost).
