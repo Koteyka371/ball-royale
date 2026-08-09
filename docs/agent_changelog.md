@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1904] Reflective Mirror Walls — *2026-08-09 09:01:23 UTC*
+
+Walls around the map occasionally become mirrors for a few seconds. Lasers and projectiles shot at them bounce directly back at the attacker, making players careful where they shoot.
+
+---
+
 ## [idea-1885] Clan Banners in Matches — *2026-08-09 08:42:42 UTC*
 
 When playing, users can deploy their Clan Banner which acts as a destructible healing aura beacon for a short duration.
