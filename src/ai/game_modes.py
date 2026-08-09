@@ -30331,6 +30331,43 @@ class SlimeBossMode(GameMode):
                                     proj.duration = 2.0
                                     world.arena.hazards.append(proj)
 
+class DecayingProjectilesMutatorMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Decaying Projectiles Mutator"
+        self.description = "Projectiles become smaller and deal less damage over time, forcing players to hit enemies at closer ranges to maximize effect."
+
+    def tick(self, world, balls, delta):
+        super().tick(world, balls, delta)
+
+        for proj in getattr(world, "projectiles", []) + getattr(world.arena, "hazards", []):
+            if not getattr(proj, "alive", True) and not getattr(proj, "hp", 1.0) > 0:
+                continue
+
+            b_type = getattr(proj, "ball_type", getattr(proj, "kind", ""))
+            is_proj = b_type in ["projectile", "spell", "fireball", "bullet", "snipe", "laser_beam"] or getattr(proj, "is_projectile", False) or getattr(proj, "is_spell", False)
+
+            if not is_proj:
+                continue
+
+            if not hasattr(proj, "_original_radius"):
+                proj._original_radius = getattr(proj, "radius", 5.0)
+            if not hasattr(proj, "_original_damage"):
+                proj._original_damage = getattr(proj, "damage", 10.0)
+
+            decay_rate = 0.5  # Decay per second
+            decay_factor = 1.0 - (decay_rate * delta)
+
+            if decay_factor < 0:
+                decay_factor = 0
+
+            proj.radius = max(1.0, getattr(proj, "radius", 5.0) * decay_factor)
+
+            # For damage we decay linearly based on the new radius ratio to original
+            ratio = proj.radius / proj._original_radius
+            proj.damage = max(0.0, proj._original_damage * ratio)
+
+
 class BouncingProjectilesMutatorMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -37691,6 +37728,7 @@ GAME_MODES = {
     'entangled_hazards_mode': EntangledHazardsMode(),
 
 
+    "decaying_projectiles_mutator": DecayingProjectilesMutatorMode(),
     "bouncing_projectiles_mutator": BouncingProjectilesMutatorMode(),
     "wrap_around": WrapAroundMode(),
     "slime_boss": SlimeBossMode(),

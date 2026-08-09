@@ -61499,6 +61499,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"entangled_hazards_mode": EntangledHazardsMode.new(),
 
 	"toxic_flood_royale": ToxicFloodRoyaleMode.new(),
+	"decaying_projectiles_mutator": DecayingProjectilesMutatorMode.new(),
 	"bouncing_projectiles_mutator": BouncingProjectilesMutatorMode.new(),
 	"laser_mirror_borders": LaserMirrorBordersMode.new(),
 	"wrap_around": WrapAroundMode.new(),
@@ -71683,6 +71684,93 @@ class CursedBoosterMode extends GameMode:
 	func _init():
 		self.name = "Cursed Boosters"
 		self.description = "All boosters collected have the opposite of their intended effect, forcing players to avoid items they usually collect."
+
+class DecayingProjectilesMutatorMode extends GameMode:
+	func _init():
+		name = "Decaying Projectiles Mutator"
+		description = "Projectiles become smaller and deal less damage over time, forcing players to hit enemies at closer ranges to maximize effect."
+
+	func tick(world: Dictionary, balls: Array, delta: float) -> void:
+		super.tick(world, balls, delta)
+
+		var projectiles = []
+		if world.has("projectiles"): projectiles = world.projectiles
+		elif typeof(world) == TYPE_OBJECT and "projectiles" in world and world.projectiles != null: projectiles = world.projectiles
+
+		var hazards = []
+		if world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+			hazards = world.arena.hazards
+		elif typeof(world) == TYPE_OBJECT and "arena" in world and typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena and world.arena.hazards != null:
+			hazards = world.arena.hazards
+
+		var all_projs = []
+		all_projs.append_array(projectiles)
+		all_projs.append_array(hazards)
+
+		for proj in all_projs:
+			if typeof(proj) == TYPE_DICTIONARY:
+				if (proj.has("alive") and not proj.alive) or (proj.has("hp") and proj.hp <= 0):
+					continue
+				var b_type = proj.get("ball_type", proj.get("kind", ""))
+				var is_proj = b_type in ["projectile", "spell", "fireball", "bullet", "snipe", "laser_beam"] or proj.get("is_projectile", false) or proj.get("is_spell", false)
+
+				if not is_proj:
+					continue
+
+				if not proj.has("_original_radius"):
+					proj["_original_radius"] = proj.get("radius", 5.0)
+				if not proj.has("_original_damage"):
+					proj["_original_damage"] = proj.get("damage", 10.0)
+
+				var decay_rate = 0.5 # half size in a second, maybe too fast but ok for testing
+				var decay_factor = 1.0 - (decay_rate * delta)
+				if decay_factor < 0: decay_factor = 0
+
+				proj.radius = max(1.0, proj.get("radius", 5.0) * decay_factor)
+
+				var ratio = float(proj.radius) / float(proj["_original_radius"])
+				proj.damage = max(0.0, float(proj["_original_damage"]) * ratio)
+			else:
+				if ("alive" in proj and not proj.alive) or ("hp" in proj and proj.hp <= 0):
+					continue
+				var b_type = ""
+				if "ball_type" in proj: b_type = proj.ball_type
+				elif "kind" in proj: b_type = proj.kind
+
+				var is_proj_flag = false
+				if "is_projectile" in proj: is_proj_flag = proj.is_projectile
+				elif "is_spell" in proj: is_proj_flag = proj.is_spell
+
+				var is_proj = b_type in ["projectile", "spell", "fireball", "bullet", "snipe", "laser_beam"] or is_proj_flag
+
+				if not is_proj:
+					continue
+
+				if not "_original_radius" in proj or proj.get("_original_radius") == null:
+					if "radius" in proj:
+						proj.set("_original_radius", proj.radius)
+					else:
+						proj.set("_original_radius", 5.0)
+				if not "_original_damage" in proj or proj.get("_original_damage") == null:
+					if "damage" in proj:
+						proj.set("_original_damage", proj.damage)
+					else:
+						proj.set("_original_damage", 10.0)
+
+				var decay_rate = 0.5
+				var decay_factor = 1.0 - (decay_rate * delta)
+				if decay_factor < 0: decay_factor = 0
+
+				if "radius" in proj:
+					proj.radius = max(1.0, proj.radius * decay_factor)
+
+				var radius_val = proj.radius if "radius" in proj else 5.0
+				var orig_radius_val = proj.get("_original_radius") if proj.get("_original_radius") != null else 5.0
+				var ratio = float(radius_val) / float(orig_radius_val)
+
+				if "damage" in proj:
+					var orig_damage = proj.get("_original_damage") if proj.get("_original_damage") != null else 10.0
+					proj.damage = max(0.0, orig_damage * ratio)
 
 class BouncingProjectilesMutatorMode extends GameMode:
 	func _init():
