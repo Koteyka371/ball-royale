@@ -22473,6 +22473,8 @@ class Action:
                 # Keep track of enemies alive before dash using object ids or id()
                 enemies_before = {id(e): getattr(e, "hp", 1.0) for e in enemies}
 
+                is_max_stamina = getattr(self.ball, "stamina", 0.0) >= getattr(self.ball, "max_stamina", 100.0)
+
                 my_radius = getattr(self.ball, "radius", 10.0)
                 killed_enemy = False
                 damage_multiplier = 2.0
@@ -22578,11 +22580,13 @@ class Action:
                     # Since enemies loop happens *after* this in the same block, we MUST NOT turn it off yet.
                     # We will turn it off manually right after the collision check or let the engine tick handle it.
 
+                    hit_enemies_in_jump = set()
                     # Deal damage to enemies we pass through or land on
                     for enemy in self._get_enemies():
                         if getattr(enemy, "hp", 1.0) <= 0:
                             continue
                         if (enemy.x - self.ball.x)**2 + (enemy.y - self.ball.y)**2 < (getattr(self.ball, "radius", 10.0) + getattr(enemy, "radius", 10.0) + 20)**2:
+                            hit_enemies_in_jump.add(id(enemy))
                             dmg = getattr(self.ball, "damage", 10.0) * damage_multiplier
                             if hasattr(enemy, "take_damage"):
                                 enemy.take_damage(dmg)
@@ -22601,11 +22605,28 @@ class Action:
                                 enemy.x += (kb_dx / kb_dist) * kb_force
                                 enemy.y += (kb_dy / kb_dist) * kb_force
 
+                    if is_max_stamina:
+                        if hasattr(self.world, "events"):
+                            self.world.events.append({
+                                "type": "visual_effect",
+                                "data": {
+                                    "type": "electric_discharge",
+                                    "x": self.ball.x,
+                                    "y": self.ball.y,
+                                    "radius": 150.0
+                                }
+                            })
+                        for enemy in self._get_enemies():
+                            if getattr(enemy, "hp", 1.0) > 0 and id(enemy) not in hit_enemies_in_jump:
+                                if (enemy.x - self.ball.x)**2 + (enemy.y - self.ball.y)**2 <= 150.0**2:
+                                    enemy.slow_timer = max(getattr(enemy, "slow_timer", 0.0), 1.0)
+
                     jumps += 1
                     damage_multiplier *= 0.7 # Deal less damage on subsequent jumps
                     if jumps > 1:
-                        # Refreshes a minor stamina burst
-                        self.ball.stamina_speed_burst_timer = getattr(self.ball, "stamina_speed_burst_timer", 0.0) + 0.5
+                        if not is_max_stamina:
+                            # Refreshes a minor stamina burst
+                            self.ball.stamina_speed_burst_timer = getattr(self.ball, "stamina_speed_burst_timer", 0.0) + 0.5
 
                 if jumps == max_jumps:
                     for d in spawned_decoys:

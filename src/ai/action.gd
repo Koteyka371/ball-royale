@@ -43237,6 +43237,17 @@ func _use_skill():
                 elif e.has_method("has_meta") and e.has_meta("hp"):
                     enemies_before[e] = e.get_meta("hp")
 
+            var is_max_stamina = false
+            var current_stamina = 0.0
+            var max_stamina = 100.0
+            if "stamina" in self.ball: current_stamina = self.ball.stamina
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("stamina"): current_stamina = self.ball.get_meta("stamina")
+            if "max_stamina" in self.ball: max_stamina = self.ball.max_stamina
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("max_stamina"): max_stamina = self.ball.get_meta("max_stamina")
+
+            if current_stamina >= max_stamina:
+                is_max_stamina = true
+
             var dash_radius = 10.0
             if "radius" in self.ball:
                 dash_radius = self.ball.radius
@@ -43381,6 +43392,7 @@ func _use_skill():
 
                 # Quantum state remains true for collision sweep
 
+                var hit_enemies_in_jump = []
                 for e in _get_enemies():
                     var check_hp_e = 1.0
                     if "hp" in e: check_hp_e = e.hp
@@ -43398,6 +43410,7 @@ func _use_skill():
                     elif e.has_method("has_meta") and e.has_meta("radius"): e_radius = e.get_meta("radius")
 
                     if dist_sq < pow(skill_radius + e_radius + 20.0, 2):
+                        hit_enemies_in_jump.append(e)
                         var dmg = 10.0 * damage_multiplier
                         if "damage" in self.ball: dmg = self.ball.damage * damage_multiplier
                         elif self.ball.has_method("has_meta") and self.ball.has_meta("damage"): dmg = self.ball.get_meta("damage") * damage_multiplier
@@ -43429,19 +43442,41 @@ func _use_skill():
                             e.x += (kb_dx / kb_dist) * kb_force
                             e.y += (kb_dy / kb_dist) * kb_force
 
+                if is_max_stamina:
+                    if self.world != null and typeof(self.world) == TYPE_DICTIONARY and self.world.has("events"):
+                        self.world["events"].append({"type": "visual_effect", "data": {"type": "electric_discharge", "x": self.ball.x, "y": self.ball.y, "radius": 150.0}})
+                    elif self.world != null and "events" in self.world:
+                        self.world.events.append({"type": "visual_effect", "data": {"type": "electric_discharge", "x": self.ball.x, "y": self.ball.y, "radius": 150.0}})
+
+                    for e in _get_enemies():
+                        var check_hp_e = 1.0
+                        if "hp" in e: check_hp_e = e.hp
+                        elif e.has_method("has_meta") and e.has_meta("hp"): check_hp_e = e.get_meta("hp")
+                        if check_hp_e > 0 and not hit_enemies_in_jump.has(e):
+                            var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+                            if dist_sq <= pow(150.0, 2):
+                                var s_timer = 0.0
+                                if "slow_timer" in e: s_timer = e.slow_timer
+                                elif e.has_method("has_meta") and e.has_meta("slow_timer"): s_timer = e.get_meta("slow_timer")
+
+                                var new_timer = max(s_timer, 1.0)
+                                if "slow_timer" in e: e.slow_timer = new_timer
+                                elif e.has_method("set_meta"): e.set_meta("slow_timer", new_timer)
+
                 jumps += 1
                 damage_multiplier *= 0.7
                 if jumps > 1:
-                    var burst = 0.0
-                    if self.ball.has_method("has_meta") and self.ball.has_meta("stamina_speed_burst_timer"):
-                        burst = self.ball.get_meta("stamina_speed_burst_timer")
-                    elif "stamina_speed_burst_timer" in self.ball:
-                        burst = self.ball.stamina_speed_burst_timer
+                    if not is_max_stamina:
+                        var burst = 0.0
+                        if self.ball.has_method("has_meta") and self.ball.has_meta("stamina_speed_burst_timer"):
+                            burst = self.ball.get_meta("stamina_speed_burst_timer")
+                        elif "stamina_speed_burst_timer" in self.ball:
+                            burst = self.ball.stamina_speed_burst_timer
 
-                    if self.ball.has_method("set_meta"):
-                        self.ball.set_meta("stamina_speed_burst_timer", burst + 0.5)
-                    else:
-                        self.ball.stamina_speed_burst_timer = burst + 0.5
+                        if self.ball.has_method("set_meta"):
+                            self.ball.set_meta("stamina_speed_burst_timer", burst + 0.5)
+                        else:
+                            self.ball.stamina_speed_burst_timer = burst + 0.5
 
             if jumps == max_jumps:
                 for d in spawned_decoys:
