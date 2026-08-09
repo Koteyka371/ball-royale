@@ -53655,4 +53655,111 @@ class VolcanoBossMode(GameMode):
             if hasattr(world, "add_event"):
                 world.add_event("boss_defeated", {"message": "The Volcano Boss has been extinguished!"})
 
+
+class CorruptedCapturePointsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Corrupted Capture Points"
+        self.description = "Special corrupted capture points appear randomly in the arena. If successfully captured, the capturing team gains a massive temporary damage boost but starts constantly losing health until they eliminate an enemy player."
+        self.capture_points = []
+        self.spawn_timer = 0.0
+        import random
+        self.random = random
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import math
+
+        arena_w = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") else 1000.0
+        arena_h = getattr(world.arena, "height", 1000.0) if hasattr(world, "arena") else 1000.0
+
+        self.spawn_timer += delta
+        if not self.capture_points and self.spawn_timer > 10.0:
+            self.spawn_timer = 0.0
+            self.capture_points.append({
+                "x": self.random.uniform(200.0, arena_w - 200.0),
+                "y": self.random.uniform(200.0, arena_h - 200.0),
+                "radius": 150.0,
+                "capture_progress": 0.0,
+                "owner_team": None
+            })
+            if hasattr(world, "add_event"):
+                world.add_event("corrupted_point_spawned", {"x": self.capture_points[-1]["x"], "y": self.capture_points[-1]["y"]})
+
+        points_to_remove = []
+        for cp in self.capture_points:
+            teams_in_radius = {}
+            for b in balls:
+                if not getattr(b, "alive", True):
+                    continue
+                bx = getattr(b, "x", 0.0)
+                by = getattr(b, "y", 0.0)
+                br = getattr(b, "radius", 15.0)
+                b_team = getattr(b, "team", -1)
+
+                if math.hypot(bx - cp["x"], by - cp["y"]) < cp["radius"] + br:
+                    if b_team not in teams_in_radius:
+                        teams_in_radius[b_team] = []
+                    teams_in_radius[b_team].append(b)
+
+            if cp["owner_team"] is None:
+                if len(teams_in_radius) == 1:
+                    capturing_team = list(teams_in_radius.keys())[0]
+                    cp["capture_progress"] += 20.0 * delta
+                    if cp["capture_progress"] >= 100.0:
+                        cp["capture_progress"] = 100.0
+                        cp["owner_team"] = capturing_team
+                        if hasattr(world, "add_event"):
+                            world.add_event("corrupted_point_captured", {"team": capturing_team})
+
+                        # Apply initial buff to all living players in that team
+                        for b in balls:
+                            if getattr(b, "team", -1) == capturing_team and getattr(b, "alive", True):
+                                b.has_corrupted_buff = True
+                                b.corrupted_buff_kills_base = getattr(b, "kills", 0)
+                                if not hasattr(b, "base_damage_multiplier"):
+                                    b.base_damage_multiplier = getattr(b, "damage_multiplier", 1.0)
+                                b.damage_multiplier = b.base_damage_multiplier * 3.0
+
+                        cp["to_remove"] = True
+                elif len(teams_in_radius) == 0:
+                    cp["capture_progress"] -= 10.0 * delta
+                    if cp["capture_progress"] < 0:
+                        cp["capture_progress"] = 0.0
+            else:
+                pass
+
+            if cp.get("to_remove", False):
+                points_to_remove.append(cp)
+
+        for cp in points_to_remove:
+            self.capture_points.remove(cp)
+
+        # Apply continuous health drain and check for kills
+        for b in balls:
+            if getattr(b, "alive", True) and getattr(b, "has_corrupted_buff", False):
+                current_kills = getattr(b, "kills", 0)
+                base_kills = getattr(b, "corrupted_buff_kills_base", 0)
+
+                if current_kills > base_kills:
+                    # Enemy player eliminated
+                    b.has_corrupted_buff = False
+                    if hasattr(b, "base_damage_multiplier"):
+                        b.damage_multiplier = b.base_damage_multiplier
+                    if hasattr(world, "add_event"):
+                        world.add_event("corrupted_buff_cleared", {"ball_id": getattr(b, "id", -1)})
+                else:
+                    # Drain health constantly
+                    b.hp = getattr(b, "hp", 100.0) - (20.0 * delta)
+                    if b.hp <= 0:
+                        b.hp = 0
+                        b.alive = False
+                        if hasattr(world, "add_event"):
+                            world.add_event("ball_died", {"ball_id": getattr(b, "id", -1), "reason": "corrupted_drain"})
+                        # If died, remove buff state so it doesn't try to revert later
+                        b.has_corrupted_buff = False
+                        if hasattr(b, "base_damage_multiplier"):
+                            b.damage_multiplier = b.base_damage_multiplier
+
 GAME_MODES['volcano_boss_mode'] = VolcanoBossMode()
+GAME_MODES['corrupted_capture_points'] = CorruptedCapturePointsMode()
