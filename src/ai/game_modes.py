@@ -52926,3 +52926,92 @@ GAME_MODES['invert_controls_mutator'] = InvertControlsMutator()
 GAME_MODES["bullet_hell_survival"] = BulletHellSurvivalMode()
 
 GAME_MODES["weather_boss"] = WeatherBossMode()
+
+class OccasionalMirrorWallsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Occasional Mirror Walls"
+        self.description = "Walls around the map occasionally become mirrors for a few seconds. Lasers and projectiles shot at them bounce directly back at the attacker, making players careful where they shoot."
+        self.timer = 0.0
+        self.active = False
+        self.active_timer = 0.0
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        import random
+        self.timer = random.uniform(10.0, 20.0)
+        self.active = False
+        self.active_timer = 0.0
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import random
+
+        if not self.active:
+            self.timer -= delta
+            if self.timer <= 0:
+                self.active = True
+                self.active_timer = random.uniform(3.0, 6.0)
+                if hasattr(world, "events"):
+                    world.events.append({
+                        "type": "mirror_walls_active",
+                        "message": "Walls are now mirrors!"
+                    })
+        else:
+            self.active_timer -= delta
+            if self.active_timer <= 0:
+                self.active = False
+                self.timer = random.uniform(10.0, 20.0)
+                if hasattr(world, "events"):
+                    world.events.append({
+                        "type": "mirror_walls_inactive",
+                        "message": "Walls returned to normal."
+                    })
+            else:
+                arena = getattr(world, "arena", None)
+                arena_width = getattr(arena, "width", 1000) if arena else 1000
+                arena_height = getattr(arena, "height", 1000) if arena else 1000
+
+                projectiles = getattr(world, "projectiles", [])
+                hazards = getattr(arena, "hazards", []) if arena else []
+
+                for proj in projectiles + hazards:
+                    if not getattr(proj, "alive", True) and not getattr(proj, "hp", 1.0) > 0:
+                        continue
+
+                    b_type = getattr(proj, "ball_type", getattr(proj, "kind", ""))
+                    is_proj = b_type in ["projectile", "spell", "fireball", "bullet", "snipe", "laser_beam"] or getattr(proj, "is_projectile", False) or getattr(proj, "is_spell", False)
+
+                    if not is_proj:
+                        continue
+
+                    x = getattr(proj, "x", 0)
+                    y = getattr(proj, "y", 0)
+                    radius = getattr(proj, "radius", 5.0)
+                    vx = getattr(proj, "vx", 0)
+                    vy = getattr(proj, "vy", 0)
+
+                    bounced = False
+                    if x - radius <= 0 and vx < 0:
+                        proj.vx = -vx
+                        proj.vy = -vy
+                        proj.x = radius + 1
+                        bounced = True
+                    elif x + radius >= arena_width and vx > 0:
+                        proj.vx = -vx
+                        proj.vy = -vy
+                        proj.x = arena_width - radius - 1
+                        bounced = True
+                    elif y - radius <= 0 and vy < 0:
+                        proj.vx = -vx
+                        proj.vy = -vy
+                        proj.y = radius + 1
+                        bounced = True
+                    elif y + radius >= arena_height and vy > 0:
+                        proj.vx = -vx
+                        proj.vy = -vy
+                        proj.y = arena_height - radius - 1
+                        bounced = True
+
+
+GAME_MODES["occasional_mirror_walls"] = OccasionalMirrorWallsMode()
