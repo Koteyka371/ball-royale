@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1944] Necromancer Skill: Soul Swap — *2026-08-09 16:05:04 UTC*
+
+The Necromancer swaps positions with a targeted minion, making the minion take any incoming damage in the original position.
+
+---
+
 ## [idea-1945] Quest Reroll with Mutator Tokens — *2026-08-09 15:44:18 UTC*
 
 Players can spend 1 Mutator Token to reroll a specific daily quest they don't like, giving them an alternative quest to complete.
