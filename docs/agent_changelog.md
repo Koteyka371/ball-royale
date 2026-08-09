@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1918] Shrinking Projectiles — *2026-08-09 04:37:28 UTC*
+
+Projectiles become smaller and deal less damage over time, forcing players to hit enemies at closer ranges to maximize effect.
+
+---
+
 ## [idea-1914] Bounty Hunter System — *2026-08-09 04:37:22 UTC*
 
 Introduce a dynamic bounty system where the player with the highest score or most kills is marked as a 'Bounty Target.' If another player kills them, they receive a massive resource or score boost, encouraging underdog comebacks.
