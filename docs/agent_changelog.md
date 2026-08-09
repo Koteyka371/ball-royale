@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1958] Black Market Auction House — *2026-08-09 18:52:01 UTC*
+
+A global real-time auction house where players can bid on extremely rare, procedurally generated boosters using guild resources. The auction only opens during specific times of the day and features items with unique stat combinations not found in standard play.
+
+---
+
 ## [idea-1954] Quantum Anomalies — *2026-08-09 18:40:16 UTC*
 
 Randomly spawning quantum anomalies create unstable regions on the field. Entering these regions scrambles a ball's stats momentarily (randomizing speed, size, and damage) and occasionally teleports them to a linked anomaly on the other side of the map, adding chaos and unpredictable repositioning.
