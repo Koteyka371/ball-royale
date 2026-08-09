@@ -67634,6 +67634,98 @@ class ElasticBandZoneMode:
 
 					grabbed_state.erase(b.id)
 
+class PeriodicMicroSafeZonesMode extends GameMode:
+	var spawn_interval: float = 15.0
+	var timer: float = 15.0
+	var zones: Array = []
+	var zone_duration: float = 10.0
+	var zone_initial_radius: float = 200.0
+	var zone_min_radius: float = 30.0
+	var blast_damage: float = 40.0
+	var state: String = "waiting"
+
+	func _init() -> void:
+		pass
+		name = "Periodic Micro Safe Zones"
+		description = "Periodically, micro safe zones spawn across the map. If a player is not inside a safe zone when the timer hits zero, they suffer a powerful blast of damage. The safe zones shrink continuously until disappearing entirely."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		timer = spawn_interval
+		zones = []
+		state = "waiting"
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		if state == "waiting":
+			timer -= delta
+			if timer <= 0:
+				state = "active"
+				timer = zone_duration
+				zones = []
+
+				var arena_width = 1000.0
+				var arena_height = 1000.0
+				var arena = world.get("arena")
+				if arena != null:
+					if arena is Dictionary:
+						arena_width = arena.get("width", 1000.0)
+						arena_height = arena.get("height", 1000.0)
+					else:
+						arena_width = arena.get("width") if arena.get("width") != null else 1000.0
+						arena_height = arena.get("height") if arena.get("height") != null else 1000.0
+
+				var alive_count = 0
+				for b in balls:
+					if b.alive and b.ball_type != "spectator":
+						alive_count += 1
+
+				var num_zones = max(2, int(alive_count / 2))
+
+				for _i in range(num_zones):
+					var zx = randf_range(100.0, arena_width - 100.0)
+					var zy = randf_range(100.0, arena_height - 100.0)
+					zones.append({"x": zx, "y": zy, "radius": zone_initial_radius})
+
+		elif state == "active":
+			timer -= delta
+			var t_ratio = maxf(0.0, timer / zone_duration)
+			var current_radius = zone_min_radius + (zone_initial_radius - zone_min_radius) * t_ratio
+
+			for z in zones:
+				z["radius"] = current_radius
+
+			if timer <= 0:
+				for b in balls:
+					if b.alive and b.ball_type != "spectator":
+						var in_zone = false
+						var b_radius = b.get("radius") if b.get("radius") != null else 20.0
+
+						for z in zones:
+							var dx = b.x - z["x"]
+							var dy = b.y - z["y"]
+							var dist = sqrt(dx*dx + dy*dy)
+							if dist <= zone_min_radius + b_radius:
+								in_zone = true
+								break
+
+						if not in_zone:
+							if b.has_method("take_damage"):
+								b.take_damage(blast_damage, "micro_safe_zone_blast")
+							else:
+								b.hp -= blast_damage
+								if b.hp <= 0:
+									b.alive = false
+									b.hp = 0
+									if world.has_method("add_event"):
+										world.add_event("ball_died", {"id": b.get("id") if b.get("id") != null else -1, "killer_id": -1, "reason": "micro_safe_zone_blast"})
+
+				state = "waiting"
+				timer = spawn_interval
+				zones = []
+
+GAME_MODES['periodic_micro_safe_zones'] = PeriodicMicroSafeZonesMode.new()
 GAME_MODES["periodic_safe_zone"] = PeriodicSafeZoneMode.new()
 GAME_MODES["elastic_band_zone"] = ElasticBandZoneMode.new()
 
