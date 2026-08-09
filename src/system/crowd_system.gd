@@ -23,6 +23,9 @@ var match_ended = false
 var external_commands = []
 var has_real_spectators = false
 var active_bets = []
+var juggernaut_bets = []
+var current_juggernaut_id = null
+var juggernaut_start_tick = 0
 var viewer_loyalty = {}
 var active_pledges = {}
 var user_votes = {}
@@ -532,6 +535,87 @@ func process_external_command(user: String, command: String, balls: Array):
             excitement_level += 10.0
 
     elif cmd == "!bet" and parts.size() >= 3:
+        var subcmd = parts[1].to_lower()
+        if subcmd == "jugg_time" or subcmd == "jugg_killer":
+            if parts.size() < 4:
+                return
+
+            var amount_str = parts[3].to_lower()
+            var currency = "skill_points"
+            var amount = 0
+
+            if amount_str.ends_with("sp"):
+                currency = "skill_points"
+                amount_str = amount_str.substr(0, amount_str.length() - 2)
+            elif amount_str.ends_with("pt"):
+                currency = "prestige_tokens"
+                amount_str = amount_str.substr(0, amount_str.length() - 2)
+            elif amount_str.ends_with("lp"):
+                currency = "loyalty_points"
+                amount_str = amount_str.substr(0, amount_str.length() - 2)
+
+            if amount_str.is_valid_int():
+                amount = amount_str.to_int()
+            else:
+                return
+
+            if amount <= 0:
+                return
+
+            var pm = null
+            if world != null and world.has_method("get_profile_manager"):
+                pm = world.call("get_profile_manager")
+            elif typeof(world) == TYPE_OBJECT and "profile_manager" in world:
+                pm = world.profile_manager
+
+            if pm == null or typeof(pm) != TYPE_OBJECT or pm.get("data") == null:
+                return
+
+            var pdata = pm.get("data")
+            if typeof(pdata) == TYPE_DICTIONARY:
+                var cur_bal = 0
+                if pdata.has(currency):
+                    cur_bal = pdata[currency]
+                if cur_bal < amount:
+                    return
+                pdata[currency] = cur_bal - amount
+
+                if pm.has_method("save"):
+                    pm.call("save")
+                elif pm.has_method("save_profile"):
+                    pm.call("save_profile")
+
+            if subcmd == "jugg_time":
+                var target_time = 0.0
+                if parts[2].is_valid_float() or parts[2].is_valid_int():
+                    target_time = float(parts[2])
+                else:
+                    return
+                juggernaut_bets.append({
+                    "user": user,
+                    "type": "time",
+                    "target_time": target_time,
+                    "amount": amount,
+                    "currency": currency
+                })
+                if world != null and world.has_method("add_event"):
+                    world.add_event("crowd_cheer", {"message": "Viewer " + _get_user_display(user) + " bet " + str(amount) + " " + currency + " the Juggernaut will survive " + str(target_time) + "s!"})
+
+            elif subcmd == "jugg_killer":
+                var target_killer = parts[2]
+                if target_killer.is_valid_int():
+                    target_killer = target_killer.to_int()
+                juggernaut_bets.append({
+                    "user": user,
+                    "type": "killer",
+                    "target_killer": target_killer,
+                    "amount": amount,
+                    "currency": currency
+                })
+                if world != null and world.has_method("add_event"):
+                    world.add_event("crowd_cheer", {"message": "Viewer " + _get_user_display(user) + " bet " + str(amount) + " " + currency + " that " + str(target_killer) + " will kill the Juggernaut!"})
+            return
+
         var target_id = null
         if parts[1].is_valid_int():
             target_id = parts[1].to_int()
@@ -727,6 +811,7 @@ func tick(balls: Array, kill_log: Array, current_tick: int):
                 b["crowd_bounty_timer"] = b_timer - 1
 
     _check_events(balls, kill_log, current_tick)
+    _check_juggernaut_bets(balls, kill_log, current_tick)
     _check_camping(balls, current_tick)
     _throw_buffs_if_needed(balls, current_tick)
     _throw_hazards_if_bored(balls, current_tick)
@@ -736,6 +821,112 @@ func tick(balls: Array, kill_log: Array, current_tick: int):
     _process_global_modifier(balls, current_tick)
     _process_sabotage(balls, current_tick)
     _trigger_large_scale_event(balls, current_tick)
+
+func _check_juggernaut_bets(balls: Array, kill_log: Array, current_tick: int):
+    var juggernaut = null
+    for b in balls:
+        var team = ""
+        var is_alive = false
+        if typeof(b) == TYPE_OBJECT and b.has_method("get"):
+            team = b.get("team")
+            if team == null or team == "":
+                team = b.get("ball_type")
+            is_alive = b.get("alive") if b.get("alive") != null else false
+        elif typeof(b) == TYPE_DICTIONARY:
+            team = b.get("team", b.get("ball_type", ""))
+            is_alive = b.get("alive", false)
+
+        if team != null and "Juggernaut" in team and is_alive:
+            juggernaut = b
+            break
+
+    var jugg_id = null
+    if juggernaut != null:
+        if typeof(juggernaut) == TYPE_OBJECT and juggernaut.has_method("get"):
+            jugg_id = juggernaut.get("id")
+        elif typeof(juggernaut) == TYPE_DICTIONARY and juggernaut.has("id"):
+            jugg_id = juggernaut["id"]
+
+    if jugg_id != current_juggernaut_id:
+        if current_juggernaut_id != null:
+            var survival_ticks = current_tick - juggernaut_start_tick
+            var survival_seconds = survival_ticks / 60.0
+
+            var killer_id = null
+            for kill in kill_log:
+                if typeof(kill) == TYPE_DICTIONARY and kill.has("victim_id") and kill["victim_id"] == current_juggernaut_id:
+                    if kill.has("killer_id"):
+                        killer_id = kill["killer_id"]
+                    break
+
+            if killer_id == null:
+                for b in balls:
+                    var b_id = null
+                    if typeof(b) == TYPE_OBJECT and b.has_method("get"):
+                        b_id = b.get("id")
+                    elif typeof(b) == TYPE_DICTIONARY and b.has("id"):
+                        b_id = b["id"]
+
+                    if b_id == current_juggernaut_id:
+                        if typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("killer") != null:
+                            killer_id = b.get("killer")
+                        elif typeof(b) == TYPE_DICTIONARY and b.has("killer"):
+                            killer_id = b["killer"]
+                        break
+
+            _resolve_juggernaut_bets(survival_seconds, killer_id)
+
+        current_juggernaut_id = jugg_id
+        juggernaut_start_tick = current_tick
+
+func _resolve_juggernaut_bets(survival_seconds: float, killer_id):
+    if juggernaut_bets.size() == 0:
+        return
+
+    var pm = null
+    if world != null and world.has_method("get_profile_manager"):
+        pm = world.call("get_profile_manager")
+    elif typeof(world) == TYPE_OBJECT and "profile_manager" in world:
+        pm = world.profile_manager
+
+    if pm == null or typeof(pm) != TYPE_OBJECT or pm.get("data") == null:
+        juggernaut_bets.clear()
+        return
+
+    var pdata = pm.get("data")
+    if typeof(pdata) == TYPE_DICTIONARY:
+        for bet in juggernaut_bets:
+            var won = false
+            var multiplier = 2.0
+
+            if bet["type"] == "time":
+                if abs(survival_seconds - bet["target_time"]) <= 10.0:
+                    won = true
+                    multiplier = 3.0
+            elif bet["type"] == "killer":
+                if str(bet["target_killer"]) == str(killer_id):
+                    won = true
+                    multiplier = 5.0
+
+            if won:
+                var winnings = int(bet["amount"] * multiplier)
+                var cur_val = 0
+                if pdata.has(bet["currency"]):
+                    cur_val = pdata[bet["currency"]]
+                pdata[bet["currency"]] = cur_val + winnings
+
+                if world != null and world.has_method("add_event"):
+                    world.add_event("crowd_cheer", {"message": "Viewer " + _get_user_display(bet["user"]) + " won their Juggernaut bet! Payout: " + str(winnings) + " " + bet["currency"] + "!"})
+            else:
+                if world != null and world.has_method("add_event"):
+                    world.add_event("crowd_throw", {"message": "Viewer " + _get_user_display(bet["user"]) + " lost their Juggernaut bet."})
+
+        if pm.has_method("save"):
+            pm.call("save")
+        elif pm.has_method("save_profile"):
+            pm.call("save_profile")
+
+    juggernaut_bets.clear()
 
 func _check_bets_and_winner(balls: Array, current_tick: int):
     if not match_started and balls.size() > 1:
