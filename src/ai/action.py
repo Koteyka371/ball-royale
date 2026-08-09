@@ -1566,6 +1566,23 @@ class Action:
                 attacker.speed_boost_timer = getattr(attacker, "speed_boost_timer", 0.0) + 3.0
                 attacker.attack_speed_buff_timer = getattr(attacker, "attack_speed_buff_timer", 0.0) + 3.0
 
+                # Renegade Threat Logic
+                attacker.renegade_threat = getattr(attacker, "renegade_threat", 0) + 1
+                if attacker.renegade_threat >= 3 and not getattr(attacker, "is_renegade_threat", False):
+                    attacker.is_renegade_threat = True
+                    attacker.is_bounty = True
+                    attacker.high_threat = True
+                    if hasattr(attacker, "base_speed"):
+                        attacker.base_speed = float(attacker.base_speed) * 1.5
+                    elif hasattr(attacker, "speed"):
+                        attacker.speed = float(attacker.speed) * 1.5
+                    if hasattr(attacker, "base_damage"):
+                        attacker.base_damage = float(attacker.base_damage) * 1.5
+                    elif hasattr(attacker, "damage"):
+                        attacker.damage = float(attacker.damage) * 1.5
+                    if hasattr(self.world, "add_event"):
+                        self.world.add_event("renegade_threat_maxed", {"message": "A Bounty Hunter has become a Renegade Threat!"})
+
             if hasattr(attacker, "sponsor"):
                 if attacker.sponsor == "aggressor":
                     attacker.damage = getattr(attacker, "damage", 10.0) * 1.1

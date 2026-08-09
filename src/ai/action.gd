@@ -3159,6 +3159,36 @@ func _attempt_damage_internal(attacker, target) -> void:
 				var as_timer = float(attacker.get_meta("attack_speed_buff_timer")) if attacker.has_meta("attack_speed_buff_timer") else 0.0
 				attacker.set_meta("attack_speed_buff_timer", as_timer + 3.0)
 
+			var rt = 0
+			if "renegade_threat" in attacker: rt = int(attacker.renegade_threat)
+			elif attacker.has_method("get_meta") and attacker.has_meta("renegade_threat"): rt = int(attacker.get_meta("renegade_threat"))
+			rt += 1
+			if "renegade_threat" in attacker: attacker.renegade_threat = rt
+			elif attacker.has_method("set_meta"): attacker.set_meta("renegade_threat", rt)
+
+			var is_rt = false
+			if "is_renegade_threat" in attacker: is_rt = attacker.is_renegade_threat
+			elif attacker.has_method("get_meta") and attacker.has_meta("is_renegade_threat"): is_rt = attacker.get_meta("is_renegade_threat")
+
+			if rt >= 3 and not is_rt:
+				if "is_renegade_threat" in attacker: attacker.is_renegade_threat = true
+				elif attacker.has_method("set_meta"): attacker.set_meta("is_renegade_threat", true)
+
+				if "is_bounty" in attacker: attacker.is_bounty = true
+				elif attacker.has_method("set_meta"): attacker.set_meta("is_bounty", true)
+
+				if "high_threat" in attacker: attacker.high_threat = true
+				elif attacker.has_method("set_meta"): attacker.set_meta("high_threat", true)
+
+				if "base_speed" in attacker: attacker.base_speed = float(attacker.base_speed) * 1.5
+				elif "speed" in attacker: attacker.speed = float(attacker.speed) * 1.5
+
+				if "base_damage" in attacker: attacker.base_damage = float(attacker.base_damage) * 1.5
+				elif "damage" in attacker: attacker.damage = float(attacker.damage) * 1.5
+
+				if typeof(self.world) == TYPE_OBJECT and self.world.has_method("add_event"):
+					self.world.add_event("renegade_threat_maxed", {"message": "A Bounty Hunter has become a Renegade Threat!"})
+
 		var sponsor = ""
 		if "sponsor" in attacker:
 			sponsor = attacker.sponsor
