@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1942] Necromancer Skill: Bone Prison — *2026-08-09 13:16:58 UTC*
+
+Traps an enemy in a bone prison, disabling their movement for a few seconds. The prison has its own HP and can be destroyed.
+
+---
+
 ## [idea-1938] Guild Headquarters Cosmetics Customization — *2026-08-09 11:30:07 UTC*
 
 Allow guild masters to completely customize their HQ visually with unlocked banners, statues, and background elements, which players can see when inspecting the guild.
