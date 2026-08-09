@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1899] Black Hole Eruption Weather — *2026-08-09 15:12:18 UTC*
+
+A new extreme weather event called 'Singularity Storm' where miniature black holes randomly spawn across the arena, forcefully pulling balls towards them. Surviving requires precise usage of dash skills and gravity boots.
+
+---
+
 ## [idea-1855] Meteor Shower Variant — *2026-08-09 14:49:35 UTC*
 
 A mode where random meteors leave glowing fragments that boost damage.
