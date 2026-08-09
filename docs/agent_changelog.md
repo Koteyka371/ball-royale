@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1934] Shrinking Safe Zones event — *2026-08-09 16:42:06 UTC*
+
+Periodically, micro safe zones spawn across the map. If a player is not inside a safe zone when the timer hits zero, they suffer a powerful blast of damage. The safe zones shrink continuously until disappearing entirely.
+
+---
+
 ## [idea-1948] Volcanic Eruption Boss — *2026-08-09 16:31:25 UTC*
 
 A boss mode where a massive volcano in the center of the arena continuously spawns lava geysers and throws fireballs. Players must dodge the hazards and use water-based items to cool down the boss to defeat it.
