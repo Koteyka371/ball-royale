@@ -12749,6 +12749,23 @@ class Action:
                                 d_target = math.hypot(self.ball.fly_target_x - self.ball.x, self.ball.fly_target_y - self.ball.y)
                                 self.ball.fly_timer = max(0.5, d_target / 1500.0)
                             continue
+                        elif hazard.kind == "jump_pad":
+                            dx = self.ball.x - hazard.x
+                            dy = self.ball.y - hazard.y
+                            import math
+                            dist = math.hypot(dx, dy)
+                            if dist < (getattr(self.ball, "radius", 10.0) + getattr(hazard, "radius", 10.0)) and not getattr(self.ball, "is_flying", False):
+                                current_stamina = getattr(self.ball, "stamina", 100.0)
+                                if current_stamina >= 50.0:
+                                    self.ball.stamina = current_stamina - 50.0
+                                    self.ball.is_flying = True
+                                    self.ball.fly_target_x = getattr(hazard, "target_x", self.ball.x)
+                                    self.ball.fly_target_y = getattr(hazard, "target_y", self.ball.y)
+                                    d_target = math.hypot(self.ball.fly_target_x - self.ball.x, self.ball.fly_target_y - self.ball.y)
+                                    self.ball.fly_timer = max(0.5, d_target / 1500.0)
+                                else:
+                                    self.ball.stun_timer = max(getattr(self.ball, "stun_timer", 0.0), 2.0)
+                            continue
                         elif hazard.kind == "bounce_pad":
                             dx = self.ball.x - hazard.x
                             dy = self.ball.y - hazard.y

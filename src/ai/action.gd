@@ -24288,6 +24288,66 @@ func execute(strategy: String, delta: float):
                                 self.ball.fly_target_y = h_ty
                                 self.ball.fly_timer = fly_t
                         continue
+                    elif hazard.kind == "jump_pad":
+                        var dx = self.ball.x - hazard.x
+                        var dy = self.ball.y - hazard.y
+                        var d = sqrt(dx*dx + dy*dy)
+                        var b_rad = 10.0
+                        if "radius" in self.ball: b_rad = self.ball.radius
+
+                        var is_flying_c = false
+                        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("is_flying"):
+                            is_flying_c = self.ball.get_meta("is_flying")
+                        elif "is_flying" in self.ball:
+                            is_flying_c = self.ball.is_flying
+
+                        if d < (b_rad + hazard.radius) and not is_flying_c:
+                            var current_stamina = 100.0
+                            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("stamina"):
+                                current_stamina = self.ball.get_meta("stamina")
+                            elif "stamina" in self.ball:
+                                current_stamina = self.ball.stamina
+
+                            if current_stamina >= 50.0:
+                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("stamina", current_stamina - 50.0)
+                                else:
+                                    self.ball.stamina = current_stamina - 50.0
+
+                                var h_tx = self.ball.x
+                                var h_ty = self.ball.y
+                                if typeof(hazard) == TYPE_OBJECT and hazard.has_method("has_meta"):
+                                    if hazard.has_meta("target_x"): h_tx = hazard.get_meta("target_x")
+                                    if hazard.has_meta("target_y"): h_ty = hazard.get_meta("target_y")
+                                else:
+                                    if "target_x" in hazard: h_tx = hazard.target_x
+                                    if "target_y" in hazard: h_ty = hazard.target_y
+
+                                var d_target = sqrt((h_tx - self.ball.x)*(h_tx - self.ball.x) + (h_ty - self.ball.y)*(h_ty - self.ball.y))
+                                var fly_t = max(0.5, d_target / 1500.0)
+
+                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("is_flying", true)
+                                    self.ball.set_meta("fly_target_x", h_tx)
+                                    self.ball.set_meta("fly_target_y", h_ty)
+                                    self.ball.set_meta("fly_timer", fly_t)
+                                else:
+                                    self.ball.is_flying = true
+                                    self.ball.fly_target_x = h_tx
+                                    self.ball.fly_target_y = h_ty
+                                    self.ball.fly_timer = fly_t
+                            else:
+                                var current_stun = 0.0
+                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("stun_timer"):
+                                    current_stun = self.ball.get_meta("stun_timer")
+                                elif "stun_timer" in self.ball:
+                                    current_stun = self.ball.stun_timer
+
+                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("stun_timer", max(current_stun, 2.0))
+                                else:
+                                    self.ball.stun_timer = max(current_stun, 2.0)
+                        continue
                     elif hazard.kind == "bounce_pad":
                         var dx = self.ball.x - hazard.x
                         var dy = self.ball.y - hazard.y
