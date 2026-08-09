@@ -411,10 +411,71 @@ func process_tournament_results(tournament_id: String, rankings: Array) -> bool:
     return true
 
 
+func invest_in_vault(guild_name: String, amount: int, days: int, current_date_str: String) -> bool:
+    if data["guilds"].has(guild_name):
+        var guild = data["guilds"][guild_name]
+        var res = 0
+        if guild.has("resources"):
+            res = guild["resources"]
+        if res >= amount and days > 0:
+            if not guild.has("vault_investment"):
+                guild["vault_investment"] = {}
+            var vault_investment = guild["vault_investment"]
+            if vault_investment.has("amount") and vault_investment["amount"] > 0:
+                return false
+            guild["resources"] -= amount
+            vault_investment["amount"] = amount
+            vault_investment["days_remaining"] = days
+            vault_investment["start_date"] = current_date_str
+            save_guilds()
+            return true
+    return false
+
+func steal_from_vault(attacker_name: String, defender_name: String, stolen_amount: int) -> int:
+    if data["guilds"].has(attacker_name) and data["guilds"].has(defender_name):
+        var defender = data["guilds"][defender_name]
+        var attacker = data["guilds"][attacker_name]
+
+        var vault_amount = 0
+        if defender.has("vault_investment") and defender["vault_investment"].has("amount"):
+            vault_amount = defender["vault_investment"]["amount"]
+
+        if vault_amount > 0:
+            var actual_stolen = min(vault_amount, stolen_amount)
+            defender["vault_investment"]["amount"] -= actual_stolen
+            if not attacker.has("resources"):
+                attacker["resources"] = 0
+            attacker["resources"] += actual_stolen
+            save_guilds()
+            return actual_stolen
+    return 0
+
 func process_daily_events(current_date_str: String) -> bool:
     if not data.has("last_daily_update") or data["last_daily_update"] != current_date_str:
         data["last_daily_update"] = current_date_str
         trigger_daily_mini_tournament()
+
+        for guild_name in data["guilds"].keys():
+            var guild = data["guilds"][guild_name]
+            if guild.has("vault_investment") and guild["vault_investment"].has("amount"):
+                var vault = guild["vault_investment"]
+                if vault["amount"] > 0:
+                    vault["days_remaining"] -= 1
+                    if vault["days_remaining"] <= 0:
+                        var amount = vault["amount"]
+                        var level = 1
+                        if guild.has("level"):
+                            level = guild["level"]
+                        var yield_pct = 0.10 + (level * 0.01)
+                        if guild.has("perks") and guild["perks"].has("vault_yield"):
+                            yield_pct += 0.10
+                        var return_amount = int(amount * (1.0 + yield_pct))
+                        if not guild.has("resources"):
+                            guild["resources"] = 0
+                        guild["resources"] += return_amount
+                        vault["amount"] = 0
+                        vault["days_remaining"] = 0
+
         save_guilds()
         return true
     return false

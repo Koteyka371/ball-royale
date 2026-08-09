@@ -305,10 +305,57 @@ class GuildManager:
 
 
 
+    def invest_in_vault(self, guild_name, amount, days, current_date_str):
+        if guild_name in self.data["guilds"]:
+            guild = self.data["guilds"][guild_name]
+            if guild.get("resources", 0) >= amount and days > 0:
+                vault_investment = guild.setdefault("vault_investment", {})
+                if vault_investment.get("amount", 0) > 0:
+                    return False
+                guild["resources"] -= amount
+                vault_investment["amount"] = amount
+                vault_investment["days_remaining"] = days
+                vault_investment["start_date"] = current_date_str
+                self.save()
+                return True
+        return False
+
+    def steal_from_vault(self, attacker_name, defender_name, stolen_amount):
+        if attacker_name in self.data["guilds"] and defender_name in self.data["guilds"]:
+            defender = self.data["guilds"][defender_name]
+            attacker = self.data["guilds"][attacker_name]
+
+            vault_investment = defender.get("vault_investment", {})
+            vault_amount = vault_investment.get("amount", 0)
+
+            if vault_amount > 0:
+                actual_stolen = min(vault_amount, stolen_amount)
+                vault_investment["amount"] -= actual_stolen
+                attacker["resources"] = attacker.get("resources", 0) + actual_stolen
+                self.save()
+                return actual_stolen
+        return 0
+
     def process_daily_events(self, current_date_str: str):
         if "last_daily_update" not in self.data or self.data["last_daily_update"] != current_date_str:
             self.data["last_daily_update"] = current_date_str
             self.trigger_daily_mini_tournament()
+
+            for guild_name, guild in self.data["guilds"].items():
+                vault_investment = guild.get("vault_investment", {})
+                if vault_investment.get("amount", 0) > 0:
+                    vault_investment["days_remaining"] -= 1
+                    if vault_investment["days_remaining"] <= 0:
+                        amount = vault_investment["amount"]
+                        level = guild.get("level", 1)
+                        yield_pct = 0.10 + (level * 0.01)
+                        if "vault_yield" in guild.get("perks", []):
+                            yield_pct += 0.10
+                        return_amount = int(amount * (1 + yield_pct))
+                        guild["resources"] = guild.get("resources", 0) + return_amount
+                        vault_investment["amount"] = 0
+                        vault_investment["days_remaining"] = 0
+
             self.save()
             return True
         return False
