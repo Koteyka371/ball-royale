@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1927] Black Hole Collisions — *2026-08-09 14:04:53 UTC*
+
+When two entities collide at very high speeds, they form a temporary black hole that pulls nearby entities in and damages them.
+
+---
+
 ## [idea-1940] Magnetic Decoy — *2026-08-09 13:44:23 UTC*
 
 A decoy that slowly pulls all nearby enemies and projectiles towards it before exploding.
