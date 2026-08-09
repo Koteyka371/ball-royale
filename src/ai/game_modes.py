@@ -1130,6 +1130,33 @@ class GameMode:
                 if getattr(h, "kind", "") == "grave_trap":
                     for b in balls:
                         if getattr(b, "alive", False) and getattr(b, "team", "") != getattr(h, "owner_team", ""):
+                            # Check if the player has a shovel
+                            if getattr(b, "grave_robber_shovel_active", False):
+                                import math
+                                dist = math.hypot(getattr(b, "x", 0.0) - getattr(h, "x", 0.0), getattr(b, "y", 0.0) - getattr(h, "y", 0.0))
+                                if dist <= getattr(h, "radius", 30.0) + getattr(b, "radius", 15.0):
+                                    hazards_to_remove.append(h)
+                                    b.grave_robber_shovel_active = False
+                                    # Spawn loot
+                                    import random
+                                    new_kind = "health_booster" if random.random() < 0.7 else random.choice(["stamina_booster", "chameleon_item"])
+                                    try:
+                                        from arena.procedural_arena import Hazard
+                                        new_booster = Hazard(id=len(world.arena.hazards) + random.randint(10000, 99999), x=getattr(h, "x", 0.0), y=getattr(h, "y", 0.0), radius=15.0, kind=new_kind, damage=0.0)
+                                    except ImportError:
+                                        class FallbackBooster:
+                                            def __init__(self, id, x, y, radius, kind, damage):
+                                                self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
+                                                self.active = True
+                                        new_booster = FallbackBooster(id=len(world.arena.hazards) + random.randint(10000, 99999), x=getattr(h, "x", 0.0), y=getattr(h, "y", 0.0), radius=15.0, kind=new_kind, damage=0.0)
+                                    if hasattr(world, "boosters"):
+                                        world.boosters.append(new_booster)
+                                    else:
+                                        world.arena.hazards.append(new_booster)
+                                    if hasattr(world, "add_event"):
+                                        world.add_event("grave_trap_neutralized", {"x": getattr(h, "x", 0.0), "y": getattr(h, "y", 0.0)})
+                                    break
+
                             import math
                             dist = math.hypot(getattr(b, "x", 0.0) - getattr(h, "x", 0.0), getattr(b, "y", 0.0) - getattr(h, "y", 0.0))
                             if dist <= getattr(h, "radius", 30.0) + getattr(b, "radius", 15.0):
