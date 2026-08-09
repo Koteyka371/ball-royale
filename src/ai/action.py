@@ -3935,6 +3935,23 @@ class Action:
                             self.ball.hp = -10000.0
 
 
+        if not getattr(self.ball, "is_decoy", False) and getattr(self.ball, "cosmetic_aura_scale", 1.0) >= 3.0:
+            if hasattr(self.ball, "speed_multiplier"):
+                self.ball.speed_multiplier *= 0.5  # Move significantly slower
+
+            aura_heal_radius = getattr(self.ball, "cosmetic_aura_scale", 1.0) * 50.0
+            heal_rate = 10.0 * delta
+            if hasattr(self.world, "balls"):
+                for b in getattr(self.world, "balls", []):
+                    if b != self.ball and getattr(b, "alive", True) and getattr(b, "team", "") == getattr(self.ball, "team", ""):
+                        import math
+                        dx = b.x - self.ball.x
+                        dy = b.y - self.ball.y
+                        dist = math.sqrt(dx*dx + dy*dy)
+                        if dist <= aura_heal_radius:
+                            if hasattr(b, "hp"):
+                                b.hp = min(getattr(b, "max_hp", 100.0), b.hp + heal_rate)
+
         # Task: Lower-level balls have a chance to get the 'fear' emotion simply by being in the immediate proximity of a ball with a massive, high-level cosmetic aura.
         if not getattr(self.ball, "is_decoy", False) and getattr(self.ball, "cosmetic_aura_scale", 1.0) >= 2.0:
             import random
