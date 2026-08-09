@@ -84405,5 +84405,174 @@ var _dummy_occasional_mirror_walls = _add_occasional_mirror_walls()
 func _add_occasional_mirror_walls():
 	GAME_MODES["occasional_mirror_walls"] = OccasionalMirrorWallsMode.new()
 
+
+
+class CorruptedCapturePointsMode extends GameMode:
+	var capture_points = []
+	var spawn_timer = 0.0
+	var corrupted_players = {} # Dictionary mapping ball id to { kills_base, base_dmg }
+
+	func _init().():
+		name = "Corrupted Capture Points"
+		description = "Special corrupted capture points appear randomly in the arena. If successfully captured, the capturing team gains a massive temporary damage boost but starts constantly losing health until they eliminate an enemy player."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		.tick(world, balls, delta)
+
+		var arena_w = 1000.0
+		var arena_h = 1000.0
+		if world != null and typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				if world.arena.has("width"): arena_w = world.arena["width"]
+				if world.arena.has("height"): arena_h = world.arena["height"]
+			else:
+				if "width" in world.arena: arena_w = world.arena.width
+				if "height" in world.arena: arena_h = world.arena.height
+
+		spawn_timer += delta
+		if capture_points.empty() and spawn_timer > 10.0:
+			spawn_timer = 0.0
+			var new_cp = {
+				"x": rand_range(200.0, arena_w - 200.0),
+				"y": rand_range(200.0, arena_h - 200.0),
+				"radius": 150.0,
+				"capture_progress": 0.0,
+				"owner_team": null,
+				"to_remove": false
+			}
+			capture_points.append(new_cp)
+			if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("corrupted_point_spawned", {"x": new_cp["x"], "y": new_cp["y"]})
+
+		var points_to_remove = []
+		for cp in capture_points:
+			var teams_in_radius = {}
+			for b in balls:
+				var is_alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else (b.get("alive") if "alive" in b else true)
+				if not is_alive:
+					continue
+
+				var bx = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.get("x")
+				var by = b.get("y") if typeof(b) == TYPE_DICTIONARY else b.get("y")
+				var br = b.get("radius") if typeof(b) == TYPE_DICTIONARY else b.get("radius")
+				if bx == null: bx = 0.0
+				if by == null: by = 0.0
+				if br == null: br = 15.0
+
+				var b_team = b.get("team") if typeof(b) == TYPE_DICTIONARY else b.get("team")
+				if b_team == null: b_team = -1
+
+				var dist = Vector2(bx, by).distance_to(Vector2(cp["x"], cp["y"]))
+				if dist < cp["radius"] + br:
+					if not teams_in_radius.has(b_team):
+						teams_in_radius[b_team] = []
+					teams_in_radius[b_team].append(b)
+
+			if cp["owner_team"] == null:
+				if teams_in_radius.size() == 1:
+					var capturing_team = teams_in_radius.keys()[0]
+					cp["capture_progress"] += 20.0 * delta
+					if cp["capture_progress"] >= 100.0:
+						cp["capture_progress"] = 100.0
+						cp["owner_team"] = capturing_team
+						cp["to_remove"] = true
+						if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+							world.add_event("corrupted_point_captured", {"team": capturing_team})
+
+						for b in balls:
+							var b_team_check = b.get("team") if typeof(b) == TYPE_DICTIONARY else b.get("team")
+							if b_team_check == null: b_team_check = -1
+							var is_alive_check = b.get("alive") if typeof(b) == TYPE_DICTIONARY else (b.get("alive") if "alive" in b else true)
+
+							if b_team_check == capturing_team and is_alive_check:
+								var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else (b.get("id") if "id" in b else -1)
+								var current_kills = b.get("kills") if typeof(b) == TYPE_DICTIONARY else (b.get("kills") if "kills" in b else 0)
+								if current_kills == null: current_kills = 0
+
+								var bdm = null
+								if typeof(b) == TYPE_DICTIONARY:
+									if b.has("base_damage_multiplier"): bdm = b["base_damage_multiplier"]
+									else:
+										bdm = b.get("damage_multiplier", 1.0)
+										b["base_damage_multiplier"] = bdm
+									b["damage_multiplier"] = bdm * 3.0
+								else:
+									if b.has_method("has_meta") and b.has_meta("base_damage_multiplier"):
+										bdm = b.get_meta("base_damage_multiplier")
+									elif "base_damage_multiplier" in b:
+										bdm = b.get("base_damage_multiplier")
+									else:
+										bdm = b.get("damage_multiplier") if "damage_multiplier" in b else 1.0
+										if bdm == null: bdm = 1.0
+										if b.has_method("set_meta"): b.set_meta("base_damage_multiplier", bdm)
+										else: b.set("base_damage_multiplier", bdm)
+									b.set("damage_multiplier", bdm * 3.0)
+
+								corrupted_players[b_id] = {
+									"kills_base": current_kills,
+									"base_dmg": bdm
+								}
+				elif teams_in_radius.size() == 0:
+					cp["capture_progress"] -= 10.0 * delta
+					if cp["capture_progress"] < 0:
+						cp["capture_progress"] = 0.0
+
+			if cp.get("to_remove", false):
+				points_to_remove.append(cp)
+
+		for cp in points_to_remove:
+			capture_points.erase(cp)
+
+		var ids_to_remove = []
+		for b in balls:
+			var is_alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else (b.get("alive") if "alive" in b else true)
+			var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else (b.get("id") if "id" in b else -1)
+
+			if b_id != -1 and corrupted_players.has(b_id):
+				if not is_alive:
+					ids_to_remove.append(b_id)
+					continue
+
+				var current_kills = b.get("kills") if typeof(b) == TYPE_DICTIONARY else (b.get("kills") if "kills" in b else 0)
+				if current_kills == null: current_kills = 0
+
+				var state = corrupted_players[b_id]
+				if current_kills > state["kills_base"]:
+					ids_to_remove.append(b_id)
+					if typeof(b) == TYPE_DICTIONARY:
+						b["damage_multiplier"] = state["base_dmg"]
+					else:
+						b.set("damage_multiplier", state["base_dmg"])
+
+					if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						world.add_event("corrupted_buff_cleared", {"ball_id": b_id})
+				else:
+					var hp = b.get("hp") if typeof(b) == TYPE_DICTIONARY else b.get("hp")
+					if hp == null: hp = 100.0
+					hp -= 20.0 * delta
+
+					if hp <= 0:
+						hp = 0
+						ids_to_remove.append(b_id)
+						if typeof(b) == TYPE_DICTIONARY:
+							b["hp"] = hp
+							b["alive"] = false
+							b["damage_multiplier"] = state["base_dmg"]
+						else:
+							b.set("hp", hp)
+							b.set("alive", false)
+							b.set("damage_multiplier", state["base_dmg"])
+
+						if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+							world.add_event("ball_died", {"ball_id": b_id, "reason": "corrupted_drain"})
+					else:
+						if typeof(b) == TYPE_DICTIONARY:
+							b["hp"] = hp
+						else:
+							b.set("hp", hp)
+
+		for b_id in ids_to_remove:
+			corrupted_players.erase(b_id)
 GAME_MODES["chain_lightning_tether"] = ChainLightningTetherMode.new()
 GAME_MODES['quantum_tunnel_safe_zone'] = QuantumTunnelSafeZoneMode.new()
+GAME_MODES['corrupted_capture_points'] = CorruptedCapturePointsMode.new()
