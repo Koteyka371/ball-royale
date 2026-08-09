@@ -24042,6 +24042,12 @@ class Action:
                 if getattr(self.ball, "heavy_gravity_timer", 0.0) > 0.0:
                     knockback_multiplier = 0.0
 
+                my_aura = getattr(self.ball, "aura_intensity", 0.0)
+                other_aura = getattr(other, "aura_intensity", 0.0)
+                if my_aura != other_aura:
+                    mass_ratio = (1.0 + other_aura * 0.1) / (1.0 + my_aura * 0.1)
+                    knockback_multiplier *= mass_ratio
+
                 if cosmetic == "link_boots":
                     allies = [a for a in self._get_allies() if getattr(a, "id", None) != getattr(other, "id", None)]
                     if allies:

@@ -67708,6 +67708,132 @@ GAME_MODES["meteor_bombardment"] = MeteorBombardmentMode.new()
 
 
 
+class AuraIntensifierFieldMode extends GameMode:
+	var zones = []
+
+	func _init():
+		name = "Aura Intensifier Field"
+		description = "A stationary field that slowly drains HP but permanently intensifies cosmetic auras, increasing knockback against weaker auras."
+
+	func setup(world):
+		super.setup(world)
+		if world == null or not ("arena" in world) or world.arena == null:
+			return
+		if not ("hazards" in world.arena) or typeof(world.arena.hazards) != TYPE_ARRAY:
+			return
+
+		var arena_w = world.arena.get("width", 1000)
+		var arena_h = world.arena.get("height", 1000)
+
+		# Simple random generator or fallback
+		var num_zones = 1
+		if typeof(world) == TYPE_OBJECT and world.has_method("has_meta"):
+			num_zones = 1 + int(randf() * 3) # 1 to 3
+		else:
+			num_zones = 2
+
+		for i in range(num_zones):
+			var radius = 80.0 + randf() * 70.0
+			var zx = radius + randf() * (arena_w - radius * 2.0)
+			var zy = radius + randf() * (arena_h - radius * 2.0)
+
+			var h_id = world.arena.hazards.size() + i + 1000
+			var hazard = null
+
+			if ResourceLoader.exists("res://src/ai/game_modes.gd"):
+				# Minimal fallback dict if no Hazard class instance easily available in GDScript this context
+				pass
+
+			var FallbackHazard = load("res://src/ai/game_modes.gd").Hazard if "Hazard" in load("res://src/ai/game_modes.gd") else null
+			if FallbackHazard != null:
+				hazard = FallbackHazard.new(str(h_id), zx, zy, radius, "aura_intensifier_field", 0.0)
+			else:
+				hazard = {
+					"id": h_id,
+					"x": zx,
+					"y": zy,
+					"radius": radius,
+					"kind": "aura_intensifier_field",
+					"active": true,
+					"damage": 0.0
+				}
+			world.arena.hazards.append(hazard)
+			zones.append(hazard)
+
+	func tick(world, delta):
+		super.tick(world, delta)
+		if world == null or not ("balls" in world):
+			return
+
+		var alive_balls = []
+		for b in world.balls:
+			var is_alive = b.get("alive", true) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else true)
+			if is_alive:
+				alive_balls.append(b)
+
+		for h in zones:
+			var h_active = h.get("active", true) if typeof(h) == TYPE_DICTIONARY else (h.active if "active" in h else true)
+			if not h_active:
+				continue
+
+			var hx = h.get("x", 0.0) if typeof(h) == TYPE_DICTIONARY else (h.x if "x" in h else 0.0)
+			var hy = h.get("y", 0.0) if typeof(h) == TYPE_DICTIONARY else (h.y if "y" in h else 0.0)
+			var hr = h.get("radius", 0.0) if typeof(h) == TYPE_DICTIONARY else (h.radius if "radius" in h else 0.0)
+
+			for b in alive_balls:
+				var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.x if "x" in b else 0.0)
+				var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.y if "y" in b else 0.0)
+				var br = b.get("radius", 10.0) if typeof(b) == TYPE_DICTIONARY else (b.radius if "radius" in b else 10.0)
+
+				var dx = bx - hx
+				var dy = by - hy
+				var dist = sqrt(dx*dx + dy*dy)
+
+				if dist <= hr + br:
+					var current_hp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else (b.hp if "hp" in b else 100.0)
+					current_hp -= 5.0 * delta
+
+					if typeof(b) == TYPE_DICTIONARY:
+						b["hp"] = current_hp
+					else:
+						b.hp = current_hp
+
+					if current_hp <= 0:
+						if typeof(b) == TYPE_DICTIONARY:
+							b["hp"] = 0
+							b["alive"] = false
+						else:
+							b.hp = 0
+							b.alive = false
+						if world.has_method("add_event"):
+							var b_id = b.get("id", -1) if typeof(b) == TYPE_DICTIONARY else (b.id if "id" in b else -1)
+							world.add_event("ball_died", {"id": b_id, "killer_id": -1, "reason": "aura_intensifier_field"})
+					else:
+						var a_intensity = 0.0
+						if typeof(b) == TYPE_DICTIONARY:
+							a_intensity = b.get("aura_intensity", 0.0)
+							a_intensity += 1.0 * delta
+							b["aura_intensity"] = a_intensity
+							b["cosmetic_aura_scale"] = 1.0 + a_intensity * 0.1
+						else:
+							if "aura_intensity" in b:
+								a_intensity = b.aura_intensity
+							elif b.has_method("has_meta") and b.has_meta("aura_intensity"):
+								a_intensity = float(b.get_meta("aura_intensity"))
+
+							a_intensity += 1.0 * delta
+
+							if "aura_intensity" in b:
+								b.aura_intensity = a_intensity
+							elif b.has_method("set_meta"):
+								b.set_meta("aura_intensity", a_intensity)
+
+							if "cosmetic_aura_scale" in b:
+								b.cosmetic_aura_scale = 1.0 + a_intensity * 0.1
+							elif b.has_method("set_meta"):
+								b.set_meta("cosmetic_aura_scale", 1.0 + a_intensity * 0.1)
+
+
 class AuraInversionZoneMode extends GameMode:
 	var zone_x: float = 500.0
 	var zone_y: float = 500.0
@@ -67870,6 +67996,7 @@ class AuraInversionZoneMode extends GameMode:
 
 GAME_MODES["time_dilation_zone"] = TimeDilationZoneMode.new()
 GAME_MODES["overdrive_zone"] = OverdriveZoneMode.new()
+GAME_MODES["aura_intensifier_field"] = AuraIntensifierFieldMode.new()
 GAME_MODES["aura_inversion_zone"] = AuraInversionZoneMode.new()
 GAME_MODES["inverse_controls_zone"] = InverseControlsZoneMode.new()
 GAME_MODES["edge_slingshots"] = EdgeSlingshotsMode.new()
