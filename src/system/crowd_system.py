@@ -516,6 +516,7 @@ class CrowdSystem:
         self._process_votes(balls, tick)
         self._process_spectator_signs(balls, tick)
         self._process_global_modifier(balls, tick)
+        self._process_sabotage(balls, tick)
         self._trigger_large_scale_event(balls, tick)
 
 
@@ -939,7 +940,8 @@ class CrowdSystem:
                 {"type": "spawn_hazard", "options": ["lava_pit", "spike_trap", "poison_cloud"]},
                 {"type": "player_buff", "options": ["speed", "damage", "shield"]},
                 {"type": "global_stat_modifier", "options": ["global_speed_up", "global_damage_up", "global_shield_up"]},
-                {"type": "global_hazard_zone", "options": ["low_gravity", "slippery_ice", "magnetic_field"]}
+                {"type": "global_hazard_zone", "options": ["low_gravity", "slippery_ice", "magnetic_field"]},
+                {"type": "player_sabotage", "options": ["sluggish", "fragile", "silenced"]}
             ]
             if random.random() < 0.05:
                 chosen_vote = {"type": "extreme_event", "options": ["massive_black_hole", "extreme_weather"]}
@@ -1042,6 +1044,12 @@ class CrowdSystem:
                         new_weather = random.choice(["hurricane", "blizzard", "meteor_shower", "tsunami"])
                         self.world.add_event("weather_transition", {"new_weather": new_weather})
                         self.world.add_event("crowd_cheer", {"message": "EXTREME WEATHER INCOMING!", "volume": 2.0})
+            elif vote_type == "player_sabotage":
+                target = random.choice(alive_balls)
+                target.crowd_sabotage_timer = 600
+                target.crowd_sabotage_type = winning_option
+                if hasattr(self.world, 'add_event'):
+                    self.world.add_event("crowd_cheer", {"message": "The crowd has secretly sabotaged a player!", "volume": 1.0})
             elif vote_type == "global_hazard_zone":
                 # spawn a massive hazard covering the arena
                 if hasattr(self.world, 'add_event'):
@@ -1175,3 +1183,27 @@ class CrowdSystem:
                         if b.shield > 150.0:
                             b.shield = 150.0
                         b.crowd_global_shield = True
+
+    def _process_sabotage(self, balls: List[Any], tick: int):
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", "") == "spectator":
+                continue
+
+            timer = getattr(b, "crowd_sabotage_timer", 0)
+            if timer > 0:
+                b.crowd_sabotage_timer = timer - 1
+                if b.crowd_sabotage_timer <= 0:
+                    sabotage_type = getattr(b, "crowd_sabotage_type", "")
+                    if sabotage_type == "sluggish" and getattr(b, "crowd_sabotage_speed_active", False):
+                        delattr(b, "crowd_sabotage_speed_active")
+                        b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                else:
+                    sabotage_type = getattr(b, "crowd_sabotage_type", "")
+                    if sabotage_type == "sluggish":
+                        b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 0.5
+                        b.crowd_sabotage_speed_active = True
+                    elif sabotage_type == "fragile":
+                        if getattr(b, "hp", 0.0) > 1.0:
+                            b.hp = max(1.0, b.hp - 0.2)
+                    elif sabotage_type == "silenced":
+                        b.silence_timer = max(getattr(b, "silence_timer", 0.0), 2.0)

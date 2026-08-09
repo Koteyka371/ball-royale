@@ -734,6 +734,7 @@ func tick(balls: Array, kill_log: Array, current_tick: int):
     _process_votes(balls, current_tick)
     _process_spectator_signs(balls, current_tick)
     _process_global_modifier(balls, current_tick)
+    _process_sabotage(balls, current_tick)
     _trigger_large_scale_event(balls, current_tick)
 
 func _check_bets_and_winner(balls: Array, current_tick: int):
@@ -1461,7 +1462,8 @@ func _start_vote(balls: Array):
             {"type": "spawn_hazard", "options": ["lava_pit", "spike_trap", "poison_cloud"]},
             {"type": "player_buff", "options": ["speed", "damage", "shield"]},
             {"type": "global_stat_modifier", "options": ["global_speed_up", "global_damage_up", "global_shield_up"]},
-            {"type": "global_hazard_zone", "options": ["low_gravity", "slippery_ice", "magnetic_field"]}
+            {"type": "global_hazard_zone", "options": ["low_gravity", "slippery_ice", "magnetic_field"]},
+            {"type": "player_sabotage", "options": ["sluggish", "fragile", "silenced"]}
         ]
         if randf() < 0.05:
             chosen_vote = {"type": "extreme_event", "options": ["massive_black_hole", "extreme_weather"]}
@@ -1605,6 +1607,21 @@ func _resolve_vote(balls: Array):
                     var new_weather = ext_weathers[randi() % ext_weathers.size()]
                     world.add_event("weather_transition", {"new_weather": new_weather})
                     world.add_event("crowd_cheer", {"message": "EXTREME WEATHER INCOMING!", "volume": 2.0})
+        elif vote_type == "player_sabotage":
+            var target = alive_balls[randi() % alive_balls.size()]
+            if typeof(target) == TYPE_OBJECT and target.has_method("set"):
+                if target.has_method("set_meta"):
+                    target.set_meta("crowd_sabotage_timer", 600)
+                    target.set_meta("crowd_sabotage_type", winning_option)
+                else:
+                    target.set("crowd_sabotage_timer", 600)
+                    target.set("crowd_sabotage_type", winning_option)
+            elif typeof(target) == TYPE_DICTIONARY:
+                target["crowd_sabotage_timer"] = 600
+                target["crowd_sabotage_type"] = winning_option
+
+            if world != null and world.has_method("add_event"):
+                world.add_event("crowd_cheer", {"message": "The crowd has secretly sabotaged a player!", "volume": 1.0})
         elif vote_type == "global_hazard_zone":
             if world != null and world.has_method("add_event"):
                 var cx = 500.0
@@ -1857,3 +1874,80 @@ func _process_global_modifier(balls: Array, current_tick: int):
                         var cur_s = b.get("shield", 0.0)
                         b["shield"] = min(150.0, cur_s + 3.0)
                         b["crowd_global_shield"] = true
+
+func _process_sabotage(balls: Array, current_tick: int):
+    for b in balls:
+        var is_alive = false
+        var is_spectator = false
+        var timer = 0
+        var sabotage_type = ""
+        var has_speed_active = false
+
+        if typeof(b) == TYPE_OBJECT and b.has_method("get"):
+            is_alive = b.get("alive") if b.get("alive") != null else false
+            is_spectator = b.get("ball_type") == "spectator"
+            if b.has_method("get_meta") and b.has_meta("crowd_sabotage_timer"):
+                timer = b.get_meta("crowd_sabotage_timer")
+                sabotage_type = b.get_meta("crowd_sabotage_type") if b.has_meta("crowd_sabotage_type") else ""
+                has_speed_active = b.has_meta("crowd_sabotage_speed_active")
+            else:
+                timer = b.get("crowd_sabotage_timer") if b.get("crowd_sabotage_timer") != null else 0
+                sabotage_type = b.get("crowd_sabotage_type") if b.get("crowd_sabotage_type") != null else ""
+                has_speed_active = b.get("crowd_sabotage_speed_active") if b.get("crowd_sabotage_speed_active") != null else false
+        elif typeof(b) == TYPE_DICTIONARY:
+            is_alive = b.get("alive", false)
+            is_spectator = b.get("ball_type") == "spectator"
+            timer = b.get("crowd_sabotage_timer", 0)
+            sabotage_type = b.get("crowd_sabotage_type", "")
+            has_speed_active = b.get("crowd_sabotage_speed_active", false)
+
+        if not is_alive or is_spectator:
+            continue
+
+        if timer > 0:
+            timer -= 1
+            if typeof(b) == TYPE_OBJECT and b.has_method("set"):
+                if b.has_method("set_meta"):
+                    b.set_meta("crowd_sabotage_timer", timer)
+                else:
+                    b.set("crowd_sabotage_timer", timer)
+            elif typeof(b) == TYPE_DICTIONARY:
+                b["crowd_sabotage_timer"] = timer
+
+            if timer <= 0:
+                if sabotage_type == "sluggish" and has_speed_active:
+                    if typeof(b) == TYPE_OBJECT and b.has_method("set"):
+                        if b.has_method("remove_meta"): b.remove_meta("crowd_sabotage_speed_active")
+                        var bs = b.get("base_speed") if b.get("base_speed") != null else (b.get("speed") if b.get("speed") != null else 100.0)
+                        b.set("speed", bs)
+                    elif typeof(b) == TYPE_DICTIONARY:
+                        b.erase("crowd_sabotage_speed_active")
+                        b["speed"] = b.get("base_speed", b.get("speed", 100.0))
+            else:
+                if sabotage_type == "sluggish":
+                    if typeof(b) == TYPE_OBJECT and b.has_method("set"):
+                        var bs = b.get("base_speed") if b.get("base_speed") != null else (b.get("speed") if b.get("speed") != null else 100.0)
+                        b.set("speed", bs * 0.5)
+                        if b.has_method("set_meta"): b.set_meta("crowd_sabotage_speed_active", true)
+                        else: b.set("crowd_sabotage_speed_active", true)
+                    elif typeof(b) == TYPE_DICTIONARY:
+                        b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 0.5
+                        b["crowd_sabotage_speed_active"] = true
+                elif sabotage_type == "fragile":
+                    var hp = 0.0
+                    if typeof(b) == TYPE_OBJECT and b.has_method("get"):
+                        hp = float(b.get("hp")) if b.get("hp") != null else 0.0
+                        if hp > 1.0:
+                            b.set("hp", max(1.0, hp - 0.2))
+                    elif typeof(b) == TYPE_DICTIONARY:
+                        hp = float(b.get("hp", 0.0))
+                        if hp > 1.0:
+                            b["hp"] = max(1.0, hp - 0.2)
+                elif sabotage_type == "silenced":
+                    var s_timer = 0.0
+                    if typeof(b) == TYPE_OBJECT and b.has_method("get"):
+                        s_timer = float(b.get("silence_timer")) if b.get("silence_timer") != null else 0.0
+                        b.set("silence_timer", max(s_timer, 2.0))
+                    elif typeof(b) == TYPE_DICTIONARY:
+                        s_timer = float(b.get("silence_timer", 0.0))
+                        b["silence_timer"] = max(s_timer, 2.0)
