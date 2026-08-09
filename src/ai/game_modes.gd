@@ -41342,19 +41342,49 @@ class ShrinkingBoundaryMode extends GameMode:
 				var by = b_dict.get("y", 0.0) if is_dict else b.get("y")
 
 				if bx < min_x or bx > max_x or by < min_y or by > max_y:
+					var clamped_x = clamp(bx, min_x, max_x)
+					var clamped_y = clamp(by, min_y, max_y)
+
 					if is_dict:
+						b["x"] = clamped_x
+						b["y"] = clamped_y
+
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.1
+
 						b["hp"] = b.get("hp", 100.0) - 10.0 * delta
 						if b["hp"] <= 0.0:
 							b["hp"] = 0.0
 							b["alive"] = false
 							b["killer"] = "Shrinking Boundary"
 					else:
-						var current_hp = b.get("hp") if b.has_method("get") else 100.0
-						b.set("hp", current_hp - 10.0 * delta)
-						if b.get("hp") <= 0.0:
-							b.set("hp", 0.0)
-							b.set("alive", false)
-							b.set("killer", "Shrinking Boundary")
+						if b.has_method("set"):
+							b.set("x", clamped_x)
+							b.set("y", clamped_y)
+
+							var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+							b.set("speed", base_s * 0.1)
+						else:
+							if "x" in b: b.x = clamped_x
+							if "y" in b: b.y = clamped_y
+							var base_s = b.base_speed if "base_speed" in b else (b.speed if "speed" in b else 100.0)
+							if "speed" in b: b.speed = base_s * 0.1
+
+						var current_hp = b.get("hp") if b.has_method("get") else (b.hp if "hp" in b else 100.0)
+						var new_hp = current_hp - 10.0 * delta
+
+						if b.has_method("set"):
+							b.set("hp", new_hp)
+							if new_hp <= 0.0:
+								b.set("hp", 0.0)
+								b.set("alive", false)
+								b.set("killer", "Shrinking Boundary")
+						else:
+							if "hp" in b: b.hp = new_hp
+							if new_hp <= 0.0:
+								if "hp" in b: b.hp = 0.0
+								if "alive" in b: b.alive = false
+								if "killer" in b: b.killer = "Shrinking Boundary"
 
 
 class EntangledArenaMode extends GameMode:

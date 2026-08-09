@@ -52,6 +52,10 @@ def test_shrinking_boundary_damage():
     assert ball_out.hp == 90.0
     assert ball_out.alive == True
 
+    # Ball outside should be clamped back inside the boundary and slowed
+    assert ball_out.x >= mode.min_x
+    assert ball_out.speed <= 10.0
+
     # Spectator should be untouched
     assert ball_spectator.hp == 100.0
 
