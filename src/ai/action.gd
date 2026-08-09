@@ -16016,6 +16016,51 @@ func execute(strategy: String, delta: float):
 
                 return
 
+
+        if decoy_type == "black_hole":
+            var pull_radius = 250.0
+            var pull_strength = 150.0
+            if world != null and "balls" in world:
+                for b in world.balls:
+                    var b_id = b.id if "id" in b else (b.get_meta("id") if b.has_method("get_meta") and b.has_meta("id") else null)
+                    var b_alive = b.alive if "alive" in b else (b.get_meta("alive") if b.has_method("get_meta") and b.has_meta("alive") else true)
+                    var b_team = b.team if "team" in b else (b.ball_type if "ball_type" in b else "")
+
+                    if b_alive and b_id != my_id and b_team != my_team:
+                        var b_x = b.x if "x" in b else (b.get_meta("x") if b.has_method("get_meta") and b.has_meta("x") else 0.0)
+                        var b_y = b.y if "y" in b else (b.get_meta("y") if b.has_method("get_meta") and b.has_meta("y") else 0.0)
+                        var dx = my_ball.x - b_x
+                        var dy = my_ball.y - b_y
+                        var dist_sq = dx*dx + dy*dy
+                        if dist_sq > 0 and dist_sq <= pull_radius*pull_radius:
+                            var dist = sqrt(dist_sq)
+                            var force = (1.0 - dist / pull_radius) * pull_strength * delta
+                            var nx = dx / dist
+                            var ny = dy / dist
+                            if "x" in b: b.x += nx * force
+                            elif b.has_method("set_meta"): b.set_meta("x", b_x + nx * force)
+                            if "y" in b: b.y += ny * force
+                            elif b.has_method("set_meta"): b.set_meta("y", b_y + ny * force)
+
+            if world != null and "arena" in world and "projectiles" in world.arena:
+                for p in world.arena.projectiles:
+                    var p_active = p.active if "active" in p else (p.get_meta("active") if p.has_method("get_meta") and p.has_meta("active") else true)
+                    if p_active:
+                        var p_x = p.x if "x" in p else (p.get_meta("x") if p.has_method("get_meta") and p.has_meta("x") else 0.0)
+                        var p_y = p.y if "y" in p else (p.get_meta("y") if p.has_method("get_meta") and p.has_meta("y") else 0.0)
+                        var dx = my_ball.x - p_x
+                        var dy = my_ball.y - p_y
+                        var dist_sq = dx*dx + dy*dy
+                        if dist_sq > 0 and dist_sq <= pull_radius*pull_radius:
+                            var dist = sqrt(dist_sq)
+                            var force = (1.0 - dist / pull_radius) * (pull_strength * 1.5) * delta
+                            var nx = dx / dist
+                            var ny = dy / dist
+                            if "x" in p: p.x += nx * force
+                            elif typeof(p) == TYPE_DICTIONARY: p["x"] = p_x + nx * force
+                            if "y" in p: p.y += ny * force
+                            elif typeof(p) == TYPE_DICTIONARY: p["y"] = p_y + ny * force
+
         if decoy_type == "siren":
             var pt = 1.0
             if "siren_ping_timer" in my_ball:
