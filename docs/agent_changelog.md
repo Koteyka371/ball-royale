@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1914] Bounty Hunter System — *2026-08-09 04:37:22 UTC*
+
+Introduce a dynamic bounty system where the player with the highest score or most kills is marked as a 'Bounty Target.' If another player kills them, they receive a massive resource or score boost, encouraging underdog comebacks.
+
+---
+
 ## [idea-1894] Crumbling Platforms — *2026-08-09 04:08:13 UTC*
 
 Platforms start to shake when stood upon and break after a few seconds.
