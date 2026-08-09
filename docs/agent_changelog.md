@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1925] Chain Lightning Tether Mode — *2026-08-09 15:17:40 UTC*
+
+A chaotic game mode where all players are permanently tethered by a weak chain lightning link to the nearest player. Moving too far breaks the link but causes a small stun, while staying close causes incremental damage that ramps up over time, forcing constant rotation and positioning.
+
+---
+
 ## [idea-1899] Black Hole Eruption Weather — *2026-08-09 15:12:18 UTC*
 
 A new extreme weather event called 'Singularity Storm' where miniature black holes randomly spawn across the arena, forcefully pulling balls towards them. Surviving requires precise usage of dash skills and gravity boots.
