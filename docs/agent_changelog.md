@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1949] Twitch integration: Bet points on surviving Juggernaut — *2026-08-09 20:41:20 UTC*
+
+Allow stream viewers to place bets using channel points on how long a Juggernaut will survive, or which player will deal the killing blow to the Juggernaut.
+
+---
+
 ## [idea-1921] Grave Robber Booster — *2026-08-09 20:25:27 UTC*
 
 A new neutral drop item called 'Grave Robber Shovel'. When picked up, the player can dig up existing 'Grave Trap' hazards spawned by dead Necromancers. Digging up the trap neutralizes it without triggering the bone fragments and has a high chance to drop a medium healing orb or a rare item, rewarding players for clearing hazards.
