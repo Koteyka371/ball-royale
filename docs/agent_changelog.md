@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1909] Meteorite Debris from Orbital Strikes — *2026-08-09 05:38:31 UTC*
+
+When the orbital crosshair fires its laser and creates an irradiated zone, it has a chance to also leave behind physical meteorite debris that acts as a temporary obstacle with collision.
+
+---
+
 ## [idea-1918] Shrinking Projectiles — *2026-08-09 04:37:28 UTC*
 
 Projectiles become smaller and deal less damage over time, forcing players to hit enemies at closer ranges to maximize effect.
