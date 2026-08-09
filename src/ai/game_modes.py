@@ -17747,7 +17747,7 @@ class PinballMode(GameMode):
                 def create_hazard(hid, hx, hy, r, k):
                     return BumperHazard(hid, hx, hy, r, k)
 
-            hazard_kinds = ["bumper", "bounce_pad", "pinball_flipper", "electric_bumper"]
+            hazard_kinds = ["bumper", "bounce_pad", "pinball_flipper", "electric_bumper", "pinball_bumper"]
             for i in range(25):
                 x = random.uniform(100, arena_width - 100)
                 y = random.uniform(100, arena_height - 100)
@@ -17768,7 +17768,7 @@ class PinballMode(GameMode):
 
         hazards = []
         if hasattr(world, "arena") and world.arena and hasattr(world.arena, "hazards"):
-            hazards = [h for h in world.arena.hazards if getattr(h, "kind", "") in ["bumper", "bounce_pad", "pinball_flipper"]]
+            hazards = [h for h in world.arena.hazards if getattr(h, "kind", "") in ["bumper", "bounce_pad", "pinball_flipper", "pinball_bumper"]]
 
         for b in balls:
             w_timer = getattr(b, 'weather_immunity_timer', 0.0)
@@ -28361,7 +28361,7 @@ class MagneticBumpersMode(GameMode):
                     self.kind = k
                     self.damage = 0.0
 
-            hazard_kinds = ["bumper", "bounce_pad", "pinball_flipper"]
+            hazard_kinds = ["bumper", "bounce_pad", "pinball_flipper", "pinball_bumper"]
             for i in range(15):
                 x = random.uniform(100, arena_width - 100)
                 y = random.uniform(100, arena_height - 100)
@@ -28374,7 +28374,7 @@ class MagneticBumpersMode(GameMode):
         import math
         hazards = []
         if hasattr(world, "arena") and world.arena and hasattr(world.arena, "hazards"):
-            hazards = [h for h in world.arena.hazards if getattr(h, "kind", "") in ["bumper", "bounce_pad", "pinball_flipper", "electric_bumper"]]
+            hazards = [h for h in world.arena.hazards if getattr(h, "kind", "") in ["bumper", "bounce_pad", "pinball_flipper", "electric_bumper", "pinball_bumper"]]
 
         for b in balls:
             if not getattr(b, "alive", False):
