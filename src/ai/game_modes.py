@@ -53937,3 +53937,102 @@ class CorruptedCapturePointsMode(GameMode):
 
 GAME_MODES['volcano_boss_mode'] = VolcanoBossMode()
 GAME_MODES['corrupted_capture_points'] = CorruptedCapturePointsMode()
+
+
+class HealthyGravityWellMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Healthy Gravity Well"
+        self.description = "A gravity well that pulls players with hp > 75 towards the center."
+        self.cgw_id = 2000000
+        self.pull_strength_base = 5000000.0  # Constant for inverse square law
+        self.horizon_radius = 50.0
+        self.pull_radius = 2000.0
+        self.damage = 25.0
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        # Center coordinates
+        cx = getattr(world.arena, "width", 1000.0) / 2.0 if hasattr(world, "arena") else 500.0
+        cy = getattr(world.arena, "height", 1000.0) / 2.0 if hasattr(world, "arena") else 500.0
+
+        existing = next((h for h in getattr(world, "arena", type("dummy", (), {"hazards": []})).hazards if getattr(h, "kind", "") == "healthy_gravity_well" and getattr(h, "id", None) == self.cgw_id), None)
+        if not existing and hasattr(world, "arena"):
+            try:
+                from arena.procedural_arena import Hazard
+                bh = Hazard(
+                    id=self.cgw_id,
+                    x=cx,
+                    y=cy,
+                    radius=self.horizon_radius,
+                    kind="healthy_gravity_well",
+                    damage=self.damage
+                )
+                world.arena.hazards.append(bh)
+            except ImportError:
+                class DummyHazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                world.arena.hazards.append(DummyHazard(self.cgw_id, cx, cy, self.horizon_radius, "healthy_gravity_well", self.damage))
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import math
+
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
+            return
+
+        cgw = next((h for h in getattr(world, "arena", type("dummy", (), {"hazards": []})).hazards if getattr(h, "kind", "") == "healthy_gravity_well" and getattr(h, "id", None) == self.cgw_id), None)
+        if not cgw:
+            return
+
+        cx = cgw.x
+        cy = cgw.y
+
+        # Pull players
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            if getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            hp = getattr(b, "hp", 0)
+            if hp <= 75:
+                continue
+
+            dx = cx - b.x
+            dy = cy - b.y
+            dist = math.hypot(dx, dy)
+
+            if dist < self.horizon_radius:
+                # Inside the event horizon, take heavy damage
+                if hasattr(b, "hp"):
+                    b.hp -= self.damage * delta
+                    if b.hp <= 0:
+                        b.hp = 0
+                        b.alive = False
+            elif dist > 0 and dist < self.pull_radius:
+                # Pull strength is inversely proportional to square of distance (gravity)
+                pull_strength = self.pull_strength_base / (dist * dist)
+                # Cap max pull force right at the edge of the event horizon
+                max_pull = self.pull_strength_base / (self.horizon_radius * self.horizon_radius)
+                pull_strength = min(pull_strength, max_pull)
+
+                if hasattr(b, "vx") and hasattr(b, "vy"):
+                    b.vx += (dx / dist) * pull_strength * delta
+                    b.vy += (dy / dist) * pull_strength * delta
+                else:
+                    # Direct position update if no velocity
+                    b.x += (dx / dist) * pull_strength * delta * delta
+                    b.y += (dy / dist) * pull_strength * delta * delta
+
+GAME_MODES['healthy_gravity_well'] = HealthyGravityWellMode()

@@ -84799,3 +84799,137 @@ class CorruptedCapturePointsMode extends GameMode:
 GAME_MODES["chain_lightning_tether"] = ChainLightningTetherMode.new()
 GAME_MODES['quantum_tunnel_safe_zone'] = QuantumTunnelSafeZoneMode.new()
 GAME_MODES['corrupted_capture_points'] = CorruptedCapturePointsMode.new()
+
+
+class HealthyGravityWellMode extends GameMode:
+	var cgw_id = 2000000
+	var pull_strength_base = 5000000.0
+	var horizon_radius = 50.0
+	var pull_radius = 2000.0
+	var damage = 25.0
+
+	func _init():
+		super()
+		name = "Healthy Gravity Well"
+		description = "A gravity well that pulls players with hp > 75 towards the center."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		if not "hazards" in world.arena:
+			world.arena.hazards = []
+
+		var cx = world.arena.width / 2.0 if "width" in world.arena else 500.0
+		var cy = world.arena.height / 2.0 if "height" in world.arena else 500.0
+
+		var existing = null
+		for h in world.arena.hazards:
+			if typeof(h) == TYPE_DICTIONARY:
+				if h.get("kind", "") == "healthy_gravity_well" and h.get("id", null) == cgw_id:
+					existing = h
+					break
+			elif typeof(h) == TYPE_OBJECT:
+				if h.get("kind") == "healthy_gravity_well" and h.get("id") == cgw_id:
+					existing = h
+					break
+
+		if not existing:
+			world.arena.hazards.append({
+				"id": cgw_id,
+				"x": cx,
+				"y": cy,
+				"radius": horizon_radius,
+				"kind": "healthy_gravity_well",
+				"damage": damage,
+				"active": true
+			})
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+		if not "hazards" in world.arena:
+			return
+
+		var cgw = null
+		for h in world.arena.hazards:
+			if typeof(h) == TYPE_DICTIONARY:
+				if h.get("kind", "") == "healthy_gravity_well" and h.get("id", null) == cgw_id:
+					cgw = h
+					break
+			elif typeof(h) == TYPE_OBJECT:
+				if h.get("kind") == "healthy_gravity_well" and h.get("id") == cgw_id:
+					cgw = h
+					break
+
+		if cgw == null:
+			return
+
+		var cx = cgw.get("x") if typeof(cgw) == TYPE_OBJECT else cgw["x"]
+		var cy = cgw.get("y") if typeof(cgw) == TYPE_OBJECT else cgw["y"]
+
+		for b in balls:
+			var is_alive = true
+			if typeof(b) == TYPE_OBJECT:
+				is_alive = b.alive if "alive" in b else true
+			elif typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", true)
+
+			if not is_alive:
+				continue
+
+			var b_type = ""
+			if typeof(b) == TYPE_OBJECT:
+				b_type = b.ball_type if "ball_type" in b else ""
+			elif typeof(b) == TYPE_DICTIONARY:
+				b_type = b.get("ball_type", "")
+
+			if b_type == "spectator":
+				continue
+
+			var bhp = 0.0
+			if typeof(b) == TYPE_OBJECT:
+				bhp = b.hp if "hp" in b else 0.0
+			elif typeof(b) == TYPE_DICTIONARY:
+				bhp = b.get("hp", 0.0)
+
+			if bhp <= 75:
+				continue
+
+			var bx = b.x if typeof(b) == TYPE_OBJECT else b.get("x", 0.0)
+			var by = b.y if typeof(b) == TYPE_OBJECT else b.get("y", 0.0)
+
+			var dx = cx - bx
+			var dy = cy - by
+			var dist = sqrt(dx*dx + dy*dy)
+
+			if dist < horizon_radius:
+				# Inside event horizon, deal damage
+				if typeof(b) == TYPE_OBJECT and "hp" in b:
+					b.hp -= damage * delta
+					if b.hp <= 0:
+						b.hp = 0
+						b.alive = false
+				elif typeof(b) == TYPE_DICTIONARY and b.has("hp"):
+					b["hp"] -= damage * delta
+					if b["hp"] <= 0:
+						b["hp"] = 0
+						b["alive"] = false
+			elif dist > 0 and dist < pull_radius:
+				var pull_strength = pull_strength_base / (dist * dist)
+				var max_pull = pull_strength_base / (horizon_radius * horizon_radius)
+				pull_strength = min(pull_strength, max_pull)
+
+				if typeof(b) == TYPE_OBJECT:
+					if "vx" in b and "vy" in b:
+						b.vx += (dx / dist) * pull_strength * delta
+						b.vy += (dy / dist) * pull_strength * delta
+					else:
+						b.x += (dx / dist) * pull_strength * delta * delta
+						b.y += (dy / dist) * pull_strength * delta * delta
+				elif typeof(b) == TYPE_DICTIONARY:
+					if b.has("vx") and b.has("vy"):
+						b["vx"] += (dx / dist) * pull_strength * delta
+						b["vy"] += (dy / dist) * pull_strength * delta
+					else:
+						b["x"] += (dx / dist) * pull_strength * delta * delta
+						b["y"] += (dy / dist) * pull_strength * delta * delta
+
+GAME_MODES['healthy_gravity_well'] = HealthyGravityWellMode.new()
