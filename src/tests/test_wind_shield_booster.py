@@ -99,3 +99,24 @@ if __name__ == "__main__":
     test_wind_shield_booster_wind_immunity()
     test_wind_shield_booster_tornado_immunity()
     print("All tests passed!")
+
+def test_wind_shield_storm_immunity():
+    ball = MockBall()
+    ball.wind_shield_booster_timer = 5.0
+
+    world = MockWorld()
+    world.balls.append(ball)
+
+    action = Action(ball, world)
+    action._idle = lambda d: None
+
+    world.arena.weather = "thunderstorm"
+    lightning = MockHazard(kind="lightning_strike")
+    lightning.x = 100.0
+    lightning.y = 100.0
+    world.arena.hazards.append(lightning)
+
+    action.execute("idle", 0.1)
+
+    # Ball should not take damage from lightning strike
+    assert ball.hp == 100.0
