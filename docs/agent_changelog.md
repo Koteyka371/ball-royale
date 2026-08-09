@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1894] Crumbling Platforms — *2026-08-09 04:08:13 UTC*
+
+Platforms start to shake when stood upon and break after a few seconds.
+
+---
+
 ## [idea-1912] Sabotage Votes — *2026-08-09 00:04:29 UTC*
 
 Players can initiate a 'sabotage' vote that secretly applies a debuff (like reduced movement speed or increased damage taken) to a random player. This keeps players guessing and adds a layer of paranoia during matches.
