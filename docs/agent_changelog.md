@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1912] Sabotage Votes — *2026-08-09 00:04:29 UTC*
+
+Players can initiate a 'sabotage' vote that secretly applies a debuff (like reduced movement speed or increased damage taken) to a random player. This keeps players guessing and adds a layer of paranoia during matches.
+
+---
+
 ## [idea-1917] Aura Pulse Amplifier — *2026-08-08 23:50:10 UTC*
 
 An arena hazard or center objective that periodically pulses an aura color. If balls matching that color touch the pulse wave, their speed and damage are temporarily increased by 50%.
