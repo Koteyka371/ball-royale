@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1933] Gravity Nullifier Biome — *2026-08-09 09:47:43 UTC*
+
+A biome safe zone where the pull of gravity is significantly reduced, meaning knockback from attacks sends players flying much further, making edge positioning very dangerous.
+
+---
+
 ## [idea-1930] Skin specific kill effects — *2026-08-09 09:33:45 UTC*
 
 Certain legendary skins could change the particle effects that appear when the ball scores a kill.
