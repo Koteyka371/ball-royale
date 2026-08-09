@@ -2187,6 +2187,13 @@ class GameMode:
 
     def on_ball_died(self, world, ball, killer=None):
         if killer and getattr(ball, "id", None) and getattr(killer, "id", None):
+            if getattr(killer, "skin", "") == "legendary":
+                if hasattr(world, "add_event"):
+                    world.add_event("visual_effect", {
+                        "type": "legendary_kill_particles",
+                        "x": getattr(ball, "x", 0.0),
+                        "y": getattr(ball, "y", 0.0)
+                    })
             pm = getattr(world, "profile_manager", None)
             if pm and hasattr(pm, "get_player_bounties"):
                 target_id = str(ball.id)
