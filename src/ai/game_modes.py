@@ -37740,7 +37740,94 @@ class WeatherBossMode(GameMode):
                             if hasattr(world, "add_event"):
                                 world.add_event("boss_defeated", {"message": f"The {getattr(b, 'name', 'Boss')} was defeated! A legendary item dropped!"})
 
+class SingularityStormMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Singularity Storm"
+        self.description = "A storm of miniature black holes pulls everything in. Survive using dash skills and gravity boots!"
+        self.event_timer = 0.0
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        self.event_timer += delta
+
+        if not hasattr(world, "arena"):
+            return
+
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        if self.event_timer >= 5.0:
+            self.event_timer = 0.0
+            import random
+            arena_width = getattr(world.arena, "width", 1000)
+            arena_height = getattr(world.arena, "height", 1000)
+            cx = random.uniform(100, arena_width - 100)
+            cy = random.uniform(100, arena_height - 100)
+
+            try:
+                from arena.procedural_arena import Hazard
+                h = Hazard(id=len(world.arena.hazards) + 95000 + random.randint(0, 1000), x=cx, y=cy, radius=30.0, kind="mini_black_hole", damage=0.0)
+            except ImportError:
+                class DummyHazardBH:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                h = DummyHazardBH(len(world.arena.hazards) + 95000 + random.randint(0, 1000), cx, cy, 30.0, "mini_black_hole", 0.0)
+
+            setattr(h, "pull_radius", 300.0)
+            setattr(h, "pull_strength", 400.0)
+
+            world.arena.hazards.append(h)
+            if hasattr(world, "add_event"):
+                world.add_event("mini_black_hole_spawned", {"x": cx, "y": cy})
+
+        for h in world.arena.hazards:
+            if getattr(h, "kind", "") == "mini_black_hole":
+                hx = getattr(h, "x", 0.0)
+                hy = getattr(h, "y", 0.0)
+                pull_radius = getattr(h, "pull_radius", 300.0)
+                pull_strength = getattr(h, "pull_strength", 400.0)
+
+                for b in balls:
+                    if getattr(b, "alive", True) and not getattr(b, "is_spectator", False):
+                        bx = getattr(b, "x", 0.0)
+                        by = getattr(b, "y", 0.0)
+                        dx = hx - bx
+                        dy = hy - by
+
+                        import math
+                        dist = math.sqrt(dx*dx + dy*dy)
+
+                        if dist > 0 and dist < pull_radius:
+                            pull_factor = 1.0
+
+                            if getattr(b, "is_dashing", False):
+                                pull_factor = 0.0
+                            else:
+                                inventory = getattr(b, "inventory", {})
+                                if isinstance(inventory, dict) and inventory.get("gravity_boots"):
+                                    pull_factor = 0.0
+                                elif isinstance(inventory, list) and "gravity_boots" in inventory:
+                                    pull_factor = 0.0
+                                elif hasattr(b, "has") and b.has("inventory"):
+                                    inv = b.inventory
+                                    if type(inv) == list and "gravity_boots" in inv:
+                                        pull_factor = 0.0
+
+                            if pull_factor > 0:
+                                force = (1.0 - (dist / pull_radius)) * pull_strength * pull_factor * delta
+                                ndx = dx / dist
+                                ndy = dy / dist
+                                b.x += ndx * force
+                                b.y += ndy * force
+
+
 GAME_MODES = {
+    "singularity_storm": SingularityStormMode(),
     'dash_aura_trail': DashAuraTrailMode(),
     "expanding_aura_event": ExpandingAuraEventMode(),
     "aura_link_royale": AuraLinkRoyaleMode(),

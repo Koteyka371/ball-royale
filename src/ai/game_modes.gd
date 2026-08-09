@@ -61223,7 +61223,119 @@ class WeatherBossMode extends GameMode:
 								world.add_event("boss_defeated", {"message": "The Storm Elemental was defeated! A legendary item dropped!"})
 
 
+class SingularityStormMode extends GameMode:
+	var event_timer = 0.0
+
+	func _init():
+		self.name = "Singularity Storm"
+		self.description = "A storm of miniature black holes pulls everything in. Survive using dash skills and gravity boots!"
+
+	func tick(world: Dictionary, balls: Array, delta: float = 0.016):
+		event_timer += delta
+
+		if not world.has("arena"):
+			return
+
+		if typeof(world["arena"]) == TYPE_DICTIONARY and not world["arena"].has("hazards"):
+			world["arena"]["hazards"] = []
+		elif typeof(world["arena"]) == TYPE_OBJECT and not ("hazards" in world["arena"]):
+			world["arena"].hazards = []
+
+		var rng = RandomNumberGenerator.new()
+		rng.randomize()
+
+		if event_timer >= 5.0:
+			event_timer = 0.0
+			var arena_width = 1000.0
+			var arena_height = 1000.0
+			if typeof(world["arena"]) == TYPE_DICTIONARY:
+				if world["arena"].has("width"): arena_width = float(world["arena"]["width"])
+				if world["arena"].has("height"): arena_height = float(world["arena"]["height"])
+			else:
+				if "width" in world["arena"]: arena_width = float(world["arena"].width)
+				if "height" in world["arena"]: arena_height = float(world["arena"].height)
+
+			var cx = rng.randf_range(100.0, arena_width - 100.0)
+			var cy = rng.randf_range(100.0, arena_height - 100.0)
+
+			var h_id = 95000 + rng.randi_range(0, 1000)
+			var hazards = world["arena"]["hazards"] if typeof(world["arena"]) == TYPE_DICTIONARY else world["arena"].hazards
+			if hazards:
+				h_id += hazards.size()
+
+			var h = {
+				"id": h_id,
+				"x": cx,
+				"y": cy,
+				"radius": 30.0,
+				"kind": "mini_black_hole",
+				"damage": 0.0,
+				"pull_radius": 300.0,
+				"pull_strength": 400.0
+			}
+			hazards.append(h)
+
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("mini_black_hole_spawned", {"x": cx, "y": cy})
+			elif typeof(world) == TYPE_DICTIONARY and world.has("events") and typeof(world["events"]) == TYPE_ARRAY:
+				world["events"].append({"type": "mini_black_hole_spawned", "data": {"x": cx, "y": cy}})
+
+		var hazards = world["arena"]["hazards"] if typeof(world["arena"]) == TYPE_DICTIONARY else world["arena"].hazards
+
+		for h in hazards:
+			var kind = h["kind"] if typeof(h) == TYPE_DICTIONARY else h.kind
+			if kind == "mini_black_hole":
+				var hx = float(h["x"] if typeof(h) == TYPE_DICTIONARY else h.x)
+				var hy = float(h["y"] if typeof(h) == TYPE_DICTIONARY else h.y)
+				var pull_radius = float(h["pull_radius"] if typeof(h) == TYPE_DICTIONARY else h.pull_radius)
+				var pull_strength = float(h["pull_strength"] if typeof(h) == TYPE_DICTIONARY else h.pull_strength)
+
+				for b in balls:
+					var alive = b["alive"] if typeof(b) == TYPE_DICTIONARY else b.alive
+					var is_spec = false
+					if typeof(b) == TYPE_DICTIONARY and b.has("is_spectator"): is_spec = b["is_spectator"]
+					elif typeof(b) == TYPE_OBJECT and "is_spectator" in b: is_spec = b.is_spectator
+
+					if alive and not is_spec:
+						var bx = float(b["x"] if typeof(b) == TYPE_DICTIONARY else b.x)
+						var by = float(b["y"] if typeof(b) == TYPE_DICTIONARY else b.y)
+						var dx = hx - bx
+						var dy = hy - by
+						var dist = sqrt(dx*dx + dy*dy)
+
+						if dist > 0 and dist < pull_radius:
+							var pull_factor = 1.0
+
+							var is_dash = false
+							if typeof(b) == TYPE_DICTIONARY and b.has("is_dashing"): is_dash = b["is_dashing"]
+							elif typeof(b) == TYPE_OBJECT and "is_dashing" in b: is_dash = b.is_dashing
+
+							if is_dash:
+								pull_factor = 0.0
+							else:
+								var inv = null
+								if typeof(b) == TYPE_DICTIONARY and b.has("inventory"): inv = b["inventory"]
+								elif typeof(b) == TYPE_OBJECT and b.has_meta("inventory"): inv = b.get_meta("inventory")
+								elif typeof(b) == TYPE_OBJECT and "inventory" in b: inv = b.inventory
+
+								if typeof(inv) == TYPE_DICTIONARY and inv.has("gravity_boots"): pull_factor = 0.0
+								elif typeof(inv) == TYPE_ARRAY and inv.has("gravity_boots"): pull_factor = 0.0
+
+							if pull_factor > 0:
+								var force = (1.0 - (dist / pull_radius)) * pull_strength * pull_factor * delta
+								var ndx = dx / dist
+								var ndy = dy / dist
+
+								if typeof(b) == TYPE_DICTIONARY:
+									b["x"] = bx + ndx * force
+									b["y"] = by + ndy * force
+								else:
+									b.x = bx + ndx * force
+									b.y = by + ndy * force
+
+
 var GAME_MODES = {
+	"singularity_storm": SingularityStormMode.new(),
 	"dash_aura_trail": DashAuraTrailMode.new(),
 	"expanding_aura_event": ExpandingAuraEventMode.new(),
 	"aura_well_hazard": AuraWellHazardMode.new(),
