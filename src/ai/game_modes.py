@@ -15513,6 +15513,8 @@ class DynamicBountyMode(GameMode):
                     b.is_dynamic_bounty = True
                 else:
                     b.is_dynamic_bounty = False
+            else:
+                b.is_dynamic_bounty = False
 
         self.current_bounty_id = new_bounty_target
 
