@@ -32588,6 +32588,20 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
 
+            elif "kind" in nearest and nearest.kind == "magnetic_boots_booster":
+                if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+                    self.ball.set_meta("magnetic_boots_timer", 10.0)
+                else:
+                    self.ball.magnetic_boots_timer = 10.0
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
+
             elif (typeof(nearest) == TYPE_DICTIONARY and nearest.get("kind") == "hazard_jar_item") or (typeof(nearest) == TYPE_OBJECT and "kind" in nearest and nearest.kind == "hazard_jar_item"):
                 if typeof(self.ball) == TYPE_DICTIONARY:
                     if not self.ball.has("inventory"): self.ball["inventory"] = []
@@ -46922,6 +46936,24 @@ func _clamp_position() -> bool:
             if old_x != self.ball.x or old_y != self.ball.y:
                 bounced = true
 
+        var cosmetic_val = ""
+        if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("cosmetic"):
+            cosmetic_val = str(self.ball["cosmetic"]).to_lower().replace(" ", "_")
+        elif typeof(self.ball) == TYPE_OBJECT and "cosmetic" in self.ball:
+            cosmetic_val = str(self.ball.cosmetic).to_lower().replace(" ", "_")
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("cosmetic"):
+            cosmetic_val = str(self.ball.get_meta("cosmetic")).to_lower().replace(" ", "_")
+
+        var mb_timer = 0.0
+        if typeof(self.ball) == TYPE_OBJECT and "magnetic_boots_timer" in self.ball:
+            mb_timer = float(self.ball.magnetic_boots_timer)
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("magnetic_boots_timer"):
+            mb_timer = float(self.ball.get_meta("magnetic_boots_timer"))
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("magnetic_boots_timer"):
+            mb_timer = float(self.ball["magnetic_boots_timer"])
+
+        var is_magnetic = (mb_timer > 0.0 or cosmetic_val == "magnetic_boots")
+
         if bounced and "game_mode" in self.world and self.world.game_mode != null and "name" in self.world.game_mode and self.world.game_mode.name in ["Ricochet Arena", "Extreme Bounciness", "Super Bouncy Arena", "Chaotic Pinball Machine", "Jump Pad Boundaries"]:
             var mult = 2.0
             if self.world.game_mode.name == "Ricochet Arena":
@@ -46930,6 +46962,9 @@ func _clamp_position() -> bool:
                     mult = self.world.game_mode.velocity_multiplier
             elif self.world.game_mode.name == "Jump Pad Boundaries":
                 mult = 3.0
+
+            if is_magnetic:
+                mult = 0.0
 
             var bounced_x = old_x != self.ball.x
             var bounced_y = old_y != self.ball.y
@@ -46948,7 +46983,24 @@ func _clamp_position() -> bool:
                     self.ball.velocity_x = self.ball.velocity_x * mult
                 if bounced_y:
                     self.ball.velocity_y = self.ball.velocity_y * mult
+        elif bounced and is_magnetic:
+            var bounced_x = old_x != self.ball.x
+            var bounced_y = old_y != self.ball.y
+            if not bounced_x and not bounced_y:
+                bounced_x = true
+                bounced_y = true
 
+            if "vx" in self.ball and "vy" in self.ball:
+                if bounced_x:
+                    self.ball.vx = 0.0
+                if bounced_y:
+                    self.ball.vy = 0.0
+
+            if "velocity_x" in self.ball and "velocity_y" in self.ball:
+                if bounced_x:
+                    self.ball.velocity_x = 0.0
+                if bounced_y:
+                    self.ball.velocity_y = 0.0
 
     if bounced:
         var rb_timer = 0.0
@@ -47220,8 +47272,16 @@ func _resolve_collisions() -> bool:
             elif typeof(self.ball) == TYPE_OBJECT and "has_kinetic_absorber" in self.ball:
                 has_kin_abs_skill = self.ball.has_kinetic_absorber
 
-            if cosmetic_val == "magnetic_boots":
-                knockback_multiplier *= 0.5
+            var mb_timer = 0.0
+            if typeof(self.ball) == TYPE_OBJECT and "magnetic_boots_timer" in self.ball:
+                mb_timer = float(self.ball.magnetic_boots_timer)
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("magnetic_boots_timer"):
+                mb_timer = float(self.ball.get_meta("magnetic_boots_timer"))
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("magnetic_boots_timer"):
+                mb_timer = float(self.ball["magnetic_boots_timer"])
+
+            if mb_timer > 0.0 or cosmetic_val == "magnetic_boots":
+                knockback_multiplier = 0.0
             elif cosmetic_val == "grounded_boots":
                 knockback_multiplier *= 0.1
             elif cosmetic_val == "rooted_boots":
@@ -49584,6 +49644,25 @@ func _update_skill_timer(delta: float):
             else:
                 self.ball.deflector_shield_timer = deflector_shield_timer
 
+
+    var mb_timer = 0.0
+    if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("magnetic_boots_timer"):
+        mb_timer = float(self.ball.get_meta("magnetic_boots_timer"))
+    elif "magnetic_boots_timer" in self.ball:
+        mb_timer = float(self.ball.magnetic_boots_timer)
+
+    if mb_timer > 0:
+        mb_timer -= delta
+        if mb_timer <= 0:
+            if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+                self.ball.set_meta("magnetic_boots_timer", 0.0)
+            else:
+                self.ball.magnetic_boots_timer = 0.0
+        else:
+            if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+                self.ball.set_meta("magnetic_boots_timer", mb_timer)
+            else:
+                self.ball.magnetic_boots_timer = mb_timer
 
     var rb_timer = 0.0
     if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("rebound_booster_timer"):

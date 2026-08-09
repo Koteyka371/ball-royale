@@ -16573,6 +16573,14 @@ class Action:
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
 
+                elif getattr(nearest, "kind", None) == "magnetic_boots_booster":
+                    self.ball.magnetic_boots_timer = 10.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+
                 elif getattr(nearest, "kind", None) == "storm_link_booster":
                     enemies = self._get_enemies()
                     if enemies:
@@ -24055,6 +24063,9 @@ class Action:
                 bounced = True
 
         gm = getattr(self.world, "game_mode", None)
+        cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+        is_magnetic = getattr(self.ball, "magnetic_boots_timer", 0.0) > 0.0 or cosmetic == "magnetic_boots"
+
         if bounced and gm and getattr(gm, "name", "") in ["Ricochet Arena", "Extreme Bounciness", "Super Bouncy Arena", "Chaotic Pinball Machine", "Jump Pad Boundaries"]:
             if getattr(gm, "name", "") == "Ricochet Arena":
                 mult = getattr(gm, "velocity_multiplier", 3.0)
@@ -24062,6 +24073,9 @@ class Action:
                 mult = 3.0
             else:
                 mult = 2.0
+
+            if is_magnetic:
+                mult = 0.0
 
             # The velocity is already reflected by the main game loop, so we ONLY multiply it.
             # However, we only multiply the axis that actually bounced.
@@ -24082,7 +24096,23 @@ class Action:
                     self.ball.velocity_x = self.ball.velocity_x * mult
                 if bounced_y:
                     self.ball.velocity_y = self.ball.velocity_y * mult
+        elif bounced and is_magnetic:
+            # Under magnetic boots, zero out the reflected velocity on wall bounce to simulate sticking/no-knockback
+            bounced_x = old_x != self.ball.x
+            bounced_y = old_y != self.ball.y
+            if not bounced_x and not bounced_y:
+                bounced_x, bounced_y = True, True
 
+            if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
+                if bounced_x:
+                    self.ball.vx = 0.0
+                if bounced_y:
+                    self.ball.vy = 0.0
+            if hasattr(self.ball, "velocity_x") and hasattr(self.ball, "velocity_y"):
+                if bounced_x:
+                    self.ball.velocity_x = 0.0
+                if bounced_y:
+                    self.ball.velocity_y = 0.0
 
         if bounced:
             if getattr(self.ball, "rebound_booster_timer", 0.0) > 0:
@@ -24189,8 +24219,8 @@ class Action:
                             other.alive = False
 
                 cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
-                if cosmetic == "magnetic_boots":
-                    knockback_multiplier *= 0.5
+                if getattr(self.ball, "magnetic_boots_timer", 0.0) > 0.0 or cosmetic == "magnetic_boots":
+                    knockback_multiplier = 0.0
                 elif cosmetic == "grounded_boots":
                     knockback_multiplier *= 0.1
                 elif cosmetic == "rooted_boots":
@@ -25272,6 +25302,11 @@ class Action:
             if self.ball.deflector_shield_timer <= 0:
                 self.ball.deflector_shield_active = False
 
+
+        if hasattr(self.ball, "magnetic_boots_timer") and self.ball.magnetic_boots_timer > 0:
+            self.ball.magnetic_boots_timer -= delta
+            if self.ball.magnetic_boots_timer <= 0:
+                self.ball.magnetic_boots_timer = 0.0
 
         if hasattr(self.ball, "rebound_booster_timer") and self.ball.rebound_booster_timer > 0:
             self.ball.rebound_booster_timer -= delta
