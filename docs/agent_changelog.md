@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1932] Skin recolors via materials — *2026-08-09 09:09:00 UTC*
+
+Allow players to craft specific color palettes using inventory materials to recolor their unlocked skins.
+
+---
+
 ## [idea-1904] Reflective Mirror Walls — *2026-08-09 09:01:23 UTC*
 
 Walls around the map occasionally become mirrors for a few seconds. Lasers and projectiles shot at them bounce directly back at the attacker, making players careful where they shoot.
