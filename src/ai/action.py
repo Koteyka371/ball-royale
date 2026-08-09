@@ -4097,13 +4097,21 @@ class Action:
                     continue
                 # Simple AABB collision
 
+                # Platform break logic initialization
+                if not hasattr(p, "shake_timer"):
+                    p.shake_timer = 0.0
+
                 # Check actual boundaries (ignoring jitter)
                 px = p.x
                 py = p.y
+
+                is_stood_upon = False
                 if (px - p.width/2 <= self.ball.x <= px + p.width/2) and (py - p.height/2 <= self.ball.y <= py + p.height/2):
                     self.ball.x += p.vx * delta
                     self.ball.y += p.vy * delta
+                    is_stood_upon = True
 
+                if is_stood_upon:
                     if not getattr(p, "is_shaking", False):
                         p.is_shaking = True
                         if hasattr(self.world, "add_event"):
@@ -4112,9 +4120,29 @@ class Action:
                             self.world["events"].append({"type": "platform_shake", "x": px, "y": py})
 
                     # Apply a tiny random jitter to ball if platform is shaking, to simulate shake visually without affecting core collision
-                    if getattr(p, "is_shaking", False):
-                        self.ball.x += random.uniform(-1.0, 1.0)
-                        self.ball.y += random.uniform(-1.0, 1.0)
+                    self.ball.x += random.uniform(-1.0, 1.0)
+                    self.ball.y += random.uniform(-1.0, 1.0)
+
+                if getattr(p, "is_shaking", False):
+                    # Only increment timer once per tick per platform (if multiple balls stand on it)
+                    # We can use a property to track if it has been updated this tick
+                    if not hasattr(p, "_last_shake_tick"):
+                        p._last_shake_tick = getattr(self.world, "current_tick", 0)
+                        p.shake_timer += delta
+                    elif p._last_shake_tick != getattr(self.world, "current_tick", 0):
+                        p._last_shake_tick = getattr(self.world, "current_tick", 0)
+                        p.shake_timer += delta
+
+                    # Apply visual shaking properties (non-colliding)
+                    p.visual_offset_x = random.uniform(-3.0, 3.0)
+                    p.visual_offset_y = random.uniform(-3.0, 3.0)
+
+                    if p.shake_timer >= 3.0:
+                        p.is_broken = True
+                        if hasattr(self.world, "add_event"):
+                            self.world.add_event("platform_break", {"x": px, "y": py})
+                        elif isinstance(self.world, dict) and "events" in self.world:
+                            self.world["events"].append({"type": "platform_break", "x": px, "y": py})
 
         if getattr(self.ball, "quantum_state_timer", 0.0) > 0:
             self.ball.quantum_state_timer -= delta
