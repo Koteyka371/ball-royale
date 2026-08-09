@@ -79454,6 +79454,139 @@ class QuantumWormholeMode extends GameMode:
 GAME_MODES['quantum_wormhole'] = QuantumWormholeMode.new()
 
 
+
+class QuantumTunnelSafeZoneMode extends GameMode:
+	var biomes = []
+	var biome_radius = 150.0
+	var teleport_timer = 0.0
+	var teleport_interval = 8.0
+	var outside_damage_per_second = 10.0
+
+	func _init():
+		name = "Quantum Tunnel Safe Zone"
+		description = "A specific biome safe zone that periodically teleports entities inside it to another random quantum tunnel biome on the map, allowing for rapid escapes or surprise attacks, but making it hard to hold ground."
+
+	func setup(world, balls):
+		.setup(world, balls)
+		var arena_width = 1000.0
+		if world.has("arena") and world.arena and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("width"):
+			arena_width = float(world.arena.width)
+		elif typeof(world) == TYPE_OBJECT and world.get("arena") != null:
+			var w = world.arena.get("width")
+			if w != null:
+				arena_width = float(w)
+
+		var arena_height = 1000.0
+		if world.has("arena") and world.arena and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("height"):
+			arena_height = float(world.arena.height)
+		elif typeof(world) == TYPE_OBJECT and world.get("arena") != null:
+			var h = world.arena.get("height")
+			if h != null:
+				arena_height = float(h)
+
+		biomes = [
+			{"x": arena_width * 0.25, "y": arena_height * 0.25},
+			{"x": arena_width * 0.75, "y": arena_height * 0.25},
+			{"x": arena_width * 0.25, "y": arena_height * 0.75},
+			{"x": arena_width * 0.75, "y": arena_height * 0.75}
+		]
+		teleport_timer = 0.0
+
+	func tick(world, balls, delta=0.016):
+		teleport_timer += delta
+		var teleport_now = false
+		if teleport_timer >= teleport_interval:
+			teleport_timer = 0.0
+			teleport_now = true
+
+		for b in balls:
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				if not b.get("alive", false):
+					continue
+				b_type = b.get("ball_type", "")
+			else:
+				if not b.get("alive"):
+					continue
+				b_type = b.get("ball_type")
+
+			if b_type == "spectator":
+				continue
+
+			var in_biome = false
+			var current_biome_index = -1
+
+			var bx = b.get("x")
+			var by = b.get("y")
+
+			for i in range(biomes.size()):
+				var biome = biomes[i]
+				var dx = bx - biome["x"]
+				var dy = by - biome["y"]
+				var dist = sqrt(dx*dx + dy*dy)
+				if dist <= biome_radius:
+					in_biome = true
+					current_biome_index = i
+					break
+
+			if not in_biome:
+				var current_slow = b.get("slow_timer")
+				if current_slow == null:
+					current_slow = 0.0
+				if 0.5 > current_slow:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["slow_timer"] = 0.5
+					else:
+						b.set("slow_timer", 0.5)
+
+				var dmg = outside_damage_per_second * delta
+				if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+					b.take_damage(dmg, "quantum_tunnel_safe_zone")
+				elif typeof(b) == TYPE_DICTIONARY and b.has("hp"):
+					b["hp"] -= dmg
+					if b["hp"] <= 0:
+						b["hp"] = 0
+						b["alive"] = false
+				elif typeof(b) == TYPE_OBJECT and b.get("hp") != null:
+					var hp = b.get("hp") - dmg
+					if hp <= 0:
+						hp = 0
+						b.set("alive", false)
+					b.set("hp", hp)
+			else:
+				if teleport_now:
+					var other_biomes = []
+					for i in range(biomes.size()):
+						if i != current_biome_index:
+							other_biomes.append(i)
+
+					if other_biomes.size() > 0:
+						var target_index = other_biomes[randi() % other_biomes.size()]
+						var target_biome = biomes[target_index]
+
+						var new_x = target_biome["x"] + rand_range(-20, 20)
+						var new_y = target_biome["y"] + rand_range(-20, 20)
+
+						if typeof(b) == TYPE_DICTIONARY:
+							b["x"] = new_x
+							b["y"] = new_y
+						else:
+							b.set("x", new_x)
+							b.set("y", new_y)
+
+						var b_id = -1
+						if typeof(b) == TYPE_DICTIONARY:
+							b_id = b.get("id", -1)
+						else:
+							b_id = b.get("id")
+							if b_id == null:
+								b_id = -1
+
+						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+							world.add_event("quantum_teleport", {"ball_id": b_id, "target_biome": target_index})
+						elif typeof(world) == TYPE_DICTIONARY and world.has("events"):
+							world["events"].append({"type": "quantum_teleport", "data": {"ball_id": b_id, "target_biome": target_index}})
+
 class OrbitingChaosOrbsMode extends GameMode:
 	var spawn_timer = 5.0
 	var spawn_interval = 5.0
@@ -83612,3 +83745,5 @@ class OccasionalMirrorWallsMode extends GameMode:
 var _dummy_occasional_mirror_walls = _add_occasional_mirror_walls()
 func _add_occasional_mirror_walls():
 	GAME_MODES["occasional_mirror_walls"] = OccasionalMirrorWallsMode.new()
+
+GAME_MODES['quantum_tunnel_safe_zone'] = QuantumTunnelSafeZoneMode.new()
