@@ -27,6 +27,37 @@ func assign_daily_quests_to_profile(profile) -> void:
     for quest in quests:
         profile.add_quest(quest["description"], quest["reward"])
 
+func get_new_daily_quest(existing_quests: Array) -> Dictionary:
+    var existing_descriptions = []
+    for q in existing_quests:
+        if q.has("description"):
+            existing_descriptions.append(q["description"])
+
+    var available_quests = []
+    for q in daily_quests:
+        if not existing_descriptions.has(q["description"]):
+            available_quests.append(q)
+
+    if available_quests.size() == 0:
+        return daily_quests[randi() % daily_quests.size()]
+
+    return available_quests[randi() % available_quests.size()]
+
+func reroll_daily_quest(profile, quest_index: int) -> bool:
+    if profile.data.has("mutator_tokens") and profile.data["mutator_tokens"] >= 1:
+        var quests = profile.get_quests()
+        if quest_index >= 0 and quest_index < quests.size():
+            var new_quest = get_new_daily_quest(quests)
+            quests[quest_index] = {
+                "description": new_quest["description"],
+                "reward": new_quest["reward"],
+                "completed": false
+            }
+            profile.data["mutator_tokens"] -= 1
+            profile.save_profile()
+            return true
+    return false
+
 func select_trap_variant(ball_id: int, variant: String) -> void:
     if variant in ["normal", "poison", "stun", "ricochet", "emp", "hologram", "chain_lightning", "decoy", "blindness", "shriek", "mine", "elemental_mine", "warp", "clone", "tar", "link", "repulsion", "swap", "reversal"]:
         selections[ball_id] = variant
