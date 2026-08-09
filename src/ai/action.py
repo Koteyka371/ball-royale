@@ -4514,6 +4514,27 @@ class Action:
             if self.ball.quantum_relay_timer <= 0:
                 self.ball.has_quantum_relay = False
 
+        if getattr(self.ball, "echo_booster_timer", 0.0) > 0.0:
+            self.ball.echo_booster_timer -= delta
+            if self.ball.echo_booster_timer <= 0:
+                self.ball.echo_booster_timer = 0.0
+
+            # Spawn echoes
+            self.ball.echo_booster_spawn_timer = getattr(self.ball, "echo_booster_spawn_timer", 0.0) - delta
+            if self.ball.echo_booster_spawn_timer <= 0:
+                self.ball.echo_booster_spawn_timer = 0.5  # Spawn every 0.5s
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    try:
+                        from arena.procedural_arena import Hazard
+                        echo_id = getattr(self.world, "next_id", 99999)
+                        if hasattr(self.world, "next_id"):
+                            self.world.next_id += 1
+                        echo = Hazard(id=echo_id, x=self.ball.x, y=self.ball.y, radius=20.0, kind="echo_trail", damage=0.0)
+                        echo.duration = 2.0
+                        echo.owner_id = getattr(self.ball, "id", None)
+                        self.world.arena.hazards.append(echo)
+                    except ImportError:
+                        pass
         if getattr(self.ball, "cryogenic_booster_timer", 0.0) > 0:
             self.ball.cryogenic_booster_timer -= delta
             if hasattr(self.world, "balls"):
@@ -16299,6 +16320,16 @@ class Action:
                         self.world.boosters.remove(b)
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and b in self.world.arena.hazards:
                         self.world.arena.hazards.remove(b)
+                elif getattr(b, "kind", "") == "echo_booster":
+                    dist = __import__('math').sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
+                    if dist <= getattr(self.ball, "radius", 10.0) + getattr(b, "radius", 15.0) + 5.0:
+                        self.ball.echo_booster_timer = 10.0
+                        self.ball.echo_booster_spawn_timer = 0.0
+                        b.active = False
+                        if hasattr(self.world, "boosters") and b in self.world.boosters:
+                            self.world.boosters.remove(b)
+                        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and b in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(b)
                 elif getattr(b, "kind", "") == "eclipse_booster_item":
                     dist = __import__('math').sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
                     if dist <= getattr(self.ball, "radius", 10.0) + getattr(b, "radius", 15.0) + 5.0:
@@ -26568,6 +26599,20 @@ class Action:
 
 
 
+
+                if getattr(hazard, "kind", "") == "echo_trail" and getattr(hazard, "active", True):
+                    owner_id = getattr(hazard, "owner_id", None)
+                    if owner_id != getattr(self.ball, "id", None) and owner_id != getattr(self.ball, "owner_id", None):
+                        # It's an enemy echo
+                        dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
+                        hr = getattr(hazard, "radius", 20.0)
+                        eff_radius = hr + getattr(self.ball, "radius", 10.0)
+                        if dist_sq < eff_radius * eff_radius:
+                            self.ball.slow_timer = max(getattr(self.ball, "slow_timer", 0.0), 1.0)
+                            if hasattr(hazard, "duration"):
+                                hazard.duration = 0.0  # Consume the echo
+                            else:
+                                hazard.active = False
 
                 if getattr(hazard, "kind", "") == "whirlpool":
                     import math
