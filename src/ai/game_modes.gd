@@ -51608,7 +51608,7 @@ class GuildStormMode extends GameMode:
 class BiomeSafeZonesMode extends GameMode:
 	var zones: Array = []
 	var min_zone_radius: float = 50.0
-	var biomes: Array = ["speed", "damage", "heal", "shield"]
+	var biomes: Array = ["speed", "damage", "heal", "shield", "low_gravity"]
 
 	func _init() -> void:
 		name = "Biome Safe Zones"
@@ -51730,6 +51730,16 @@ class BiomeSafeZonesMode extends GameMode:
 					b.damage = base_damage
 					if b.has_method("set_meta"): b.set_meta("biome_modifier_damage", false)
 
+			var has_lg_mod = b.get("biome_modifier_low_gravity", false) if typeof(b) == TYPE_DICTIONARY else (b.get_meta("biome_modifier_low_gravity") if b.has_method("has_meta") and b.has_meta("biome_modifier_low_gravity") else false)
+			if has_lg_mod and active_biome != "low_gravity":
+				if typeof(b) == TYPE_DICTIONARY:
+					b["mass"] = b.get("base_mass", 1.0)
+					b["biome_modifier_low_gravity"] = false
+				else:
+					if b.has_method("has_meta") and b.has_meta("base_mass"):
+						b.mass = b.get_meta("base_mass")
+					if b.has_method("set_meta"): b.set_meta("biome_modifier_low_gravity", false)
+
 			if in_any_zone and active_biome != "":
 				if active_biome == "speed":
 					if typeof(b) == TYPE_DICTIONARY:
@@ -51762,6 +51772,20 @@ class BiomeSafeZonesMode extends GameMode:
 						elif b.has_method("set_meta"): b.set_meta("energy_shield_active", true)
 						if "energy_shield_hp" in b: b.energy_shield_hp = new_sh
 						elif b.has_method("set_meta"): b.set_meta("energy_shield_hp", new_sh)
+				elif active_biome == "low_gravity":
+					if typeof(b) == TYPE_DICTIONARY:
+						if not b.get("biome_modifier_low_gravity", false):
+							if not b.has("base_mass"): b["base_mass"] = b.get("mass", 1.0)
+							b["mass"] = b["base_mass"] * 0.1
+							b["biome_modifier_low_gravity"] = true
+					else:
+						var has_lg = b.get_meta("biome_modifier_low_gravity") if b.has_method("has_meta") and b.has_meta("biome_modifier_low_gravity") else false
+						if not has_lg:
+							if not (b.has_method("has_meta") and b.has_meta("base_mass")):
+								if b.has_method("set_meta"): b.set_meta("base_mass", b.mass if "mass" in b else 1.0)
+							var base_mass = b.get_meta("base_mass") if b.has_method("has_meta") and b.has_meta("base_mass") else 1.0
+							if "mass" in b: b.mass = base_mass * 0.1
+							if b.has_method("set_meta"): b.set_meta("biome_modifier_low_gravity", true)
 			else:
 				if not is_immune:
 					var damage = 10.0 * delta

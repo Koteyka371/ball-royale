@@ -31605,7 +31605,7 @@ class BiomeSafeZonesMode(GameMode):
         self.description = "Each shrinking safe zone acts as a unique biome, granting different passive abilities, allowing for multiple tactical advantages."
         self.zones = [] # list of {"x": float, "y": float, "radius": float, "target_x": float, "target_y": float, "biome": string}
         self.min_zone_radius = 50.0
-        self.biomes = ["speed", "damage", "heal", "shield"]
+        self.biomes = ["speed", "damage", "heal", "shield", "low_gravity"]
 
     def setup(self, world, balls):
         super().setup(world, balls)
@@ -31694,6 +31694,11 @@ class BiomeSafeZonesMode(GameMode):
                 b.damage = b.base_damage
                 delattr(b, "biome_modifier_damage")
 
+            if getattr(b, "biome_modifier_low_gravity", False) and active_biome != "low_gravity":
+                if hasattr(b, "base_mass"):
+                    b.mass = b.base_mass
+                delattr(b, "biome_modifier_low_gravity")
+
             if in_any_zone and active_biome:
                 if active_biome == "speed":
                     if not getattr(b, "biome_modifier_speed", False):
@@ -31711,6 +31716,12 @@ class BiomeSafeZonesMode(GameMode):
                     b.energy_shield_hp = getattr(b, "energy_shield_hp", 0.0) + 15.0 * delta
                     if getattr(b, "energy_shield_hp", 0.0) > 50.0:
                         b.energy_shield_hp = 50.0
+                elif active_biome == "low_gravity":
+                    if not getattr(b, "biome_modifier_low_gravity", False):
+                        if not hasattr(b, "base_mass"):
+                            b.base_mass = getattr(b, "mass", 1.0)
+                        b.mass = b.base_mass * 0.1
+                        b.biome_modifier_low_gravity = True
             else:
                 if not is_immune:
                     damage = 10.0 * delta
