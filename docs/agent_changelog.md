@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1921] Grave Robber Booster — *2026-08-09 20:25:27 UTC*
+
+A new neutral drop item called 'Grave Robber Shovel'. When picked up, the player can dig up existing 'Grave Trap' hazards spawned by dead Necromancers. Digging up the trap neutralizes it without triggering the bone fragments and has a high chance to drop a medium healing orb or a rare item, rewarding players for clearing hazards.
+
+---
+
 ## [idea-1946] Weekend Mutator Bounty — *2026-08-09 20:13:35 UTC*
 
 A special weekly quest that only appears on weekends, tasking players with winning a match with the active mutator, rewarding a large bundle of Mutator Tokens.
