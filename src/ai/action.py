@@ -24237,6 +24237,29 @@ class Action:
                 speed_self = math.sqrt(getattr(self.ball, "vx", 0.0)**2 + getattr(self.ball, "vy", 0.0)**2)
                 speed_other = math.sqrt(getattr(other, "vx", 0.0)**2 + getattr(other, "vy", 0.0)**2)
 
+                # High-speed collision black hole
+                if speed_self > 400.0 and speed_other > 400.0:
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        # Engine inherently processes black_hole hazards and applies damage/pull based on pull_strength
+                        bh_x = (self.ball.x + other.x) / 2.0
+                        bh_y = (self.ball.y + other.y) / 2.0
+                        bh_id = f"high_speed_bh_{getattr(self.ball, 'id', '0')}_{getattr(other, 'id', '1')}"
+
+                        bh = type('Hazard', (), {})()
+                        bh.id = bh_id
+                        bh.x = bh_x
+                        bh.y = bh_y
+                        bh.radius = 40.0
+                        bh.kind = "black_hole"
+                        bh.damage = 20.0
+                        bh.active = True
+                        bh.duration = 2.0
+                        bh.pull_strength = 300.0
+                        self.world.arena.hazards.append(bh)
+
+                        if hasattr(self.world, "add_event"):
+                            self.world.add_event("visual_effect", {"type": "black_hole_spawn", "x": bh_x, "y": bh_y, "radius": 40.0})
+
                 # Aura Clash Check
                 scale_self = getattr(self.ball, "scale", 1.0)
                 scale_other = getattr(other, "scale", 1.0)
