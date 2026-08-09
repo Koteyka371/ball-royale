@@ -83397,3 +83397,174 @@ class InvertControlsMutator extends "res://src/ai/game_modes.gd".GameMode:
 GAME_MODES['invert_controls_mutator'] = InvertControlsMutator.new()
 GAME_MODES["bullet_hell_survival"] = BulletHellSurvivalMode.new()
 GAME_MODES["weather_boss"] = WeatherBossMode.new()
+
+class OccasionalMirrorWallsMode extends GameMode:
+	var timer: float = 0.0
+	var active: bool = false
+	var active_timer: float = 0.0
+
+	func _init():
+		name = "Occasional Mirror Walls"
+		description = "Walls around the map occasionally become mirrors for a few seconds. Lasers and projectiles shot at them bounce directly back at the attacker, making players careful where they shoot."
+
+	func setup(world: Variant, balls: Array) -> void:
+		super.setup(world, balls)
+		timer = rand_range(10.0, 20.0)
+		active = false
+		active_timer = 0.0
+
+	func tick(world: Variant, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		if not active:
+			timer -= delta
+			if timer <= 0:
+				active = true
+				active_timer = rand_range(3.0, 6.0)
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("mirror_walls_active", {"message": "Walls are now mirrors!"})
+				elif typeof(world) == TYPE_OBJECT and "events" in world:
+					world.events.append({"type": "mirror_walls_active", "message": "Walls are now mirrors!"})
+				elif typeof(world) == TYPE_DICTIONARY and world.has("events"):
+					world.events.append({"type": "mirror_walls_active", "message": "Walls are now mirrors!"})
+		else:
+			active_timer -= delta
+			if active_timer <= 0:
+				active = false
+				timer = rand_range(10.0, 20.0)
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("mirror_walls_inactive", {"message": "Walls returned to normal."})
+				elif typeof(world) == TYPE_OBJECT and "events" in world:
+					world.events.append({"type": "mirror_walls_inactive", "message": "Walls returned to normal."})
+				elif typeof(world) == TYPE_DICTIONARY and world.has("events"):
+					world.events.append({"type": "mirror_walls_inactive", "message": "Walls returned to normal."})
+			else:
+				var arena = {}
+				if typeof(world) == TYPE_OBJECT:
+					arena = world.get("arena") if world.get("arena") != null else {}
+				elif typeof(world) == TYPE_DICTIONARY:
+					arena = world.get("arena", {})
+
+				var arena_width = 1000.0
+				var arena_height = 1000.0
+				var hazards = []
+
+				if typeof(arena) == TYPE_OBJECT:
+					arena_width = arena.get("width") if arena.get("width") != null else 1000.0
+					arena_height = arena.get("height") if arena.get("height") != null else 1000.0
+					hazards = arena.get("hazards") if arena.get("hazards") != null else []
+				elif typeof(arena) == TYPE_DICTIONARY:
+					arena_width = arena.get("width", 1000.0)
+					arena_height = arena.get("height", 1000.0)
+					hazards = arena.get("hazards", [])
+
+				var projectiles = []
+				if typeof(world) == TYPE_OBJECT:
+					projectiles = world.get("projectiles") if world.get("projectiles") != null else []
+				elif typeof(world) == TYPE_DICTIONARY:
+					projectiles = world.get("projectiles", [])
+
+				var all_entities = []
+				for p in projectiles:
+					all_entities.append(p)
+				for h in hazards:
+					all_entities.append(h)
+
+				for proj in all_entities:
+					var alive = true
+					if typeof(proj) == TYPE_OBJECT:
+						alive = proj.get("alive") if proj.get("alive") != null else true
+					elif typeof(proj) == TYPE_DICTIONARY:
+						alive = proj.get("alive", true)
+
+					var hp = 1.0
+					if typeof(proj) == TYPE_OBJECT:
+						hp = proj.get("hp") if proj.get("hp") != null else 1.0
+					elif typeof(proj) == TYPE_DICTIONARY:
+						hp = proj.get("hp", 1.0)
+
+					if not alive and hp <= 0:
+						continue
+
+					var b_type = ""
+					if typeof(proj) == TYPE_OBJECT:
+						b_type = proj.get("ball_type") if proj.get("ball_type") != null else proj.get("kind", "")
+					elif typeof(proj) == TYPE_DICTIONARY:
+						b_type = proj.get("ball_type", proj.get("kind", ""))
+
+					var is_projectile = false
+					if typeof(proj) == TYPE_OBJECT:
+						is_projectile = proj.get("is_projectile") if proj.get("is_projectile") != null else false
+						if not is_projectile:
+							is_projectile = proj.get("is_spell") if proj.get("is_spell") != null else false
+					elif typeof(proj) == TYPE_DICTIONARY:
+						is_projectile = proj.get("is_projectile", false)
+						if not is_projectile:
+							is_projectile = proj.get("is_spell", false)
+
+					var is_proj = b_type in ["projectile", "spell", "fireball", "bullet", "snipe", "laser_beam"] or is_projectile
+
+					if not is_proj:
+						continue
+
+					var x = 0.0
+					var y = 0.0
+					var radius = 5.0
+					var vx = 0.0
+					var vy = 0.0
+
+					if typeof(proj) == TYPE_OBJECT:
+						x = proj.get("x") if proj.get("x") != null else 0.0
+						y = proj.get("y") if proj.get("y") != null else 0.0
+						radius = proj.get("radius") if proj.get("radius") != null else 5.0
+						vx = proj.get("vx") if proj.get("vx") != null else 0.0
+						vy = proj.get("vy") if proj.get("vy") != null else 0.0
+					elif typeof(proj) == TYPE_DICTIONARY:
+						x = proj.get("x", 0.0)
+						y = proj.get("y", 0.0)
+						radius = proj.get("radius", 5.0)
+						vx = proj.get("vx", 0.0)
+						vy = proj.get("vy", 0.0)
+
+					var bounced = false
+					var new_vx = vx
+					var new_vy = vy
+					var new_x = x
+					var new_y = y
+
+					if x - radius <= 0 and vx < 0:
+						new_vx = -vx
+						new_vy = -vy
+						new_x = radius + 1.0
+						bounced = true
+					elif x + radius >= arena_width and vx > 0:
+						new_vx = -vx
+						new_vy = -vy
+						new_x = arena_width - radius - 1.0
+						bounced = true
+					elif y - radius <= 0 and vy < 0:
+						new_vx = -vx
+						new_vy = -vy
+						new_y = radius + 1.0
+						bounced = true
+					elif y + radius >= arena_height and vy > 0:
+						new_vx = -vx
+						new_vy = -vy
+						new_y = arena_height - radius - 1.0
+						bounced = true
+
+					if bounced:
+						if typeof(proj) == TYPE_OBJECT:
+							proj.vx = new_vx
+							proj.vy = new_vy
+							proj.x = new_x
+							proj.y = new_y
+						elif typeof(proj) == TYPE_DICTIONARY:
+							proj["vx"] = new_vx
+							proj["vy"] = new_vy
+							proj["x"] = new_x
+							proj["y"] = new_y
+
+var _dummy_occasional_mirror_walls = _add_occasional_mirror_walls()
+func _add_occasional_mirror_walls():
+	GAME_MODES["occasional_mirror_walls"] = OccasionalMirrorWallsMode.new()
