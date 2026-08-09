@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1807] Wind Shield Booster — *2026-08-09 22:12:31 UTC*
+
+A new booster that grants a temporary wind shield, making the ball immune to wind pushes and tornado pulls, and allowing it to travel through storms unaffected.
+
+---
+
 ## [idea-1949] Twitch integration: Bet points on surviving Juggernaut — *2026-08-09 20:41:20 UTC*
 
 Allow stream viewers to place bets using channel points on how long a Juggernaut will survive, or which player will deal the killing blow to the Juggernaut.
