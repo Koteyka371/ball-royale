@@ -31925,7 +31925,62 @@ func _collect_booster(delta: float):
                             var new_hazards = []
                             for x in hazards: if x != b: new_hazards.append(x)
                             self.world.arena.hazards = new_hazards
+
+            elif b_kind == "meteor_fragment":
+                var bx = 0.0
+                var by = 0.0
+                if typeof(b) == TYPE_DICTIONARY:
+                    if b.has("x"): bx = b.x
+                    if b.has("y"): by = b.y
+                else:
+                    if "x" in b: bx = b.x
+                    if "y" in b: by = b.y
+                var bradius = 15.0
+                if typeof(b) == TYPE_DICTIONARY and b.has("radius"): bradius = b.radius
+                elif typeof(b) == TYPE_OBJECT and "radius" in b: bradius = b.radius
+                var dist = sqrt(pow(bx - ball_x, 2) + pow(by - ball_y, 2))
+                if dist <= ball_radius + bradius + 5.0:
+                    var current_t = 0.0
+                    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("damage_booster_timer"):
+                        current_t = self.ball["damage_booster_timer"]
+                    elif typeof(self.ball) == TYPE_OBJECT and "damage_booster_timer" in self.ball:
+                        current_t = self.ball.damage_booster_timer
+
+                    if 15.0 > current_t: current_t = 15.0
+
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["damage_booster_timer"] = current_t
+                    elif typeof(self.ball) == TYPE_OBJECT:
+                        if "damage_booster_timer" in self.ball:
+                            self.ball.damage_booster_timer = current_t
+                        elif self.ball.has_method("set_meta"):
+                            self.ball.set_meta("damage_booster_timer", current_t)
+
+                    if typeof(b) == TYPE_DICTIONARY: b["active"] = false
+                    elif typeof(b) == TYPE_OBJECT: b.active = false
+                    if typeof(self.world) == TYPE_DICTIONARY and self.world.has("boosters"):
+                        var boosters = self.world.boosters
+                        var new_boosters = []
+                        for x in boosters: if x != b: new_boosters.append(x)
+                        self.world.boosters = new_boosters
+                    elif typeof(self.world) == TYPE_OBJECT and "boosters" in self.world:
+                        var boosters = self.world.boosters
+                        var new_boosters = []
+                        for x in boosters: if x != b: new_boosters.append(x)
+                        self.world.boosters = new_boosters
+
+                    if typeof(self.world) == TYPE_DICTIONARY and self.world.has("arena") and typeof(self.world.arena) == TYPE_DICTIONARY and self.world.arena.has("hazards"):
+                        var hazards = self.world.arena.hazards
+                        var new_hazards = []
+                        for x in hazards: if x != b: new_hazards.append(x)
+                        self.world.arena.hazards = new_hazards
+                    elif typeof(self.world) == TYPE_OBJECT and "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT and "hazards" in self.world.arena:
+                        var hazards = self.world.arena.hazards
+                        var new_hazards = []
+                        for x in hazards: if x != b: new_hazards.append(x)
+                        self.world.arena.hazards = new_hazards
             elif b_kind == "ghost_booster":
+
                 var bx = 0.0
                 var by = 0.0
                 if typeof(b) == TYPE_DICTIONARY:

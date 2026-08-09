@@ -4117,7 +4117,7 @@ class BattleRoyaleMode(GameMode):
                         "id": f"meteor_{random.randint(10000, 99999)}",
                         "x": x,
                         "y": y,
-                        "delay": 2.0,
+                        "delay": 5.0,
                         "radius": 30.0
                     })
 
@@ -9842,7 +9842,7 @@ class WeatherChaosMode(GameMode):
                         "id": f"meteor_{random.randint(10000, 99999)}",
                         "x": x,
                         "y": y,
-                        "delay": 2.0,
+                        "delay": 5.0,
                         "radius": 30.0
                     })
 
@@ -12077,6 +12077,7 @@ class DynamicHazardsMode(GameMode):
         max_hazards = 15
 
         if self.spawn_timer >= 3.0:
+
             self.spawn_timer = 0.0
             import random
             from arena.arena_types import Hazard
@@ -17051,7 +17052,7 @@ class MagneticCollisionsMode(GameMode):
                         "id": f"meteor_{random.randint(10000, 99999)}",
                         "x": x,
                         "y": y,
-                        "delay": 2.0,
+                        "delay": 5.0,
                         "radius": 30.0
                     })
 
@@ -17656,7 +17657,7 @@ class PinballMode(GameMode):
                         "id": f"meteor_{random.randint(10000, 99999)}",
                         "x": x,
                         "y": y,
-                        "delay": 2.0,
+                        "delay": 5.0,
                         "radius": 30.0
                     })
 
@@ -21060,7 +21061,7 @@ class MeteorShowerMode(GameMode):
                 "id": f"meteor_{random.randint(10000, 99999)}",
                 "x": x,
                 "y": y,
-                "delay": 2.0,
+                "delay": 5.0,
                 "radius": 30.0
             })
 
@@ -22360,7 +22361,7 @@ class SweepingPaddlesMode(GameMode):
                         "id": f"meteor_{random.randint(10000, 99999)}",
                         "x": x,
                         "y": y,
-                        "delay": 2.0,
+                        "delay": 5.0,
                         "radius": 30.0
                     })
 
@@ -23560,7 +23561,7 @@ class ExtremeWeatherMode(GameMode):
                     "id": f"meteor_{random.randint(10000, 99999)}",
                     "x": x,
                     "y": y,
-                    "delay": 2.0,
+                    "delay": 5.0,
                     "radius": 30.0
                 })
 
@@ -37885,7 +37886,134 @@ class SingularityStormMode(GameMode):
                                 b.y += ndy * force
 
 
+
+class GlowingMeteorFragmentsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Glowing Meteor Fragments"
+        self.description = "Random meteors leave glowing fragments that boost damage."
+        self.spawn_timer = 0.0
+        self.active_meteors = []
+        self.fragments = []
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        self.spawn_timer = 0.0
+        self.active_meteors = []
+        self.fragments = []
+        if getattr(world, "arena", None) is not None and getattr(world.arena, "hazards", None) is None:
+            world.arena.hazards = []
+        if not hasattr(world, "boosters"):
+            world.boosters = []
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import random
+        import math
+
+        self.spawn_timer += delta
+
+        if self.spawn_timer >= 3.0:
+
+            self.spawn_timer = 0.0
+            arena_width = getattr(world.arena, "width", 1000) if getattr(world, "arena", None) is not None else 1000
+            arena_height = getattr(world.arena, "height", 1000) if getattr(world, "arena", None) is not None else 1000
+            x = random.uniform(50, arena_width - 50)
+            y = random.uniform(50, arena_height - 50)
+
+            self.active_meteors.append({
+                "id": f"meteor_{random.randint(10000, 99999)}",
+                "x": x,
+                "y": y,
+                "delay": 5.0,
+                "radius": 30.0
+            })
+
+        still_active = []
+        for m in self.active_meteors:
+            m["delay"] -= delta
+            if m["delay"] <= 0:
+                # Deal immediate impact damage
+                for b in balls:
+                    if getattr(b, "alive", False):
+                        dx = getattr(b, "x", 0.0) - m["x"]
+                        dy = getattr(b, "y", 0.0) - m["y"]
+                        dist = math.hypot(dx, dy)
+                        if dist <= m["radius"] * 1.5:
+                            if hasattr(b, "take_damage"): b.take_damage(50.0)
+                            else: b.hp = getattr(b, "hp", 100) - 50.0
+                            if dist > 0.0001:
+                                push_force = 1000.0
+                                b.vx = getattr(b, "vx", 0.0) + (dx / dist) * push_force
+                                b.vy = getattr(b, "vy", 0.0) + (dy / dist) * push_force
+
+                # Spawn fragments
+                if hasattr(world, "boosters"):
+                    class Booster:
+                        def __init__(self, id, x, y, kind):
+                            self.id = id
+                            self.x = x
+                            self.y = y
+                            self.kind = kind
+                            self.radius = 15.0
+                            self.active = True
+
+                    b_id = 9000 + len(world.boosters) + random.randint(0, 1000)
+                    world.boosters.append(Booster(b_id, m["x"], m["y"], "meteor_fragment"))
+
+                    self.fragments.append({
+                        "id": f"fragment_{b_id}",
+                        "x": m["x"],
+                        "y": m["y"],
+                        "radius": 15.0,
+                        "duration": 15.0
+                    })
+            else:
+                still_active.append(m)
+        self.active_meteors = still_active
+
+        still_fragments = []
+        for f in self.fragments:
+            f["duration"] -= delta
+            if f["duration"] > 0:
+                still_fragments.append(f)
+            else:
+                if hasattr(world, "boosters"):
+                    world.boosters = [b for b in world.boosters if getattr(b, "kind", "") != "meteor_fragment" or abs(getattr(b, "x", 0.0) - f["x"]) > 1.0 or abs(getattr(b, "y", 0.0) - f["y"]) > 1.0]
+
+        self.fragments = still_fragments
+
+        # update hazards for visual/external systems
+        if hasattr(world, "arena"):
+            world.arena.hazards = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") not in ["meteor_indicator", "meteor_fragment"]]
+
+            try:
+                from arena.procedural_arena import Hazard
+            except ImportError:
+                class Hazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                        self.active = True
+                        self.target_radius = radius
+
+            for m in self.active_meteors:
+                h = Hazard(m["id"], m["x"], m["y"], m["radius"], "meteor_indicator", 0.0)
+                setattr(h, "duration", m["delay"])
+                world.arena.hazards.append(h)
+
+            for f in self.fragments:
+                # Add to hazards as a visual representation, although logic relies on world.boosters
+                h = Hazard(f["id"], f["x"], f["y"], f["radius"], "meteor_fragment", 0.0)
+                setattr(h, "duration", f["duration"])
+                world.arena.hazards.append(h)
+
 GAME_MODES = {
+
     "singularity_storm": SingularityStormMode(),
     'dash_aura_trail': DashAuraTrailMode(),
     "expanding_aura_event": ExpandingAuraEventMode(),
