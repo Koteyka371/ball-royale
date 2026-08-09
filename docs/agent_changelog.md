@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1855] Meteor Shower Variant — *2026-08-09 14:49:35 UTC*
+
+A mode where random meteors leave glowing fragments that boost damage.
+
+---
+
 ## [idea-1927] Black Hole Collisions — *2026-08-09 14:04:53 UTC*
 
 When two entities collide at very high speeds, they form a temporary black hole that pulls nearby entities in and damages them.
