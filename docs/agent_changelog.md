@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1929] Aura Mastery — *2026-08-09 17:10:15 UTC*
+
+Players with maximum level auras (scale >= 3.0) emit a constant healing aura for nearby allies but move significantly slower.
+
+---
+
 ## [idea-1937] Guild Daily Tournaments — *2026-08-09 16:57:32 UTC*
 
 Automated daily mini-tournaments where randomly selected guilds face off in brackets, earning extra GvG points and exclusive resources.
