@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1926] Renegade Bounty Hunters — *2026-08-09 07:21:09 UTC*
+
+If a bounty hunter claims too many bounties without dying, they slowly accumulate 'Renegade Threat'. Once it maxes out, they become a permanent High-Threat Bounty themselves, attracting other hunters but granting them a massive buff to their base speed and damage as long as they survive.
+
+---
+
 ## [idea-1924] Weather Conduit Boss — *2026-08-09 06:37:31 UTC*
 
 A new neutral boss entity that spawns during intense weather events (like thunderstorm or blizzard). Defeating it drops a random legendary weather manipulation item, but its attacks scale with the current weather's intensity, forcing players to time their engagements.
