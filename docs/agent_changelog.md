@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1945] Quest Reroll with Mutator Tokens — *2026-08-09 15:44:18 UTC*
+
+Players can spend 1 Mutator Token to reroll a specific daily quest they don't like, giving them an alternative quest to complete.
+
+---
+
 ## [idea-1836] Magnetic Boots Booster — *2026-08-09 15:33:58 UTC*
 
 A new booster that grants temporary 'Magnetic Boots' to a ball. While active, the ball takes zero knockback from collisions with walls or other players, allowing them to anchor positions or brute-force through chaotic clashes.
