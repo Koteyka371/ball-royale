@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1915] Shrinking Hazard Arena — *2026-08-09 07:21:15 UTC*
+
+The arena boundaries slowly constrict over time, pushing all balls towards the center. Touching the outer boundary applies a severe slow and damages over time.
+
+---
+
 ## [idea-1926] Renegade Bounty Hunters — *2026-08-09 07:21:09 UTC*
 
 If a bounty hunter claims too many bounties without dying, they slowly accumulate 'Renegade Threat'. Once it maxes out, they become a permanent High-Threat Bounty themselves, attracting other hunters but granting them a massive buff to their base speed and damage as long as they survive.
