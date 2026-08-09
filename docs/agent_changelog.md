@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1938] Guild Headquarters Cosmetics Customization — *2026-08-09 11:30:07 UTC*
+
+Allow guild masters to completely customize their HQ visually with unlocked banners, statues, and background elements, which players can see when inspecting the guild.
+
+---
+
 ## [idea-1883] Global Silence Event — *2026-08-09 10:45:21 UTC*
 
 Occasionally a global event triggers that silences all abilities for a short period.
