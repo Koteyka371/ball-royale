@@ -122,6 +122,14 @@ class Necromancer:
                     # Find nearest
                     nearest = min(minions_in_range, key=lambda m: math.hypot(getattr(m, "x", 0.0) - self.x, getattr(m, "y", 0.0) - self.y))
 
+                    # Store positions for swapping
+                    necro_x, necro_y = self.x, self.y
+                    minion_x, minion_y = getattr(nearest, "x", 0.0), getattr(nearest, "y", 0.0)
+
+                    # Swap positions
+                    self.x, self.y = minion_x, minion_y
+                    nearest.x, nearest.y = necro_x, necro_y
+
                     # Redirect to nearest minion
                     if hasattr(nearest, "take_damage"):
                         nearest.take_damage(9999.0)
