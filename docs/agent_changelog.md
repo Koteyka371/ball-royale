@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1906] Echoing Steps Booster — *2026-08-09 09:54:02 UTC*
+
+A booster that leaves a trail of harmless echoes behind the player. Enemies that walk into the echoes get a small slow effect, helping to escape pursuers.
+
+---
+
 ## [idea-1933] Gravity Nullifier Biome — *2026-08-09 09:47:43 UTC*
 
 A biome safe zone where the pull of gravity is significantly reduced, meaning knockback from attacks sends players flying much further, making edge positioning very dangerous.
