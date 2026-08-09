@@ -8673,6 +8673,83 @@ func execute(strategy: String, delta: float):
     elif typeof(my_ball) == TYPE_DICTIONARY and my_ball.has("cosmetic_aura_scale"):
         my_aura = my_ball["cosmetic_aura_scale"]
 
+    if not is_decoy and my_aura >= 3.0:
+        var current_speed = 1.0
+        if "speed_multiplier" in my_ball: current_speed = my_ball.speed_multiplier
+        elif typeof(my_ball) == TYPE_OBJECT and my_ball.has_method("get_meta") and my_ball.has_meta("speed_multiplier"): current_speed = my_ball.get_meta("speed_multiplier")
+        elif typeof(my_ball) == TYPE_DICTIONARY and my_ball.has("speed_multiplier"): current_speed = my_ball["speed_multiplier"]
+
+        current_speed *= 0.5
+
+        if typeof(my_ball) == TYPE_OBJECT:
+            if my_ball.has_method("set_meta"): my_ball.set_meta("speed_multiplier", current_speed)
+            elif "speed_multiplier" in my_ball: my_ball.speed_multiplier = current_speed
+        elif typeof(my_ball) == TYPE_DICTIONARY:
+            my_ball["speed_multiplier"] = current_speed
+
+        var aura_heal_radius = my_aura * 50.0
+        var heal_rate = 10.0 * delta
+        var my_team_heal = ""
+        if typeof(my_ball) == TYPE_OBJECT and my_ball.has_method("get_meta") and my_ball.has_meta("team"): my_team_heal = my_ball.get_meta("team")
+        elif typeof(my_ball) == TYPE_DICTIONARY and my_ball.has("team"): my_team_heal = my_ball["team"]
+        elif "team" in my_ball: my_team_heal = my_ball.team
+
+        if typeof(world) == TYPE_OBJECT and "balls" in world:
+            for b in world.balls:
+                if b == my_ball: continue
+                var b_alive = true
+                if typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+                elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): b_alive = b["alive"]
+                elif "alive" in b: b_alive = b.alive
+                if not b_alive: continue
+
+                var b_team = ""
+                if typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("team"): b_team = b.get_meta("team")
+                elif typeof(b) == TYPE_DICTIONARY and b.has("team"): b_team = b["team"]
+                elif "team" in b: b_team = b.team
+
+                if b_team == my_team_heal:
+                    var b_x = 0.0
+                    var b_y = 0.0
+                    if typeof(b) == TYPE_OBJECT:
+                        b_x = b.get("x")
+                        b_y = b.get("y")
+                    else:
+                        b_x = b.get("x", 0.0)
+                        b_y = b.get("y", 0.0)
+
+                    var my_x = 0.0
+                    var my_y = 0.0
+                    if typeof(my_ball) == TYPE_OBJECT:
+                        my_x = my_ball.get("x")
+                        my_y = my_ball.get("y")
+                    else:
+                        my_x = my_ball.get("x", 0.0)
+                        my_y = my_ball.get("y", 0.0)
+
+                    var dx = b_x - my_x
+                    var dy = b_y - my_y
+                    var s_dist = sqrt(dx*dx + dy*dy)
+                    if s_dist <= aura_heal_radius:
+                        var b_hp = 100.0
+                        var b_max_hp = 100.0
+                        if typeof(b) == TYPE_OBJECT:
+                            if b.has_method("get_meta") and b.has_meta("hp"): b_hp = b.get_meta("hp")
+                            elif "hp" in b: b_hp = b.hp
+                            if b.has_method("get_meta") and b.has_meta("max_hp"): b_max_hp = b.get_meta("max_hp")
+                            elif "max_hp" in b: b_max_hp = b.max_hp
+                        elif typeof(b) == TYPE_DICTIONARY:
+                            if b.has("hp"): b_hp = b["hp"]
+                            if b.has("max_hp"): b_max_hp = b["max_hp"]
+
+                        b_hp = min(b_max_hp, b_hp + heal_rate)
+
+                        if typeof(b) == TYPE_OBJECT:
+                            if b.has_method("set_meta"): b.set_meta("hp", b_hp)
+                            elif "hp" in b: b.hp = b_hp
+                        elif typeof(b) == TYPE_DICTIONARY:
+                            b["hp"] = b_hp
+
     if not is_decoy and my_aura >= 2.0:
         var aura_fear_radius = my_aura * 50.0
         var my_team = ""
