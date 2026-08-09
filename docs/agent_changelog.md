@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1955] Reverse Conveyor Belts — *2026-08-09 20:09:07 UTC*
+
+An arena mode where the floor is entirely made of conveyor belts moving in alternating directions. Every 10 seconds, all the belts reverse their direction simultaneously, forcing players to quickly adjust their momentum to avoid being pushed into hazards at the edges.
+
+---
+
 ## [idea-1958] Black Market Auction House — *2026-08-09 18:52:01 UTC*
 
 A global real-time auction house where players can bid on extremely rare, procedurally generated boosters using guild resources. The auction only opens during specific times of the day and features items with unique stat combinations not found in standard play.
