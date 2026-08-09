@@ -63784,6 +63784,101 @@ class RubberBandMode extends GameMode:
 										else:
 											var hp = other["hp"] if other.has("hp") else 100.0
 											other["hp"] = hp - damage_val
+
+class ChainLightningTetherMode extends GameMode:
+	var max_link_dist: float = 300.0
+	var damage_base: float = 5.0
+	var damage_ramp_rate: float = 2.0
+	var link_durations: Dictionary = {}
+
+	func _init():
+		super._init()
+		name = "Chain Lightning Tether"
+		description = "All players are permanently tethered by a weak chain lightning link to the nearest player. Moving too far breaks the link but causes a small stun, while staying close causes incremental damage that ramps up over time, forcing constant rotation and positioning."
+
+	func setup(world: Dictionary, balls: Array) -> void:
+		super.setup(world, balls)
+		link_durations.clear()
+		for b in balls:
+			var b_type = b.get("ball_type")
+			if b_type != null and b_type != "spectator":
+				link_durations[b.get("id")] = {"target_id": null, "duration": 0.0}
+
+	func tick(world: Dictionary, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		var alive_balls = []
+		for b in balls:
+			var b_type = b.get("ball_type")
+			var alive = b.get("alive")
+			if b_type != null and b_type != "spectator" and alive != null and alive:
+				alive_balls.append(b)
+
+		for b in alive_balls:
+			var nearest_dist: float = 1000000.0
+			var nearest_target = null
+			var b_x = b.get("x")
+			if b_x == null: b_x = 0.0
+			var b_y = b.get("y")
+			if b_y == null: b_y = 0.0
+			var b_id = b.get("id")
+
+			for other in alive_balls:
+				var other_id = other.get("id")
+				if other_id == b_id:
+					continue
+
+				var other_x = other.get("x")
+				if other_x == null: other_x = 0.0
+				var other_y = other.get("y")
+				if other_y == null: other_y = 0.0
+
+				var dx = other_x - b_x
+				var dy = other_y - b_y
+				var dist = sqrt(dx*dx + dy*dy)
+
+				if dist < nearest_dist:
+					nearest_dist = dist
+					nearest_target = other
+
+			var link_info = link_durations.get(b_id)
+			if link_info == null:
+				link_info = {"target_id": null, "duration": 0.0}
+
+			if nearest_target == null:
+				link_info["target_id"] = null
+				link_info["duration"] = 0.0
+				link_durations[b_id] = link_info
+				continue
+
+			var nearest_target_id = nearest_target.get("id")
+
+			if nearest_dist > max_link_dist:
+				if link_info["target_id"] != null:
+					var current_stun = b.get("stun_timer")
+					if current_stun == null: current_stun = 0.0
+					b["stun_timer"] = max(current_stun, 1.0)
+					if world.has("events"):
+						var events = world.get("events")
+						if typeof(events) == TYPE_ARRAY:
+							events.append({"type": "tether_broken", "id": b_id, "message": "Link broken! Stunned!"})
+
+				link_info["target_id"] = null
+				link_info["duration"] = 0.0
+			else:
+				if link_info["target_id"] == nearest_target_id:
+					link_info["duration"] += delta
+					var current_damage = damage_base + damage_ramp_rate * link_info["duration"]
+					var hp = b.get("hp")
+					if hp == null: hp = 100.0
+					b["hp"] = max(0.0, hp - current_damage * delta)
+				else:
+					link_info["target_id"] = nearest_target_id
+					link_info["duration"] = 0.0
+
+			link_durations[b_id] = link_info
+			b["chain_lightning_target"] = link_info["target_id"]
+
 class RiftRouletteMode extends GameMode:
 	var cycle_timer: float = 0.0
 	var cycle_interval: float = 8.0
@@ -83995,4 +84090,5 @@ var _dummy_occasional_mirror_walls = _add_occasional_mirror_walls()
 func _add_occasional_mirror_walls():
 	GAME_MODES["occasional_mirror_walls"] = OccasionalMirrorWallsMode.new()
 
+GAME_MODES["chain_lightning_tether"] = ChainLightningTetherMode.new()
 GAME_MODES['quantum_tunnel_safe_zone'] = QuantumTunnelSafeZoneMode.new()

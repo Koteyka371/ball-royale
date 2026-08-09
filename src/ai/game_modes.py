@@ -40191,6 +40191,86 @@ class TetheredRoyaleMode(GameMode):
 GAME_MODES["tethered_royale"] = TetheredRoyaleMode()
 GAME_MODES["elastic_tether"] = ElasticTetherMode()
 GAME_MODES["rubber_band"] = RubberBandMode()
+
+class ChainLightningTetherMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Chain Lightning Tether"
+        self.description = "All players are permanently tethered by a weak chain lightning link to the nearest player. Moving too far breaks the link but causes a small stun, while staying close causes incremental damage that ramps up over time, forcing constant rotation and positioning."
+        self.max_link_dist = 300.0
+        self.damage_base = 5.0
+        self.damage_ramp_rate = 2.0
+
+        # We need to track how long each ball has been linked to its current target to ramp up damage
+        self.link_durations = {}
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.link_durations = {}
+        for b in balls:
+            if getattr(b, "ball_type", None) != "spectator":
+                self.link_durations[b.id] = {"target_id": None, "duration": 0.0}
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        import math
+
+        alive_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator" and getattr(b, "alive", False)]
+
+        for b in alive_balls:
+            nearest_dist = float('inf')
+            nearest_target = None
+
+            # Find nearest player
+            for other in alive_balls:
+                if other.id == b.id:
+                    continue
+
+                dx = getattr(other, "x", 0.0) - getattr(b, "x", 0.0)
+                dy = getattr(other, "y", 0.0) - getattr(b, "y", 0.0)
+                dist = math.hypot(dx, dy)
+
+                if dist < nearest_dist:
+                    nearest_dist = dist
+                    nearest_target = other
+
+            link_info = self.link_durations.get(b.id, {"target_id": None, "duration": 0.0})
+
+            if nearest_target is None:
+                link_info["target_id"] = None
+                link_info["duration"] = 0.0
+                self.link_durations[b.id] = link_info
+                continue
+
+            # Check if moving too far breaks the link causing stun
+            if nearest_dist > self.max_link_dist:
+                # If we were previously linked to someone and now they are too far
+                if link_info["target_id"] is not None:
+                    b.stun_timer = max(getattr(b, "stun_timer", 0.0), 1.0)
+                    if hasattr(world, "add_event"):
+                        world.add_event("tether_broken", {"id": b.id, "message": "Link broken! Stunned!"})
+
+                link_info["target_id"] = None
+                link_info["duration"] = 0.0
+            else:
+                # We are linked
+                if link_info["target_id"] == nearest_target.id:
+                    # Ramping damage for staying close
+                    link_info["duration"] += delta
+                    current_damage = self.damage_base + self.damage_ramp_rate * link_info["duration"]
+                    b.hp = max(0.0, getattr(b, "hp", 100.0) - current_damage * delta)
+                else:
+                    # New link
+                    link_info["target_id"] = nearest_target.id
+                    link_info["duration"] = 0.0
+
+            self.link_durations[b.id] = link_info
+
+            # Visual marker? we can set a property if rendering is needed
+            b.chain_lightning_target = link_info["target_id"]
+
+GAME_MODES["chain_lightning_tether"] = ChainLightningTetherMode()
 class RiftRouletteMode(GameMode):
     def __init__(self):
         super().__init__()
