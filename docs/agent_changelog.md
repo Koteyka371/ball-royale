@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1931] Quantum Tunnels Biome — *2026-08-09 10:32:36 UTC*
+
+A specific biome safe zone that periodically teleports entities inside it to another random quantum tunnel biome on the map, allowing for rapid escapes or surprise attacks, but making it hard to hold ground.
+
+---
+
 ## [idea-1906] Echoing Steps Booster — *2026-08-09 09:54:02 UTC*
 
 A booster that leaves a trail of harmless echoes behind the player. Enemies that walk into the echoes get a small slow effect, helping to escape pursuers.
