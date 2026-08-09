@@ -101,6 +101,60 @@ def test_bounty_hunter_indicator():
     assert any(e["type"] == "bounty_compass" for e in world.events)
     assert any(e["type"] == "visual_effect" and e["data"]["color"] == "orange" for e in world.events)
 
+def test_bounty_hunter_renegade_threat():
+    from ai.action import Action
+    from ai.ball_types_bounty_hunter import BountyHunter
+
+    class MockWorld:
+        def __init__(self):
+            self.events = []
+        def add_event(self, event_type, data):
+            self.events.append({"type": event_type, "data": data})
+        def _deal_damage(self, attacker, target):
+            target.hp -= attacker.damage
+
+    class MockTarget:
+        def __init__(self, hp, is_bounty=False, high_threat=False):
+            self.hp = hp
+            self.max_hp = 100.0
+            self.is_bounty = is_bounty
+            self.high_threat = high_threat
+            self.id = 2
+            self.ball_type = "normal"
+
+    world = MockWorld()
+    hunter = BountyHunter(1)
+    hunter.speed = 100.0
+    hunter.damage = 10.0
+    action = Action(hunter, world)
+
+    # Claim 1
+    t1 = MockTarget(hp=10.0, is_bounty=True)
+    action._attempt_damage(hunter, t1)
+    assert t1.hp <= 0
+    assert getattr(hunter, 'renegade_threat', 0) == 1
+    assert not getattr(hunter, 'high_threat', False)
+
+    # Claim 2
+    t2 = MockTarget(hp=10.0, is_bounty=True)
+    action._attempt_damage(hunter, t2)
+    assert getattr(hunter, 'renegade_threat', 0) == 2
+
+    # Claim 3 - Renegade!
+    t3 = MockTarget(hp=10.0, is_bounty=True)
+    action._attempt_damage(hunter, t3)
+    assert getattr(hunter, 'renegade_threat', 0) == 3
+    assert getattr(hunter, 'high_threat', False) == True
+    assert getattr(hunter, 'is_bounty', False) == True
+    assert getattr(hunter, 'is_renegade_threat', False) == True
+
+    # Check buffs
+    assert hunter.speed > 100.0
+    assert hunter.damage > 10.0
+
+    # Check event
+    assert any(e["type"] == "renegade_threat_maxed" for e in world.events)
+
 def test_bounty_hunter_indicator_high_threat():
     from ai.action import Action
     from ai.ball_types_bounty_hunter import BountyHunter
