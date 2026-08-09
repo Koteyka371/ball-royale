@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1924] Weather Conduit Boss — *2026-08-09 06:37:31 UTC*
+
+A new neutral boss entity that spawns during intense weather events (like thunderstorm or blizzard). Defeating it drops a random legendary weather manipulation item, but its attacks scale with the current weather's intensity, forcing players to time their engagements.
+
+---
+
 ## [idea-1853] Stamina Overflow Discharge — *2026-08-09 06:37:24 UTC*
 
 If a ball performs a cluster dash while already at maximum stamina, the excess stamina speed bursts are converted into a radial electrical discharge at each jump point. This minor AoE applies a brief slowing effect to enemies not directly hit by the dash, controlling clustered enemy movement.
