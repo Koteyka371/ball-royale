@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1892] Stamina Based Jump Pads — *2026-08-09 09:24:37 UTC*
+
+Jump pads scattered around the arena that launch the ball extremely far across the map, but instantly consume a massive amount of stamina. If a ball hits the pad with low stamina, the pad fails to launch them and inflicts a short stun instead.
+
+---
+
 ## [idea-1932] Skin recolors via materials — *2026-08-09 09:09:00 UTC*
 
 Allow players to craft specific color palettes using inventory materials to recolor their unlocked skins.
