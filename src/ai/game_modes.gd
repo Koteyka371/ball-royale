@@ -24137,6 +24137,13 @@ class DynamicBountyMode extends GameMode:
 						b.is_dynamic_bounty = false
 					elif b.has_method("set_meta"):
 						b.set_meta("is_dynamic_bounty", false)
+			else:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["is_dynamic_bounty"] = false
+				elif "is_dynamic_bounty" in b:
+					b.is_dynamic_bounty = false
+				elif b.has_method("set_meta"):
+					b.set_meta("is_dynamic_bounty", false)
 
 		current_bounty_id = new_bounty_target
 
