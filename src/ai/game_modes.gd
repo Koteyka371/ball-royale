@@ -61971,7 +61971,60 @@ class QuantumAnomalyFieldMode extends GameMode:
 
 
 
+
+class ConveyorBeltArenaMode extends GameMode:
+	var conveyor_speed = 150.0
+	var conveyor_timer = 0.0
+	var conveyor_direction = 1.0
+	var band_width = 100.0
+
+	func _init().():
+		name = "Conveyor Belt Arena"
+		description = "The floor is made of conveyor belts moving in alternating directions. Every 10 seconds, the belts reverse direction."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		.tick(world, balls, delta)
+
+		conveyor_timer += delta
+		if conveyor_timer >= 10.0:
+			conveyor_timer -= 10.0
+			conveyor_direction *= -1.0
+			if world != null and world.has_method("add_event"):
+				world.add_event("conveyor_reverse", {"direction": conveyor_direction})
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY and "alive" in b: is_alive = b.alive
+			elif typeof(b) == TYPE_OBJECT and "alive" in b: is_alive = b.alive
+
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY and "ball_type" in b: b_type = b.ball_type
+			elif typeof(b) == TYPE_OBJECT and "ball_type" in b: b_type = b.ball_type
+
+			if is_alive and b_type != "spectator":
+				var b_y = 0.0
+				if typeof(b) == TYPE_DICTIONARY and "y" in b: b_y = b.y
+				elif typeof(b) == TYPE_OBJECT and "y" in b: b_y = b.y
+
+				var band_index = int(b_y / band_width)
+				var band_multiplier = 1.0
+				if band_index % 2 != 0:
+					band_multiplier = -1.0
+
+				var current_direction = conveyor_direction * band_multiplier
+
+				if typeof(b) == TYPE_DICTIONARY:
+					var current_vx = 0.0
+					if "vx" in b: current_vx = b.vx
+					b.vx = current_vx + current_direction * conveyor_speed * delta
+				elif typeof(b) == TYPE_OBJECT:
+					var current_vx = 0.0
+					if "vx" in b: current_vx = b.vx
+					b.vx = current_vx + current_direction * conveyor_speed * delta
+
+
 var GAME_MODES = {
+	"conveyor_belt_arena": ConveyorBeltArenaMode.new(),
     "quantum_anomaly_field": QuantumAnomalyFieldMode.new(),
 	"volcano_boss_mode": VolcanoBossMode.new(),
 

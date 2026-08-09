@@ -38105,7 +38105,75 @@ class QuantumAnomalyFieldMode(GameMode):
 
 
 
+
+class ConveyorBeltArenaMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Conveyor Belt Arena"
+        self.description = "The floor is made of conveyor belts moving in alternating directions. Every 10 seconds, the belts reverse direction."
+        self.conveyor_speed = 150.0
+        self.conveyor_timer = 0.0
+        self.conveyor_direction = 1.0  # 1.0 or -1.0
+        self.band_width = 100.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.conveyor_timer = 0.0
+        self.conveyor_direction = 1.0
+        # Add hazards to edges
+        if hasattr(world, "arena") and world.arena is not None:
+            arena_w = getattr(world.arena, "width", 1000)
+            arena_h = getattr(world.arena, "height", 1000)
+            from arena.procedural_arena import Hazard
+
+            # Left edge
+            left_hazard = Hazard(id=80001, x=20, y=arena_h/2, radius=40.0, kind="spikes", damage=10.0)
+            if hasattr(world.arena, "hazards"):
+                world.arena.hazards.append(left_hazard)
+
+            # Right edge
+            right_hazard = Hazard(id=80002, x=arena_w-20, y=arena_h/2, radius=40.0, kind="spikes", damage=10.0)
+            if hasattr(world.arena, "hazards"):
+                world.arena.hazards.append(right_hazard)
+
+            # Top edge
+            top_hazard = Hazard(id=80003, x=arena_w/2, y=20, radius=40.0, kind="spikes", damage=10.0)
+            if hasattr(world.arena, "hazards"):
+                world.arena.hazards.append(top_hazard)
+
+            # Bottom edge
+            bottom_hazard = Hazard(id=80004, x=arena_w/2, y=arena_h-20, radius=40.0, kind="spikes", damage=10.0)
+            if hasattr(world.arena, "hazards"):
+                world.arena.hazards.append(bottom_hazard)
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        self.conveyor_timer += delta
+
+        if self.conveyor_timer >= 10.0:
+            self.conveyor_timer -= 10.0
+            self.conveyor_direction *= -1.0
+            if hasattr(world, "add_event"):
+                world.add_event("conveyor_reverse", {"direction": self.conveyor_direction})
+
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
+                # Determine band based on y coordinate
+                b_y = getattr(b, "y", 0.0)
+                band_index = int(b_y // self.band_width)
+
+                # Alternating direction per band
+                band_multiplier = 1.0 if band_index % 2 == 0 else -1.0
+                current_direction = self.conveyor_direction * band_multiplier
+
+                if not hasattr(b, "vx"): b.vx = 0.0
+
+                # Apply conveyor force
+                b.vx += current_direction * self.conveyor_speed * delta
+
+
 GAME_MODES = {
+    'conveyor_belt_arena': ConveyorBeltArenaMode(),
     'quantum_anomaly_field': QuantumAnomalyFieldMode(),
 
     "singularity_storm": SingularityStormMode(),
