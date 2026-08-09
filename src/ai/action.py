@@ -2032,6 +2032,23 @@ class Action:
             pass
 
     def _execute_internal(self, strategy: str, delta: float) -> None:
+        if getattr(self.ball, "is_clan_banner", False):
+            # Process Clan Banner healing aura
+            self.ball.clan_banner_timer = getattr(self.ball, "clan_banner_timer", 10.0) - delta
+            if self.ball.clan_banner_timer <= 0:
+                self.ball.hp = 0
+                self.ball.alive = False
+            else:
+                if hasattr(self.world, "balls"):
+                    owner_id = getattr(self.ball, "owner_id", None)
+                    for b in self.world.balls:
+                        if getattr(b, "alive", True) and b != self.ball and getattr(b, "owner_id", getattr(b, "id", None)) == owner_id:
+                            # They are friendly
+                            dist_sq = (b.x - self.ball.x)**2 + (b.y - self.ball.y)**2
+                            if dist_sq <= 40000: # 200.0 radius squared
+                                new_hp = getattr(b, "hp", 100.0) + 15.0 * delta
+                                b.hp = max(0.0, min(getattr(b, "max_hp", 100.0), new_hp))
+
 
         aura_well_buff_timer = getattr(self.ball, "aura_well_buff_timer", 0.0)
         if aura_well_buff_timer > 0.0 or getattr(self.ball, "aura_well_buff_applied", False):
@@ -16851,7 +16868,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'survival_rewind', 'echo_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_dash', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone', 'deploy_distract_drone', 'deploy_fake_balls', 'decoy_swarm', 'hire_mercenary', 'hazard_surfing', 'grapple_hook', 'elastic_tether']
+                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'deploy_clan_banner', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'survival_rewind', 'echo_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_dash', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone', 'deploy_distract_drone', 'deploy_fake_balls', 'decoy_swarm', 'hire_mercenary', 'hazard_surfing', 'grapple_hook', 'elastic_tether']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
@@ -20411,6 +20428,31 @@ class Action:
                     turret.skill = None
                     turret.active_skill = None
                     self.world.balls.append(turret)
+
+            elif skill_name == "deploy_clan_banner":
+                import copy
+                import random
+                if hasattr(self.world, "balls"):
+                    banner = copy.copy(self.ball)
+                    banner.owner_id = getattr(self.ball, "id", None)
+                    self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 20.0)
+                    banner.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                    if hasattr(self.world, "next_id"):
+                        self.world.next_id += 1
+
+                    banner.hp = 100.0
+                    banner.max_hp = 100.0
+                    banner.damage = 0.0
+                    banner.speed = 0.0
+                    banner.skill_timer = 9999.0
+                    banner.attack_timer = 9999.0
+                    banner.is_decoy = True
+                    banner.is_clan_banner = True
+                    banner.clan_banner_timer = 10.0
+                    banner.SKILL = None
+                    banner.skill = None
+                    banner.active_skill = None
+                    self.world.balls.append(banner)
 
             elif skill_name == "master_decoys":
                 import copy

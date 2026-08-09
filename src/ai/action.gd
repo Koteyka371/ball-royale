@@ -3697,6 +3697,76 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+    var is_banner = false
+    if "is_clan_banner" in self.ball and self.ball.is_clan_banner:
+        is_banner = true
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("is_clan_banner") and self.ball.get_meta("is_clan_banner"):
+        is_banner = true
+
+    if is_banner:
+        var timer = 10.0
+        if "clan_banner_timer" in self.ball: timer = self.ball.clan_banner_timer
+        elif self.ball.has_method("has_meta") and self.ball.has_meta("clan_banner_timer"): timer = self.ball.get_meta("clan_banner_timer")
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("clan_banner_timer"): timer = self.ball.clan_banner_timer
+
+        timer -= delta
+
+        if timer <= 0.0:
+            if "hp" in self.ball: self.ball.hp = 0.0
+            if "alive" in self.ball: self.ball.alive = false
+            elif typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["hp"] = 0.0
+                self.ball["alive"] = false
+        else:
+            if "clan_banner_timer" in self.ball: self.ball.clan_banner_timer = timer
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("clan_banner_timer", timer)
+            elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["clan_banner_timer"] = timer
+
+            var owner_id = null
+            if "owner_id" in self.ball: owner_id = self.ball.owner_id
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("owner_id"): owner_id = self.ball.get_meta("owner_id")
+
+            if self.world != null and typeof(self.world) == TYPE_OBJECT and "balls" in self.world:
+                for b in self.world.balls:
+                    if typeof(b) == TYPE_OBJECT and b != self.ball:
+                        var b_alive = true
+                        if "alive" in b: b_alive = b.alive
+                        elif b.has_method("has_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+
+                        var b_owner = null
+                        if "owner_id" in b: b_owner = b.owner_id
+                        elif b.has_method("has_meta") and b.has_meta("owner_id"): b_owner = b.get_meta("owner_id")
+                        if b_owner == null:
+                            if "id" in b: b_owner = b.id
+                            elif b.has_method("has_meta") and b.has_meta("id"): b_owner = b.get_meta("id")
+
+                        if b_alive and b_owner != null and owner_id != null and b_owner == owner_id:
+                            var b_x = 0.0
+                            if "x" in b: b_x = b.x
+                            var b_y = 0.0
+                            if "y" in b: b_y = b.y
+                            var my_x = 0.0
+                            if "x" in self.ball: my_x = self.ball.x
+                            var my_y = 0.0
+                            if "y" in self.ball: my_y = self.ball.y
+
+                            var dist_sq = (b_x - my_x) * (b_x - my_x) + (b_y - my_y) * (b_y - my_y)
+                            if dist_sq <= 40000.0: # 200.0 radius squared
+                                var cur_hp = 100.0
+                                if "hp" in b: cur_hp = b.hp
+                                elif b.has_method("has_meta") and b.has_meta("hp"): cur_hp = b.get_meta("hp")
+
+                                var max_hp = 100.0
+                                if "max_hp" in b: max_hp = b.max_hp
+                                elif b.has_method("has_meta") and b.has_meta("max_hp"): max_hp = b.get_meta("max_hp")
+
+                                var new_hp = cur_hp + 15.0 * delta
+                                if new_hp > max_hp: new_hp = max_hp
+                                if new_hp < 0.0: new_hp = 0.0
+
+                                if "hp" in b: b.hp = new_hp
+                                elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
 
 	var in_gravity_nullifier_zone = false
 	if typeof(world) == TYPE_DICTIONARY and "arena" in world and "hazards" in world.arena:
@@ -33261,7 +33331,7 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'survival_rewind', 'echo_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_dash', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone', 'deploy_distract_drone', 'deploy_fake_balls', 'decoy_swarm', 'hire_mercenary', 'hazard_surfing', 'grapple_hook', 'elastic_tether', 'instant_swap']
+                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'deploy_clan_banner', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'survival_rewind', 'echo_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_dash', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone', 'deploy_distract_drone', 'deploy_fake_balls', 'decoy_swarm', 'hire_mercenary', 'hazard_surfing', 'grapple_hook', 'elastic_tether', 'instant_swap']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -39613,6 +39683,60 @@ func _use_skill():
 
                     if "skill_timer" in self.ball: self.ball.skill_timer = cooldown
                     elif self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", cooldown)
+
+        elif skill_name == "deploy_clan_banner":
+            var banner = null
+            if self.ball.has_method("duplicate"): banner = self.ball.duplicate()
+            elif typeof(self.ball) == TYPE_DICTIONARY: banner = self.ball.duplicate()
+
+            if banner != null:
+                if "id" in banner:
+                    banner.id = randi() % 90000 + 10000
+                if "hp" in banner and "max_hp" in banner:
+                    banner.max_hp = 100.0
+                    banner.hp = 100.0
+                if "damage" in banner:
+                    banner.damage = 0.0
+                if "speed" in banner:
+                    banner.speed = 0.0
+                if "attack_range" in banner:
+                    banner.attack_range = 0.0
+
+                var self_id_stat = -2
+                if "id" in self.ball: self_id_stat = self.ball.id
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): self_id_stat = self.ball.get_meta("id")
+
+                if banner.has_method("set_meta"):
+                    banner.set_meta("owner_id", self_id_stat)
+                    banner.set_meta("is_decoy", true)
+                    banner.set_meta("is_clan_banner", true)
+                    banner.set_meta("clan_banner_timer", 10.0)
+                    banner.set_meta("skill_timer", 9999.0)
+                    banner.set_meta("attack_timer", 9999.0)
+                    banner.set_meta("SKILL", null)
+                    banner.set_meta("skill", null)
+                    banner.set_meta("active_skill", null)
+                elif typeof(banner) == TYPE_DICTIONARY:
+                    banner["owner_id"] = self_id_stat
+                    banner["is_decoy"] = true
+                    banner["is_clan_banner"] = true
+                    banner["clan_banner_timer"] = 10.0
+                    banner["skill_timer"] = 9999.0
+                    banner["attack_timer"] = 9999.0
+                    banner["SKILL"] = null
+                    banner["skill"] = null
+                    banner["active_skill"] = null
+
+                if self.world != null and "balls" in self.world:
+                    self.world.balls.append(banner)
+
+                var cooldown = 20.0
+                if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("SKILL_COOLDOWN"): cooldown = float(self.ball.SKILL_COOLDOWN)
+                elif typeof(self.ball) == TYPE_OBJECT and "SKILL_COOLDOWN" in self.ball: cooldown = float(self.ball.SKILL_COOLDOWN)
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("SKILL_COOLDOWN"): cooldown = float(self.ball.get_meta("SKILL_COOLDOWN"))
+
+                if "skill_timer" in self.ball: self.ball.skill_timer = cooldown
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", cooldown)
 
         elif skill_name == "master_decoys":
             var active_decoys = []
