@@ -34,6 +34,9 @@ class CrowdSystem:
         self.active_pledges = {}
         self.user_votes = {}
         self.active_bets = []
+        self.juggernaut_bets = []
+        self.current_juggernaut_id = None
+        self.juggernaut_start_tick = 0
 
     def _add_viewer_loyalty(self, user: str, points: int):
         self.viewer_loyalty[user] = self.viewer_loyalty.get(user, 0) + points
@@ -370,6 +373,69 @@ class CrowdSystem:
                 self.excitement_level += 10.0
 
         elif cmd == "!bet" and len(parts) >= 3:
+            subcmd = parts[1].lower()
+            if subcmd in ["jugg_time", "jugg_killer"]:
+                if len(parts) < 4:
+                    return
+                try:
+                    amount_str = parts[3].lower()
+                    currency = "skill_points"
+                    amount = 0
+
+                    if amount_str.endswith("sp"):
+                        currency = "skill_points"
+                        amount_str = amount_str[:-2]
+                    elif amount_str.endswith("pt"):
+                        currency = "prestige_tokens"
+                        amount_str = amount_str[:-2]
+                    elif amount_str.endswith("lp"):
+                        currency = "loyalty_points"
+                        amount_str = amount_str[:-2]
+
+                    amount = int(amount_str)
+                    if amount <= 0:
+                        return
+
+                    pm = getattr(self.world, "profile_manager", None)
+                    if not pm or not hasattr(pm, "data") or pm.data.get(currency, 0) < amount:
+                        return
+
+                    pm.data[currency] -= amount
+                    if hasattr(pm, "save"):
+                        pm.save()
+
+                    if not hasattr(self, "juggernaut_bets"):
+                        self.juggernaut_bets = []
+
+                    if subcmd == "jugg_time":
+                        target_time = float(parts[2])
+                        self.juggernaut_bets.append({
+                            "user": user,
+                            "type": "time",
+                            "target_time": target_time,
+                            "amount": amount,
+                            "currency": currency
+                        })
+                        if hasattr(self.world, 'add_event'):
+                            self.world.add_event("crowd_cheer", {"message": f"Viewer {self._get_user_display(user)} bet {amount} {currency} the Juggernaut will survive {target_time}s!"})
+
+                    elif subcmd == "jugg_killer":
+                        target_killer = parts[2]
+                        if target_killer.isdigit():
+                            target_killer = int(target_killer)
+                        self.juggernaut_bets.append({
+                            "user": user,
+                            "type": "killer",
+                            "target_killer": target_killer,
+                            "amount": amount,
+                            "currency": currency
+                        })
+                        if hasattr(self.world, 'add_event'):
+                            self.world.add_event("crowd_cheer", {"message": f"Viewer {self._get_user_display(user)} bet {amount} {currency} that {target_killer} will kill the Juggernaut!"})
+                except ValueError:
+                    pass
+                return
+
             target_id = None
             try:
                 target_id = int(parts[1])
@@ -509,6 +575,7 @@ class CrowdSystem:
                 b.crowd_bounty_timer -= 1
 
         self._check_events(balls, kill_log, tick)
+        self._check_juggernaut_bets(balls, kill_log, tick)
         self._check_camping(balls, tick)
         self._throw_buffs_if_needed(balls, tick)
         self._throw_hazards_if_bored(balls, tick)
@@ -569,6 +636,76 @@ class CrowdSystem:
                 else:
                     self.ball_positions[b_id] = (b_x, b_y)
                     self.camping_time[b_id] = 0
+
+    def _check_juggernaut_bets(self, balls: List[Any], kill_log: List[Dict[str, Any]], tick: int):
+        juggernaut = None
+        for b in balls:
+            team = getattr(b, "team", getattr(b, "ball_type", ""))
+            if "Juggernaut" in team and getattr(b, "alive", False):
+                juggernaut = b
+                break
+
+        jugg_id = getattr(juggernaut, "id", None) if juggernaut else None
+
+        if jugg_id != self.current_juggernaut_id:
+            if self.current_juggernaut_id is not None:
+                # Juggernaut died or changed
+                survival_ticks = tick - self.juggernaut_start_tick
+                survival_seconds = survival_ticks / 60.0
+
+                killer_id = None
+                for kill in kill_log:
+                    if kill.get("victim_id") == self.current_juggernaut_id:
+                        killer_id = kill.get("killer_id")
+                        break
+
+                if killer_id is None:
+                    # Fallback to check if previous jugg has a killer property now
+                    prev_jugg = next((b for b in balls if getattr(b, "id", None) == self.current_juggernaut_id), None)
+                    if prev_jugg:
+                        killer_id = getattr(prev_jugg, "killer", None)
+
+                self._resolve_juggernaut_bets(survival_seconds, killer_id)
+
+            self.current_juggernaut_id = jugg_id
+            self.juggernaut_start_tick = tick
+
+    def _resolve_juggernaut_bets(self, survival_seconds: float, killer_id: Any):
+        if not hasattr(self, "juggernaut_bets") or not self.juggernaut_bets:
+            return
+
+        pm = getattr(self.world, "profile_manager", None)
+        if not pm or not hasattr(pm, "data"):
+            self.juggernaut_bets = []
+            return
+
+        for bet in self.juggernaut_bets:
+            won = False
+            multiplier = 2.0
+
+            if bet["type"] == "time":
+                # Margin of error +/- 10 seconds
+                if abs(survival_seconds - bet["target_time"]) <= 10.0:
+                    won = True
+                    multiplier = 3.0 # Higher payout for guessing time
+            elif bet["type"] == "killer":
+                if str(bet["target_killer"]) == str(killer_id):
+                    won = True
+                    multiplier = 5.0 # Very high payout for guessing specific killer
+
+            if won:
+                winnings = int(bet["amount"] * multiplier)
+                pm.data[bet["currency"]] = pm.data.get(bet["currency"], 0) + winnings
+                if hasattr(self.world, "add_event"):
+                    self.world.add_event("crowd_cheer", {"message": f"Viewer {self._get_user_display(bet['user'])} won their Juggernaut bet! Payout: {winnings} {bet['currency']}!"})
+            else:
+                if hasattr(self.world, "add_event"):
+                    self.world.add_event("crowd_throw", {"message": f"Viewer {self._get_user_display(bet['user'])} lost their Juggernaut bet."})
+
+        if hasattr(pm, "save"):
+            pm.save()
+
+        self.juggernaut_bets = []
 
     def _check_bets_and_winner(self, balls: List[Any], tick: int):
         if not self.match_started and len(balls) > 1:
