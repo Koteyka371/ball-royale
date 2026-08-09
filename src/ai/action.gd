@@ -31932,6 +31932,29 @@ func _collect_booster(delta: float):
                 if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena and typeof(self.world.arena.hazards) == TYPE_ARRAY:
                     self.world.arena.hazards.erase(b)
 
+            elif b_kind == "grave_robber_shovel":
+                var dx = get_bx(b) - my_x
+                var dy = get_by(b) - my_y
+                var b_radius = 15.0
+                if typeof(b) == TYPE_DICTIONARY and b.has("radius"): b_radius = b.radius
+                elif typeof(b) == TYPE_OBJECT and "radius" in b: b_radius = b.radius
+                var dist = sqrt(dx*dx + dy*dy)
+                if dist <= my_radius + b_radius + 5.0:
+                    if typeof(self.ball) == TYPE_DICTIONARY: self.ball["grave_robber_shovel_active"] = true
+                    else:
+                        if "grave_robber_shovel_active" in self.ball: self.ball.grave_robber_shovel_active = true
+                        elif self.ball.has_method("set_meta"): self.ball.set_meta("grave_robber_shovel_active", true)
+
+                    if typeof(b) == TYPE_DICTIONARY: b["active"] = false
+                    else:
+                        if "active" in b: b.active = false
+                        elif b.has_method("set_meta"): b.set_meta("active", false)
+
+                    if self.world != null and "boosters" in self.world and typeof(self.world.boosters) == TYPE_ARRAY:
+                        self.world.boosters.erase(b)
+                    if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena and typeof(self.world.arena.hazards) == TYPE_ARRAY:
+                        self.world.arena.hazards.erase(b)
+
             elif b_kind == "wind_shield_booster":
                 var dx = get_bx(b) - my_x
                 var dy = get_by(b) - my_y

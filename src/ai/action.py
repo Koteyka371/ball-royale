@@ -16401,6 +16401,15 @@ class Action:
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and b in self.world.arena.hazards:
                         self.world.arena.hazards.remove(b)
 
+                elif getattr(b, "kind", "") == "grave_robber_shovel":
+                    dist = __import__('math').sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
+                    if dist <= getattr(self.ball, "radius", 10.0) + getattr(b, "radius", 15.0) + 5.0:
+                        self.ball.grave_robber_shovel_active = True
+                        b.active = False
+                        if hasattr(self.world, "boosters") and b in self.world.boosters:
+                            self.world.boosters.remove(b)
+                        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and b in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(b)
                 elif getattr(b, "kind", "") == "wind_shield_booster":
                     dist = __import__('math').sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
                     if dist <= getattr(self.ball, "radius", 10.0) + getattr(b, "radius", 15.0) + 5.0:

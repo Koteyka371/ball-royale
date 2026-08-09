@@ -2176,6 +2176,49 @@ class GameMode:
 								var b_team = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else (b.team if "team" in b else "")
 
 								if b_alive and b_team != h_team:
+									var has_shovel = false
+									if typeof(b) == TYPE_DICTIONARY:
+										if b.has("grave_robber_shovel_active") and b.grave_robber_shovel_active: has_shovel = true
+									else:
+										if "grave_robber_shovel_active" in b and b.grave_robber_shovel_active: has_shovel = true
+										elif b.has_method("has_meta") and b.has_meta("grave_robber_shovel_active") and b.get_meta("grave_robber_shovel_active"): has_shovel = true
+
+									if has_shovel:
+										var b_x = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.x
+										var b_y = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.y
+										var b_radius = b.get("radius", 15.0) if typeof(b) == TYPE_DICTIONARY else (b.radius if "radius" in b else 15.0)
+
+										var dist = sqrt(pow(b_x - h_x, 2) + pow(b_y - h_y, 2))
+										if dist <= h_radius + b_radius:
+											to_remove_grave.append(h)
+											if typeof(b) == TYPE_DICTIONARY: b["grave_robber_shovel_active"] = false
+											else:
+												if "grave_robber_shovel_active" in b: b.grave_robber_shovel_active = false
+												elif b.has_method("set_meta"): b.set_meta("grave_robber_shovel_active", false)
+
+											var new_kind = "health_booster"
+											if randf() >= 0.7:
+												var rare_items = ["stamina_booster", "chameleon_item"]
+												new_kind = rare_items[randi() % rare_items.size()]
+
+											var ProceduralArenaScript = load("res://src/arena/procedural_arena.gd")
+											var new_booster = null
+											if ProceduralArenaScript != null:
+												var new_id = world.arena.hazards.size() + randi() % 90000 + 10000
+												new_booster = ProceduralArenaScript.Hazard.new(new_id, h_x, h_y, 15.0, new_kind, 0.0)
+												if new_booster.has_method("set_meta"): new_booster.set_meta("active", true)
+											else:
+												new_booster = {"id": world.arena.hazards.size() + randi() % 90000 + 10000, "x": h_x, "y": h_y, "radius": 15.0, "kind": new_kind, "damage": 0.0, "active": true}
+
+											if world != null and "boosters" in world and typeof(world.boosters) == TYPE_ARRAY:
+												world.boosters.append(new_booster)
+											else:
+												world.arena.hazards.append(new_booster)
+
+											if world.has_method("add_event"):
+												world.add_event("grave_trap_neutralized", {"x": h_x, "y": h_y})
+											break
+
 									var b_x = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.x
 									var b_y = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.y
 									var b_radius = b.get("radius", 15.0) if typeof(b) == TYPE_DICTIONARY else (b.radius if "radius" in b else 15.0)
