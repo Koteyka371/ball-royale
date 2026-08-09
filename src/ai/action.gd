@@ -24114,6 +24114,12 @@ func execute(strategy: String, delta: float):
                     elif hazard.kind == "lightning_strike":
                         if not hazard.has_meta("hit_targets") or not hazard.get_meta("hit_targets"):
                             hazard.set_meta("hit_targets", true)
+                            var ws_timer2 = 0.0
+                            if self.ball.has_method("has_meta") and self.ball.has_meta("wind_shield_booster_timer"): ws_timer2 = self.ball.get_meta("wind_shield_booster_timer")
+                            elif "wind_shield_booster_timer" in self.ball: ws_timer2 = self.ball.wind_shield_booster_timer
+                            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("wind_shield_booster_timer"): ws_timer2 = float(self.ball["wind_shield_booster_timer"])
+                            if ws_timer2 > 0.0:
+                                continue
                             var lr_timer = 0.0
                             if self.ball.has_method("has_meta") and self.ball.has_meta("lightning_rod_item_timer"): lr_timer = self.ball.get_meta("lightning_rod_item_timer")
                             elif "lightning_rod_item_timer" in self.ball: lr_timer = self.ball.lightning_rod_item_timer
