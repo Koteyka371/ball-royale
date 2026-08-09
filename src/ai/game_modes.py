@@ -10704,6 +10704,47 @@ class MovingZoneMode(GameMode):
                     return getattr(b, "team", b.ball_type)
         return None
 
+class SilenceEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Silence Event"
+        self.description = "Occasionally a global event triggers that silences all abilities for a short period."
+        self.event_timer = 0.0
+        self.event_active = False
+        self.event_duration = 0.0
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        if not self.event_active:
+            self.event_timer += delta
+
+        if not self.event_active and self.event_timer > 20.0:
+            import random
+            if random.random() < 0.1:  # 10% chance every 20 seconds to trigger
+                self.event_active = True
+                self.event_duration = 10.0
+                self.event_timer = 0.0
+
+                # Emit event
+                event_data = {"type": "silence_event", "message": "SILENCE EVENT! All abilities silenced!"}
+                if isinstance(world, dict):
+                    if "events" in world:
+                        world["events"].append(event_data)
+                elif hasattr(world, "add_event"):
+                    world.add_event("silence_event", event_data)
+            else:
+                self.event_timer = 0.0
+
+        if self.event_active:
+            self.event_duration -= delta
+            if self.event_duration <= 0:
+                self.event_active = False
+                self.event_timer = 0.0
+
+            for b in balls:
+                if getattr(b, "alive", False):
+                    b.silence_timer = max(getattr(b, "silence_timer", 0.0), 0.5)
+
+
 class ReverseEventMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -38043,6 +38084,7 @@ GAME_MODES = {
     "emp_burst": EMPBurstMode(),
     "dynamic_hazards": DynamicHazardsMode(),
     "custom_match": CustomMatchMode(),
+    "silence_event": SilenceEventMode(),
     "reverse_event": ReverseEventMode(),
     "unstable_portals_event": UnstablePortalsEventMode(),
     "quantum_instability_event": QuantumInstabilityEventMode(),

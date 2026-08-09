@@ -15899,6 +15899,46 @@ class MovingZoneMode extends GameMode:
 
 
 
+class SilenceEventMode extends GameMode:
+	var event_timer: float = 0.0
+	var event_active: bool = false
+	var event_duration: float = 0.0
+
+	func _init() -> void:
+		name = "Silence Event"
+		description = "Occasionally a global event triggers that silences all abilities for a short period."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if not event_active:
+			event_timer += delta
+
+		if not event_active and event_timer > 20.0:
+			if randf() < 0.1:  # 10% chance every 20 seconds to trigger
+				event_active = true
+				event_duration = 10.0
+				event_timer = 0.0
+
+				# Emit event
+				if world.has_method("add_event"):
+					world.add_event("silence_event", {"type": "silence_event", "message": "SILENCE EVENT! All abilities silenced!"})
+			else:
+				event_timer = 0.0
+
+		if event_active:
+			event_duration -= delta
+			if event_duration <= 0:
+				event_active = false
+				event_timer = 0.0
+
+			for b in balls:
+				if b.get("alive"):
+					var curr = 0.0
+					if "silence_timer" in b:
+						curr = b.silence_timer
+						if curr < 0.5:
+							b.silence_timer = 0.5
+
+
 class ReverseEventMode extends GameMode:
 	var event_timer: float = 0.0
 	var event_active: bool = false
@@ -61923,6 +61963,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"emp_burst": EMPBurstMode.new(),
 	"dynamic_hazards": DynamicHazardsMode.new(),
 	"custom_match": CustomMatchMode.new(),
+	"silence_event": SilenceEventMode.new(),
 	"reverse_event": ReverseEventMode.new(),
 	"unstable_portals_event": UnstablePortalsEventMode.new(),
 	"quantum_instability_event": QuantumInstabilityEventMode.new(),
