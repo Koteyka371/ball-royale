@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1883] Global Silence Event — *2026-08-09 10:45:21 UTC*
+
+Occasionally a global event triggers that silences all abilities for a short period.
+
+---
+
 ## [idea-1931] Quantum Tunnels Biome — *2026-08-09 10:32:36 UTC*
 
 A specific biome safe zone that periodically teleports entities inside it to another random quantum tunnel biome on the map, allowing for rapid escapes or surprise attacks, but making it hard to hold ground.
