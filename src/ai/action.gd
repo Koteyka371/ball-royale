@@ -15249,8 +15249,14 @@ func execute(strategy: String, delta: float):
         if world.arena.get("wind_dy") != null:
             wind_dy = world.arena.get("wind_dy")
 
+
+        var wind_shield_timer = 0.0
+        if typeof(my_ball) == TYPE_OBJECT and "wind_shield_booster_timer" in my_ball: wind_shield_timer = float(my_ball.wind_shield_booster_timer)
+        elif typeof(my_ball) == TYPE_OBJECT and my_ball.has_method("has_meta") and my_ball.has_meta("wind_shield_booster_timer"): wind_shield_timer = float(my_ball.get_meta("wind_shield_booster_timer"))
+        elif typeof(my_ball) == TYPE_DICTIONARY and my_ball.has("wind_shield_booster_timer"): wind_shield_timer = float(my_ball["wind_shield_booster_timer"])
+
         var is_wind_riding_f = false
-        if (wind_dx != 0.0 or wind_dy != 0.0) and not ignores_wind and anchor_timer <= 0:
+        if (wind_dx != 0.0 or wind_dy != 0.0) and not ignores_wind and anchor_timer <= 0 and wind_shield_timer <= 0:
             var b_type_f = null
             if "BALL_TYPE" in my_ball: b_type_f = my_ball.BALL_TYPE
             elif "ball_type" in my_ball: b_type_f = my_ball.ball_type
@@ -15291,7 +15297,7 @@ func execute(strategy: String, delta: float):
                 if "vx" in my_ball and "vy" in my_ball:
                     my_ball.x += my_ball.vx * delta * 0.2
                     my_ball.y += my_ball.vy * delta * 0.2
-        if (wind_dx != 0.0 or wind_dy != 0.0) and not ignores_wind and anchor_timer <= 0:
+        if (wind_dx != 0.0 or wind_dy != 0.0) and not ignores_wind and anchor_timer <= 0 and wind_shield_timer <= 0:
             my_ball.x += wind_dx * delta
             my_ball.y += wind_dy * delta
 
@@ -23981,6 +23987,13 @@ func execute(strategy: String, delta: float):
                         if "skill_timer" in self.ball and self.ball.skill_timer > 0:
                             self.ball.skill_timer += delta * (1.0 - speed_mult)
                     elif hazard.kind in ["tornado", "supercell_tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"]:
+                        var ws_timer = 0.0
+                        if "wind_shield_booster_timer" in self.ball: ws_timer = float(self.ball.wind_shield_booster_timer)
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("wind_shield_booster_timer"): ws_timer = float(self.ball.get_meta("wind_shield_booster_timer"))
+                        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("wind_shield_booster_timer"): ws_timer = float(self.ball["wind_shield_booster_timer"])
+                        if ws_timer > 0.0:
+                            continue
+
                         var push_immunity = false
                         if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("hazard_push_pull_immunity") and self.ball.get_meta("hazard_push_pull_immunity") == true:
                             push_immunity = true
@@ -31918,6 +31931,27 @@ func _collect_booster(delta: float):
                     self.world.boosters.erase(b)
                 if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena and typeof(self.world.arena.hazards) == TYPE_ARRAY:
                     self.world.arena.hazards.erase(b)
+
+            elif b_kind == "wind_shield_booster":
+                var dx = get_bx(b) - my_x
+                var dy = get_by(b) - my_y
+                var b_radius = 15.0
+                if typeof(b) == TYPE_DICTIONARY and b.has("radius"): b_radius = b.radius
+                elif typeof(b) == TYPE_OBJECT and "radius" in b: b_radius = b.radius
+                var dist = sqrt(dx*dx + dy*dy)
+                if dist <= my_radius + b_radius + 5.0:
+                    if typeof(self.ball) == TYPE_DICTIONARY: self.ball["wind_shield_booster_timer"] = 15.0
+                    else:
+                        if "wind_shield_booster_timer" in self.ball: self.ball.wind_shield_booster_timer = 15.0
+                        elif self.ball.has_method("set_meta"): self.ball.set_meta("wind_shield_booster_timer", 15.0)
+                    if typeof(b) == TYPE_DICTIONARY: b["active"] = false
+                    else:
+                        if "active" in b: b.active = false
+                        elif b.has_method("set_meta"): b.set_meta("active", false)
+                    if self.world != null and "boosters" in self.world and typeof(self.world.boosters) == TYPE_ARRAY:
+                        self.world.boosters.erase(b)
+                    if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena and typeof(self.world.arena.hazards) == TYPE_ARRAY:
+                        self.world.arena.hazards.erase(b)
             elif b_kind == "echo_booster":
                 var dx = 0.0
                 if typeof(b) == TYPE_DICTIONARY and b.has("x"): dx = b.x - self.ball.x
