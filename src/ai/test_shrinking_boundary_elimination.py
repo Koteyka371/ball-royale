@@ -38,5 +38,8 @@ def test_shrinking_boundary_elimination():
     assert ball_outside.alive is True
     assert ball_outside.hp == 90.0
 
+    assert ball_outside.x >= mode.min_x
+    assert ball_outside.speed <= 20.0
+
 if __name__ == "__main__":
     pytest.main([__file__])

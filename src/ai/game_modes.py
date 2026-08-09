@@ -25427,6 +25427,14 @@ class ShrinkingBoundaryMode(GameMode):
         for b in balls:
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                 if b.x < self.min_x or b.x > self.max_x or b.y < self.min_y or b.y > self.max_y:
+                    # Clamp position to push balls towards the center
+                    b.x = max(self.min_x, min(self.max_x, b.x))
+                    b.y = max(self.min_y, min(self.max_y, b.y))
+
+                    # Apply severe slow
+                    base_speed = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_speed * 0.1
+
                     # Deal continuous damage rather than instant elimination
                     b.hp -= 10.0 * delta
                     if b.hp <= 0:
