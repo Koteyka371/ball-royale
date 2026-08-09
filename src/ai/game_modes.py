@@ -53147,3 +53147,4 @@ class OccasionalMirrorWallsMode(GameMode):
 GAME_MODES["occasional_mirror_walls"] = OccasionalMirrorWallsMode()
 
 GAME_MODES['quantum_tunnel_safe_zone'] = QuantumTunnelSafeZoneMode()
+GAME_MODES['bone_prison_trap'] = __import__('ai.bone_prison_trap', fromlist=['']).BonePrisonTrapMode()
