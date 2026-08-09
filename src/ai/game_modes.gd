@@ -61419,6 +61419,7 @@ class SingularityStormMode extends GameMode:
 
 
 var GAME_MODES = {
+	"bone_prison_trap": preload("res://src/ai/bone_prison_trap.gd").new(),
 	"singularity_storm": SingularityStormMode.new(),
 	"dash_aura_trail": DashAuraTrailMode.new(),
 	"expanding_aura_event": ExpandingAuraEventMode.new(),
