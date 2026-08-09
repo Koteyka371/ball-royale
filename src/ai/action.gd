@@ -8877,9 +8877,16 @@ func execute(strategy: String, delta: float):
         for p in self.world.arena.platforms:
             if "is_broken" in p and p.is_broken:
                 continue
+
+            # Platform break logic initialization
+            if not "shake_timer" in p:
+                p.shake_timer = 0.0
+
             # Simple AABB collision
             var px = p.x
             var py = p.y
+
+            var is_stood_upon = false
 
             var bx = self.ball.x if typeof(self.ball) == TYPE_OBJECT else self.ball["x"]
             var by = self.ball.y if typeof(self.ball) == TYPE_OBJECT else self.ball["y"]
@@ -8891,6 +8898,9 @@ func execute(strategy: String, delta: float):
                     self.ball["x"] += p.vx * delta
                     self.ball["y"] += p.vy * delta
 
+                is_stood_upon = true
+
+            if is_stood_upon:
                 if not ("is_shaking" in p and p.is_shaking):
                     p.is_shaking = true
                     if typeof(self.world) == TYPE_OBJECT and self.world.has_method("add_event"):
@@ -8899,13 +8909,38 @@ func execute(strategy: String, delta: float):
                         self.world["events"].append({"type": "platform_shake", "x": px, "y": py})
 
                 # Apply tiny visual jitter to ball
-                if "is_shaking" in p and p.is_shaking:
-                    if typeof(self.ball) == TYPE_OBJECT:
-                        self.ball.x += randf_range(-1.0, 1.0)
-                        self.ball.y += randf_range(-1.0, 1.0)
-                    else:
-                        self.ball["x"] += randf_range(-1.0, 1.0)
-                        self.ball["y"] += randf_range(-1.0, 1.0)
+                if typeof(self.ball) == TYPE_OBJECT:
+                    self.ball.x += randf_range(-1.0, 1.0)
+                    self.ball.y += randf_range(-1.0, 1.0)
+                else:
+                    self.ball["x"] += randf_range(-1.0, 1.0)
+                    self.ball["y"] += randf_range(-1.0, 1.0)
+
+            # Increment shake timer if shaking
+            if "is_shaking" in p and p.is_shaking:
+                # Avoid multiple timer increments per frame by tracking the tick
+                var current_tick = 0
+                if typeof(self.world) == TYPE_OBJECT and "current_tick" in self.world:
+                    current_tick = self.world.current_tick
+                elif typeof(self.world) == TYPE_DICTIONARY and "current_tick" in self.world:
+                    current_tick = self.world["current_tick"]
+
+                if not "_last_shake_tick" in p:
+                    p._last_shake_tick = current_tick
+                    p.shake_timer += delta
+                elif p._last_shake_tick != current_tick:
+                    p._last_shake_tick = current_tick
+                    p.shake_timer += delta
+
+                p.visual_offset_x = randf_range(-3.0, 3.0)
+                p.visual_offset_y = randf_range(-3.0, 3.0)
+
+                if p.shake_timer >= 3.0:
+                    p.is_broken = true
+                    if typeof(self.world) == TYPE_OBJECT and self.world.has_method("add_event"):
+                        self.world.add_event("platform_break", {"x": px, "y": py})
+                    elif typeof(self.world) == TYPE_DICTIONARY and "events" in self.world:
+                        self.world["events"].append({"type": "platform_break", "x": px, "y": py})
 
     if typeof(self.world) == TYPE_OBJECT and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
         for hazard in self.world.arena.hazards:
