@@ -309,7 +309,7 @@ func generate():
             hazards.append(new_hazard)
             continue
 
-        elif kind in ["bumper", "time_dilation_bumper"]:
+        elif kind in ["bumper", "time_dilation_bumper", "pinball_bumper"]:
             radius = rng.randf_range(30.0, 60.0)
             damage = 0.0
             var s = get_random_spawn_point(radius)
@@ -1478,7 +1478,7 @@ func update_zone(current_tick: int, delta: float) -> void:
                             h.set_meta("active", false)
                         if "active" in h:
                             h.active = false
-            elif "kind" in h and h.kind == "bumper":
+            elif "kind" in h and h.kind in ["bumper", "pinball_bumper"]:
                 if h.has_meta("chain_link") and h.get_meta("chain_link"):
                     if h.has_meta("target_hazard_id"):
                         var t_id = h.get_meta("target_hazard_id")

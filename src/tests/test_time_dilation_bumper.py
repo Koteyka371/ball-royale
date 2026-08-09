@@ -71,7 +71,7 @@ def test_time_dilation_bumper_collision():
 
     # Simplified simulation of the collision logic
     for hazard in world.arena.hazards:
-        if getattr(hazard, "kind", "") in ["bumper", "electric_bumper", "magnetic_bumper", "link_bumper", "chain_reaction_bumper", "time_dilation_bumper"]:
+        if getattr(hazard, "kind", "") in ["bumper", "electric_bumper", "magnetic_bumper", "link_bumper", "chain_reaction_bumper", "time_dilation_bumper", "pinball_bumper"]:
             dx = ball.x - hazard.x
             dy = ball.y - hazard.y
             dist2 = dx*dx + dy*dy

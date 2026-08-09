@@ -270,7 +270,7 @@ class ProceduralArena:
             elif kind == "repulsor":
                 radius = random.uniform(40.0, 80.0)
                 damage = 0.0
-            elif kind in ["bumper", "time_dilation_bumper"]:
+            elif kind in ["bumper", "time_dilation_bumper", "pinball_bumper"]:
                 radius = random.uniform(30.0, 60.0)
                 damage = 0.0
                 hx, hy = self.get_random_spawn_point(radius)
@@ -1126,7 +1126,7 @@ class ProceduralArena:
                         h.duration -= delta
                         if h.duration <= 0:
                             h.active = False
-                elif getattr(h, "kind", "") == "bumper":
+                elif getattr(h, "kind", "") in ["bumper", "pinball_bumper"]:
                     if getattr(h, "chain_link", False):
                         if hasattr(h, "target_hazard_id"):
                             target = next((x for x in self.hazards if getattr(x, 'id', None) == h.target_hazard_id), None)
