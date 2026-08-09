@@ -50347,8 +50347,15 @@ class QuantumTunnelSafeZoneMode(GameMode):
                         target_index = random.choice(other_biomes)
                         target_biome = self.biomes[target_index]
 
-                        b.x = target_biome["x"] + random.uniform(-20, 20)
-                        b.y = target_biome["y"] + random.uniform(-20, 20)
+                        teleport_x = target_biome["x"] + random.uniform(-20, 20)
+                        teleport_y = target_biome["y"] + random.uniform(-20, 20)
+
+                        if hasattr(world, "arena") and world.arena:
+                            teleport_x = max(0, min(getattr(world.arena, "width", 1000), teleport_x))
+                            teleport_y = max(0, min(getattr(world.arena, "height", 1000), teleport_y))
+
+                        b.x = teleport_x
+                        b.y = teleport_y
 
                         if hasattr(world, "add_event"):
                             world.add_event("quantum_teleport", {"ball_id": getattr(b, "id", -1), "target_biome": target_index})

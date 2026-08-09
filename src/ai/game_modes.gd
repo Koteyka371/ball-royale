@@ -79567,6 +79567,25 @@ class QuantumTunnelSafeZoneMode extends GameMode:
 						var new_x = target_biome["x"] + rand_range(-20, 20)
 						var new_y = target_biome["y"] + rand_range(-20, 20)
 
+						var arena_width = 1000.0
+						if world.has("arena") and world.arena and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("width"):
+							arena_width = float(world.arena.width)
+						elif typeof(world) == TYPE_OBJECT and world.get("arena") != null:
+							var w = world.arena.get("width")
+							if w != null:
+								arena_width = float(w)
+
+						var arena_height = 1000.0
+						if world.has("arena") and world.arena and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("height"):
+							arena_height = float(world.arena.height)
+						elif typeof(world) == TYPE_OBJECT and world.get("arena") != null:
+							var h = world.arena.get("height")
+							if h != null:
+								arena_height = float(h)
+
+						new_x = max(0.0, min(arena_width, new_x))
+						new_y = max(0.0, min(arena_height, new_y))
+
 						if typeof(b) == TYPE_DICTIONARY:
 							b["x"] = new_x
 							b["y"] = new_y
