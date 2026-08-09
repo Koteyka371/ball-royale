@@ -61845,7 +61845,134 @@ class VolcanoBossMode extends GameMode:
 			if world.has_method("add_event"):
 				world.add_event("boss_defeated", {"message": "The Volcano Boss has been extinguished!"})
 
+class QuantumAnomalyFieldMode extends GameMode:
+    var anomaly_spawn_timer = 0.0
+    var anomaly_spawn_interval = 5.0
+    var anomaly_duration = 10.0
+    var anomalies = []
+
+    func _init():
+        name = "Quantum Anomaly Field"
+        description = "Randomly spawning quantum anomalies create unstable regions on the field. Entering these regions scrambles a ball's stats momentarily (randomizing speed, size, and damage) and occasionally teleports them to a linked anomaly on the other side of the map, adding chaos and unpredictable repositioning."
+        anomaly_spawn_timer = 0.0
+        anomaly_spawn_interval = 5.0
+        anomaly_duration = 10.0
+        anomalies = []
+
+    func tick(world, balls, delta = 0.016):
+        anomaly_spawn_timer -= delta
+        if anomaly_spawn_timer <= 0:
+            anomaly_spawn_timer = anomaly_spawn_interval
+            var arena_w = 800.0
+            var arena_h = 600.0
+
+            if world != null and typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("arena") != null:
+                var w = world.arena.get("width")
+                if w != null: arena_w = w
+                var h = world.arena.get("height")
+                if h != null: arena_h = h
+
+            var x1 = rand_range(50, arena_w - 50)
+            var y1 = rand_range(50, arena_h - 50)
+            var x2 = rand_range(50, arena_w - 50)
+            var y2 = rand_range(50, arena_h - 50)
+
+            var anomaly1 = {"x": x1, "y": y1, "radius": 80.0, "timer": anomaly_duration, "linked": null}
+            var anomaly2 = {"x": x2, "y": y2, "radius": 80.0, "timer": anomaly_duration, "linked": anomaly1}
+            anomaly1["linked"] = anomaly2
+
+            anomalies.append(anomaly1)
+            anomalies.append(anomaly2)
+
+        var active_anomalies = []
+        for anomaly in anomalies:
+            anomaly["timer"] -= delta
+            if anomaly["timer"] > 0:
+                active_anomalies.append(anomaly)
+        anomalies = active_anomalies
+
+        for b in balls:
+            if typeof(b) == TYPE_OBJECT:
+                if not b.get("alive") or b.get("ball_type") == "spectator":
+                    continue
+
+                var in_anomaly = false
+                var linked_anomaly = null
+
+                for anomaly in anomalies:
+                    var dx = b.x - anomaly["x"]
+                    var dy = b.y - anomaly["y"]
+                    var dist = sqrt(dx*dx + dy*dy)
+
+                    if dist < anomaly["radius"]:
+                        in_anomaly = true
+                        linked_anomaly = anomaly["linked"]
+                        break
+
+                if in_anomaly:
+                    var in_q_anomaly = b.get_meta("in_quantum_anomaly") if b.has_meta("in_quantum_anomaly") else false
+                    if not in_q_anomaly:
+                        b.set_meta("in_quantum_anomaly", true)
+                        b.set_meta("original_speed_multiplier", b.get("base_speed_multiplier"))
+                        b.set_meta("original_damage_multiplier", b.get("base_damage_multiplier"))
+                        b.set_meta("original_mass", b.get("base_mass"))
+
+                        b.base_speed_multiplier = rand_range(0.5, 2.0)
+                        b.base_damage_multiplier = rand_range(0.5, 2.0)
+                        b.base_mass = rand_range(0.5, 2.0)
+
+                    if linked_anomaly != null and randf() < 0.2 * delta:
+                        b.x = linked_anomaly["x"]
+                        b.y = linked_anomaly["y"]
+                else:
+                    var in_q_anomaly = b.get_meta("in_quantum_anomaly") if b.has_meta("in_quantum_anomaly") else false
+                    if in_q_anomaly:
+                        b.set_meta("in_quantum_anomaly", false)
+                        if b.has_meta("original_speed_multiplier"): b.base_speed_multiplier = b.get_meta("original_speed_multiplier")
+                        if b.has_meta("original_damage_multiplier"): b.base_damage_multiplier = b.get_meta("original_damage_multiplier")
+                        if b.has_meta("original_mass"): b.base_mass = b.get_meta("original_mass")
+            elif typeof(b) == TYPE_DICTIONARY:
+                if not b.get("alive", true) or b.get("ball_type", "") == "spectator":
+                    continue
+
+                var in_anomaly = false
+                var linked_anomaly = null
+
+                for anomaly in anomalies:
+                    var dx = b.get("x", 0) - anomaly["x"]
+                    var dy = b.get("y", 0) - anomaly["y"]
+                    var dist = sqrt(dx*dx + dy*dy)
+
+                    if dist < anomaly["radius"]:
+                        in_anomaly = true
+                        linked_anomaly = anomaly["linked"]
+                        break
+
+                if in_anomaly:
+                    if not b.get("in_quantum_anomaly", false):
+                        b["in_quantum_anomaly"] = true
+                        b["original_speed_multiplier"] = b.get("base_speed_multiplier", 1.0)
+                        b["original_damage_multiplier"] = b.get("base_damage_multiplier", 1.0)
+                        b["original_mass"] = b.get("base_mass", 1.0)
+
+                        b["base_speed_multiplier"] = rand_range(0.5, 2.0)
+                        b["base_damage_multiplier"] = rand_range(0.5, 2.0)
+                        b["base_mass"] = rand_range(0.5, 2.0)
+
+                    if linked_anomaly != null and randf() < 0.2 * delta:
+                        b["x"] = linked_anomaly["x"]
+                        b["y"] = linked_anomaly["y"]
+                else:
+                    if b.get("in_quantum_anomaly", false):
+                        b["in_quantum_anomaly"] = false
+                        if b.has("original_speed_multiplier"): b["base_speed_multiplier"] = b["original_speed_multiplier"]
+                        if b.has("original_damage_multiplier"): b["base_damage_multiplier"] = b["original_damage_multiplier"]
+                        if b.has("original_mass"): b["base_mass"] = b["original_mass"]
+
+
+
 var GAME_MODES = {
+    "quantum_anomaly_field": QuantumAnomalyFieldMode.new(),
 	"volcano_boss_mode": VolcanoBossMode.new(),
 
 	"bone_prison_trap": preload("res://src/ai/bone_prison_trap.gd").new(),
