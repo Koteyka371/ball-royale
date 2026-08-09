@@ -3713,6 +3713,26 @@ class GameMode:
 
 	func on_ball_died(world, ball, killer = null) -> void:
 		if killer != null and "id" in ball and "id" in killer:
+			var killer_skin = ""
+			if typeof(killer) == TYPE_DICTIONARY and killer.has("skin"): killer_skin = killer.skin
+			elif typeof(killer) == TYPE_OBJECT and "skin" in killer: killer_skin = killer.skin
+			elif typeof(killer) == TYPE_OBJECT and killer.has_method("get_meta") and killer.has_meta("skin"): killer_skin = killer.get_meta("skin")
+
+			if killer_skin == "legendary" and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				var bx = 0.0
+				var by = 0.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					bx = ball.get("x", 0.0)
+					by = ball.get("y", 0.0)
+				else:
+					bx = ball.x if "x" in ball else 0.0
+					by = ball.y if "y" in ball else 0.0
+				world.add_event("visual_effect", {
+					"type": "legendary_kill_particles",
+					"x": bx,
+					"y": by
+				})
+
 			var pm = null
 			if "profile_manager" in world:
 				pm = world.profile_manager
