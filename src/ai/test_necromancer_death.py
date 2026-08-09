@@ -108,6 +108,11 @@ def test_necromancer_redirects_fatal_damage():
     assert not minion1.alive
     assert minion2.alive
 
+    assert necro.x == 10.0
+    assert necro.y == 0.0
+    assert minion1.x == 0.0
+    assert minion1.y == 0.0
+
 def test_enraged_minion_explodes_on_death():
     world = MockWorld()
 
