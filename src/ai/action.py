@@ -8132,6 +8132,34 @@ class Action:
         if getattr(self.ball, "is_decoy", False):
             self.ball.decoy_timer -= delta
 
+            if getattr(self.ball, "decoy_type", "") == "periodic_swap":
+                if not hasattr(self.ball, "periodic_swap_timer"):
+                    self.ball.periodic_swap_timer = 5.0
+
+                self.ball.periodic_swap_timer -= delta
+                if self.ball.periodic_swap_timer <= 0:
+                    self.ball.periodic_swap_timer = 5.0
+                    owner_id = getattr(self.ball, "owner_id", None)
+                    if owner_id is not None and hasattr(self.world, "balls"):
+                        owner = next((b for b in self.world.balls if getattr(b, "id", None) == owner_id and getattr(b, "alive", True)), None)
+                        if owner:
+                            ox, oy = getattr(owner, "x", self.ball.x), getattr(owner, "y", self.ball.y)
+                            owner.x, owner.y = self.ball.x, self.ball.y
+                            self.ball.x, self.ball.y = ox, oy
+                            if hasattr(self.world, "events"):
+                                self.world.events.append({
+                                    "type": "teleport",
+                                    "entity_id": owner.id,
+                                    "x": owner.x,
+                                    "y": owner.y
+                                })
+                                self.world.events.append({
+                                    "type": "teleport",
+                                    "entity_id": self.ball.id,
+                                    "x": self.ball.x,
+                                    "y": self.ball.y
+                                })
+
             # Emit aura that grants slightly increased speed and stamina regen to allies within a certain radius
             if hasattr(self.world, "balls"):
                 for b in getattr(self.world, "balls", []):
@@ -20798,7 +20826,7 @@ class Action:
                 for e in nearby_enemies:
                     if hasattr(self, "_spawn_directed_particles"):
                         self._spawn_directed_particles(decoy, e, "tether_link")
-            elif skill_name in ["deploy_decoy", "deploy_decoy_flash", "deploy_decoy_advanced", "deploy_decoy_black_hole", "deploy_decoy_emp", "deploy_decoy_gas"]:
+            elif skill_name in ["deploy_decoy", "deploy_decoy_flash", "deploy_decoy_advanced", "deploy_decoy_black_hole", "deploy_decoy_emp", "deploy_decoy_gas", "deploy_periodic_swap_decoy"]:
                 import copy
                 active_decoys = [b for b in getattr(self.world, "balls", []) if getattr(b, "is_decoy", False) and getattr(b, "owner_id", None) == self.ball.id and getattr(b, "alive", True)]
                 if active_decoys:
@@ -20884,6 +20912,8 @@ class Action:
                             decoy.decoy_type = "emp_decoy"
                         elif skill_name == "deploy_decoy_gas":
                             decoy.decoy_type = "gas"
+                        elif skill_name == "deploy_periodic_swap_decoy":
+                            decoy.decoy_type = "periodic_swap"
                         elif skill_name in ["deploy_decoy_flash", "deploy_decoy_advanced"]:
                             decoy.decoy_type = "flash"
                         elif getattr(self.ball, "ball_type", "") == "trickster":
