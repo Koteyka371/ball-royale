@@ -8048,6 +8048,37 @@ class Action:
                     self.ball.y += vy * delta
                     return
 
+
+            if getattr(self.ball, "decoy_type", "") == "black_hole":
+                pull_radius = 250.0
+                pull_strength = 150.0
+                if hasattr(self.world, "balls"):
+                    for b in self.world.balls:
+                        if getattr(b, "alive", True) and getattr(b, "id", None) != self.ball.id:
+                            if getattr(b, "team", getattr(b, "ball_type", "")) != getattr(self.ball, "team", ""):
+                                import math
+                                dx = self.ball.x - b.x
+                                dy = self.ball.y - b.y
+                                dist_sq = dx**2 + dy**2
+                                if 0 < dist_sq <= pull_radius**2:
+                                    dist = math.sqrt(dist_sq)
+                                    force = (1.0 - dist / pull_radius) * pull_strength * delta
+                                    b.x += (dx / dist) * force
+                                    b.y += (dy / dist) * force
+
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "projectiles"):
+                    for p in self.world.arena.projectiles:
+                        if getattr(p, "active", True):
+                            import math
+                            dx = self.ball.x - p.x
+                            dy = self.ball.y - p.y
+                            dist_sq = dx**2 + dy**2
+                            if 0 < dist_sq <= pull_radius**2:
+                                dist = math.sqrt(dist_sq)
+                                force = (1.0 - dist / pull_radius) * (pull_strength * 1.5) * delta
+                                p.x += (dx / dist) * force
+                                p.y += (dy / dist) * force
+
             if getattr(self.ball, "decoy_type", "") == "siren":
                 if not hasattr(self.ball, "siren_ping_timer"):
                     self.ball.siren_ping_timer = 1.0
