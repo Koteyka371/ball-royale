@@ -50283,6 +50283,76 @@ class QuantumWormholeMode(GameMode):
 GAME_MODES['quantum_wormhole'] = QuantumWormholeMode()
 
 
+
+class QuantumTunnelSafeZoneMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Quantum Tunnel Safe Zone"
+        self.description = "A specific biome safe zone that periodically teleports entities inside it to another random quantum tunnel biome on the map, allowing for rapid escapes or surprise attacks, but making it hard to hold ground."
+        self.biomes = []
+        self.biome_radius = 150.0
+        self.teleport_timer = 0.0
+        self.teleport_interval = 8.0
+        self.outside_damage_per_second = 10.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        # Create 4 biomes
+        self.biomes = [
+            {"x": arena_width * 0.25, "y": arena_height * 0.25},
+            {"x": arena_width * 0.75, "y": arena_height * 0.25},
+            {"x": arena_width * 0.25, "y": arena_height * 0.75},
+            {"x": arena_width * 0.75, "y": arena_height * 0.75},
+        ]
+        self.teleport_timer = 0.0
+
+    def tick(self, world, balls, delta=0.016):
+        import math, random
+        self.teleport_timer += delta
+        teleport_now = False
+        if self.teleport_timer >= self.teleport_interval:
+            self.teleport_timer = 0.0
+            teleport_now = True
+
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            in_biome = False
+            current_biome_index = -1
+            for i, biome in enumerate(self.biomes):
+                dist = math.hypot(b.x - biome["x"], b.y - biome["y"])
+                if dist <= self.biome_radius:
+                    in_biome = True
+                    current_biome_index = i
+                    break
+
+            if not in_biome:
+                b.slow_timer = max(getattr(b, "slow_timer", 0.0), 0.5)
+                dmg = self.outside_damage_per_second * delta
+                if hasattr(b, "take_damage"):
+                    b.take_damage(dmg, "quantum_tunnel_safe_zone")
+                elif hasattr(b, "hp"):
+                    b.hp -= dmg
+                    if b.hp <= 0:
+                        b.hp = 0
+                        b.alive = False
+            else:
+                if teleport_now:
+                    other_biomes = [i for i in range(len(self.biomes)) if i != current_biome_index]
+                    if other_biomes:
+                        target_index = random.choice(other_biomes)
+                        target_biome = self.biomes[target_index]
+
+                        b.x = target_biome["x"] + random.uniform(-20, 20)
+                        b.y = target_biome["y"] + random.uniform(-20, 20)
+
+                        if hasattr(world, "add_event"):
+                            world.add_event("quantum_teleport", {"ball_id": getattr(b, "id", -1), "target_biome": target_index})
+
 class OrbitingChaosOrbsMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -53033,3 +53103,5 @@ class OccasionalMirrorWallsMode(GameMode):
 
 
 GAME_MODES["occasional_mirror_walls"] = OccasionalMirrorWallsMode()
+
+GAME_MODES['quantum_tunnel_safe_zone'] = QuantumTunnelSafeZoneMode()
