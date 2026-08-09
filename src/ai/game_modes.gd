@@ -61329,7 +61329,7 @@ class SingularityStormMode extends GameMode:
 		rng.randomize()
 
 		if event_timer >= 5.0:
-			event_timer = 0.0
+			event_timer -= 5.0
 			var arena_width = 1000.0
 			var arena_height = 1000.0
 			if typeof(world["arena"]) == TYPE_DICTIONARY:

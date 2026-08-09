@@ -37817,7 +37817,7 @@ class SingularityStormMode(GameMode):
             world.arena.hazards = []
 
         if self.event_timer >= 5.0:
-            self.event_timer = 0.0
+            self.event_timer -= 5.0
             import random
             arena_width = getattr(world.arena, "width", 1000)
             arena_height = getattr(world.arena, "height", 1000)
@@ -37837,6 +37837,13 @@ class SingularityStormMode(GameMode):
                         self.kind = kind
                         self.damage = damage
                 h = DummyHazardBH(len(world.arena.hazards) + 95000 + random.randint(0, 1000), cx, cy, 30.0, "mini_black_hole", 0.0)
+
+            # Use explicit attributes instead of dictionary for compatibility
+            h.x = cx
+            h.y = cy
+            h.radius = 30.0
+            h.kind = "mini_black_hole"
+            h.damage = 0.0
 
             setattr(h, "pull_radius", 300.0)
             setattr(h, "pull_strength", 400.0)
