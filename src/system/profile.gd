@@ -362,7 +362,8 @@ func buy_prestige_upgrade(upgrade_name: String, cost: int) -> bool:
 func equip_skin(skin_name: String) -> bool:
 	var upgrades = data.get("prestige_upgrades", {})
 	var cosmetics = data.get("cosmetics", [])
-	if skin_name == "default" or cosmetics.has(skin_name) or upgrades.has("skin_" + skin_name):
+	var unlocked = data.get("unlocked_balls", [])
+	if skin_name == "default" or cosmetics.has(skin_name) or upgrades.has("skin_" + skin_name) or unlocked.has(skin_name):
 		data["equipped_skin"] = skin_name
 		save_profile()
 		return true
@@ -625,5 +626,33 @@ func craft_item(recipe_id: String) -> bool:
         inv["crafted_items"][recipe_id] += req["yields"]
     else:
         inv["crafted_items"][recipe_id] = req["yields"]
+    save_profile()
+    return true
+
+func craft_recolor(skin_name: String, color_material: String) -> bool:
+    if not data.has("inventory") or not data["inventory"].has("materials"):
+        return false
+
+    var mats = data["inventory"]["materials"]
+    if not mats.has(color_material) or mats[color_material] < 1:
+        return false
+
+    var unlocked = data.get("unlocked_balls", [])
+    var cosmetics = data.get("cosmetics", [])
+    var upgrades = data.get("prestige_upgrades", {})
+
+    var has_skin = skin_name == "default" or cosmetics.has(skin_name) or upgrades.has("skin_" + skin_name) or unlocked.has(skin_name)
+    if not has_skin:
+        return false
+
+    mats[color_material] -= 1
+
+    var new_skin_name = skin_name + "_" + color_material
+    if not data.has("unlocked_balls"):
+        data["unlocked_balls"] = []
+
+    if not data["unlocked_balls"].has(new_skin_name):
+        data["unlocked_balls"].append(new_skin_name)
+
     save_profile()
     return true

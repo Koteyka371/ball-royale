@@ -346,7 +346,7 @@ class ProfileManager:
 
     def equip_skin(self, skin_name):
         upgrades = self.data.get("prestige_upgrades", {})
-        if skin_name == "default" or skin_name in self.data.get("cosmetics", []) or f"skin_{skin_name}" in upgrades:
+        if skin_name == "default" or skin_name in self.data.get("cosmetics", []) or f"skin_{skin_name}" in upgrades or skin_name in self.data.get("unlocked_balls", []):
             self.data["equipped_skin"] = skin_name
             self.save()
             return True
@@ -591,5 +591,33 @@ class ProfileManager:
         for c_item, c in req.get("crafted_items", {}).items():
             inv["crafted_items"][c_item] -= c
         inv["crafted_items"][recipe_id] = inv["crafted_items"].get(recipe_id, 0) + req["yields"]
+        self.save()
+        return True
+
+    def craft_recolor(self, skin_name, color_material):
+        if "inventory" not in self.data or "materials" not in self.data["inventory"]:
+            return False
+
+        mats = self.data["inventory"]["materials"]
+        if mats.get(color_material, 0) < 1:
+            return False
+
+        unlocked = self.data.get("unlocked_balls", [])
+        cosmetics = self.data.get("cosmetics", [])
+        upgrades = self.data.get("prestige_upgrades", {})
+
+        has_skin = skin_name == "default" or skin_name in cosmetics or f"skin_{skin_name}" in upgrades or skin_name in unlocked
+        if not has_skin:
+            return False
+
+        mats[color_material] -= 1
+
+        new_skin_name = f"{skin_name}_{color_material}"
+        if "unlocked_balls" not in self.data:
+            self.data["unlocked_balls"] = []
+
+        if new_skin_name not in self.data["unlocked_balls"]:
+            self.data["unlocked_balls"].append(new_skin_name)
+
         self.save()
         return True
