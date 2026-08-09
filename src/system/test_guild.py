@@ -575,3 +575,42 @@ def test_arrange_hq_items(temp_guild_file):
     assert status["layout"]["backgrounds"]["bg1"] == {"x": 10, "y": 20}
     assert status["layout"]["statues"]["statue1"] == {"x": 30, "y": 40}
     assert status["layout"]["defenses"]["turret"] == {"x": 50, "y": 60}
+
+def test_daily_mini_tournament(temp_guild_file):
+    gm = GuildManager(temp_guild_file)
+    # Create enough guilds
+    for i in range(5):
+        gm.create_guild(f"Guild_{i}", f"p_{i}")
+
+    tournament_res = gm.trigger_daily_mini_tournament()
+    assert tournament_res is not None
+    assert "bracket" in tournament_res
+    champion = tournament_res["champion"]
+    assert champion.startswith("Guild_")
+
+    champ_data = gm.get_guild(champion)
+    assert champ_data["gvg_points"] == 50
+    assert champ_data["resources"] == 500
+    assert "Daily Tournament Champion" in champ_data["titles"]
+
+    # Try with insufficient guilds (using a separate temp file in pytest tmp_path)
+    import os
+    import json
+    empty_file = str(temp_guild_file).replace("test_guilds.json", "empty_guilds.json")
+    with open(empty_file, "w") as f:
+        json.dump({"guilds": {}}, f)
+    gm2 = GuildManager(empty_file)
+    gm2.create_guild("OnlyGuild", "p1")
+    assert gm2.trigger_daily_mini_tournament() is None
+
+
+def test_daily_events(temp_guild_file):
+    gm = GuildManager(temp_guild_file)
+    for i in range(4):
+        gm.create_guild(f"Guild_{i}", f"p_{i}")
+
+    assert gm.process_daily_events("2025-01-01") == True
+    assert "latest_tournament" in gm.data
+
+    # Second time on same day should not trigger
+    assert gm.process_daily_events("2025-01-01") == False

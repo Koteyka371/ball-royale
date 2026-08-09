@@ -410,6 +410,74 @@ func process_tournament_results(tournament_id: String, rankings: Array) -> bool:
     save_guilds()
     return true
 
+
+func process_daily_events(current_date_str: String) -> bool:
+    if not data.has("last_daily_update") or data["last_daily_update"] != current_date_str:
+        data["last_daily_update"] = current_date_str
+        trigger_daily_mini_tournament()
+        save_guilds()
+        return true
+    return false
+
+func trigger_daily_mini_tournament() -> Dictionary:
+    var all_guilds = data["guilds"].keys()
+    if all_guilds.size() < 2:
+        return {}
+
+    var n = all_guilds.size()
+    var num_participants = 2
+    if n >= 8:
+        num_participants = 8
+    elif n >= 4:
+        num_participants = 4
+
+    var participants = []
+    var temp_guilds = all_guilds.duplicate()
+    temp_guilds.shuffle()
+    for i in range(num_participants):
+        participants.append(temp_guilds[i])
+
+    var current_round = participants
+    var bracket_history = [current_round.duplicate()]
+
+    while current_round.size() > 1:
+        var next_round = []
+        var i = 0
+        while i < current_round.size():
+            var guild1 = current_round[i]
+            var guild2 = current_round[i+1]
+            var winner = guild1
+            if randf() > 0.5:
+                winner = guild2
+            next_round.append(winner)
+            i += 2
+        bracket_history.append(next_round.duplicate())
+        current_round = next_round
+
+    var champion = current_round[0]
+    var champ_data = data["guilds"][champion]
+
+    if not champ_data.has("gvg_points"):
+        champ_data["gvg_points"] = 0
+    champ_data["gvg_points"] += 50
+
+    if not champ_data.has("resources"):
+        champ_data["resources"] = 0
+    champ_data["resources"] += 500
+
+    if not champ_data.has("titles"):
+        champ_data["titles"] = []
+    champ_data["titles"].append("Daily Tournament Champion")
+
+    data["latest_tournament"] = {
+        "participants": participants,
+        "bracket": bracket_history,
+        "champion": champion
+    }
+
+    save_guilds()
+    return data["latest_tournament"]
+
 func get_guild_buffs(guild_name: String) -> Dictionary:
     if data["guilds"].has(guild_name):
         return data["guilds"][guild_name]["buffs"]

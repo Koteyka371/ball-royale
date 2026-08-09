@@ -303,6 +303,59 @@ class GuildManager:
         self.save()
         return True
 
+
+
+    def process_daily_events(self, current_date_str: str):
+        if "last_daily_update" not in self.data or self.data["last_daily_update"] != current_date_str:
+            self.data["last_daily_update"] = current_date_str
+            self.trigger_daily_mini_tournament()
+            self.save()
+            return True
+        return False
+
+    def trigger_daily_mini_tournament(self):
+        import random
+        all_guilds = list(self.data["guilds"].keys())
+        if len(all_guilds) < 2:
+            return None
+
+        n = len(all_guilds)
+        if n >= 8:
+            num_participants = 8
+        elif n >= 4:
+            num_participants = 4
+        else:
+            num_participants = 2
+
+        participants = random.sample(all_guilds, num_participants)
+        current_round = participants
+        bracket_history = [current_round.copy()]
+
+        while len(current_round) > 1:
+            next_round = []
+            for i in range(0, len(current_round), 2):
+                guild1 = current_round[i]
+                guild2 = current_round[i+1]
+                winner = random.choice([guild1, guild2])
+                next_round.append(winner)
+            bracket_history.append(next_round.copy())
+            current_round = next_round
+
+        champion = current_round[0]
+        champ_data = self.data["guilds"][champion]
+        champ_data["gvg_points"] = champ_data.get("gvg_points", 0) + 50
+        champ_data["resources"] = champ_data.get("resources", 0) + 500
+        champ_data.setdefault("titles", []).append("Daily Tournament Champion")
+
+        self.data["latest_tournament"] = {
+            "participants": participants,
+            "bracket": bracket_history,
+            "champion": champion
+        }
+
+        self.save()
+        return self.data["latest_tournament"]
+
     def get_guild_buffs(self, guild_name):
         if guild_name in self.data["guilds"]:
             return self.data["guilds"][guild_name]["buffs"]
