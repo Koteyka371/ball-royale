@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1940] Magnetic Decoy — *2026-08-09 13:44:23 UTC*
+
+A decoy that slowly pulls all nearby enemies and projectiles towards it before exploding.
+
+---
+
 ## [idea-1942] Necromancer Skill: Bone Prison — *2026-08-09 13:16:58 UTC*
 
 Traps an enemy in a bone prison, disabling their movement for a few seconds. The prison has its own HP and can be destroyed.
