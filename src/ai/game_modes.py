@@ -43397,6 +43397,84 @@ class ElasticBandZoneMode(GameMode):
                     setattr(b, "elastic_cooldown", 0.5)
                     del self.grabbed_state[b.id]
 
+class PeriodicMicroSafeZonesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Periodic Micro Safe Zones"
+        self.description = "Periodically, micro safe zones spawn across the map. If a player is not inside a safe zone when the timer hits zero, they suffer a powerful blast of damage. The safe zones shrink continuously until disappearing entirely."
+        self.spawn_interval = 15.0
+        self.timer = self.spawn_interval
+        self.zones = []
+        self.zone_duration = 10.0
+        self.zone_initial_radius = 200.0
+        self.zone_min_radius = 30.0
+        self.blast_damage = 40.0
+        self.state = "waiting"
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.timer = self.spawn_interval
+        self.zones = []
+        self.state = "waiting"
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import math
+        import random
+
+        if self.state == "waiting":
+            self.timer -= delta
+            if self.timer <= 0:
+                self.state = "active"
+                self.timer = self.zone_duration
+                self.zones = []
+
+                arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+                arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+                alive_balls = [b for b in balls if getattr(b, "alive", True) and getattr(b, "ball_type", None) != "spectator"]
+                num_zones = max(2, len(alive_balls) // 2)
+
+                for _ in range(num_zones):
+                    zx = random.uniform(100.0, arena_width - 100.0)
+                    zy = random.uniform(100.0, arena_height - 100.0)
+                    self.zones.append({"x": zx, "y": zy, "radius": self.zone_initial_radius})
+
+        elif self.state == "active":
+            self.timer -= delta
+            t_ratio = max(0.0, self.timer / self.zone_duration)
+            current_radius = self.zone_min_radius + (self.zone_initial_radius - self.zone_min_radius) * t_ratio
+
+            for z in self.zones:
+                z["radius"] = current_radius
+
+            if self.timer <= 0:
+                for b in balls:
+                    if getattr(b, "alive", True) and getattr(b, "ball_type", None) != "spectator":
+                        in_zone = False
+                        b_radius = getattr(b, "radius", 20.0)
+                        for z in self.zones:
+                            dist = math.hypot(b.x - z["x"], b.y - z["y"])
+                            # Safe if the ball is inside or at least touching the safe zone boundary
+                            if dist <= self.zone_min_radius + b_radius:
+                                in_zone = True
+                                break
+
+                        if not in_zone:
+                            if hasattr(b, "take_damage"):
+                                b.take_damage(self.blast_damage, "micro_safe_zone_blast")
+                            elif hasattr(b, "hp"):
+                                b.hp -= self.blast_damage
+                                if b.hp <= 0:
+                                    b.alive = False
+                                    if hasattr(world, "add_event"):
+                                        world.add_event("ball_died", {"id": getattr(b, "id", -1), "killer_id": -1, "reason": "micro_safe_zone_blast"})
+
+                self.state = "waiting"
+                self.timer = self.spawn_interval
+                self.zones = []
+
+GAME_MODES['periodic_micro_safe_zones'] = PeriodicMicroSafeZonesMode()
 GAME_MODES["periodic_safe_zone"] = PeriodicSafeZoneMode()
 GAME_MODES["elastic_band_zone"] = ElasticBandZoneMode()
 
