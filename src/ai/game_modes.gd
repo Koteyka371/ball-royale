@@ -83788,3 +83788,98 @@ func _add_occasional_mirror_walls():
 	GAME_MODES["occasional_mirror_walls"] = OccasionalMirrorWallsMode.new()
 
 GAME_MODES['quantum_tunnel_safe_zone'] = QuantumTunnelSafeZoneMode.new()
+
+
+class ChainTetherMode extends GameMode:
+	var max_link_dist: float = 400.0
+
+	func _init():
+		name = "Chain Tether"
+		description = "All players are tethered to their nearest opponent by chain lightning. Staying close ramps up damage over time, while moving too far snaps the link and stuns both players before a new link forms."
+
+	func tick(world: Dictionary, balls: Array, delta: float = 0.016):
+		super.tick(world, balls, delta)
+
+		var alive_balls = []
+		for b in balls:
+			if b.get("alive", false) and b.get("ball_type", "") != "spectator":
+				alive_balls.append(b)
+
+		if alive_balls.size() < 2:
+			return
+
+		var ball_dict = {}
+		for b in alive_balls:
+			ball_dict[b["id"]] = b
+
+		for b in alive_balls:
+			var target_id = b.get("chain_target_id")
+			var target = null
+			if target_id != null and ball_dict.has(target_id):
+				target = ball_dict[target_id]
+
+			if target == null:
+				if b.get("stun_timer", 0.0) > 0.0:
+					continue
+				var nearest = null
+				var min_dist = INF
+				for other in alive_balls:
+					if other["id"] == b["id"]:
+						continue
+
+					var bx = b.get("x", 0.0)
+					var by = b.get("y", 0.0)
+					var ox = other.get("x", 0.0)
+					var oy = other.get("y", 0.0)
+					var dist = sqrt(pow(bx - ox, 2) + pow(by - oy, 2))
+					if dist < min_dist:
+						min_dist = dist
+						nearest = other
+
+				if nearest != null and min_dist <= max_link_dist:
+					b["chain_target_id"] = nearest["id"]
+					b["chain_link_time"] = 0.0
+					target = nearest
+				else:
+					continue
+
+			var bx = b.get("x", 0.0)
+			var by = b.get("y", 0.0)
+			var tx = target.get("x", 0.0)
+			var ty = target.get("y", 0.0)
+			var dist = sqrt(pow(bx - tx, 2) + pow(by - ty, 2))
+
+			if dist > max_link_dist:
+				# Break link
+				b["stun_timer"] = max(b.get("stun_timer", 0.0), 1.0)
+				target["stun_timer"] = max(target.get("stun_timer", 0.0), 1.0)
+				b["chain_target_id"] = null
+
+				if world.has("events") and typeof(world["events"]) == TYPE_ARRAY:
+					world["events"].append({"type": "chain_snap", "id1": b["id"], "id2": target["id"]})
+			else:
+				# Link maintained, apply damage
+				var link_time = b.get("chain_link_time", 0.0) + delta
+				b["chain_link_time"] = link_time
+
+				var damage_rate = 5.0 + (link_time * 2.0)
+				b["hp"] = max(0.0, b.get("hp", 100.0) - damage_rate * delta)
+
+				var vis_timer = b.get("chain_vis_timer", 0.0)
+				if vis_timer <= 0.0:
+					if world.has("events") and typeof(world["events"]) == TYPE_ARRAY:
+						world["events"].append({
+							"type": "visual_effect",
+							"effect_type": "lightning_chain",
+							"x": bx,
+							"y": by,
+							"tx": tx,
+							"ty": ty,
+							"color": "blue_yellow"
+						})
+					b["chain_vis_timer"] = 0.2
+				else:
+					b["chain_vis_timer"] = vis_timer - delta
+
+
+GAME_MODES["chain_tether"] = ChainTetherMode.new()

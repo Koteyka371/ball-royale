@@ -53147,3 +53147,89 @@ class OccasionalMirrorWallsMode(GameMode):
 GAME_MODES["occasional_mirror_walls"] = OccasionalMirrorWallsMode()
 
 GAME_MODES['quantum_tunnel_safe_zone'] = QuantumTunnelSafeZoneMode()
+
+
+class ChainTetherMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Chain Tether"
+        self.description = "All players are tethered to their nearest opponent by chain lightning. Staying close ramps up damage over time, while moving too far snaps the link and stuns both players before a new link forms."
+        self.max_link_dist = 400.0
+
+    def tick(self, world, balls, delta: float = 0.016):
+        super().tick(world, balls, delta)
+        import math
+
+        alive_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if len(alive_balls) < 2:
+            return
+
+        ball_dict = {b.id: b for b in alive_balls}
+
+        for b in alive_balls:
+            target_id = getattr(b, "chain_target_id", None)
+            target = ball_dict.get(target_id) if target_id else None
+
+            # If no target or target is dead, find nearest
+            if not target:
+                if getattr(b, "stun_timer", 0.0) > 0.0:
+                    continue
+                nearest = None
+                min_dist = float('inf')
+                for other in alive_balls:
+                    if other.id == b.id:
+                        continue
+                    dist = math.hypot(getattr(b, "x", 0.0) - getattr(other, "x", 0.0), getattr(b, "y", 0.0) - getattr(other, "y", 0.0))
+                    if dist < min_dist:
+                        min_dist = dist
+                        nearest = other
+
+                if nearest and min_dist <= self.max_link_dist:
+                    b.chain_target_id = nearest.id
+                    b.chain_link_time = 0.0
+                    target = nearest
+                else:
+                    continue
+
+            # We have a target, process the link
+            dist = math.hypot(getattr(b, "x", 0.0) - getattr(target, "x", 0.0), getattr(b, "y", 0.0) - getattr(target, "y", 0.0))
+
+            if dist > self.max_link_dist:
+                # Break the link
+                b.stun_timer = max(getattr(b, "stun_timer", 0.0), 1.0)
+                target.stun_timer = max(getattr(target, "stun_timer", 0.0), 1.0)
+                b.chain_target_id = None
+
+                # We can also clear the target's link if it was mutual, but it will re-eval next tick
+
+                # Visual event
+                if hasattr(world, "add_event"):
+                    world.add_event("chain_snap", {"id1": b.id, "id2": target.id})
+            else:
+                # Link maintained, apply damage
+                link_time = getattr(b, "chain_link_time", 0.0) + delta
+                b.chain_link_time = link_time
+
+                # Ramping damage: base 5 dps + 2 dps per second connected
+                damage_rate = 5.0 + (link_time * 2.0)
+
+                # Apply damage
+                b.hp = max(0.0, getattr(b, "hp", 100.0) - damage_rate * delta)
+
+                # Visual effect (chain lightning)
+                vis_timer = getattr(b, "chain_vis_timer", 0.0)
+                if vis_timer <= 0.0:
+                    if hasattr(world, "add_event"):
+                        world.add_event("visual_effect", {
+                            "type": "lightning_chain",
+                            "x": getattr(b, "x", 0.0),
+                            "y": getattr(b, "y", 0.0),
+                            "tx": getattr(target, "x", 0.0),
+                            "ty": getattr(target, "y", 0.0),
+                            "color": "blue_yellow"
+                        })
+                    b.chain_vis_timer = 0.2
+                else:
+                    b.chain_vis_timer = vis_timer - delta
+
+GAME_MODES["chain_tether"] = ChainTetherMode()
