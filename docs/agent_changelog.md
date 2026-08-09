@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1885] Clan Banners in Matches — *2026-08-09 08:42:42 UTC*
+
+When playing, users can deploy their Clan Banner which acts as a destructible healing aura beacon for a short duration.
+
+---
+
 ## [idea-1915] Shrinking Hazard Arena — *2026-08-09 07:21:15 UTC*
 
 The arena boundaries slowly constrict over time, pushing all balls towards the center. Touching the outer boundary applies a severe slow and damages over time.
