@@ -14,16 +14,34 @@ var daily_quests = [
     {"description": "Get 50 kills in a single match", "reward": {"mutator_tokens": 1}},
 ]
 
-func get_daily_quests() -> Array:
+func get_daily_quests(current_date_str: String = "") -> Array:
     var quests = daily_quests.duplicate()
     quests.shuffle()
     var result = []
     for i in range(min(3, quests.size())):
         result.append(quests[i])
+
+    var is_weekend = false
+    if current_date_str == "":
+        var current_datetime = Time.get_datetime_dict_from_system()
+        is_weekend = current_datetime.weekday == Time.WEEKDAY_SATURDAY or current_datetime.weekday == Time.WEEKDAY_SUNDAY
+    else:
+        var current_time = Time.get_unix_time_from_datetime_string(current_date_str + "T00:00:00")
+        if current_time > 0:
+            var current_datetime = Time.get_datetime_dict_from_unix_time(current_time)
+            is_weekend = current_datetime.weekday == Time.WEEKDAY_SATURDAY or current_datetime.weekday == Time.WEEKDAY_SUNDAY
+
+    if is_weekend:
+        var weekend_quest = {"description": "Win a match with the active mutator", "reward": {"mutator_tokens": 5}}
+        if result.size() > 0:
+            result[0] = weekend_quest
+        else:
+            result.append(weekend_quest)
+
     return result
 
-func assign_daily_quests_to_profile(profile) -> void:
-    var quests = get_daily_quests()
+func assign_daily_quests_to_profile(profile, current_date_str: String = "") -> void:
+    var quests = get_daily_quests(current_date_str)
     for quest in quests:
         profile.add_quest(quest["description"], quest["reward"])
 
