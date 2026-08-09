@@ -70438,6 +70438,33 @@ class OrbitalCrosshairMode extends GameMode:
 								h.set_meta("duration", 15.0)
 							if "damage" in h: h.damage = 0.0
 							hazards.append(h)
+
+							if rng.randf() < 0.5:
+								var num_debris = rng.randi_range(1, 3)
+								for i in range(num_debris):
+									var d_id = next_id + 1 + i
+									if typeof(world) == TYPE_DICTIONARY and "next_id" in world:
+										d_id = world.get("next_id") + i
+									elif typeof(world) != TYPE_DICTIONARY and "next_id" in world:
+										d_id = world.next_id + i
+
+									var dx = ch["x"] + rng.randf_range(-40.0, 40.0)
+									var dy = ch["y"] + rng.randf_range(-40.0, 40.0)
+									var debris_rad = rng.randf_range(20.0, 40.0)
+									var debris = HazardObj.new(d_id, dx, dy, "orbital_debris", debris_rad)
+									if debris.has_method("set_meta"):
+										debris.set_meta("duration", 10.0)
+										debris.set_meta("indestructible", true)
+										debris.set_meta("blocks_projectiles", true)
+										debris.set_meta("is_solid", true)
+									if "damage" in debris: debris.damage = 0.0
+									hazards.append(debris)
+
+								if typeof(world) == TYPE_DICTIONARY and "next_id" in world:
+									world["next_id"] = world.get("next_id") + num_debris
+								elif typeof(world) != TYPE_DICTIONARY and "next_id" in world:
+									world.next_id += num_debris
+
 							if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 								world.add_event("orbital_strike_fired", {"x": ch["x"], "y": ch["y"], "message": "Orbital strike fired!"})
 				else:

@@ -45292,6 +45292,24 @@ class OrbitalCrosshairMode(GameMode):
                         world.arena.hazards.append(h)
                         if hasattr(world, "next_id"):
                             world.next_id += 1
+
+                        # Chance to spawn meteorite debris
+                        if random.random() < 0.5:
+                            num_debris = random.randint(1, 3)
+                            for i in range(num_debris):
+                                d_id = getattr(world, "next_id", random.randint(100000, 999999)) + i
+                                dx = ch["x"] + random.uniform(-40, 40)
+                                dy = ch["y"] + random.uniform(-40, 40)
+                                debris = HazardClass(id=d_id, x=dx, y=dy, radius=random.uniform(20.0, 40.0), kind="orbital_debris", damage=0.0)
+                                setattr(debris, "duration", 10.0)
+                                setattr(debris, "indestructible", True)
+                                setattr(debris, "blocks_projectiles", True)
+                                # Crucial: make it a physical obstacle
+                                setattr(debris, "is_solid", True)
+                                world.arena.hazards.append(debris)
+                            if hasattr(world, "next_id"):
+                                world.next_id += num_debris
+
                         if hasattr(world, "add_event"):
                             world.add_event("orbital_strike_fired", {"x": ch["x"], "y": ch["y"], "message": "Orbital strike fired!"})
                 else:
