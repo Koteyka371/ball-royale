@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1939] Quantum Swap Decoy — *2026-08-09 18:06:59 UTC*
+
+A decoy that randomly swaps positions with the player every 5 seconds until destroyed.
+
+---
+
 ## [idea-1943] Corrupted Altars — *2026-08-09 17:17:20 UTC*
 
 Special corrupted capture points appear randomly in the arena. If successfully captured, the capturing team gains a massive temporary damage boost but starts constantly losing health until they eliminate an enemy player.
