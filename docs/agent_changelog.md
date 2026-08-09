@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1943] Corrupted Altars — *2026-08-09 17:17:20 UTC*
+
+Special corrupted capture points appear randomly in the arena. If successfully captured, the capturing team gains a massive temporary damage boost but starts constantly losing health until they eliminate an enemy player.
+
+---
+
 ## [idea-1929] Aura Mastery — *2026-08-09 17:10:15 UTC*
 
 Players with maximum level auras (scale >= 3.0) emit a constant healing aura for nearby allies but move significantly slower.
