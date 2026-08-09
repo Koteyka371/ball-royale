@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1946] Weekend Mutator Bounty — *2026-08-09 20:13:35 UTC*
+
+A special weekly quest that only appears on weekends, tasking players with winning a match with the active mutator, rewarding a large bundle of Mutator Tokens.
+
+---
+
 ## [idea-1955] Reverse Conveyor Belts — *2026-08-09 20:09:07 UTC*
 
 An arena mode where the floor is entirely made of conveyor belts moving in alternating directions. Every 10 seconds, all the belts reverse their direction simultaneously, forcing players to quickly adjust their momentum to avoid being pushed into hazards at the edges.
