@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1948] Volcanic Eruption Boss — *2026-08-09 16:31:25 UTC*
+
+A boss mode where a massive volcano in the center of the arena continuously spawns lava geysers and throws fireballs. Players must dodge the hazards and use water-based items to cool down the boss to defeat it.
+
+---
+
 ## [idea-1935] Vortex Centers — *2026-08-09 16:17:41 UTC*
 
 A slow-pulling vortex exists constantly in the middle of the arena, pulling all entities and projectiles toward it over time and dealing crush damage if they reach the center.
