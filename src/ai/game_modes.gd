@@ -40349,7 +40349,7 @@ class CenterVortexMode extends GameMode:
 	func _init():
 		super()
 		name = "Center Vortex"
-		description = "A slow-moving vortex appears in the center of the arena. It constantly pulls nearby entities towards it, dealing increasing continuous damage the closer they are to its core."
+		description = "A slow-pulling vortex exists constantly in the middle of the arena, pulling all entities and projectiles toward it over time and dealing crush damage if they reach the center."
 
 	func setup(world, balls):
 		super.setup(world, balls)
@@ -40406,17 +40406,18 @@ class CenterVortexMode extends GameMode:
 		elif typeof(world) == TYPE_OBJECT and "tick" in world:
 			current_tick = world.get("tick")
 
-		if typeof(vx) == TYPE_DICTIONARY:
-			vx["x"] += sin(current_tick * 0.01) * 10.0 * delta
-			vx["y"] += cos(current_tick * 0.013) * 10.0 * delta
-		elif typeof(vx) == TYPE_OBJECT:
-			vx.set("x", vx.get("x") + sin(current_tick * 0.01) * 10.0 * delta)
-			vx.set("y", vx.get("y") + cos(current_tick * 0.013) * 10.0 * delta)
-
 		var vx_x = vx.get("x") if typeof(vx) == TYPE_OBJECT else vx["x"]
 		var vx_y = vx.get("y") if typeof(vx) == TYPE_OBJECT else vx["y"]
 
+		var entities = []
 		for b in balls:
+			entities.append(b)
+		if typeof(world) == TYPE_DICTIONARY and world.has("projectiles"):
+			for p in world["projectiles"]: entities.append(p)
+		elif typeof(world) == TYPE_OBJECT and "projectiles" in world:
+			for p in world.get("projectiles"): entities.append(p)
+
+		for b in entities:
 			var is_alive = true
 			if typeof(b) == TYPE_DICTIONARY:
 				is_alive = b.alive
@@ -40443,18 +40444,26 @@ class CenterVortexMode extends GameMode:
 						b["vx"] += pull_x
 						b["vy"] += pull_y
 
-					var damage_amount = max_damage * pull_factor * delta
-					if damage_amount > 0 and "hp" in b:
-						b["hp"] -= damage_amount
+					if dist < 20.0:
+						if "hp" in b:
+							b["hp"] -= 1000.0
+					else:
+						var damage_amount = max_damage * pull_factor * delta
+						if damage_amount > 0 and "hp" in b:
+							b["hp"] -= damage_amount
 
 				elif typeof(b) == TYPE_OBJECT:
 					if b.has_method("get") and b.get("vx") != null and b.get("vy") != null:
 						b.set("vx", b.get("vx") + pull_x)
 						b.set("vy", b.get("vy") + pull_y)
 
-					var damage_amount = max_damage * pull_factor * delta
-					if damage_amount > 0 and b.has_method("get") and b.get("hp") != null:
-						b.set("hp", b.get("hp") - damage_amount)
+					if dist < 20.0:
+						if b.has_method("get") and b.get("hp") != null:
+							b.set("hp", b.get("hp") - 1000.0)
+					else:
+						var damage_amount = max_damage * pull_factor * delta
+						if damage_amount > 0 and b.has_method("get") and b.get("hp") != null:
+							b.set("hp", b.get("hp") - damage_amount)
 
 
 

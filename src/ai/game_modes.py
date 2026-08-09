@@ -24904,7 +24904,7 @@ class CenterVortexMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "Center Vortex"
-        self.description = "A slow-moving vortex appears in the center of the arena. It constantly pulls nearby entities towards it, dealing increasing continuous damage the closer they are to its core."
+        self.description = "A slow-pulling vortex exists constantly in the middle of the arena, pulling all entities and projectiles toward it over time and dealing crush damage if they reach the center."
         self.vortex_id = 888888
         self.pull_strength = 150.0
         self.max_damage = 50.0
@@ -24953,19 +24953,22 @@ class CenterVortexMode(GameMode):
         if not vx:
             return
 
-        # The vortex is 'slow-moving'. We can make it drift slightly around the center, but center is mostly fine or small drift.
-        # Let's just keep it at center as prompt says 'appears in the center'. 'slow-moving' might mean the vortex itself moves slowly? Or it pulls things slowly?
-        # Let's add a slow drift to it.
         import math
-        vx.x += math.sin(world.tick * 0.01 if hasattr(world, 'tick') else 0) * 10.0 * delta
-        vx.y += math.cos(world.tick * 0.013 if hasattr(world, 'tick') else 0) * 10.0 * delta
 
-        for b in balls:
-            if not getattr(b, "alive", True):
+        entities = list(balls)
+        if hasattr(world, "projectiles"):
+            try:
+                iter(world.projectiles)
+                entities.extend(world.projectiles)
+            except TypeError:
+                pass
+
+        for b in entities:
+            if hasattr(b, "alive") and not getattr(b, "alive", True):
                 continue
 
-            dx = vx.x - b.x
-            dy = vx.y - b.y
+            dx = vx.x - getattr(b, "x", 0.0)
+            dy = vx.y - getattr(b, "y", 0.0)
             dist = math.sqrt(dx*dx + dy*dy)
 
             if dist > 0 and dist < self.vortex_radius:
@@ -24974,13 +24977,18 @@ class CenterVortexMode(GameMode):
                 pull_x = (dx / dist) * self.pull_strength * pull_factor * delta
                 pull_y = (dy / dist) * self.pull_strength * pull_factor * delta
 
-                b.vx = getattr(b, "vx", 0.0) + pull_x
-                b.vy = getattr(b, "vy", 0.0) + pull_y
+                if hasattr(b, "vx"):
+                    b.vx += pull_x
+                if hasattr(b, "vy"):
+                    b.vy += pull_y
 
-                # Continuous damage closer to core
-                damage_amount = self.max_damage * pull_factor * delta
-                if damage_amount > 0:
-                    b.hp = getattr(b, "hp", 100.0) - damage_amount
+                if dist < 20.0:
+                    if hasattr(b, "hp"):
+                        b.hp -= 1000.0
+                else:
+                    damage_amount = self.max_damage * pull_factor * delta
+                    if damage_amount > 0 and hasattr(b, "hp"):
+                        b.hp -= damage_amount
 
         # Apply to other entities if needed, but balls are the main entities
 
