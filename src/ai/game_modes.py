@@ -43676,6 +43676,73 @@ class EdgeSlingshotsMode(GameMode):
 
                     del self.grabbed_state[b.id]
 
+class AuraIntensifierFieldMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Aura Intensifier Field"
+        self.description = "A stationary field that slowly drains HP but permanently intensifies cosmetic auras, increasing knockback against weaker auras."
+        self.zones = []
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if not hasattr(world, "arena") or not hasattr(world.arena, "hazards"):
+            return
+
+        arena_w = getattr(world.arena, "width", 1000)
+        arena_h = getattr(world.arena, "height", 1000)
+
+        import random
+        num_zones = random.randint(1, 3)
+        for i in range(num_zones):
+            radius = random.uniform(80.0, 150.0)
+            x = random.uniform(radius, arena_w - radius)
+            y = random.uniform(radius, arena_h - radius)
+
+            try:
+                from arena.procedural_arena import Hazard
+                hazard_class = Hazard
+            except ImportError:
+                class hazard_class:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                        self.active = True
+
+            h = hazard_class(
+                id=len(world.arena.hazards) + i + 1000,
+                x=x, y=y, radius=radius, kind="aura_intensifier_field", damage=0.0
+            )
+            world.arena.hazards.append(h)
+            self.zones.append(h)
+
+    def tick(self, world, balls, delta):
+        super().tick(world, balls, delta)
+
+        if not hasattr(world, "balls"): return
+        alive_balls = [b for b in world.balls if getattr(b, "alive", True)]
+
+        for h in self.zones:
+            if not getattr(h, "active", True): continue
+
+            for b in alive_balls:
+                dist = math.hypot(b.x - h.x, b.y - h.y)
+                if dist <= h.radius + getattr(b, "radius", 10.0):
+                    # Drain HP
+                    b.hp -= 5.0 * delta
+                    if b.hp <= 0:
+                        b.hp = 0
+                        b.alive = False
+                        if hasattr(world, "add_event"):
+                            world.add_event("ball_died", {"id": getattr(b, "id", -1), "killer_id": -1, "reason": "aura_intensifier_field"})
+                    else:
+                        # Increase aura intensity
+                        b.aura_intensity = getattr(b, "aura_intensity", 0.0) + 1.0 * delta
+                        b.cosmetic_aura_scale = 1.0 + b.aura_intensity * 0.1
+
 class AuraInversionZoneMode(GameMode):
     """
     An environmental hazard zone. While inside, all active beneficial auras
@@ -43755,6 +43822,7 @@ class AuraInversionZoneMode(GameMode):
 
 GAME_MODES["time_dilation_zone"] = TimeDilationZoneMode()
 GAME_MODES["overdrive_zone"] = OverdriveZoneMode()
+GAME_MODES["aura_intensifier_field"] = AuraIntensifierFieldMode()
 GAME_MODES["aura_inversion_zone"] = AuraInversionZoneMode()
 GAME_MODES["inverse_controls_zone"] = InverseControlsZoneMode()
 GAME_MODES["edge_slingshots"] = EdgeSlingshotsMode()

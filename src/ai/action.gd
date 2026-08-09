@@ -46958,6 +46958,26 @@ func _resolve_collisions() -> bool:
             if hgt > 0.0:
                 knockback_multiplier = 0.0
 
+            var my_aura = 0.0
+            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("aura_intensity"):
+                my_aura = float(self.ball["aura_intensity"])
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("aura_intensity"):
+                my_aura = float(self.ball.get_meta("aura_intensity"))
+            elif typeof(self.ball) == TYPE_OBJECT and "aura_intensity" in self.ball:
+                my_aura = float(self.ball.aura_intensity)
+
+            var other_aura = 0.0
+            if typeof(other) == TYPE_DICTIONARY and other.has("aura_intensity"):
+                other_aura = float(other["aura_intensity"])
+            elif typeof(other) == TYPE_OBJECT and other.has_method("has_meta") and other.has_meta("aura_intensity"):
+                other_aura = float(other.get_meta("aura_intensity"))
+            elif typeof(other) == TYPE_OBJECT and "aura_intensity" in other:
+                other_aura = float(other.aura_intensity)
+
+            if my_aura != other_aura:
+                var mass_ratio = (1.0 + other_aura * 0.1) / (1.0 + my_aura * 0.1)
+                knockback_multiplier *= mass_ratio
+
             self.ball.x += nx * overlap * knockback_multiplier
             self.ball.y += ny * overlap * knockback_multiplier
 
