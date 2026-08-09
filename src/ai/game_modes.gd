@@ -61418,7 +61418,213 @@ class SingularityStormMode extends GameMode:
 									b.y = by + ndy * force
 
 
+
+class GlowingMeteorFragmentsMode extends GameMode:
+	func _init().():
+		name = "Glowing Meteor Fragments"
+		description = "Random meteors leave glowing fragments that boost damage."
+
+	func setup(world, balls):
+		.setup(world, balls)
+		set_meta("spawn_timer", 0.0)
+		set_meta("active_meteors", [])
+		set_meta("fragments", [])
+		if typeof(world) == TYPE_DICTIONARY and world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY and not world.arena.has("hazards"):
+			world.arena["hazards"] = []
+		if typeof(world) == TYPE_DICTIONARY and not world.has("boosters"):
+			world["boosters"] = []
+		if typeof(world) == TYPE_OBJECT and not "boosters" in world:
+			if world.has_method("set_meta"):
+				world.set_meta("boosters", [])
+
+	func tick(world, balls, delta = 0.016):
+		.tick(world, balls, delta)
+
+		var timer = get_meta("spawn_timer") + delta
+		set_meta("spawn_timer", timer)
+
+		var arena_width = 1000
+		var arena_height = 1000
+		if typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			var arena = world.arena
+			if typeof(arena) == TYPE_DICTIONARY:
+				arena_width = arena.get("width", 1000)
+				arena_height = arena.get("height", 1000)
+			elif typeof(arena) == TYPE_OBJECT:
+				arena_width = arena.get("width") if arena.get("width") != null else 1000
+				arena_height = arena.get("height") if arena.get("height") != null else 1000
+		elif typeof(world) == TYPE_OBJECT and world.get("arena") != null:
+			var arena = world.get("arena")
+			arena_width = arena.get("width") if arena.get("width") != null else 1000
+			arena_height = arena.get("height") if arena.get("height") != null else 1000
+
+		var active_meteors = get_meta("active_meteors")
+		var fragments = get_meta("fragments")
+
+		if timer >= 3.0:
+			set_meta("spawn_timer", 0.0)
+			var x = 50 + randf() * (arena_width - 100)
+			var y = 50 + randf() * (arena_height - 100)
+
+			var m = {
+				"id": "meteor_" + str(randi() % 90000 + 10000),
+				"x": x,
+				"y": y,
+				"delay": 2.0,
+				"radius": 30.0
+			}
+			active_meteors.append(m)
+
+		var still_active = []
+		for i in range(active_meteors.size()):
+			var m = active_meteors[i]
+			m["delay"] -= delta
+			if m["delay"] <= 0:
+				for j in range(balls.size()):
+					var b = balls[j]
+					var is_alive = false
+					if typeof(b) == TYPE_DICTIONARY:
+						is_alive = b.get("alive", false)
+					else:
+						is_alive = b.alive
+					if is_alive:
+						var bx = 0.0
+						var by = 0.0
+						if typeof(b) == TYPE_DICTIONARY:
+							bx = b.get("x", 0.0)
+							by = b.get("y", 0.0)
+						else:
+							bx = b.x
+							by = b.y
+						var dx = bx - m["x"]
+						var dy = by - m["y"]
+						var dist = sqrt(dx*dx + dy*dy)
+						if dist <= m["radius"] * 1.5:
+							if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+								b.take_damage(50.0)
+							elif typeof(b) == TYPE_DICTIONARY:
+								b["hp"] = b.get("hp", 100) - 50.0
+							else:
+								b.hp = b.get("hp") - 50.0 if b.get("hp") != null else 50.0
+							if dist > 0.0001:
+								var push_force = 1000.0
+								if typeof(b) == TYPE_DICTIONARY:
+									b["vx"] = b.get("vx", 0.0) + (dx / dist) * push_force
+									b["vy"] = b.get("vy", 0.0) + (dy / dist) * push_force
+								else:
+									b.vx = b.get("vx") + (dx / dist) * push_force if b.get("vx") != null else (dx / dist) * push_force
+									b.vy = b.get("vy") + (dy / dist) * push_force if b.get("vy") != null else (dy / dist) * push_force
+
+				var b_id = 9000 + randi() % 1000
+				var new_fragment = {
+					"id": b_id,
+					"x": m["x"],
+					"y": m["y"],
+					"kind": "meteor_fragment",
+					"radius": 15.0,
+					"active": true
+				}
+
+				if typeof(world) == TYPE_DICTIONARY and world.has("boosters"):
+					world.boosters.append(new_fragment)
+				elif typeof(world) == TYPE_OBJECT and "boosters" in world:
+					world.boosters.append(new_fragment)
+				elif typeof(world) == TYPE_OBJECT and world.has_method("has_meta") and world.has_meta("boosters"):
+					var b = world.get_meta("boosters")
+					b.append(new_fragment)
+					world.set_meta("boosters", b)
+
+				fragments.append({
+					"id": "fragment_" + str(b_id),
+					"b_id": b_id,
+					"x": m["x"],
+					"y": m["y"],
+					"radius": 15.0,
+					"duration": 15.0
+				})
+			else:
+				still_active.append(m)
+
+		set_meta("active_meteors", still_active)
+
+		var still_fragments = []
+		for i in range(fragments.size()):
+			var f = fragments[i]
+			f["duration"] -= delta
+			if f["duration"] > 0:
+				still_fragments.append(f)
+			else:
+				var w_boosters = []
+				if typeof(world) == TYPE_DICTIONARY and world.has("boosters"):
+					w_boosters = world.boosters
+				elif typeof(world) == TYPE_OBJECT and "boosters" in world:
+					w_boosters = world.boosters
+				elif typeof(world) == TYPE_OBJECT and world.has_method("has_meta") and world.has_meta("boosters"):
+					w_boosters = world.get_meta("boosters")
+
+				var new_w_boosters = []
+				for j in range(w_boosters.size()):
+					var b = w_boosters[j]
+					var b_kind = b.get("kind", "") if typeof(b) == TYPE_DICTIONARY else (b.kind if b.get("kind") != null else "")
+					var b_id = b.get("id", "") if typeof(b) == TYPE_DICTIONARY else (b.id if b.get("id") != null else "")
+					if b_kind != "meteor_fragment" or str(b_id) != str(f["b_id"]):
+						new_w_boosters.append(b)
+
+				if typeof(world) == TYPE_DICTIONARY and world.has("boosters"):
+					world.boosters = new_w_boosters
+				elif typeof(world) == TYPE_OBJECT and "boosters" in world:
+					world.boosters = new_w_boosters
+				elif typeof(world) == TYPE_OBJECT and world.has_method("has_meta") and world.has_meta("boosters"):
+					world.set_meta("boosters", new_w_boosters)
+
+		set_meta("fragments", still_fragments)
+
+		var w_arena = null
+		if typeof(world) == TYPE_DICTIONARY and world.has("arena"): w_arena = world.arena
+		elif typeof(world) == TYPE_OBJECT and world.get("arena") != null: w_arena = world.get("arena")
+
+		if w_arena != null:
+			var w_hazards = null
+			if typeof(w_arena) == TYPE_DICTIONARY and w_arena.has("hazards"): w_hazards = w_arena.hazards
+			elif typeof(w_arena) == TYPE_OBJECT and w_arena.get("hazards") != null: w_hazards = w_arena.hazards
+
+			if w_hazards != null:
+				var new_hazards = []
+				for i in range(w_hazards.size()):
+					var h = w_hazards[i]
+					var hk = h.get("kind", "") if typeof(h) == TYPE_DICTIONARY else (h.kind if h.get("kind") != null else "")
+					if hk != "meteor_indicator" and hk != "meteor_fragment":
+						new_hazards.append(h)
+
+				for i in range(still_active.size()):
+					var m = still_active[i]
+					new_hazards.append({
+						"id": m["id"],
+						"x": m["x"],
+						"y": m["y"],
+						"radius": m["radius"],
+						"kind": "meteor_indicator",
+						"damage": 0.0,
+						"duration": m["delay"]
+					})
+
+				for i in range(still_fragments.size()):
+					var f = still_fragments[i]
+					new_hazards.append({
+						"id": f["id"],
+						"x": f["x"],
+						"y": f["y"],
+						"radius": f["radius"],
+						"kind": "meteor_fragment",
+						"damage": 0.0,
+						"duration": f["duration"]
+					})
+
+				if typeof(w_arena) == TYPE_DICTIONARY: w_arena.hazards = new_hazards
+				else: w_arena.hazards = new_hazards
+
 var GAME_MODES = {
+
 	"bone_prison_trap": preload("res://src/ai/bone_prison_trap.gd").new(),
 	"singularity_storm": SingularityStormMode.new(),
 	"dash_aura_trail": DashAuraTrailMode.new(),
@@ -61435,6 +61641,7 @@ var GAME_MODES = {
 	"healing_rain": HealingRainMode.new(),
 	"color_swap_team": ColorSwapTeamMode.new(),
 	"extreme_microclimate": ExtremeMicroclimateMode.new(),
+	"glowing_meteor_fragments": GlowingMeteorFragmentsMode.new(),
 	"boss_escort": BossEscortMode.new(),
 	"toxic_fog_event": ToxicFogEventMode.new(),
 	"geyser_hazards": GeyserHazardMode.new(),
