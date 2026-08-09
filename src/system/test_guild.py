@@ -547,3 +547,31 @@ def test_boss_mutations(temp_guild_file):
     assert gm.get_boss_mutations(1) == []
     assert gm.get_boss_mutations(2) == [{"type": "damage_reflect", "value": 0.1}]
     assert gm.get_boss_mutations(3) == [{"type": "damage_reflect", "value": 0.1}, {"type": "periodic_minions", "interval": 10}]
+
+
+def test_arrange_hq_items(temp_guild_file):
+    gm = GuildManager(temp_guild_file)
+    gm.create_guild("ArrangeGuild", "p1")
+    gm.donate_resources("ArrangeGuild", 1000)
+
+    # Unlock items
+    assert gm.unlock_hq_feature("ArrangeGuild", "backgrounds", "bg1", 100) == True
+    assert gm.unlock_hq_feature("ArrangeGuild", "statues", "statue1", 100) == True
+    assert gm.build_hq_defense("ArrangeGuild", "turret", 100, 1) == True
+
+    # Arrange unlocked items
+    assert gm.arrange_hq_item("ArrangeGuild", "backgrounds", "bg1", 10, 20) == True
+    assert gm.arrange_hq_item("ArrangeGuild", "statues", "statue1", 30, 40) == True
+    assert gm.arrange_hq_item("ArrangeGuild", "defenses", "turret", 50, 60) == True
+
+    # Try arranging non-unlocked items
+    assert gm.arrange_hq_item("ArrangeGuild", "backgrounds", "bg2", 10, 20) == False
+    assert gm.arrange_hq_item("ArrangeGuild", "statues", "statue2", 30, 40) == False
+    assert gm.arrange_hq_item("ArrangeGuild", "defenses", "barricade", 50, 60) == False
+    assert gm.arrange_hq_item("ArrangeGuild", "invalid_type", "bg1", 10, 20) == False
+
+    # Verify layout
+    status = gm.get_hq_status("ArrangeGuild")
+    assert status["layout"]["backgrounds"]["bg1"] == {"x": 10, "y": 20}
+    assert status["layout"]["statues"]["statue1"] == {"x": 30, "y": 40}
+    assert status["layout"]["defenses"]["turret"] == {"x": 50, "y": 60}

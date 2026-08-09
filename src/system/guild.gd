@@ -1034,14 +1034,26 @@ func arrange_hq_item(guild_name: String, item_type: String, item_id: String, pos
         var guild = data["guilds"][guild_name]
         if not guild.has("hq"):
             guild["hq"] = {"statues": [], "banners": [], "cosmetics": [], "flags": [], "backgrounds": [], "announcer_voices": [], "ambient_music": [], "active_ambient_music": null, "mini_games": {}, "defenses": {}, "training_arena_unlocked": false, "layout": {}, "hall_of_fame": [], "pets": []}
-        if not guild["hq"].has("layout"):
-            guild["hq"]["layout"] = {}
-        if not guild["hq"]["layout"].has(item_type):
-            guild["hq"]["layout"][item_type] = {}
 
-        guild["hq"]["layout"][item_type][item_id] = {"x": position_x, "y": position_y}
-        save_guilds()
-        return true
+        var allowed_types = ["statues", "banners", "cosmetics", "flags", "backgrounds", "defenses"]
+        if not allowed_types.has(item_type):
+            return false
+
+        var unlocked = false
+        if item_type == "defenses":
+            unlocked = guild["hq"].has("defenses") and guild["hq"]["defenses"].has(item_id)
+        else:
+            unlocked = guild["hq"].has(item_type) and guild["hq"][item_type].has(item_id)
+
+        if unlocked:
+            if not guild["hq"].has("layout"):
+                guild["hq"]["layout"] = {}
+            if not guild["hq"]["layout"].has(item_type):
+                guild["hq"]["layout"][item_type] = {}
+
+            guild["hq"]["layout"][item_type][item_id] = {"x": position_x, "y": position_y}
+            save_guilds()
+            return true
     return false
 
 func add_to_hall_of_fame(guild_name: String, player_id: String, category: String, value: float, description: String = "") -> bool:

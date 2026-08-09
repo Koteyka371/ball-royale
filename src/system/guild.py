@@ -853,13 +853,19 @@ class GuildManager:
         if guild_name in self.data["guilds"]:
             guild = self.data["guilds"][guild_name]
             hq = guild.setdefault("hq", {})
-            if item_type in ["statues", "banners", "cosmetics", "flags", "defenses"]:
-                # We can arrange it even if not explicitly checked for 'unlocked' to be safe or check if unlocked
-                layout = hq.setdefault("layout", {})
-                type_layout = layout.setdefault(item_type, {})
-                type_layout[item_id] = {"x": position_x, "y": position_y}
-                self.save()
-                return True
+            if item_type in ["statues", "banners", "cosmetics", "flags", "backgrounds", "defenses"]:
+                unlocked = False
+                if item_type == "defenses":
+                    unlocked = item_id in hq.get("defenses", {})
+                else:
+                    unlocked = item_id in hq.get(item_type, [])
+
+                if unlocked:
+                    layout = hq.setdefault("layout", {})
+                    type_layout = layout.setdefault(item_type, {})
+                    type_layout[item_id] = {"x": position_x, "y": position_y}
+                    self.save()
+                    return True
         return False
 
     def add_to_hall_of_fame(self, guild_name, player_id, category, value, description=""):
