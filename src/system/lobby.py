@@ -21,6 +21,30 @@ class PreGameLobby:
         for quest in quests:
             profile.add_quest(quest["description"], quest["reward"])
 
+    def get_new_daily_quest(self, existing_quests):
+        import random
+        existing_descriptions = [q.get("description", "") for q in existing_quests]
+        available_quests = [q for q in self.daily_quests if q["description"] not in existing_descriptions]
+        if not available_quests:
+            # If all quests are assigned, fallback to random any quest
+            return random.choice(self.daily_quests)
+        return random.choice(available_quests)
+
+    def reroll_daily_quest(self, profile, quest_index):
+        if profile.data.get("mutator_tokens", 0) >= 1:
+            quests = profile.get_quests()
+            if 0 <= quest_index < len(quests):
+                new_quest = self.get_new_daily_quest(quests)
+                quests[quest_index] = {
+                    "description": new_quest["description"],
+                    "reward": new_quest["reward"],
+                    "completed": False
+                }
+                profile.data["mutator_tokens"] -= 1
+                profile.save()
+                return True
+        return False
+
     def select_trap_variant(self, ball_id, variant):
         if variant in ["normal", "poison", "stun", "ricochet", "emp", "hologram", "blindness", "shriek", "decoy", "mine", "elemental_mine", "warp", "clone", "tar", "link", "repulsion", "swap", "reversal"]:
             self.selections[ball_id] = variant
