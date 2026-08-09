@@ -38027,7 +38027,86 @@ class GlowingMeteorFragmentsMode(GameMode):
                 setattr(h, "duration", f["duration"])
                 world.arena.hazards.append(h)
 
+class QuantumAnomalyFieldMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Quantum Anomaly Field"
+        self.description = "Randomly spawning quantum anomalies create unstable regions on the field. Entering these regions scrambles a ball's stats momentarily (randomizing speed, size, and damage) and occasionally teleports them to a linked anomaly on the other side of the map, adding chaos and unpredictable repositioning."
+        self.anomaly_spawn_timer = 0.0
+        self.anomaly_spawn_interval = 5.0
+        self.anomaly_duration = 10.0
+        self.anomalies = []
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        import random
+        import math
+
+        self.anomaly_spawn_timer -= delta
+        if self.anomaly_spawn_timer <= 0:
+            self.anomaly_spawn_timer = self.anomaly_spawn_interval
+            arena_w = getattr(world.arena, "width", 800) if hasattr(world, "arena") and world.arena else 800
+            arena_h = getattr(world.arena, "height", 600) if hasattr(world, "arena") and world.arena else 600
+
+            x1 = random.uniform(50, arena_w - 50)
+            y1 = random.uniform(50, arena_h - 50)
+            x2 = random.uniform(50, arena_w - 50)
+            y2 = random.uniform(50, arena_h - 50)
+
+            anomaly1 = {"x": x1, "y": y1, "radius": 80.0, "timer": self.anomaly_duration, "linked": None}
+            anomaly2 = {"x": x2, "y": y2, "radius": 80.0, "timer": self.anomaly_duration, "linked": anomaly1}
+            anomaly1["linked"] = anomaly2
+
+            self.anomalies.extend([anomaly1, anomaly2])
+
+        active_anomalies = []
+        for anomaly in self.anomalies:
+            anomaly["timer"] -= delta
+            if anomaly["timer"] > 0:
+                active_anomalies.append(anomaly)
+        self.anomalies = active_anomalies
+
+        for b in balls:
+            if not getattr(b, "alive", True) or getattr(b, "ball_type", "") == "spectator":
+                continue
+
+            in_anomaly = False
+            linked_anomaly = None
+
+            for anomaly in self.anomalies:
+                dx = b.x - anomaly["x"]
+                dy = b.y - anomaly["y"]
+                dist = math.sqrt(dx*dx + dy*dy)
+
+                if dist < anomaly["radius"]:
+                    in_anomaly = True
+                    linked_anomaly = anomaly["linked"]
+                    break
+
+            if in_anomaly:
+                if not getattr(b, "in_quantum_anomaly", False):
+                    b.in_quantum_anomaly = True
+                    b.original_speed_multiplier = getattr(b, "base_speed_multiplier", 1.0)
+                    b.original_damage_multiplier = getattr(b, "base_damage_multiplier", 1.0)
+                    b.original_mass = getattr(b, "base_mass", 1.0)
+
+                    b.base_speed_multiplier = random.uniform(0.5, 2.0)
+                    b.base_damage_multiplier = random.uniform(0.5, 2.0)
+                    b.base_mass = random.uniform(0.5, 2.0)
+
+                if linked_anomaly and random.random() < 0.2 * delta: # Apply probabilty scaled with delta for smooth teleport chance
+                    b.x = linked_anomaly["x"]
+                    b.y = linked_anomaly["y"]
+            else:
+                if getattr(b, "in_quantum_anomaly", False):
+                    b.in_quantum_anomaly = False
+                    if hasattr(b, "original_speed_multiplier"): b.base_speed_multiplier = b.original_speed_multiplier
+                    if hasattr(b, "original_damage_multiplier"): b.base_damage_multiplier = b.original_damage_multiplier
+                    if hasattr(b, "original_mass"): b.base_mass = b.original_mass
+
+
+
 GAME_MODES = {
+    'quantum_anomaly_field': QuantumAnomalyFieldMode(),
 
     "singularity_storm": SingularityStormMode(),
     'dash_aura_trail': DashAuraTrailMode(),
