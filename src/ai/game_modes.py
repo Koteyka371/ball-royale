@@ -53656,3 +53656,164 @@ class VolcanoBossMode(GameMode):
                 world.add_event("boss_defeated", {"message": "The Volcano Boss has been extinguished!"})
 
 GAME_MODES['volcano_boss_mode'] = VolcanoBossMode()
+
+class QuantumAnomaliesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Quantum Anomalies"
+        self.description = "Randomly spawning quantum anomalies create unstable regions on the field. Entering these regions scrambles a ball's stats momentarily (randomizing speed, size, and damage) and occasionally teleports them to a linked anomaly on the other side of the map, adding chaos and unpredictable repositioning."
+        self.anomaly_timer = 0.0
+        self.anomaly_interval = 8.0
+        self.max_anomalies = 6
+        self.setup_done = False
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.setup_done = False
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            # Remove any existing quantum_anomaly hazards
+            world.arena.hazards = [h for h in world.arena.hazards if getattr(h, "kind", "") != "quantum_anomaly"]
+
+    def tick(self, world, balls, delta=0.016):
+        import random
+        import math
+
+        self.apply_dynamic_traits(world, balls, delta)
+
+        if not hasattr(world, "arena") or not hasattr(world.arena, "hazards"):
+            return
+
+        arena_w = getattr(world.arena, "width", 800)
+        arena_h = getattr(world.arena, "height", 600)
+
+        # Handle spawning new anomalies
+        self.anomaly_timer -= delta
+        if self.anomaly_timer <= 0 or not self.setup_done:
+            self.setup_done = True
+            self.anomaly_timer = self.anomaly_interval
+
+            # Manage existing anomalies
+            current_anomalies = [h for h in world.arena.hazards if getattr(h, "kind", "") == "quantum_anomaly"]
+
+            # Decay existing anomalies
+            to_remove = []
+            for a in current_anomalies:
+                if hasattr(a, "life_timer"):
+                    a.life_timer -= self.anomaly_interval
+                    if a.life_timer <= 0:
+                        to_remove.append(a)
+
+            for r in to_remove:
+                if r in world.arena.hazards:
+                    world.arena.hazards.remove(r)
+                    if r in current_anomalies:
+                        current_anomalies.remove(r)
+
+            # Spawn pairs if we're under max
+            if len(current_anomalies) < self.max_anomalies:
+                class QuantumAnomaly:
+                    def __init__(self, x, y, linked_id):
+                        self.kind = "quantum_anomaly"
+                        self.x = x
+                        self.y = y
+                        self.radius = 60.0
+                        self.damage = 0.0
+                        self.is_solid = False
+                        nxt = getattr(world, "next_id", None)
+                        if callable(nxt): self.id = nxt()
+                        elif isinstance(nxt, int): self.id = nxt
+                        else: self.id = random.randint(1000, 9000)
+                        self.linked_id = linked_id
+                        self.life_timer = 24.0 # Lives for 3 intervals
+
+                pad = 100.0
+                x1 = random.uniform(pad, arena_w - pad)
+                y1 = random.uniform(pad, arena_h - pad)
+                x2 = arena_w - x1 # Opposite side
+                y2 = arena_h - y1 # Opposite side
+
+                # Jitter
+                x2 = max(pad, min(arena_w - pad, x2 + random.uniform(-100, 100)))
+                y2 = max(pad, min(arena_h - pad, y2 + random.uniform(-100, 100)))
+
+                nxt1 = getattr(world, "next_id", None)
+                id1 = nxt1() if callable(nxt1) else (nxt1 if isinstance(nxt1, int) else random.randint(1000, 9000))
+                nxt2 = getattr(world, "next_id", None)
+                id2 = nxt2() if callable(nxt2) else (nxt2 if isinstance(nxt2, int) else random.randint(1000, 9000))
+
+                a1 = QuantumAnomaly(x1, y1, id2)
+                a1.id = id1
+                a2 = QuantumAnomaly(x2, y2, id1)
+                a2.id = id2
+
+                world.arena.hazards.append(a1)
+                world.arena.hazards.append(a2)
+
+        # Refresh anomaly list after potential spawn/despawn
+        current_anomalies = [h for h in world.arena.hazards if getattr(h, "kind", "") == "quantum_anomaly"]
+
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", "") == "spectator":
+                continue
+
+            # Cooldown management for teleporting to avoid instant bounce-back
+            if hasattr(b, "quantum_teleport_cooldown"):
+                b.quantum_teleport_cooldown -= delta
+                if b.quantum_teleport_cooldown <= 0:
+                    delattr(b, "quantum_teleport_cooldown")
+
+            # Stat scrambling timer management
+            if hasattr(b, "quantum_scramble_timer"):
+                b.quantum_scramble_timer -= delta
+                if b.quantum_scramble_timer <= 0:
+                    delattr(b, "quantum_scramble_timer")
+                    # Restore base stats if tracked
+                    if hasattr(b, "base_speed_scrambled"):
+                        b.speed = b.base_speed_scrambled
+                        delattr(b, "base_speed_scrambled")
+                    if hasattr(b, "base_radius_scrambled"):
+                        b.radius = b.base_radius_scrambled
+                        delattr(b, "base_radius_scrambled")
+                    if hasattr(b, "base_damage_mult_scrambled"):
+                        b.damage_multiplier = b.base_damage_mult_scrambled
+                        delattr(b, "base_damage_mult_scrambled")
+
+            b_x = getattr(b, "x", 0.0)
+            b_y = getattr(b, "y", 0.0)
+            b_radius = getattr(b, "radius", 10.0)
+
+            for a in current_anomalies:
+                dx = b_x - a.x
+                dy = b_y - a.y
+                dist = math.hypot(dx, dy)
+
+                if dist <= a.radius + b_radius:
+                    # Apply scramble effect
+                    if not hasattr(b, "quantum_scramble_timer") or getattr(b, "quantum_scramble_timer", 0) <= 0:
+                        b.quantum_scramble_timer = random.uniform(2.0, 5.0)
+
+                        # Save original stats
+                        if not hasattr(b, "base_speed_scrambled"): b.base_speed_scrambled = getattr(b, "speed", 5.0)
+                        if not hasattr(b, "base_radius_scrambled"): b.base_radius_scrambled = getattr(b, "radius", 10.0)
+                        if not hasattr(b, "base_damage_mult_scrambled"): b.base_damage_mult_scrambled = getattr(b, "damage_multiplier", 1.0)
+
+                        # Scramble
+                        b.speed = b.base_speed_scrambled * random.uniform(0.5, 2.0)
+                        b.radius = max(5.0, b.base_radius_scrambled * random.uniform(0.5, 1.5))
+                        b.damage_multiplier = b.base_damage_mult_scrambled * random.uniform(0.5, 2.5)
+
+                    # Check for teleportation (probabilistic or hitting center)
+                    # We check if they are near the center or just a random chance per tick (e.g. 5% chance per tick while inside)
+                    teleport_chance = 0.05
+                    near_center = dist < (a.radius * 0.3)
+
+                    if not hasattr(b, "quantum_teleport_cooldown"):
+                        if near_center or random.random() < teleport_chance:
+                            # Find linked anomaly
+                            linked = next((h for h in current_anomalies if getattr(h, "id", None) == a.linked_id), None)
+                            if linked:
+                                b.x = linked.x
+                                b.y = linked.y
+                                b.quantum_teleport_cooldown = 1.0 # 1 second cooldown before can teleport again
+GAME_MODES['quantum_anomalies'] = QuantumAnomaliesMode()
