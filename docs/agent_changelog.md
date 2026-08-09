@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1919] Aura Overcharge Station — *2026-08-09 06:01:01 UTC*
+
+Players can enter a stationary field that slowly drains their HP but permanently intensifies their cosmetic aura, slightly increasing its knockback multiplier on collision with weaker auras.
+
+---
+
 ## [idea-1909] Meteorite Debris from Orbital Strikes — *2026-08-09 05:38:31 UTC*
 
 When the orbital crosshair fires its laser and creates an irradiated zone, it has a chance to also leave behind physical meteorite debris that acts as a temporary obstacle with collision.
