@@ -12,12 +12,33 @@ class PreGameLobby:
             {"description": "Get 50 kills in a single match", "reward": {"mutator_tokens": 1}},
         ]
 
-    def get_daily_quests(self):
+    def get_daily_quests(self, current_date_str=None):
         import random
-        return random.sample(self.daily_quests, min(3, len(self.daily_quests)))
+        import datetime
 
-    def assign_daily_quests_to_profile(self, profile):
-        quests = self.get_daily_quests()
+        quests = random.sample(self.daily_quests, min(3, len(self.daily_quests)))
+
+        if current_date_str is None:
+            current_date_str = datetime.date.today().isoformat()
+
+        if current_date_str:
+            try:
+                date_obj = datetime.date.fromisoformat(current_date_str)
+                is_weekend = date_obj.weekday() >= 5
+                if is_weekend:
+                    weekend_quest = {"description": "Win a match with the active mutator", "reward": {"mutator_tokens": 5}}
+                    # Replace one of the quests or add it
+                    if len(quests) > 0:
+                        quests[0] = weekend_quest
+                    else:
+                        quests.append(weekend_quest)
+            except Exception:
+                pass
+
+        return quests
+
+    def assign_daily_quests_to_profile(self, profile, current_date_str=None):
+        quests = self.get_daily_quests(current_date_str)
         for quest in quests:
             profile.add_quest(quest["description"], quest["reward"])
 
