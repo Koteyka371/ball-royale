@@ -61623,7 +61623,221 @@ class GlowingMeteorFragmentsMode extends GameMode:
 				if typeof(w_arena) == TYPE_DICTIONARY: w_arena.hazards = new_hazards
 				else: w_arena.hazards = new_hazards
 
+
+class VolcanoBossMode extends GameMode:
+	var boss_id: int = -1
+	var attack_timer: float = 0.0
+	var geyser_timer: float = 0.0
+	var item_timer: float = 0.0
+
+	func _init():
+		super._init()
+		name = "Volcano Boss"
+		description = "A massive volcano in the center of the arena continuously spawns lava geysers and throws fireballs. Players must dodge the hazards and use water-based items to cool down the boss to defeat it."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+
+		var arena_w = 1000.0
+		var arena_h = 1000.0
+		if world != null and "arena" in world and world.arena != null:
+			if "width" in world.arena: arena_w = world.arena.width
+			if "height" in world.arena: arena_h = world.arena.height
+
+		boss_id = randi() % 900000 + 100000
+		if world != null and "next_id" in world:
+			boss_id = world.next_id
+			world.next_id += 1
+
+		var boss = {}
+		boss["id"] = boss_id
+		boss["ball_type"] = "volcano_boss"
+		boss["name"] = "Mount Doom"
+		boss["x"] = arena_w / 2.0
+		boss["y"] = arena_h / 2.0
+		boss["vx"] = 0.0
+		boss["vy"] = 0.0
+		boss["radius"] = 120.0
+		boss["hp"] = 5000.0
+		boss["max_hp"] = 5000.0
+		boss["damage"] = 50.0
+		boss["speed"] = 0.0
+		boss["alive"] = true
+		boss["team"] = "boss"
+		boss["invulnerable"] = true
+
+		if world != null and "balls" in world:
+			world.balls.append(boss)
+
+		if world != null and world.has_method("add_event"):
+			world.add_event("boss_spawn", {"message": "A massive Volcano has emerged! Use water items to cool it down!"})
+
+	func tick(world, balls, delta = 0.016):
+		super.tick(world, balls, delta)
+
+		if world == null or not ("arena" in world) or world.arena == null:
+			return
+
+		var arena_w = 1000.0
+		var arena_h = 1000.0
+		if "width" in world.arena: arena_w = float(world.arena.width)
+		if "height" in world.arena: arena_h = float(world.arena.height)
+
+		var boss = null
+		for b in balls:
+			var bid = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.id
+			var balive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else b.alive
+			if bid == boss_id and balive:
+				boss = b
+				break
+
+		if boss == null:
+			return
+
+		var bx = boss.get("x") if typeof(boss) == TYPE_DICTIONARY else boss.x
+		var by = boss.get("y") if typeof(boss) == TYPE_DICTIONARY else boss.y
+		var bhp = boss.get("hp") if typeof(boss) == TYPE_DICTIONARY else boss.hp
+		var bmaxhp = boss.get("max_hp") if typeof(boss) == TYPE_DICTIONARY else boss.max_hp
+
+		# Keep stationary
+		if typeof(boss) == TYPE_DICTIONARY:
+			boss["vx"] = 0.0
+			boss["vy"] = 0.0
+			boss["x"] = arena_w / 2.0
+			boss["y"] = arena_h / 2.0
+			boss["invulnerable"] = true
+		else:
+			boss.vx = 0.0
+			boss.vy = 0.0
+			boss.x = arena_w / 2.0
+			boss.y = arena_h / 2.0
+			boss.invulnerable = true
+
+		attack_timer += delta
+		geyser_timer += delta
+		item_timer += delta
+
+		var heat_multiplier = max(0.5, float(bhp) / float(bmaxhp))
+
+		if attack_timer >= 2.0 * heat_multiplier:
+			attack_timer -= 2.0 * heat_multiplier
+			var count = (randi() % 3) + 1
+			for i in range(count):
+				var target_x = randf_range(100.0, arena_w - 100.0)
+				var target_y = randf_range(100.0, arena_h - 100.0)
+				var angle = atan2(target_y - by, target_x - bx)
+				var dist = sqrt(pow(target_x - bx, 2) + pow(target_y - by, 2))
+
+				var fireball = {
+					"id": randi() % 90000 + 10000,
+					"x": bx,
+					"y": by,
+					"radius": 25.0,
+					"kind": "lava_projectile",
+					"damage": 40.0,
+					"vx": cos(angle) * 300.0,
+					"vy": sin(angle) * 300.0,
+					"duration": dist / 300.0,
+					"spawn_magma": true,
+					"active": true
+				}
+				if not ("hazards" in world.arena):
+					world.arena["hazards"] = []
+				world.arena.hazards.append(fireball)
+
+			if world.has_method("add_event"):
+				world.add_event("volcano_eruption", {"x": bx, "y": by})
+
+		if geyser_timer >= 5.0 * heat_multiplier:
+			geyser_timer -= 5.0 * heat_multiplier
+			var count = (randi() % 4) + 2
+			for i in range(count):
+				var gx = randf_range(50.0, arena_w - 50.0)
+				var gy = randf_range(50.0, arena_h - 50.0)
+				if sqrt(pow(gx - bx, 2) + pow(gy - by, 2)) > 150.0:
+					var geyser = {
+						"id": randi() % 90000 + 10000,
+						"x": gx,
+						"y": gy,
+						"radius": 40.0,
+						"kind": "lava_geyser",
+						"damage": 60.0,
+						"duration": 4.0,
+						"active": true
+					}
+					if not ("hazards" in world.arena):
+						world.arena["hazards"] = []
+					world.arena.hazards.append(geyser)
+
+		if item_timer >= 4.0:
+			item_timer -= 4.0
+			if not ("boosters" in world):
+				world["boosters"] = []
+
+			var ix = randf_range(100.0, arena_w - 100.0)
+			var iy = randf_range(100.0, arena_h - 100.0)
+			if sqrt(pow(ix - bx, 2) + pow(iy - by, 2)) > 200.0:
+				var item_id = randi() % 900000 + 100000
+				if "next_id" in world:
+					item_id = world.next_id
+					world.next_id += 1
+				var water_orb = {
+					"id": item_id,
+					"x": ix,
+					"y": iy,
+					"kind": "water_orb",
+					"radius": 15.0,
+					"color": "blue",
+					"duration": 10.0
+				}
+				world.boosters.append(water_orb)
+
+		if "boosters" in world:
+			var to_remove = []
+			for b in world.boosters:
+				var kind = b.get("kind") if typeof(b) == TYPE_DICTIONARY else b.kind
+				if kind == "water_orb":
+					var ox = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.x
+					var oy = b.get("y") if typeof(b) == TYPE_DICTIONARY else b.y
+					var oradius = b.get("radius") if typeof(b) == TYPE_DICTIONARY else b.radius
+
+					for ball in balls:
+						var balive = ball.get("alive") if typeof(ball) == TYPE_DICTIONARY else ball.alive
+						var bteam = ball.get("team") if typeof(ball) == TYPE_DICTIONARY else ball.team
+						if balive and bteam != "boss":
+							var ballx = ball.get("x") if typeof(ball) == TYPE_DICTIONARY else ball.x
+							var bally = ball.get("y") if typeof(ball) == TYPE_DICTIONARY else ball.y
+							var br = ball.get("radius") if typeof(ball) == TYPE_DICTIONARY else ball.radius
+
+							if sqrt(pow(ballx - ox, 2) + pow(bally - oy, 2)) < br + oradius:
+								to_remove.append(b)
+								var damage_amount = 500.0
+								if typeof(boss) == TYPE_DICTIONARY:
+									boss["hp"] -= damage_amount
+								else:
+									boss.hp -= damage_amount
+
+								if world.has_method("add_event"):
+									var cur_hp = boss.get("hp") if typeof(boss) == TYPE_DICTIONARY else boss.hp
+									world.add_event("boss_cooled", {"damage": damage_amount, "boss_hp": cur_hp})
+								break
+
+			for r in to_remove:
+				world.boosters.erase(r)
+
+		var final_hp = boss.get("hp") if typeof(boss) == TYPE_DICTIONARY else boss.hp
+		if final_hp <= 0:
+			if typeof(boss) == TYPE_DICTIONARY:
+				boss["alive"] = false
+				boss["hp"] = 0
+			else:
+				boss.alive = false
+				boss.hp = 0
+			if world.has_method("add_event"):
+				world.add_event("boss_defeated", {"message": "The Volcano Boss has been extinguished!"})
+
 var GAME_MODES = {
+	"volcano_boss_mode": VolcanoBossMode.new(),
 
 	"bone_prison_trap": preload("res://src/ai/bone_prison_trap.gd").new(),
 	"singularity_storm": SingularityStormMode.new(),

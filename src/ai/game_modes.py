@@ -53363,3 +53363,210 @@ GAME_MODES["occasional_mirror_walls"] = OccasionalMirrorWallsMode()
 
 GAME_MODES['quantum_tunnel_safe_zone'] = QuantumTunnelSafeZoneMode()
 GAME_MODES['bone_prison_trap'] = __import__('ai.bone_prison_trap', fromlist=['']).BonePrisonTrapMode()
+
+
+class VolcanoBossMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Volcano Boss"
+        self.description = "A massive volcano in the center of the arena continuously spawns lava geysers and throws fireballs. Players must dodge the hazards and use water-based items to cool down the boss to defeat it."
+        self.boss_id = None
+        self.attack_timer = 0.0
+        self.geyser_timer = 0.0
+        self.item_timer = 0.0
+        self.volcano_heat = 100.0
+
+    def setup(self, world, balls):
+        import random
+        super().setup(world, balls)
+        arena_w = getattr(world.arena, "width", 1000)
+        arena_h = getattr(world.arena, "height", 1000)
+
+        # Spawn Volcano Boss
+        boss_id = getattr(world, "next_id", random.randint(100000, 999999))
+        if hasattr(world, "next_id"):
+            world.next_id += 1
+
+        self.boss_id = boss_id
+
+        boss_class = type('VolcanoBoss', (object,), {})
+        boss = boss_class()
+        boss.id = boss_id
+        boss.ball_type = "volcano_boss"
+        boss.name = "Mount Doom"
+        boss.x = arena_w / 2.0
+        boss.y = arena_h / 2.0
+        boss.vx = 0.0
+        boss.vy = 0.0
+        boss.radius = 120.0
+        boss.hp = 5000.0
+        boss.max_hp = 5000.0
+        boss.damage = 50.0
+        boss.speed = 0.0
+        boss.alive = True
+        boss.team = "boss"
+        boss.invulnerable = True # Take damage only from water items
+
+        if hasattr(world, "balls"):
+            world.balls.append(boss)
+
+        if hasattr(world, "add_event"):
+            world.add_event("boss_spawn", {"message": "A massive Volcano has emerged! Use water items to cool it down!"})
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import random
+        import math
+
+        if not hasattr(world, "arena"):
+            return
+
+        arena_w = getattr(world.arena, "width", 1000)
+        arena_h = getattr(world.arena, "height", 1000)
+
+        boss = next((b for b in balls if getattr(b, "id", None) == self.boss_id and getattr(b, "alive", False)), None)
+        if not boss:
+            return
+
+        # Volcano is stationary
+        boss.vx = 0.0
+        boss.vy = 0.0
+        boss.x = arena_w / 2.0
+        boss.y = arena_h / 2.0
+
+        # Ensure invulnerable to normal attacks
+        boss.invulnerable = True
+
+        self.attack_timer += delta
+        self.geyser_timer += delta
+        self.item_timer += delta
+
+        heat_multiplier = max(0.5, boss.hp / boss.max_hp)
+
+        # Fireballs
+        if self.attack_timer >= 2.0 * heat_multiplier:
+            self.attack_timer -= 2.0 * heat_multiplier
+            try:
+                from arena.procedural_arena import Hazard
+                for _ in range(random.randint(1, 3)):
+                    target_x = random.uniform(100.0, arena_w - 100.0)
+                    target_y = random.uniform(100.0, arena_h - 100.0)
+
+                    fireball = Hazard(random.randint(10000, 99999), boss.x, boss.y, 25.0, "lava_projectile", damage=40.0)
+                    angle = math.atan2(target_y - boss.y, target_x - boss.x)
+                    speed = 300.0
+                    setattr(fireball, 'vx', math.cos(angle) * speed)
+                    setattr(fireball, 'vy', math.sin(angle) * speed)
+                    dist = math.hypot(target_x - boss.x, target_y - boss.y)
+                    setattr(fireball, 'duration', dist / speed)
+                    setattr(fireball, 'spawn_magma', True)
+
+                    if not hasattr(world.arena, "hazards"):
+                        world.arena.hazards = []
+                    world.arena.hazards.append(fireball)
+            except ImportError:
+                class DummyHazard:
+                    def __init__(self, hid, x, y, r, k, damage):
+                        self.id = hid; self.x = x; self.y = y; self.radius = r; self.kind = k; self.damage = damage
+                        self.active = True
+                fireball = DummyHazard(random.randint(10000, 99999), boss.x, boss.y, 25.0, "lava_projectile", 40.0)
+                angle = math.atan2(random.uniform(100, arena_w-100) - boss.y, random.uniform(100, arena_h-100) - boss.x)
+                setattr(fireball, 'vx', math.cos(angle) * 300)
+                setattr(fireball, 'vy', math.sin(angle) * 300)
+                setattr(fireball, 'duration', 2.0)
+                setattr(fireball, 'spawn_magma', True)
+                if not hasattr(world.arena, "hazards"):
+                    world.arena.hazards = []
+                world.arena.hazards.append(fireball)
+
+            if hasattr(world, "add_event"):
+                world.add_event("volcano_eruption", {"x": boss.x, "y": boss.y})
+
+        # Lava Geysers
+        if self.geyser_timer >= 5.0 * heat_multiplier:
+            self.geyser_timer -= 5.0 * heat_multiplier
+            try:
+                from arena.procedural_arena import Hazard
+                for _ in range(random.randint(2, 5)):
+                    gx = random.uniform(50.0, arena_w - 50.0)
+                    gy = random.uniform(50.0, arena_h - 50.0)
+                    # Don't spawn under boss
+                    if math.hypot(gx - boss.x, gy - boss.y) > 150:
+                        geyser = Hazard(random.randint(10000, 99999), gx, gy, 40.0, "lava_geyser", damage=60.0)
+                        setattr(geyser, "duration", 4.0)
+                        setattr(geyser, "active", True)
+                        if not hasattr(world.arena, "hazards"):
+                            world.arena.hazards = []
+                        world.arena.hazards.append(geyser)
+            except ImportError:
+                class DummyHazard:
+                    def __init__(self, hid, x, y, r, k, damage):
+                        self.id = hid; self.x = x; self.y = y; self.radius = r; self.kind = k; self.damage = damage
+                        self.active = True
+                for _ in range(3):
+                    gx = random.uniform(50.0, arena_w - 50.0)
+                    gy = random.uniform(50.0, arena_h - 50.0)
+                    if math.hypot(gx - boss.x, gy - boss.y) > 150:
+                        geyser = DummyHazard(random.randint(10000, 99999), gx, gy, 40.0, "lava_geyser", 60.0)
+                        setattr(geyser, "duration", 4.0)
+                        if not hasattr(world.arena, "hazards"):
+                            world.arena.hazards = []
+                        world.arena.hazards.append(geyser)
+
+        # Spawn Water items
+        if self.item_timer >= 4.0:
+            self.item_timer -= 4.0
+            if not hasattr(world, "boosters"):
+                world.boosters = []
+
+            water_item = {
+                "id": getattr(world, "next_id", random.randint(100000, 999999)),
+                "x": random.uniform(100.0, arena_w - 100.0),
+                "y": random.uniform(100.0, arena_h - 100.0),
+                "kind": "water_orb",
+                "radius": 15.0,
+                "color": "blue",
+                "duration": 10.0
+            }
+            if hasattr(world, "next_id"):
+                world.next_id += 1
+
+            # Avoid spawning under boss
+            if math.hypot(water_item["x"] - boss.x, water_item["y"] - boss.y) > 200:
+                world.boosters.append(water_item)
+
+        # Handle Water Orb pickups and boss damage
+        if hasattr(world, "boosters"):
+            boosters_to_remove = []
+            for b in world.boosters:
+                b_kind = b.get("kind", "") if isinstance(b, dict) else getattr(b, "kind", "")
+                if b_kind == "water_orb":
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    br = b.get("radius", 15) if isinstance(b, dict) else getattr(b, "radius", 15)
+
+                    for ball in balls:
+                        if getattr(ball, "alive", False) and getattr(ball, "team", "") != "boss":
+                            dist = math.hypot(ball.x - bx, ball.y - by)
+                            if dist < ball.radius + br:
+                                # Picked up water orb
+                                boosters_to_remove.append(b)
+                                # Damage boss
+                                damage_amount = 500.0
+                                boss.hp -= damage_amount
+                                if hasattr(world, "add_event"):
+                                    world.add_event("boss_cooled", {"damage": damage_amount, "boss_hp": boss.hp})
+                                break
+
+            for b in boosters_to_remove:
+                if b in world.boosters:
+                    world.boosters.remove(b)
+
+        # Check if boss died
+        if boss.hp <= 0 and getattr(boss, "alive", True):
+            boss.alive = False
+            boss.hp = 0
+            if hasattr(world, "add_event"):
+                world.add_event("boss_defeated", {"message": "The Volcano Boss has been extinguished!"})
+
+GAME_MODES['volcano_boss_mode'] = VolcanoBossMode()
