@@ -37,7 +37,7 @@ class ConstrictingArenaMode extends GameMode:
 			for b in balls:
 				var is_alive = true
 				if typeof(b) == TYPE_DICTIONARY:
-					is_alive = b.get("alive", true)
+					is_alive = b.alive
 				else:
 					if "alive" in b: is_alive = b.alive
 
@@ -13334,7 +13334,7 @@ class MassiveGravityWellMode extends GameMode:
 			if typeof(b) == TYPE_OBJECT:
 				is_alive = b.alive if "alive" in b else true
 			elif typeof(b) == TYPE_DICTIONARY:
-				is_alive = b.get("alive", true)
+				is_alive = b.alive
 
 			if not is_alive:
 				continue
@@ -20332,7 +20332,7 @@ class MirrorIllusionMode extends GameMode:
 			var rb_team = "neutral"
 
 			if typeof(rb) == TYPE_DICTIONARY:
-				rb_alive = rb.get("alive", true)
+				rb_alive = rb.alive
 				rb_id = rb.get("id", 0)
 				rb_x = rb.get("x", 0.0)
 				rb_y = rb.get("y", 0.0)
@@ -26569,7 +26569,7 @@ class MagneticCollisionsMode extends GameMode:
 		# Assign random polarities to balls
 		for b in balls:
 			var is_dict = typeof(b) == TYPE_DICTIONARY
-			var b_alive = b.get("alive", true) if is_dict else b.alive
+			var b_alive = b.alive if is_dict else b.alive
 			var b_type = b.get("ball_type", "") if is_dict else b.ball_type
 
 			if b_alive and b_type != "spectator":
@@ -26588,7 +26588,7 @@ class MagneticCollisionsMode extends GameMode:
 			polarity_flip_timer = 0.0
 			for b in balls:
 				var is_dict = typeof(b) == TYPE_DICTIONARY
-				var b_alive = b.get("alive", true) if is_dict else b.alive
+				var b_alive = b.alive if is_dict else b.alive
 				var b_type = b.get("ball_type", "") if is_dict else b.ball_type
 
 				if b_alive and b_type != "spectator":
@@ -26616,7 +26616,7 @@ class MagneticCollisionsMode extends GameMode:
 
 					for b in balls:
 						var is_dict = typeof(b) == TYPE_DICTIONARY
-						var b_alive = b.get("alive", true) if is_dict else b.alive
+						var b_alive = b.alive if is_dict else b.alive
 						var b_type = b.get("ball_type", "") if is_dict else b.ball_type
 
 						if not b_alive or b_type == "spectator":
@@ -26771,7 +26771,7 @@ class LocalizedZeroGravityZoneMode extends GameMode:
 
 		for b in balls:
 			if typeof(b) == TYPE_DICTIONARY:
-				if not b.get("alive", true) or b.get("ball_type", "") == "spectator":
+				if not b.alive or b.get("ball_type", "") == "spectator":
 					continue
 			else:
 				if not b.get("alive") if b.get("alive") != null else true:
@@ -27077,7 +27077,7 @@ class ChainLightningMutatorMode extends GameMode:
 			var potential_targets = []
 			for b in world.balls:
 				if typeof(b) == TYPE_DICTIONARY:
-					var b_alive = b.get("alive", true)
+					var b_alive = b.alive
 					if b != target and b != attacker and b_alive:
 						var b_team = b.get("team", "")
 						var a_team = attacker.get("team", "") if typeof(attacker) == TYPE_DICTIONARY else attacker.get("team")
@@ -31949,7 +31949,7 @@ class DailyMutatorMode extends GameMode:
 		var balls_alive = []
 		for b in balls:
 			var is_dict = typeof(b) == TYPE_DICTIONARY
-			var b_alive = b.get("alive", true) if is_dict else b.alive
+			var b_alive = b.alive if is_dict else b.alive
 			var b_type = b.get("ball_type", "") if is_dict else b.ball_type
 			var b_team = b.get("team", b_type) if is_dict else b.get("team", b_type)
 
@@ -34084,7 +34084,7 @@ class PolarityShiftMode extends GameMode:
 
 		for b in balls:
 			var is_dict = typeof(b) == TYPE_DICTIONARY
-			var alive = b.get("alive", true) if is_dict else b.alive
+			var alive = b.alive if is_dict else b.alive
 			var b_type = b.get("ball_type", "") if is_dict else (b.ball_type if "ball_type" in b else "")
 
 			if alive and b_type != "spectator":
@@ -36802,7 +36802,7 @@ class ExtremeWeatherMode extends GameMode:
 
 		for b in balls:
 			if "ball_type" in b and b.ball_type == "mega_minion":
-				if "hp" in b and b.hp <= 0 and b.get("alive", true):
+				if "hp" in b and b.hp <= 0 and b.alive:
 					b.alive = false
 					if world != null and "boosters" in world and "drop_booster" in b:
 						world.boosters.append({
@@ -37800,7 +37800,7 @@ class SolarFlareMode extends GameMode:
 			for b in balls:
 				var alive = true
 				if typeof(b) == TYPE_DICTIONARY:
-					alive = b.get("alive", true)
+					alive = b.alive
 				elif typeof(b) == TYPE_OBJECT:
 					alive = b.get_meta("alive") if b.has_meta("alive") else (b.alive if "alive" in b else true)
 
@@ -40359,7 +40359,7 @@ class CenterVortexMode extends GameMode:
 		for b in balls:
 			var is_alive = true
 			if typeof(b) == TYPE_DICTIONARY:
-				is_alive = b.get("alive", true)
+				is_alive = b.alive
 			elif typeof(b) == TYPE_OBJECT:
 				is_alive = b.get("alive") if b.has_method("get") and b.get("alive") != null else true
 
@@ -40467,7 +40467,7 @@ class CenterGravityWellMode extends GameMode:
 			if typeof(b) == TYPE_OBJECT:
 				is_alive = b.alive if "alive" in b else true
 			elif typeof(b) == TYPE_DICTIONARY:
-				is_alive = b.get("alive", true)
+				is_alive = b.alive
 
 			if not is_alive:
 				continue
@@ -40617,7 +40617,7 @@ class EndGameMagnetMode extends GameMode:
 		for b in balls:
 			var is_alive = true
 			if typeof(b) == TYPE_DICTIONARY:
-				is_alive = b.get("alive", true)
+				is_alive = b.alive
 			elif typeof(b) == TYPE_OBJECT:
 				is_alive = b.get("alive") if b.has_method("get") and b.get("alive") != null else true
 
@@ -40841,7 +40841,7 @@ class CenterBlackHoleMode extends GameMode:
 		for b in balls:
 			var is_alive = true
 			if typeof(b) == TYPE_DICTIONARY:
-				is_alive = b.get("alive", true)
+				is_alive = b.alive
 			elif typeof(b) == TYPE_OBJECT:
 				is_alive = b.get("alive") if b.has_method("get") and b.get("alive") != null else true
 
@@ -52504,7 +52504,7 @@ class AuraPulseEventMode extends GameMode:
 			var aura_buff_keys = ["vampiric_aura_timer", "decoy_aura_timer", "cosmetic_aura_scale"]
 
 			for b in balls:
-				if not b.get("alive", true) or b.get("is_decoy", false):
+				if not b.alive or b.get("is_decoy", false):
 					continue
 
 				var has_aura = false
@@ -53195,7 +53195,7 @@ class KineticMomentumMutatorMode extends GameMode:
 
 				if typeof(world) == TYPE_DICTIONARY and "balls" in world:
 					for b in world["balls"]:
-						var b_alive = b.get("alive", true) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else true)
+						var b_alive = b.alive if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else true)
 						if b != attacker and b != target and b_alive:
 							var b_team = b.get("team", null) if typeof(b) == TYPE_DICTIONARY else (b.team if "team" in b else null)
 							if b_team != attacker_team or b_team == null:
@@ -53211,7 +53211,7 @@ class KineticMomentumMutatorMode extends GameMode:
 										b.hp -= blast_damage
 				elif "balls" in world:
 					for b in world.balls:
-						var b_alive = b.get("alive", true) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else true)
+						var b_alive = b.alive if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else true)
 						if b != attacker and b != target and b_alive:
 							var b_team = b.get("team", null) if typeof(b) == TYPE_DICTIONARY else (b.team if "team" in b else null)
 							if b_team != attacker_team or b_team == null:
@@ -58310,7 +58310,7 @@ class TimeLoopMode extends GameMode:
 				"x": b.get("x") if typeof(b) == TYPE_OBJECT else b.get("x", 0.0),
 				"y": b.get("y") if typeof(b) == TYPE_OBJECT else b.get("y", 0.0),
 				"hp": b.get("hp") if typeof(b) == TYPE_OBJECT else b.get("hp", 100.0),
-				"alive": b.get("alive") if typeof(b) == TYPE_OBJECT else b.get("alive", true)
+				"alive": b.get("alive") if typeof(b) == TYPE_OBJECT else b.alive
 			}
 
 		if typeof(world) == TYPE_OBJECT and world.get("arena") != null and typeof(world.arena) == TYPE_OBJECT and world.arena.get("hazards") != null:
@@ -59355,7 +59355,7 @@ class DenseRegionMode extends GameMode:
 		for b in balls:
 			var alive = true
 			if typeof(b) == TYPE_DICTIONARY and b.has("alive"):
-				alive = b.get("alive", true)
+				alive = b.alive
 			elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("alive") != null:
 				alive = b.get("alive")
 
@@ -60335,9 +60335,9 @@ class NullificationZoneMode extends GameMode:
         for b in balls:
             var is_alive = true
             if typeof(b) == TYPE_OBJECT:
-                is_alive = b.get("alive", true)
+                is_alive = b.alive
             elif typeof(b) == TYPE_DICTIONARY:
-                is_alive = b.get("alive", true)
+                is_alive = b.alive
 
             if is_alive:
                 var b_x = 0.0
@@ -60400,7 +60400,7 @@ class CrimsonFogEventMode extends GameMode:
 			for b in balls:
 				if typeof(b) == TYPE_OBJECT and b.get("alive") != false and "hp" in b:
 					b.hp -= 10.0 * delta
-				elif typeof(b) == TYPE_DICTIONARY and b.get("alive", true) and b.has("hp"):
+				elif typeof(b) == TYPE_DICTIONARY and b.alive and b.has("hp"):
 					b["hp"] -= 10.0 * delta
 
 
@@ -60594,7 +60594,7 @@ class AuraLinkRoyaleMode extends GameMode:
         var colors = ["Red", "Blue", "Green"]
         for b in balls:
             if typeof(b) == TYPE_DICTIONARY:
-                if b.get("ball_type") != "spectator" and b.get("alive", true):
+                if b.get("ball_type") != "spectator" and b.alive:
                     var color = colors[randi() % colors.size()]
                     b["aura_color"] = color
                     b["team"] = "Aura " + color
@@ -60622,7 +60622,7 @@ class AuraLinkRoyaleMode extends GameMode:
             var alive = true
             var is_spec = false
             if typeof(b) == TYPE_DICTIONARY:
-                alive = b.get("alive", true)
+                alive = b.alive
                 is_spec = b.get("ball_type") == "spectator"
                 if alive and not is_spec:
                     if b.has("aura_color"):
@@ -61092,6 +61092,106 @@ class BulletHellSurvivalMode extends GameMode:
 					if "vy" in proj: proj.vy = vy
 					if "x" in proj: proj.x = x
 					if "y" in proj: proj.y = y
+
+
+class WeatherBossMode extends GameMode:
+	var boss_spawned: bool = false
+	var weather_intensity: float = 0.0
+	var boss_timer: float = 0.0
+
+	func _init():
+		name = "Weather Boss"
+		description = "A neutral boss spawns during intense weather events. Defeating it drops a random legendary weather manipulation item, but its attacks scale with the weather's intensity."
+
+	func tick(world, balls: Array, delta: float = 0.016):
+		super.tick(world, balls, delta)
+
+		var current_weather = "clear"
+		if world != null and "arena" in world and world.arena != null and "weather" in world.arena:
+			current_weather = world.arena.weather
+
+		var intense_weathers = ["thunderstorm", "blizzard", "hurricane", "storm"]
+
+		if current_weather in intense_weathers:
+			weather_intensity = min(10.0, weather_intensity + delta * 0.5)
+			boss_timer += delta
+
+			if boss_timer >= 5.0 and not boss_spawned:
+				boss_spawned = true
+				var boss_id = randi() % 900000 + 100000
+				if world != null and "next_id" in world:
+					boss_id = world.next_id
+					world.next_id += 1
+
+				var arena_w = 1000
+				var arena_h = 1000
+				if world != null and "arena" in world and world.arena != null:
+					if "width" in world.arena: arena_w = world.arena.width
+					if "height" in world.arena: arena_h = world.arena.height
+
+				var boss = {
+					"id": boss_id,
+					"ball_type": "neutral_boss",
+					"name": "Storm Elemental",
+					"x": arena_w / 2.0,
+					"y": arena_h / 2.0,
+					"vx": 0.0,
+					"vy": 0.0,
+					"radius": 40.0,
+					"hp": 1500.0,
+					"max_hp": 1500.0,
+					"damage": 20.0 + (weather_intensity * 5.0),
+					"speed": 40.0,
+					"alive": true,
+					"team": "neutral",
+					"intensity": weather_intensity
+				}
+
+				if world != null and "balls" in world:
+					world.balls.append(boss)
+
+				if world != null and world.has_method("add_event"):
+					world.add_event("boss_spawn", {"message": "A Storm Elemental has emerged from the extreme weather!"})
+		else:
+			weather_intensity = max(0.0, weather_intensity - delta * 0.2)
+
+		if world != null and "balls" in world:
+			for b in world.balls:
+				if typeof(b) == TYPE_DICTIONARY and "ball_type" in b and b.ball_type == "neutral_boss":
+					b.damage = 20.0 + (weather_intensity * 5.0)
+					if b.hp <= 0 and b.alive:
+						b.alive = false
+						if "boosters" in world:
+							var drops = ["legendary_storm_caller", "legendary_blizzard_wand", "legendary_hurricane_staff"]
+							var drop_kind = drops[randi() % drops.size()]
+							var booster = {
+								"kind": drop_kind,
+								"x": b.x,
+								"y": b.y,
+								"active": true,
+								"radius": 15.0
+							}
+							world.boosters.append(booster)
+							if world.has_method("add_event"):
+								world.add_event("boss_defeated", {"message": "The Storm Elemental was defeated! A legendary item dropped!"})
+				elif typeof(b) != TYPE_DICTIONARY and "ball_type" in b and b.ball_type == "neutral_boss":
+					b.damage = 20.0 + (weather_intensity * 5.0)
+					if b.hp <= 0 and b.alive:
+						b.alive = false
+						if "boosters" in world:
+							var drops = ["legendary_storm_caller", "legendary_blizzard_wand", "legendary_hurricane_staff"]
+							var drop_kind = drops[randi() % drops.size()]
+							var booster = {
+								"kind": drop_kind,
+								"x": b.x,
+								"y": b.y,
+								"active": true,
+								"radius": 15.0
+							}
+							world.boosters.append(booster)
+							if world.has_method("add_event"):
+								world.add_event("boss_defeated", {"message": "The Storm Elemental was defeated! A legendary item dropped!"})
+
 
 var GAME_MODES = {
 	"dash_aura_trail": DashAuraTrailMode.new(),
@@ -64244,7 +64344,7 @@ class ColorTrailMode extends GameMode:
 
 		# 1. Update territory
 		for b in balls:
-			var alive = b.get("alive", true) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else true)
+			var alive = b.alive if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else true)
 			if not alive:
 				continue
 
@@ -64266,7 +64366,7 @@ class ColorTrailMode extends GameMode:
 
 		# 2. Apply effects based on territory
 		for b in balls:
-			var alive = b.get("alive", true) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else true)
+			var alive = b.alive if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else true)
 			if not alive:
 				continue
 
@@ -64314,7 +64414,7 @@ class ColorTrailMode extends GameMode:
 		var alive_count = 0
 
 		for b in balls:
-			var alive = b.get("alive", true) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else true)
+			var alive = b.alive if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else true)
 			var btype = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else (b.ball_type if "ball_type" in b else "")
 
 			if alive and btype != "spectator" and btype != "shadow_monster":
@@ -64421,7 +64521,7 @@ class TemporalRiftsMode extends GameMode:
 			rifts.erase(r)
 
 		for b in balls:
-			var alive = b.get("alive", true) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else true)
+			var alive = b.alive if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else true)
 			if not alive:
 				continue
 
@@ -67775,7 +67875,7 @@ class AuraInversionZoneMode extends GameMode:
 		for b in balls:
 			var is_alive = true
 			if typeof(b) == TYPE_DICTIONARY:
-				is_alive = b.get("alive", true)
+				is_alive = b.alive
 			elif typeof(b) == TYPE_OBJECT and "alive" in b:
 				is_alive = b.alive
 
@@ -69026,7 +69126,7 @@ class ChainReactionMode extends GameMode:
 					var b_y = 0.0
 
 					if typeof(b) == TYPE_DICTIONARY:
-						b_alive = b.get("alive", true)
+						b_alive = b.alive
 						b_x = b.get("x", 0.0)
 						b_y = b.get("y", 0.0)
 					else:
@@ -69343,7 +69443,7 @@ class KillstreakExplosionMode extends GameMode:
 					var b_y = 0.0
 
 					if typeof(b) == TYPE_DICTIONARY:
-						b_alive = b.get("alive", true)
+						b_alive = b.alive
 						b_x = b.get("x", 0.0)
 						b_y = b.get("y", 0.0)
 					else:
@@ -69394,7 +69494,7 @@ class MimicCloneSwapMode extends GameMode:
 			var b_ball_type = ""
 
 			if typeof(b) == TYPE_DICTIONARY:
-				b_alive = b.get("alive", true)
+				b_alive = b.alive
 				b_is_mimic_clone = b.get("is_mimic_clone", false)
 				b_ball_type = b.get("ball_type", "")
 			else:
@@ -76176,7 +76276,7 @@ class PulsingBlackHoleMutatorMode extends GameMode:
 			for b in balls:
 				var alive = true
 				if typeof(b) == TYPE_DICTIONARY:
-					alive = b.get("alive", true)
+					alive = b.alive
 				elif b is Object and "alive" in b:
 					alive = b.alive
 
@@ -76334,7 +76434,7 @@ class StationaryBlackHoleMutatorMode extends GameMode:
 		for b in balls:
 			var is_alive = true
 			if typeof(b) == TYPE_DICTIONARY:
-				is_alive = b.get("alive", true)
+				is_alive = b.alive
 			elif typeof(b) == TYPE_OBJECT:
 				is_alive = b.get("alive") if b.has_method("get") and b.get("alive") != null else true
 
@@ -76643,7 +76743,7 @@ class ShrapnelMistMode extends GameMode:
 						for b in balls:
 							var alive = true
 							if typeof(b) == TYPE_DICTIONARY:
-								alive = b.get("alive", true)
+								alive = b.alive
 							elif b != null and "alive" in b:
 								alive = b.alive
 							if alive:
@@ -78465,7 +78565,7 @@ class SquadRelayMode extends GameMode:
 				var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else (b.ball_type if "ball_type" in b else "")
 				if t_val == t and b_type != "spectator":
 					var hp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else (b.hp if "hp" in b else 100.0)
-					var alive = b.get("alive", true) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else true)
+					var alive = b.alive if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else true)
 					if hp > 0 and alive:
 						active = b
 					else:
@@ -79553,7 +79653,7 @@ class MagneticShrinkingFieldMode extends GameMode:
 		for b in balls:
 			var b_alive: bool = true
 			if typeof(b) == TYPE_DICTIONARY:
-				b_alive = b.get("alive", true)
+				b_alive = b.alive
 			elif typeof(b) == TYPE_OBJECT and "alive" in b:
 				b_alive = b.get("alive")
 
@@ -81364,7 +81464,7 @@ class StaticFieldMutatorMode extends GameMode:
 					var hr_sq = hr * hr
 
 					for b in balls:
-						var b_alive = b.get("alive", true) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else true)
+						var b_alive = b.alive if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else true)
 						if not b_alive:
 							continue
 
@@ -82852,7 +82952,7 @@ class ExpandingAuraEventMode extends GameMode:
 		for b in balls:
 			var is_dict = typeof(b) == TYPE_DICTIONARY
 
-			var alive = b.get("alive", true) if is_dict else b.get("alive")
+			var alive = b.alive if is_dict else b.get("alive")
 			if alive != null and not alive:
 				continue
 
@@ -83027,3 +83127,4 @@ class InvertControlsMutator extends "res://src/ai/game_modes.gd".GameMode:
 
 GAME_MODES['invert_controls_mutator'] = InvertControlsMutator.new()
 GAME_MODES["bullet_hell_survival"] = BulletHellSurvivalMode.new()
+GAME_MODES["weather_boss"] = WeatherBossMode.new()

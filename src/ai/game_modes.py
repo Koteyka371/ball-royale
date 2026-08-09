@@ -37647,6 +37647,91 @@ class BulletHellSurvivalMode(GameMode):
                 proj.y = arena_h - radius
 
 
+
+class WeatherBossMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Weather Boss"
+        self.description = "A neutral boss spawns during intense weather events. Defeating it drops a random legendary weather manipulation item, but its attacks scale with the weather's intensity."
+        self.boss_spawned = False
+        self.weather_intensity = 0.0
+        self.boss_timer = 0.0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import random
+
+        current_weather = getattr(world.arena, "weather", "clear") if hasattr(world, "arena") else "clear"
+        intense_weathers = ["thunderstorm", "blizzard", "hurricane", "storm"]
+
+        if current_weather in intense_weathers:
+            self.weather_intensity = min(10.0, self.weather_intensity + delta * 0.5)
+            self.boss_timer += delta
+
+            if self.boss_timer >= 5.0 and not self.boss_spawned:
+                self.boss_spawned = True
+
+                boss_id = getattr(world, "next_id", random.randint(100000, 999999))
+                if hasattr(world, "next_id"):
+                    world.next_id += 1
+
+                arena_w = getattr(world.arena, "width", 1000) if hasattr(world, "arena") else 1000
+                arena_h = getattr(world.arena, "height", 1000) if hasattr(world, "arena") else 1000
+
+                class NeutralWeatherBoss:
+                    def __init__(self, bid, intensity):
+                        self.id = bid
+                        self.ball_type = "neutral_boss"
+                        self.name = "Storm Elemental"
+                        self.x = arena_w / 2.0
+                        self.y = arena_h / 2.0
+                        self.vx = 0.0
+                        self.vy = 0.0
+                        self.radius = 40.0
+                        self.hp = 1500.0
+                        self.max_hp = 1500.0
+                        self.damage = 20.0 + (intensity * 5.0)
+                        self.speed = 40.0
+                        self.alive = True
+                        self.team = "neutral"
+                        self.intensity = intensity
+
+                    def take_damage(self, amount):
+                        self.hp -= amount
+
+                boss_obj = NeutralWeatherBoss(boss_id, self.weather_intensity)
+                if hasattr(world, "balls"):
+                    world.balls.append(boss_obj)
+
+                if hasattr(world, "add_event"):
+                    world.add_event("boss_spawn", {"message": "A Storm Elemental has emerged from the extreme weather!"})
+        else:
+            self.weather_intensity = max(0.0, self.weather_intensity - delta * 0.2)
+
+        # Check if boss died
+        if hasattr(world, "balls"):
+            for b in world.balls:
+                if getattr(b, "ball_type", "") == "neutral_boss":
+                    # Update damage scale
+                    if self.weather_intensity > 0:
+                        b.damage = 20.0 + (self.weather_intensity * 5.0)
+                    if b.hp <= 0 and getattr(b, "alive", True):
+                        b.alive = False
+                        if hasattr(world, "boosters"):
+                            drop_kind = random.choice(["legendary_storm_caller", "legendary_blizzard_wand", "legendary_hurricane_staff"])
+
+                            class LegendaryBooster:
+                                def __init__(self, kind, x, y):
+                                    self.kind = kind
+                                    self.x = x
+                                    self.y = y
+                                    self.active = True
+                                    self.radius = 15.0
+
+                            world.boosters.append(LegendaryBooster(drop_kind, getattr(b, "x", 500.0), getattr(b, "y", 500.0)))
+                            if hasattr(world, "add_event"):
+                                world.add_event("boss_defeated", {"message": f"The {getattr(b, 'name', 'Boss')} was defeated! A legendary item dropped!"})
+
 GAME_MODES = {
     'dash_aura_trail': DashAuraTrailMode(),
     "expanding_aura_event": ExpandingAuraEventMode(),
@@ -52676,3 +52761,5 @@ class InvertControlsMutator(GameMode):
 
 GAME_MODES['invert_controls_mutator'] = InvertControlsMutator()
 GAME_MODES["bullet_hell_survival"] = BulletHellSurvivalMode()
+
+GAME_MODES["weather_boss"] = WeatherBossMode()
