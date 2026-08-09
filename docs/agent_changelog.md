@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1937] Guild Daily Tournaments — *2026-08-09 16:57:32 UTC*
+
+Automated daily mini-tournaments where randomly selected guilds face off in brackets, earning extra GvG points and exclusive resources.
+
+---
+
 ## [idea-1934] Shrinking Safe Zones event — *2026-08-09 16:42:06 UTC*
 
 Periodically, micro safe zones spawn across the map. If a player is not inside a safe zone when the timer hits zero, they suffer a powerful blast of damage. The safe zones shrink continuously until disappearing entirely.
