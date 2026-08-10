@@ -5886,6 +5886,12 @@ class Action:
                         target_b = closest_target_data["target"]
                         target_b.x -= (dx / dist) * (pull_dist * 0.2)
                         target_b.y -= (dy / dist) * (pull_dist * 0.2)
+
+                        target_b.hp = getattr(target_b, "hp", 100.0) - 5.0
+                        target_b.speed_debuff_timer = max(getattr(target_b, "speed_debuff_timer", 0.0), 1.0)
+                        target_b.speed_debuff_multiplier = min(getattr(target_b, "speed_debuff_multiplier", 1.0), 0.5)
+                        if hasattr(self.world, "events"):
+                            self.world.events.append({"type": "visual_effect", "data": {"type": "lightning", "x": self.ball.x, "y": self.ball.y, "tx": target_b.x, "ty": target_b.y}})
                     else:
                         is_hazard = (closest_target_data["type"] == "hazard")
                         hazard_kind = getattr(closest_target_data["target"], "kind", "") if is_hazard else ""
@@ -22523,6 +22529,12 @@ class Action:
                             # Enemy ball - pull them
                             closest_target.x -= (dx / dist) * (pull_dist * 0.2)
                             closest_target.y -= (dy / dist) * (pull_dist * 0.2)
+
+                            closest_target.hp = getattr(closest_target, "hp", 100.0) - 5.0
+                            closest_target.speed_debuff_timer = max(getattr(closest_target, "speed_debuff_timer", 0.0), 1.0)
+                            closest_target.speed_debuff_multiplier = min(getattr(closest_target, "speed_debuff_multiplier", 1.0), 0.5)
+                            if hasattr(self.world, "events"):
+                                self.world.events.append({"type": "visual_effect", "data": {"type": "lightning", "x": self.ball.x, "y": self.ball.y, "tx": closest_target.x, "ty": closest_target.y}})
                         elif closest_target_type == "hazard":
                             if getattr(closest_target, "kind", "") == "slingshot_node":
                                 slingshot_boost = 3000.0

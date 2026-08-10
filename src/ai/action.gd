@@ -13418,12 +13418,43 @@ func execute(strategy: String, delta: float):
 							by = float(b.y)
 						bx -= ((closest_target.x - self.ball.x) / dist) * (pull_dist * 0.2)
 						by -= ((closest_target.y - self.ball.y) / dist) * (pull_dist * 0.2)
+
+						var current_hp = 100.0
+						var current_timer = 0.0
+						var current_mult = 1.0
+
 						if typeof(b) == TYPE_DICTIONARY:
 							b.x = bx
 							b.y = by
+							if b.has("hp"): current_hp = float(b.hp)
+							b.hp = current_hp - 5.0
+							if b.has("speed_debuff_timer"): current_timer = float(b.speed_debuff_timer)
+							b.speed_debuff_timer = maxf(current_timer, 1.0)
+							if b.has("speed_debuff_multiplier"): current_mult = float(b.speed_debuff_multiplier)
+							b.speed_debuff_multiplier = minf(current_mult, 0.5)
 						else:
 							b.x = bx
 							b.y = by
+							if "hp" in b: current_hp = float(b.hp)
+							elif b.has_method("has_meta") and b.has_meta("hp"): current_hp = float(b.get_meta("hp"))
+
+							if "speed_debuff_timer" in b: current_timer = float(b.speed_debuff_timer)
+							elif b.has_method("has_meta") and b.has_meta("speed_debuff_timer"): current_timer = float(b.get_meta("speed_debuff_timer"))
+
+							if "speed_debuff_multiplier" in b: current_mult = float(b.speed_debuff_multiplier)
+							elif b.has_method("has_meta") and b.has_meta("speed_debuff_multiplier"): current_mult = float(b.get_meta("speed_debuff_multiplier"))
+
+							if "hp" in b: b.hp = current_hp - 5.0
+							elif b.has_method("set_meta"): b.set_meta("hp", current_hp - 5.0)
+
+							if "speed_debuff_timer" in b: b.speed_debuff_timer = maxf(current_timer, 1.0)
+							elif b.has_method("set_meta"): b.set_meta("speed_debuff_timer", maxf(current_timer, 1.0))
+
+							if "speed_debuff_multiplier" in b: b.speed_debuff_multiplier = minf(current_mult, 0.5)
+							elif b.has_method("set_meta"): b.set_meta("speed_debuff_multiplier", minf(current_mult, 0.5))
+
+						if world != null and "events" in world and world.events != null:
+							world.events.append({"type": "visual_effect", "data": {"type": "lightning", "x": self.ball.x, "y": self.ball.y, "tx": bx, "ty": by}})
 					else:
 						self.ball.x += ((closest_target.x - self.ball.x) / dist) * pull_dist
 						self.ball.y += ((closest_target.y - self.ball.y) / dist) * pull_dist
@@ -43274,6 +43305,47 @@ func _use_skill():
                         if target_team != my_team:
                             closest_target.x -= (dx / dist) * (pull_dist * 0.2)
                             closest_target.y -= (dy / dist) * (pull_dist * 0.2)
+
+                            var current_hp = 100.0
+                            var current_timer = 0.0
+                            var current_mult = 1.0
+
+                            if typeof(closest_target) == TYPE_DICTIONARY:
+                                if closest_target.has("hp"): current_hp = float(closest_target.hp)
+                                closest_target.hp = current_hp - 5.0
+                                if closest_target.has("speed_debuff_timer"): current_timer = float(closest_target.speed_debuff_timer)
+                                closest_target.speed_debuff_timer = maxf(current_timer, 1.0)
+                                if closest_target.has("speed_debuff_multiplier"): current_mult = float(closest_target.speed_debuff_multiplier)
+                                closest_target.speed_debuff_multiplier = minf(current_mult, 0.5)
+                            else:
+                                if "hp" in closest_target: current_hp = float(closest_target.hp)
+                                elif closest_target.has_method("has_meta") and closest_target.has_meta("hp"): current_hp = float(closest_target.get_meta("hp"))
+
+                                if "speed_debuff_timer" in closest_target: current_timer = float(closest_target.speed_debuff_timer)
+                                elif closest_target.has_method("has_meta") and closest_target.has_meta("speed_debuff_timer"): current_timer = float(closest_target.get_meta("speed_debuff_timer"))
+
+                                if "speed_debuff_multiplier" in closest_target: current_mult = float(closest_target.speed_debuff_multiplier)
+                                elif closest_target.has_method("has_meta") and closest_target.has_meta("speed_debuff_multiplier"): current_mult = float(closest_target.get_meta("speed_debuff_multiplier"))
+
+                                if "hp" in closest_target: closest_target.hp = current_hp - 5.0
+                                elif closest_target.has_method("set_meta"): closest_target.set_meta("hp", current_hp - 5.0)
+
+                                if "speed_debuff_timer" in closest_target: closest_target.speed_debuff_timer = maxf(current_timer, 1.0)
+                                elif closest_target.has_method("set_meta"): closest_target.set_meta("speed_debuff_timer", maxf(current_timer, 1.0))
+
+                                if "speed_debuff_multiplier" in closest_target: closest_target.speed_debuff_multiplier = minf(current_mult, 0.5)
+                                elif closest_target.has_method("set_meta"): closest_target.set_meta("speed_debuff_multiplier", minf(current_mult, 0.5))
+
+                            if "events" in self.world and self.world.events != null:
+                                var t_x = 0.0
+                                var t_y = 0.0
+                                if typeof(closest_target) == TYPE_DICTIONARY:
+                                    t_x = closest_target.x
+                                    t_y = closest_target.y
+                                else:
+                                    t_x = closest_target.x
+                                    t_y = closest_target.y
+                                self.world.events.append({"type": "visual_effect", "data": {"type": "lightning", "x": self.ball.x, "y": self.ball.y, "tx": t_x, "ty": t_y}})
                         else:
                             self.ball.x += (dx / dist) * pull_dist
                             self.ball.y += (dy / dist) * pull_dist
