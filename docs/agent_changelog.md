@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1978] Electric Grapple — *2026-08-10 13:08:34 UTC*
+
+Grappling an enemy zaps them, dealing minor damage and slowing them down for a short duration while they are pulled.
+
+---
+
 ## [idea-1896] Low Gravity Zone — *2026-08-10 11:43:22 UTC*
 
 An area where jumps go much higher and falling is slow.
