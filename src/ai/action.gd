@@ -2534,6 +2534,69 @@ func _attempt_damage_internal(attacker, target) -> void:
 
 
 		var sc_stun = false
+		var lc_charges = 0
+		if typeof(attacker) == TYPE_DICTIONARY:
+			if attacker.has("lightning_conductor_charges"): lc_charges = attacker["lightning_conductor_charges"]
+		else:
+			if "lightning_conductor_charges" in attacker: lc_charges = attacker.lightning_conductor_charges
+			elif attacker.has_method("has_meta") and attacker.has_meta("lightning_conductor_charges"): lc_charges = attacker.get_meta("lightning_conductor_charges")
+
+		if lc_charges > 0:
+			if typeof(attacker) == TYPE_DICTIONARY: attacker["lightning_conductor_charges"] = lc_charges - 1
+			elif "lightning_conductor_charges" in attacker: attacker.lightning_conductor_charges = lc_charges - 1
+			elif attacker.has_method("set_meta"): attacker.set_meta("lightning_conductor_charges", lc_charges - 1)
+
+			var bounces = 2
+			var chain_damage = original_damage * 0.5
+			var bounced_targets = []
+			if typeof(target) == TYPE_DICTIONARY and target.has("id"): bounced_targets.append(target["id"])
+			elif "id" in target: bounced_targets.append(target.id)
+			var current_target = target
+			while bounces > 0:
+				bounces -= 1
+				var next_target = null
+				var min_dist = 999999.0
+				if self.world != null and "balls" in self.world:
+					for b in self.world.balls:
+						var b_alive = true
+						if typeof(b) == TYPE_DICTIONARY and b.has("alive"): b_alive = b["alive"]
+						elif "alive" in b: b_alive = b.alive
+
+						var b_id = null
+						if typeof(b) == TYPE_DICTIONARY and b.has("id"): b_id = b["id"]
+						elif "id" in b: b_id = b.id
+
+						if b != attacker and b != current_target and b_alive and not (b_id in bounced_targets):
+							var dist = sqrt(pow(current_target.x - b.x, 2) + pow(current_target.y - b.y, 2))
+							if dist < 150.0 and dist < min_dist:
+								min_dist = dist
+								next_target = b
+
+				if next_target != null:
+					self._spawn_skill_particles("lightning")
+					if self.world != null:
+						if "events" in self.world and typeof(self.world.events) == TYPE_ARRAY:
+							self.world.events.append({"type": "visual_effect", "data": {"type": "lightning", "x": current_target.x, "y": current_target.y, "tx": next_target.x, "ty": next_target.y}})
+						elif self.world.has_method("add_event"):
+							self.world.add_event("visual_effect", {"type": "lightning", "x": current_target.x, "y": current_target.y, "tx": next_target.x, "ty": next_target.y})
+
+					if typeof(next_target) == TYPE_DICTIONARY:
+						if next_target.has("hp"):
+							next_target["hp"] -= chain_damage
+							if next_target["hp"] <= 0: next_target["alive"] = false
+					else:
+						if next_target.has_method("take_damage"):
+							next_target.take_damage(chain_damage)
+						elif "hp" in next_target:
+							next_target.hp -= chain_damage
+							if next_target.hp <= 0: next_target.alive = false
+
+					if typeof(next_target) == TYPE_DICTIONARY and next_target.has("id"): bounced_targets.append(next_target["id"])
+					elif "id" in next_target: bounced_targets.append(next_target.id)
+					current_target = next_target
+				else:
+					break
+
 		if typeof(attacker) == TYPE_DICTIONARY:
 			if attacker.has("supercharge_stun_ready") and attacker["supercharge_stun_ready"]:
 				sc_stun = true
@@ -24252,7 +24315,18 @@ func execute(strategy: String, delta: float):
                                 if "metal" in b_type or "armor" in b_type or "metal" in traits or "armor" in traits:
                                     is_metal = true
 
-                                if b_type in ["drone", "juggernaut", "tank", "neural"] or is_metal:
+                                if "lightning_conductor" in traits:
+                                    if self.ball.has_method("set_meta"):
+                                        var sb = self.ball.get_meta("speed_buff_timer") if self.ball.has_meta("speed_buff_timer") else 0.0
+                                        self.ball.set_meta("speed_buff_timer", max(sb, 3.0))
+                                        self.ball.set_meta("lightning_conductor_charges", 1)
+                                    elif "speed_buff_timer" in self.ball:
+                                        self.ball.speed_buff_timer = max(self.ball.get("speed_buff_timer", 0.0), 3.0)
+                                        self.ball.lightning_conductor_charges = 1
+                                    else:
+                                        self.ball["speed_buff_timer"] = max(self.ball.get("speed_buff_timer", 0.0), 3.0)
+                                        self.ball["lightning_conductor_charges"] = 1
+                                elif b_type in ["drone", "juggernaut", "tank", "neural"] or is_metal:
                                     if self.ball.has_method("set_meta"):
                                         self.ball.set_meta("supercharge_timer", 5.0)
                                         var sb = self.ball.get_meta("speed_buff_timer") if self.ball.has_meta("speed_buff_timer") else 0.0
