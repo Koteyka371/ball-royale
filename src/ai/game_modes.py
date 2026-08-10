@@ -38,6 +38,10 @@ class GameMode:
         self.description = "Base game mode"
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "shield", 0.0) <= 0.0 and hasattr(b, "base_speed"):
+                b.speed = b.base_speed
+
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
             for hazard in world.arena.hazards[:]:
                 if getattr(hazard, "kind", "") == "momentum_mirror":
@@ -6685,7 +6689,19 @@ class DualPayloadMode(GameMode):
                         max_hp_val = getattr(b, "max_hp", 100.0)
                         current_hp = getattr(b, "hp", 100.0)
                         if current_hp >= max_hp_val:
-                            b.shield = getattr(b, "shield", 0.0) + 15.0 * delta
+                            new_shield = getattr(b, "shield", 0.0) + 15.0 * delta
+                            max_shield = 150.0  # Cap the shield at 150
+                            if new_shield > max_shield:
+                                b.shield = max_shield
+                            else:
+                                b.shield = new_shield
+
+                            # Apply slow if we gained a shield
+                            if b.shield > 0:
+                                b.base_speed = getattr(b, 'base_speed', getattr(b, 'speed', 100.0))
+                                # Reduce speed by a percentage based on shield amount, e.g. up to 50% slow at max shield
+                                slow_factor = 1.0 - (0.5 * (b.shield / max_shield))
+                                b.speed = b.base_speed * slow_factor
                         else:
                             b.hp = min(max_hp_val, current_hp + 15.0 * delta)
 
@@ -6824,7 +6840,19 @@ class DualPayloadMode(GameMode):
                         max_hp_val = getattr(b, "max_hp", 100.0)
                         current_hp = getattr(b, "hp", 100.0)
                         if current_hp >= max_hp_val:
-                            b.shield = getattr(b, "shield", 0.0) + 15.0 * delta
+                            new_shield = getattr(b, "shield", 0.0) + 15.0 * delta
+                            max_shield = 150.0  # Cap the shield at 150
+                            if new_shield > max_shield:
+                                b.shield = max_shield
+                            else:
+                                b.shield = new_shield
+
+                            # Apply slow if we gained a shield
+                            if b.shield > 0:
+                                b.base_speed = getattr(b, 'base_speed', getattr(b, 'speed', 100.0))
+                                # Reduce speed by a percentage based on shield amount, e.g. up to 50% slow at max shield
+                                slow_factor = 1.0 - (0.5 * (b.shield / max_shield))
+                                b.speed = b.base_speed * slow_factor
                         else:
                             b.hp = min(max_hp_val, current_hp + 15.0 * delta)
 
@@ -7485,7 +7513,19 @@ class EscortMode(GameMode):
                         max_hp_val = getattr(b, "max_hp", 100.0)
                         current_hp = getattr(b, "hp", 100.0)
                         if current_hp >= max_hp_val:
-                            b.shield = getattr(b, "shield", 0.0) + 15.0 * delta
+                            new_shield = getattr(b, "shield", 0.0) + 15.0 * delta
+                            max_shield = 150.0  # Cap the shield at 150
+                            if new_shield > max_shield:
+                                b.shield = max_shield
+                            else:
+                                b.shield = new_shield
+
+                            # Apply slow if we gained a shield
+                            if b.shield > 0:
+                                b.base_speed = getattr(b, 'base_speed', getattr(b, 'speed', 100.0))
+                                # Reduce speed by a percentage based on shield amount, e.g. up to 50% slow at max shield
+                                slow_factor = 1.0 - (0.5 * (b.shield / max_shield))
+                                b.speed = b.base_speed * slow_factor
                         else:
                             b.hp = min(max_hp_val, current_hp + 15.0 * delta)
 
@@ -23977,7 +24017,19 @@ class ReverseTugOfWarMode(GameMode):
                         max_hp_val = getattr(b, "max_hp", 100.0)
                         current_hp = getattr(b, "hp", 100.0)
                         if current_hp >= max_hp_val:
-                            b.shield = getattr(b, "shield", 0.0) + 15.0 * delta
+                            new_shield = getattr(b, "shield", 0.0) + 15.0 * delta
+                            max_shield = 150.0  # Cap the shield at 150
+                            if new_shield > max_shield:
+                                b.shield = max_shield
+                            else:
+                                b.shield = new_shield
+
+                            # Apply slow if we gained a shield
+                            if b.shield > 0:
+                                b.base_speed = getattr(b, 'base_speed', getattr(b, 'speed', 100.0))
+                                # Reduce speed by a percentage based on shield amount, e.g. up to 50% slow at max shield
+                                slow_factor = 1.0 - (0.5 * (b.shield / max_shield))
+                                b.speed = b.base_speed * slow_factor
                         else:
                             b.hp = min(max_hp_val, current_hp + 15.0 * delta)
 
@@ -24352,7 +24404,19 @@ class TickingPayloadMode(GameMode):
                         max_hp_val = getattr(b, "max_hp", 100.0)
                         current_hp = getattr(b, "hp", 100.0)
                         if current_hp >= max_hp_val:
-                            b.shield = getattr(b, "shield", 0.0) + 15.0 * delta
+                            new_shield = getattr(b, "shield", 0.0) + 15.0 * delta
+                            max_shield = 150.0  # Cap the shield at 150
+                            if new_shield > max_shield:
+                                b.shield = max_shield
+                            else:
+                                b.shield = new_shield
+
+                            # Apply slow if we gained a shield
+                            if b.shield > 0:
+                                b.base_speed = getattr(b, 'base_speed', getattr(b, 'speed', 100.0))
+                                # Reduce speed by a percentage based on shield amount, e.g. up to 50% slow at max shield
+                                slow_factor = 1.0 - (0.5 * (b.shield / max_shield))
+                                b.speed = b.base_speed * slow_factor
                         else:
                             b.hp = min(max_hp_val, current_hp + 15.0 * delta)
 

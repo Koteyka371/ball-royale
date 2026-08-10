@@ -137,6 +137,18 @@ class GameMode:
 		pass
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var shield_val = 0.0
+			if typeof(b) == TYPE_DICTIONARY:
+				shield_val = b.get("shield", 0.0)
+				if shield_val <= 0.0 and b.has("base_speed"):
+					b["speed"] = b["base_speed"]
+			else:
+				shield_val = b.get("shield") if b.get("shield") != null else 0.0
+				var base_speed = b.get("base_speed")
+				if shield_val <= 0.0 and base_speed != null:
+					b.set("speed", base_speed)
+
 		if world != null:
 			var hazards = []
 			if typeof(world) == TYPE_DICTIONARY and "arena" in world and typeof(world.arena) == TYPE_DICTIONARY and "hazards" in world.arena:
@@ -12051,10 +12063,31 @@ class EscortMode extends GameMode:
 							var new_hp = bhp + 15.0 * delta
 							if bhp >= bmax_hp:
 								if typeof(b) == TYPE_DICTIONARY:
-									b["shield"] = b.get("shield", 0.0) + 15.0 * delta
+									var new_shield = b.get("shield", 0.0) + 15.0 * delta
+									var max_shield = 150.0
+									if new_shield > max_shield:
+										b["shield"] = max_shield
+									else:
+										b["shield"] = new_shield
+									if b.get("shield", 0.0) > 0:
+										if not b.has("base_speed"):
+											b["base_speed"] = b.get("speed", 100.0)
+										var slow_factor = 1.0 - (0.5 * (b["shield"] / max_shield))
+										b["speed"] = b["base_speed"] * slow_factor
 								else:
 									var curr_shield = b.get("shield") if b.get("shield") != null else 0.0
-									b.set("shield", curr_shield + 15.0 * delta)
+									var new_shield = curr_shield + 15.0 * delta
+									var max_shield = 150.0
+									var final_shield = max_shield if new_shield > max_shield else new_shield
+									b.set("shield", final_shield)
+									if final_shield > 0:
+										var base_speed = b.get("base_speed")
+										if base_speed == null:
+											base_speed = b.get("speed")
+											if base_speed == null: base_speed = 100.0
+											b.set("base_speed", base_speed)
+										var slow_factor = 1.0 - (0.5 * (final_shield / max_shield))
+										b.set("speed", base_speed * slow_factor)
 							else:
 								new_hp = min(bmax_hp, new_hp)
 								if typeof(b) == TYPE_DICTIONARY:
@@ -38351,13 +38384,34 @@ class ReverseTugOfWarMode extends GameMode:
 							var max_hp = b.get("max_hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.max_hp
 							if typeof(b) == TYPE_DICTIONARY:
 								if hp >= max_hp:
-									b["shield"] = b.get("shield", 0.0) + 15.0 * delta
+									var new_shield = b.get("shield", 0.0) + 15.0 * delta
+									var max_shield = 150.0
+									if new_shield > max_shield:
+										b["shield"] = max_shield
+									else:
+										b["shield"] = new_shield
+									if b.get("shield", 0.0) > 0:
+										if not b.has("base_speed"):
+											b["base_speed"] = b.get("speed", 100.0)
+										var slow_factor = 1.0 - (0.5 * (b["shield"] / max_shield))
+										b["speed"] = b["base_speed"] * slow_factor
 								else:
 									b["hp"] = min(max_hp, hp + 15.0 * delta)
 							else:
 								if hp >= max_hp:
 									var curr_shield = b.get("shield") if b.get("shield") != null else 0.0
-									b.shield = curr_shield + 15.0 * delta
+									var new_shield = curr_shield + 15.0 * delta
+									var max_shield = 150.0
+									var final_shield = max_shield if new_shield > max_shield else new_shield
+									b.shield = final_shield
+									if final_shield > 0:
+										var base_speed = b.get("base_speed")
+										if base_speed == null:
+											base_speed = b.get("speed")
+											if base_speed == null: base_speed = 100.0
+											b.set("base_speed", base_speed)
+										var slow_factor = 1.0 - (0.5 * (final_shield / max_shield))
+										b.set("speed", base_speed * slow_factor)
 								else:
 									b.hp = min(max_hp, hp + 15.0 * delta)
 
@@ -39033,13 +39087,34 @@ class TickingPayloadMode extends GameMode:
 						var max_hp = b.get("max_hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.get("max_hp")
 						if typeof(b) == TYPE_DICTIONARY:
 							if hp >= max_hp:
-								b["shield"] = b.get("shield", 0.0) + 15.0 * delta
+								var new_shield = b.get("shield", 0.0) + 15.0 * delta
+								var max_shield = 150.0
+								if new_shield > max_shield:
+									b["shield"] = max_shield
+								else:
+									b["shield"] = new_shield
+								if b.get("shield", 0.0) > 0:
+									if not b.has("base_speed"):
+										b["base_speed"] = b.get("speed", 100.0)
+									var slow_factor = 1.0 - (0.5 * (b["shield"] / max_shield))
+									b["speed"] = b["base_speed"] * slow_factor
 							else:
 								b["hp"] = min(max_hp, hp + 15.0 * delta)
 						else:
 							if hp >= max_hp:
 								var curr_shield = b.get("shield") if b.get("shield") != null else 0.0
-								b.set("shield", curr_shield + 15.0 * delta)
+								var new_shield = curr_shield + 15.0 * delta
+								var max_shield = 150.0
+								var final_shield = max_shield if new_shield > max_shield else new_shield
+								b.set("shield", final_shield)
+								if final_shield > 0:
+									var base_speed = b.get("base_speed")
+									if base_speed == null:
+										base_speed = b.get("speed")
+										if base_speed == null: base_speed = 100.0
+										b.set("base_speed", base_speed)
+									var slow_factor = 1.0 - (0.5 * (final_shield / max_shield))
+									b.set("speed", base_speed * slow_factor)
 							else:
 								b.set("hp", min(max_hp, hp + 15.0 * delta))
 
@@ -78184,6 +78259,18 @@ class PulsatingCoreMode extends GameMode:
 		super.tick(world, balls, delta)
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var shield_val = 0.0
+			if typeof(b) == TYPE_DICTIONARY:
+				shield_val = b.get("shield", 0.0)
+				if shield_val <= 0.0 and b.has("base_speed"):
+					b["speed"] = b["base_speed"]
+			else:
+				shield_val = b.get("shield") if b.get("shield") != null else 0.0
+				var base_speed = b.get("base_speed")
+				if shield_val <= 0.0 and base_speed != null:
+					b.set("speed", base_speed)
+
 		if world != null:
 			var hazards = []
 			if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null and "hazards" in world.arena:
