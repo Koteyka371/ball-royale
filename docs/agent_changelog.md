@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1966] Time dilation zones — *2026-08-10 04:18:45 UTC*
+
+Areas in the arena where time flows slower. Projectiles and balls moving through these zones lose half their speed and delta multipliers are halved.
+
+---
+
 ## [idea-1956] Shrinking Grid Arena — *2026-08-10 01:56:04 UTC*
 
 Similar to falling tiles, but the tiles fall from the outside in, slowly making the arena smaller in a grid-like fashion instead of a circular storm.
