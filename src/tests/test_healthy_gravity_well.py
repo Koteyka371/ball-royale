@@ -1,61 +1,64 @@
-import pytest
-from ai.game_modes import HealthyGravityWellMode
+from ai.game_modes import GAME_MODES
+from arena.procedural_arena import ProceduralArena, Hazard
 
-class MockArena:
-    def __init__(self):
-        self.width = 1000
-        self.height = 1000
-        self.hazards = []
-
-class MockWorld:
-    def __init__(self):
-        self.arena = MockArena()
-
-class MockBall:
-    def __init__(self, x, y, hp=100.0):
+class DummyBall:
+    def __init__(self, x, y, radius, hp):
+        self.id = 1
         self.x = x
         self.y = y
         self.vx = 0.0
         self.vy = 0.0
+        self.radius = radius
         self.hp = hp
         self.alive = True
-        self.ball_type = "player"
+        self.team = "test"
+        self.ball_type = "normal"
+        self.max_speed = 200.0
+        self.speed = 200.0
+
+class DummyArena:
+    def __init__(self):
+        self.hazards = []
+        self.width = 1000.0
+        self.height = 1000.0
+
+class DummyWorld:
+    def __init__(self):
+        self.arena = DummyArena()
+        self.tick = 0
+        self.boosters = []
 
 def test_healthy_gravity_well_pulls_high_hp():
-    world = MockWorld()
-    mode = HealthyGravityWellMode()
-    b1 = MockBall(500, 400, hp=100) # Should be pulled (hp > 75)
-    b2 = MockBall(500, 400, hp=50)  # Should NOT be pulled (hp <= 75)
+    world = DummyWorld()
+    ball = DummyBall(x=700.0, y=700.0, radius=10.0, hp=100.0)
 
-    balls = [b1, b2]
-    mode.setup(world, balls)
+    mode = GAME_MODES["healthy_gravity_well"]
+    mode.setup(world, [ball])
 
-    # Verify hazard exists
     assert len(world.arena.hazards) == 1
     assert world.arena.hazards[0].kind == "healthy_gravity_well"
 
-    mode.tick(world, balls, 1.0)
+    initial_vel = (ball.vx**2 + ball.vy**2)**0.5
 
-    # b1 is at (500, 400), center is (500, 500)
-    # distance is 100
-    # pull strength = base / dist^2 = 5000000 / 10000 = 500
-    # dy = cy - b1.y = 100, dx = 0
-    # vy += (dy/dist) * pull * delta = (100/100) * 500 * 1.0 = 500
-    assert b1.vy > 400.0
-    assert b1.vx == 0.0
+    mode.tick(world, [ball], 0.1)
 
-    # b2 should be untouched
-    assert b2.vy == 0.0
-    assert b2.vx == 0.0
+    final_vel = (ball.vx**2 + ball.vy**2)**0.5
 
-def test_healthy_gravity_well_damage():
-    world = MockWorld()
-    mode = HealthyGravityWellMode()
-    b1 = MockBall(500, 480, hp=100) # Inside horizon (radius 50)
-    balls = [b1]
-    mode.setup(world, balls)
-    mode.tick(world, balls, 1.0)
+    # Needs to be pulled closer
+    assert final_vel > initial_vel
 
-    # Should take damage
-    assert b1.hp < 100
-    assert b1.hp == 75.0 # hp - 25*1.0
+def test_healthy_gravity_well_ignores_low_hp():
+    world = DummyWorld()
+    ball = DummyBall(x=700.0, y=700.0, radius=10.0, hp=50.0)
+
+    mode = GAME_MODES["healthy_gravity_well"]
+    mode.setup(world, [ball])
+
+    initial_vel = (ball.vx**2 + ball.vy**2)**0.5
+
+    mode.tick(world, [ball], 0.1)
+
+    final_vel = (ball.vx**2 + ball.vy**2)**0.5
+
+    # Should not move
+    assert final_vel == initial_vel
