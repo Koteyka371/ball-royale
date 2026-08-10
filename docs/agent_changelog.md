@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1879] Gravity well that specifically targets high health players — *2026-08-10 20:12:53 UTC*
+
+A gravity well that pulls players with hp > 75 towards the center.
+
+---
+
 ## [idea-1922] Pinball Bumpers Feature — *2026-08-10 15:31:46 UTC*
 
 Add stationary bumper hazards to the arena that massively knock back any ball that touches them, similar to pinball bumpers. Can be combined with the Pinball mutator for maximum chaos.
