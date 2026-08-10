@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1922] Pinball Bumpers Feature — *2026-08-10 15:31:46 UTC*
+
+Add stationary bumper hazards to the arena that massively knock back any ball that touches them, similar to pinball bumpers. Can be combined with the Pinball mutator for maximum chaos.
+
+---
+
 ## [idea-1977] Bouncy Grapple Mod — *2026-08-10 13:41:52 UTC*
 
 Grappling to a surface now acts like a bouncy pad, propelling the player in the opposite direction after they hit the wall.
