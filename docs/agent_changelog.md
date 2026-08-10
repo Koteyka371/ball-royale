@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1951] Gladiator Chains Event — *2026-08-10 09:05:02 UTC*
+
+Random players are chained together with an unbreakable tether. The tether limits distance but also deals damage to any other ball that passes through it. The chained players must coordinate to move, and they share damage taken but gain a unified health pool until the chain breaks.
+
+---
+
 ## [idea-1959] Quantum Tunnels Game Mode — *2026-08-10 08:50:42 UTC*
 
 Portals appear across the map. Balls entering a portal exit immediately from a random other portal, maintaining their velocity. The portals change locations every 20 seconds.
