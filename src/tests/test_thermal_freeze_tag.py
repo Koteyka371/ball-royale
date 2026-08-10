@@ -63,7 +63,10 @@ def test_frost_shattering():
     mode = ThermalFreezeTagMode()
     b = MockBall(x=500, y=500, is_frozen=True)
     b._frost_last_hp = 100.0
-    balls = [b]
+
+    b2 = MockBall(x=510, y=510, is_frozen=False)
+    b3 = MockBall(x=900, y=900, is_frozen=False)
+    balls = [b, b2, b3]
 
     class MockHazard:
         def __init__(self, x, y, radius, kind):
@@ -82,6 +85,9 @@ def test_frost_shattering():
     assert not b.alive
     assert b.hp == 0.0
     assert b.id in world.dead_balls
+
+    assert b2.is_frozen
+    assert not b3.is_frozen
 
     event_found = False
     for event_name, event_data in world.events:

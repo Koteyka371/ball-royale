@@ -62462,6 +62462,37 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 											world.add_event("ball_died", {"id": b_id, "reason": "shattered", "killer_id": -1})
 									elif typeof(world) == TYPE_DICTIONARY and "dead_balls" in world:
 										world.dead_balls.append(b_id)
+
+								# ICE SHRAPNEL EXPLOSION
+								for other_b in balls:
+									if other_b == b: continue
+									var other_alive = false
+									if "alive" in other_b: other_alive = other_b.alive
+									elif other_b.has_method("has_meta") and other_b.has_meta("alive"): other_alive = other_b.get_meta("alive")
+									if not other_alive: continue
+
+									var other_type = ""
+									if "ball_type" in other_b: other_type = other_b.ball_type
+									elif other_b.has_method("has_meta") and other_b.has_meta("ball_type"): other_type = other_b.get_meta("ball_type")
+									if other_type == "spectator": continue
+
+									var ob_x = 0.0
+									var ob_y = 0.0
+									if "x" in other_b: ob_x = other_b.x
+									elif other_b.has_method("has_meta") and other_b.has_meta("x"): ob_x = other_b.get_meta("x")
+									if "y" in other_b: ob_y = other_b.y
+									elif other_b.has_method("has_meta") and other_b.has_meta("y"): ob_y = other_b.get_meta("y")
+
+									var b_x = 0.0
+									var b_y = 0.0
+									if "x" in b: b_x = b.x
+									elif b.has_method("has_meta") and b.has_meta("x"): b_x = b.get_meta("x")
+									if "y" in b: b_y = b.y
+									elif b.has_method("has_meta") and b.has_meta("y"): b_y = b.get_meta("y")
+
+									var dist_sq = (ob_x - b_x) * (ob_x - b_x) + (ob_y - b_y) * (ob_y - b_y)
+									if dist_sq < 150.0 * 150.0:
+										_freeze_ball(other_b)
 		for h in to_remove:
 			if h in arena.hazards:
 				arena.hazards.erase(h)
