@@ -41396,6 +41396,8 @@ class ThermalFreezeTagMode(FreezeTagMode):
                         self.active = True
                 h = FallbackHazard(id=len(world.arena.hazards) + random.randint(10000, 99999), x=random.uniform(100, arena_w-100), y=random.uniform(100, arena_h-100), radius=150.0, kind="heat_zone" if random.random() > 0.5 else "frost_zone", damage=0.0)
                 world.arena.hazards.append(h)
+        for b in balls:
+            b._in_heat_zone = False
         to_remove = []
         for h in world.arena.hazards:
             if getattr(h, "kind", "") in ["heat_zone", "frost_zone"]:
@@ -41412,11 +41414,13 @@ class ThermalFreezeTagMode(FreezeTagMode):
                     dist = math.hypot(b_x - h_x, b_y - h_y)
                     if dist < h_r + getattr(b, "radius", 10.0):
                         is_frozen = getattr(b, "is_frozen", False)
-                        if getattr(h, "kind", "") == "heat_zone" and is_frozen:
-                            b.thaw_progress = getattr(b, "thaw_progress", 0.0) + delta
-                            if b.thaw_progress >= 3.0:
-                                self._unfreeze_ball(b)
-                                b.thaw_progress = 0.0
+                        if getattr(h, "kind", "") == "heat_zone":
+                            b._in_heat_zone = True
+                            if is_frozen:
+                                b.thaw_progress = getattr(b, "thaw_progress", 0.0) + delta
+                                if b.thaw_progress >= 3.0:
+                                    self._unfreeze_ball(b)
+                                    b.thaw_progress = 0.0
                         if getattr(h, "kind", "") == "frost_zone" and is_frozen:
                             current_hp = getattr(b, "hp", 100.0)
                             last_hp = getattr(b, "_frost_last_hp", current_hp)
@@ -41445,6 +41449,20 @@ class ThermalFreezeTagMode(FreezeTagMode):
         for b in balls:
             if getattr(b, "alive", False):
                 b._frost_last_hp = getattr(b, "hp", 100.0)
+                if getattr(b, "ball_type", "") != "spectator" and not getattr(b, "is_frozen", False):
+                    if getattr(b, "_in_heat_zone", False):
+                        b.heat_zone_exposure = getattr(b, "heat_zone_exposure", 0.0) + delta
+                        if b.heat_zone_exposure > 2.0:
+                            b.hp = getattr(b, "hp", 100.0) - (20.0 * delta)
+                            if b.hp <= 0:
+                                b.hp = 0
+                                b.alive = False
+                                if hasattr(world, 'dead_balls') and hasattr(b, 'id'):
+                                    world.dead_balls.append(b.id)
+                                if hasattr(world, 'add_event'):
+                                    world.add_event('ball_died', {'id': b.id, 'reason': 'burned', 'killer_id': -1})
+                    else:
+                        b.heat_zone_exposure = max(0.0, getattr(b, "heat_zone_exposure", 0.0) - delta)
 
 GAME_MODES['freeze_tag'] = FreezeTagMode()
 GAME_MODES['thermal_freeze_tag'] = ThermalFreezeTagMode()

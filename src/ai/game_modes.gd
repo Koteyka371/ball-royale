@@ -62372,6 +62372,12 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 			h.damage = 0.0
 			h.duration = 15.0
 			arena.hazards.append(h)
+		for b in balls:
+			if "alive" in b or (b.has_method("has_meta") and b.has_meta("alive")):
+				if typeof(b) == TYPE_DICTIONARY:
+					b._in_heat_zone = false
+				elif b.has_method("set_meta"):
+					b.set_meta("_in_heat_zone", false)
 		var to_remove = []
 		for h in arena.hazards:
 			var h_kind = ""
@@ -62422,22 +62428,28 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 						var is_frozen = false
 						if "is_frozen" in b: is_frozen = b.is_frozen
 						elif b.has_method("has_meta") and b.has_meta("is_frozen"): is_frozen = b.get_meta("is_frozen")
-						if h_kind == "heat_zone" and is_frozen:
-							var tp = 0.0
-							if "thaw_progress" in b: tp = b.thaw_progress
-							elif b.has_method("has_meta") and b.has_meta("thaw_progress"): tp = b.get_meta("thaw_progress")
-							tp += delta
-							if "thaw_progress" in b: b.thaw_progress = tp
-							elif b.has_method("set_meta"): b.set_meta("thaw_progress", tp)
-							if tp >= 3.0:
-								if "is_frozen" in b: b.is_frozen = false
-								elif b.has_method("set_meta"): b.set_meta("is_frozen", false)
-								if "stun_timer" in b: b.stun_timer = 0.0
-								elif b.has_method("set_meta"): b.set_meta("stun_timer", 0.0)
-								if "frozen_timer" in b: b.frozen_timer = 0.0
-								elif b.has_method("set_meta"): b.set_meta("frozen_timer", 0.0)
-								if "thaw_progress" in b: b.thaw_progress = 0.0
-								elif b.has_method("set_meta"): b.set_meta("thaw_progress", 0.0)
+						if h_kind == "heat_zone":
+							if typeof(b) == TYPE_DICTIONARY:
+								b._in_heat_zone = true
+							elif b.has_method("set_meta"):
+								b.set_meta("_in_heat_zone", true)
+
+							if is_frozen:
+								var tp = 0.0
+								if "thaw_progress" in b: tp = b.thaw_progress
+								elif b.has_method("has_meta") and b.has_meta("thaw_progress"): tp = b.get_meta("thaw_progress")
+								tp += delta
+								if "thaw_progress" in b: b.thaw_progress = tp
+								elif b.has_method("set_meta"): b.set_meta("thaw_progress", tp)
+								if tp >= 3.0:
+									if "is_frozen" in b: b.is_frozen = false
+									elif b.has_method("set_meta"): b.set_meta("is_frozen", false)
+									if "stun_timer" in b: b.stun_timer = 0.0
+									elif b.has_method("set_meta"): b.set_meta("stun_timer", 0.0)
+									if "frozen_timer" in b: b.frozen_timer = 0.0
+									elif b.has_method("set_meta"): b.set_meta("frozen_timer", 0.0)
+									if "thaw_progress" in b: b.thaw_progress = 0.0
+									elif b.has_method("set_meta"): b.set_meta("thaw_progress", 0.0)
 						if h_kind == "frost_zone" and is_frozen:
 							var current_hp = 100.0
 							if "hp" in b: current_hp = b.hp
@@ -62506,6 +62518,53 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 				elif b.has_method("has_meta") and b.has_meta("hp"): hp = b.get_meta("hp")
 				if "_frost_last_hp" in b: b._frost_last_hp = hp
 				elif b.has_method("set_meta"): b.set_meta("_frost_last_hp", hp)
+
+				var ball_type = ""
+				if "ball_type" in b: ball_type = b.ball_type
+				elif b.has_method("has_meta") and b.has_meta("ball_type"): ball_type = b.get_meta("ball_type")
+
+				var is_frozen = false
+				if "is_frozen" in b: is_frozen = b.is_frozen
+				elif b.has_method("has_meta") and b.has_meta("is_frozen"): is_frozen = b.get_meta("is_frozen")
+
+				if ball_type != "spectator" and not is_frozen:
+					var in_heat = false
+					if "_in_heat_zone" in b: in_heat = b._in_heat_zone
+					elif b.has_method("has_meta") and b.has_meta("_in_heat_zone"): in_heat = b.get_meta("_in_heat_zone")
+
+					var exp = 0.0
+					if "heat_zone_exposure" in b: exp = b.heat_zone_exposure
+					elif b.has_method("has_meta") and b.has_meta("heat_zone_exposure"): exp = b.get_meta("heat_zone_exposure")
+
+					if in_heat:
+						exp += delta
+						if exp > 2.0:
+							hp -= (20.0 * delta)
+							if hp <= 0:
+								hp = 0
+								if "alive" in b: b.alive = false
+								elif b.has_method("set_meta"): b.set_meta("alive", false)
+
+								var b_id = -1
+								if "id" in b: b_id = b.id
+								elif b.has_method("has_meta") and b.has_meta("id"): b_id = b.get_meta("id")
+
+								if b_id != -1:
+									if typeof(world) == TYPE_OBJECT and "dead_balls" in world:
+										world.dead_balls.append(b_id)
+										if world.has_method("add_event"):
+											world.add_event("ball_died", {"id": b_id, "reason": "burned", "killer_id": -1})
+									elif typeof(world) == TYPE_DICTIONARY and "dead_balls" in world:
+										world.dead_balls.append(b_id)
+							if "hp" in b: b.hp = hp
+							elif b.has_method("set_meta"): b.set_meta("hp", hp)
+					else:
+						exp -= delta
+						if exp < 0: exp = 0.0
+
+					if typeof(b) == TYPE_DICTIONARY: b.heat_zone_exposure = exp
+					elif "heat_zone_exposure" in b: b.heat_zone_exposure = exp
+					elif b.has_method("set_meta"): b.set_meta("heat_zone_exposure", exp)
 
 	"healer_freeze_tag": HealerFreezeTagMode.new(),
 	"entangled_hazards_mode": EntangledHazardsMode.new(),
