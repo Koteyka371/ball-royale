@@ -85093,3 +85093,211 @@ class OutsideInFallingTilesMode extends GameMode:
 
 const RandomPortalsModeClass = preload("res://src/ai/random_portals.gd")
 GAME_MODES['random_portals'] = RandomPortalsModeClass.new()
+
+
+
+class QuantumCloneFieldMode extends GameMode:
+	var fields = []
+	var spawn_timer = 0.0
+
+	func _init().():
+		name = "Quantum Clone Field"
+		description = "Invisible quantum fields spawn dynamically. When a player dashes through a field, they create a temporary clone that mimics their last 3 seconds of movement and attacks."
+
+	func setup(world, balls: Array) -> void:
+		.setup(world, balls)
+		fields.clear()
+		spawn_timer = 5.0
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		.tick(world, balls, delta)
+
+		spawn_timer -= delta
+		if spawn_timer <= 0:
+			spawn_timer = 10.0
+			var arena_w = 1000.0
+			var arena_h = 1000.0
+
+			if world != null and typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					arena_w = world.arena.get("width", 1000.0)
+					arena_h = world.arena.get("height", 1000.0)
+				else:
+					if "width" in world.arena: arena_w = world.arena.width
+					if "height" in world.arena: arena_h = world.arena.height
+
+			fields.append({
+				"x": rand_range(100.0, arena_w - 100.0),
+				"y": rand_range(100.0, arena_h - 100.0),
+				"radius": 150.0,
+				"life": 15.0
+			})
+
+		var active_fields = []
+		for f in fields:
+			f["life"] -= delta
+			if f["life"] > 0:
+				active_fields.append(f)
+		fields = active_fields
+
+		for b in balls:
+			var is_alive = true
+			if typeof(b) == TYPE_DICTIONARY: is_alive = b.get("alive", false)
+			else: if "alive" in b: is_alive = b.alive
+
+			if not is_alive: continue
+
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY: b_type = b.get("ball_type", "")
+			else: if "ball_type" in b: b_type = b.ball_type
+			if b_type == "spectator": continue
+
+			var q_history = []
+			if typeof(b) == TYPE_DICTIONARY:
+				if not b.has("_quantum_history"): b["_quantum_history"] = []
+				q_history = b["_quantum_history"]
+			else:
+				if not b.has_meta("_quantum_history"): b.set_meta("_quantum_history", [])
+				q_history = b.get_meta("_quantum_history")
+
+			var bx = 0.0
+			var by = 0.0
+			var bvx = 0.0
+			var bvy = 0.0
+			var is_dashing = false
+
+			if typeof(b) == TYPE_DICTIONARY:
+				bx = b.get("x", 0.0)
+				by = b.get("y", 0.0)
+				bvx = b.get("vx", 0.0)
+				bvy = b.get("vy", 0.0)
+				is_dashing = b.get("is_dashing", false)
+			else:
+				if "x" in b: bx = b.x
+				if "y" in b: by = b.y
+				if "vx" in b: bvx = b.vx
+				if "vy" in b: bvy = b.vy
+				if "is_dashing" in b: is_dashing = b.is_dashing
+
+			var time_val = 0.0
+			if world != null and typeof(world) != TYPE_DICTIONARY and "time" in world:
+				time_val = world.time
+
+			q_history.append({
+				"time": time_val,
+				"x": bx,
+				"y": by,
+				"vx": bvx,
+				"vy": bvy,
+				"is_dashing": is_dashing
+			})
+
+			var max_history = int(3.0 / max(delta, 0.001))
+			if q_history.size() > max_history:
+				q_history.pop_front()
+
+			var q_cd = 0.0
+			if typeof(b) == TYPE_DICTIONARY: q_cd = b.get("quantum_clone_cooldown", 0.0)
+			else: if b.has_meta("quantum_clone_cooldown"): q_cd = b.get_meta("quantum_clone_cooldown")
+
+			if is_dashing and q_cd <= 0:
+				for f in fields:
+					var dx = bx - f["x"]
+					var dy = by - f["y"]
+					if sqrt(dx*dx + dy*dy) <= f["radius"]:
+						if typeof(b) == TYPE_DICTIONARY:
+							b["quantum_clone_cooldown"] = 5.0
+						else:
+							b.set_meta("quantum_clone_cooldown", 5.0)
+
+						# Dictionary based clone for GDScript
+						var clone = {}
+						if typeof(b) == TYPE_DICTIONARY:
+							clone = b.duplicate(true)
+						else:
+							# Basic manual copy for Object type balls
+							clone["x"] = bx
+							clone["y"] = by
+							clone["vx"] = bvx
+							clone["vy"] = bvy
+							if "id" in b: clone["source_id"] = b.id
+							if "damage" in b: clone["damage"] = b.damage * 0.5
+							if "team" in b: clone["team"] = b.team
+
+						clone["id"] = randi() % 900000 + 100000
+						clone["is_quantum_clone"] = true
+						clone["quantum_life"] = 3.0
+						clone["playback_index"] = 0
+						clone["playback_history"] = q_history.duplicate(true)
+						clone["hp"] = 1.0
+						clone["alive"] = true
+						if not clone.has("damage"): clone["damage"] = 5.0
+
+						if world != null and typeof(world) != TYPE_DICTIONARY and "balls" in world:
+							world.balls.append(clone)
+
+						if world != null and typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
+							world.add_event("quantum_clone_spawned", {"source_id": clone.get("source_id", -1), "clone_id": clone["id"]})
+
+						break
+
+			if q_cd > 0:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["quantum_clone_cooldown"] = q_cd - delta
+				else:
+					b.set_meta("quantum_clone_cooldown", q_cd - delta)
+
+		# Update clones
+		for i in range(balls.size() - 1, -1, -1):
+			var b = balls[i]
+			var is_qc = false
+			if typeof(b) == TYPE_DICTIONARY: is_qc = b.get("is_quantum_clone", false)
+			else: if b.has_meta("is_quantum_clone"): is_qc = b.get_meta("is_quantum_clone")
+
+			if is_qc:
+				var q_life = 0.0
+				var p_idx = 0
+				var p_hist = []
+				var b_alive = true
+
+				if typeof(b) == TYPE_DICTIONARY:
+					q_life = b.get("quantum_life", 0.0)
+					p_idx = b.get("playback_index", 0)
+					p_hist = b.get("playback_history", [])
+					b_alive = b.get("alive", true)
+				else:
+					q_life = b.get_meta("quantum_life")
+					p_idx = b.get_meta("playback_index")
+					p_hist = b.get_meta("playback_history")
+					if "alive" in b: b_alive = b.alive
+
+				q_life -= delta
+				if typeof(b) == TYPE_DICTIONARY: b["quantum_life"] = q_life
+				else: b.set_meta("quantum_life", q_life)
+
+				if q_life <= 0 or not b_alive:
+					if typeof(b) == TYPE_DICTIONARY: b["alive"] = false
+					else: if "alive" in b: b.alive = false
+				else:
+					if p_idx < p_hist.size():
+						var state = p_hist[p_idx]
+						if typeof(b) == TYPE_DICTIONARY:
+							b["x"] = state["x"]
+							b["y"] = state["y"]
+							b["vx"] = state["vx"]
+							b["vy"] = state["vy"]
+							b["is_dashing"] = state["is_dashing"]
+							b["playback_index"] = p_idx + 1
+						else:
+							if "x" in b: b.x = state["x"]
+							if "y" in b: b.y = state["y"]
+							if "vx" in b: b.vx = state["vx"]
+							if "vy" in b: b.vy = state["vy"]
+							if "is_dashing" in b: b.is_dashing = state["is_dashing"]
+							b.set_meta("playback_index", p_idx + 1)
+					else:
+						if typeof(b) == TYPE_DICTIONARY: b["alive"] = false
+						else: if "alive" in b: b.alive = false
+
+
+GAME_MODES['quantum_clone_field'] = QuantumCloneFieldMode.new()

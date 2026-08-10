@@ -54152,3 +54152,137 @@ GAME_MODES['outside_in_falling_tiles'] = OutsideInFallingTilesMode()
 
 from ai.random_portals import RandomPortalsMode
 GAME_MODES['random_portals'] = RandomPortalsMode()
+
+
+
+class QuantumCloneFieldMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Quantum Clone Field"
+        self.description = "Invisible quantum fields spawn dynamically. When a player dashes through a field, they create a temporary clone that mimics their last 3 seconds of movement and attacks."
+        self.fields = []
+        self.spawn_timer = 0.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.fields = []
+        self.spawn_timer = 5.0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import random
+        import math
+        import copy
+
+        # Spawn fields
+        self.spawn_timer -= delta
+        if self.spawn_timer <= 0:
+            self.spawn_timer = 10.0
+            arena_w = getattr(world.arena, "width", 1000) if hasattr(world, "arena") else 1000
+            arena_h = getattr(world.arena, "height", 1000) if hasattr(world, "arena") else 1000
+
+            self.fields.append({
+                "x": random.uniform(100, arena_w - 100),
+                "y": random.uniform(100, arena_h - 100),
+                "radius": 150.0,
+                "life": 15.0
+            })
+
+        # Update fields
+        active_fields = []
+        for field in self.fields:
+            field["life"] -= delta
+            if field["life"] > 0:
+                active_fields.append(field)
+        self.fields = active_fields
+
+        # Track history for all balls to allow mimicry
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            if not hasattr(b, "_quantum_history"):
+                b._quantum_history = []
+
+            # Record current state (x, y, vx, vy, action)
+            b._quantum_history.append({
+                "time": getattr(world, "time", 0.0),
+                "x": getattr(b, "x", 0.0),
+                "y": getattr(b, "y", 0.0),
+                "vx": getattr(b, "vx", 0.0),
+                "vy": getattr(b, "vy", 0.0),
+                "active_skill": getattr(b, "active_skill", None),
+                "is_dashing": getattr(b, "is_dashing", False)
+            })
+
+            # Keep only last 3 seconds (assuming ~60 ticks per sec = 180 ticks)
+            max_history = int(3.0 / delta)
+            if len(b._quantum_history) > max_history:
+                b._quantum_history.pop(0)
+
+            # Check if dashing through a field
+            if getattr(b, "is_dashing", False) and getattr(b, "quantum_clone_cooldown", 0.0) <= 0:
+                for field in self.fields:
+                    dx = getattr(b, "x", 0.0) - field["x"]
+                    dy = getattr(b, "y", 0.0) - field["y"]
+                    if math.hypot(dx, dy) <= field["radius"]:
+                        # Spawn clone
+                        b.quantum_clone_cooldown = 5.0 # Cooldown to prevent spam
+
+                        clone = copy.copy(b)
+                        if hasattr(world, "next_id"):
+                            clone.id = world.next_id
+                            world.next_id += 1
+                        else:
+                            clone.id = random.randint(100000, 999999)
+
+                        clone.is_quantum_clone = True
+                        clone.quantum_life = 3.0
+                        clone.playback_index = 0
+                        clone.playback_history = copy.deepcopy(b._quantum_history)
+                        clone.source_id = getattr(b, "id", None)
+
+                        # Set to mimic properties, no real damage but distracts
+                        clone.damage = getattr(b, "damage", 10.0) * 0.5 # Amplifies team damage as requested
+                        clone.hp = 1.0 # Fragile
+
+                        if hasattr(world, "balls"):
+                            world.balls.append(clone)
+
+                        if hasattr(world, "add_event"):
+                            world.add_event("quantum_clone_spawned", {"source_id": clone.source_id, "clone_id": clone.id})
+                        break
+
+            # Cooldown
+            if hasattr(b, "quantum_clone_cooldown"):
+                b.quantum_clone_cooldown -= delta
+
+        # Update clones
+        for b in list(balls):
+            if getattr(b, "is_quantum_clone", False):
+                b.quantum_life -= delta
+                if b.quantum_life <= 0 or not getattr(b, "alive", True):
+                    b.alive = False
+                    if b in getattr(world, "balls", []):
+                        pass
+                else:
+                    # Playback history
+                    if hasattr(b, "playback_history") and b.playback_index < len(b.playback_history):
+                        state = b.playback_history[b.playback_index]
+                        b.x = state["x"]
+                        b.y = state["y"]
+                        b.vx = state["vx"]
+                        b.vy = state["vy"]
+
+                        if state.get("is_dashing", False):
+                            b.is_dashing = True
+                        else:
+                            b.is_dashing = False
+
+                        b.playback_index += 1
+                    else:
+                        b.alive = False
+
+
+
+GAME_MODES['quantum_clone_field'] = QuantumCloneFieldMode()
