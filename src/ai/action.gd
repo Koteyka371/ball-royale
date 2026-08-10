@@ -5394,7 +5394,7 @@ func execute(strategy: String, delta: float):
 						kind = hazard.get_meta("kind")
 					elif "kind" in hazard:
 						kind = hazard.kind
-				if kind in ["bumper", "electric_bumper", "magnetic_bumper", "link_bumper", "chain_reaction_bumper", "time_dilation_bumper", "pinball_bumper"]:
+				if kind in ["bumper", "electric_bumper", "magnetic_bumper", "link_bumper", "chain_reaction_bumper", "time_dilation_bumper", "pinball_bumper", "stationary_bumper"]:
 					var hx = 0.0
 					var hy = 0.0
 					if typeof(hazard) == TYPE_DICTIONARY:
@@ -25400,7 +25400,7 @@ func execute(strategy: String, delta: float):
 
                                 var nx = dx / d
                                 var ny = dy / d
-                                var bounce_strength = 3600.0 * delta if hazard.kind == "pinball_bumper" else 1200.0 * delta
+                                var bounce_strength = 3600.0 * delta if hazard.kind in ["pinball_bumper", "stationary_bumper"] else 1200.0 * delta
                                 var ks_active = false
                                 if typeof(self.ball) == TYPE_DICTIONARY:
                                     ks_active = self.ball.get("kinetic_shield_active", false)
@@ -25574,7 +25574,7 @@ func execute(strategy: String, delta: float):
                                         elif typeof(events) == TYPE_ARRAY:
                                             events.append({'type': 'visual_effect', 'data': {'type': 'link_line', 'x': self.ball.x, 'y': self.ball.y, 'target_x': target_x, 'target_y': target_y, 'color': 'purple'}})
 
-                    elif hazard.kind in ["bumper", "chain_reaction_bumper", "time_dilation_bumper", "pinball_bumper"]:
+                    elif hazard.kind in ["bumper", "chain_reaction_bumper", "time_dilation_bumper", "pinball_bumper", "stationary_bumper"]:
 
                         var dx = self.ball.x - hazard.x
                         var dy = self.ball.y - hazard.y
@@ -25601,7 +25601,7 @@ func execute(strategy: String, delta: float):
                             elif "bumper_synergy_active" in self.ball:
                                 syn_active = self.ball.bumper_synergy_active
 
-                            var bounce_strength = 3600.0 * delta if hazard.kind == "pinball_bumper" else 1200.0 * delta
+                            var bounce_strength = 3600.0 * delta if hazard.kind in ["pinball_bumper", "stationary_bumper"] else 1200.0 * delta
                             var ks_active = false
                             if typeof(self.ball) == TYPE_DICTIONARY:
                                 ks_active = self.ball.get("kinetic_shield_active", false)
@@ -25646,7 +25646,7 @@ func execute(strategy: String, delta: float):
                             if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
                                 # If it's a Dictionary with set_meta method from python mock or actual godot node, update both property and meta
                                 if "vx" in self.ball:
-                                    var speed_mult = 8000.0 if hazard.kind == "pinball_bumper" else 4000.0
+                                    var speed_mult = 8000.0 if hazard.kind in ["pinball_bumper", "stationary_bumper"] else 4000.0
                                     self.ball.vx = nx * speed_mult
                                     self.ball.vy = ny * speed_mult
                                     var ks_active = false
@@ -25670,11 +25670,11 @@ func execute(strategy: String, delta: float):
                                             self.ball.vx *= 0.5
                                             self.ball.vy *= 0.5
                                 else:
-                                    var speed_mult2 = 8000.0 if hazard.kind == "pinball_bumper" else 4000.0
+                                    var speed_mult2 = 8000.0 if hazard.kind in ["pinball_bumper", "stationary_bumper"] else 4000.0
                                     self.ball.set_meta("vx", nx * speed_mult2)
                                     self.ball.set_meta("vy", ny * speed_mult2)
                             elif "vx" in self.ball:
-                                var speed_mult = 8000.0 if hazard.kind == "pinball_bumper" else 4000.0
+                                var speed_mult = 8000.0 if hazard.kind in ["pinball_bumper", "stationary_bumper"] else 4000.0
                                 self.ball.vx = nx * speed_mult
                                 self.ball.vy = ny * speed_mult
                                 var ks_active = false
@@ -26223,7 +26223,7 @@ func execute(strategy: String, delta: float):
 
                             if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
                                 if "vx" in self.ball:
-                                    var speed_mult = 8000.0 if hazard.kind == "pinball_bumper" else 4000.0
+                                    var speed_mult = 8000.0 if hazard.kind in ["pinball_bumper", "stationary_bumper"] else 4000.0
                                     self.ball.vx = nx * speed_mult
                                     self.ball.vy = ny * speed_mult
                                     var ks_active = false
@@ -26247,11 +26247,11 @@ func execute(strategy: String, delta: float):
                                             self.ball.vx *= 0.5
                                             self.ball.vy *= 0.5
                                 else:
-                                    var speed_mult2 = 8000.0 if hazard.kind == "pinball_bumper" else 4000.0
+                                    var speed_mult2 = 8000.0 if hazard.kind in ["pinball_bumper", "stationary_bumper"] else 4000.0
                                     self.ball.set_meta("vx", nx * speed_mult2)
                                     self.ball.set_meta("vy", ny * speed_mult2)
                             elif "vx" in self.ball:
-                                var speed_mult = 8000.0 if hazard.kind == "pinball_bumper" else 4000.0
+                                var speed_mult = 8000.0 if hazard.kind in ["pinball_bumper", "stationary_bumper"] else 4000.0
                                 self.ball.vx = nx * speed_mult
                                 self.ball.vy = ny * speed_mult
                                 var ks_active = false

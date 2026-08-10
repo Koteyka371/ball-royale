@@ -27641,7 +27641,7 @@ class PinballMode extends GameMode:
 				arena_height = world.arena.height
 
 			var HazardClass = load("res://src/arena/procedural_arena.gd").Hazard if ResourceLoader.exists("res://src/arena/procedural_arena.gd") else null
-			var hazard_kinds = ["bumper", "bounce_pad", "pinball_flipper", "electric_bumper", "pinball_bumper"]
+			var hazard_kinds = ["bumper", "bounce_pad", "pinball_flipper", "electric_bumper", "pinball_bumper", "stationary_bumper"]
 			for i in range(25):
 				var x = randf_range(100.0, arena_width - 100.0)
 				var y = randf_range(100.0, arena_height - 100.0)
@@ -27690,7 +27690,7 @@ class PinballMode extends GameMode:
 					kind = h.kind
 				elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("kind"):
 					kind = h.get_meta("kind")
-				if kind in ["bumper", "bounce_pad", "pinball_flipper", "pinball_bumper"]:
+				if kind in ["bumper", "bounce_pad", "pinball_flipper", "pinball_bumper", "stationary_bumper"]:
 					hazards.append(h)
 
 		for b in balls:
@@ -47661,7 +47661,7 @@ class MagneticBumpersMode extends GameMode:
 				var arena_width = arena.get("width") if "width" in arena else 1000
 				var arena_height = arena.get("height") if "height" in arena else 1000
 
-				var hazard_kinds = ["bumper", "bounce_pad", "pinball_flipper", "pinball_bumper"]
+				var hazard_kinds = ["bumper", "bounce_pad", "pinball_flipper", "pinball_bumper", "stationary_bumper"]
 				for i in range(15):
 					var x = randf_range(100, arena_width - 100)
 					var y = randf_range(100, arena_height - 100)
@@ -47685,7 +47685,7 @@ class MagneticBumpersMode extends GameMode:
 							kind = h["kind"]
 						elif typeof(h) == TYPE_OBJECT and h.has_method("get") and h.get("kind") != null:
 							kind = h.get("kind")
-						if kind in ["bumper", "bounce_pad", "pinball_flipper", "electric_bumper", "pinball_bumper"]:
+						if kind in ["bumper", "bounce_pad", "pinball_flipper", "electric_bumper", "pinball_bumper", "stationary_bumper"]:
 							hazards.append(h)
 
 		for b in balls:
