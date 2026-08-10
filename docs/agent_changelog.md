@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1941] Quantum Resonance Fields — *2026-08-10 06:21:32 UTC*
+
+A dynamic arena event where invisible quantum fields spawn. When a player dashes through a field, they create a temporary clone of themselves that mimics their last 3 seconds of movement and attacks, confusing enemies and amplifying overall team damage output.
+
+---
+
 ## [idea-1967] Chain Reaction Ice Zone — *2026-08-10 05:49:50 UTC*
 
 When a frozen player is shattered in a frost zone, they explode in a burst of ice shrapnel that applies a massive slowing effect or instant freeze to nearby players, creating a deadly chain reaction.
