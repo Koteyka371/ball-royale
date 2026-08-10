@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1956] Shrinking Grid Arena — *2026-08-10 01:56:04 UTC*
+
+Similar to falling tiles, but the tiles fall from the outside in, slowly making the arena smaller in a grid-like fashion instead of a circular storm.
+
+---
+
 ## [idea-1965] Quantum Treadmill Hazard — *2026-08-10 00:50:34 UTC*
 
 A new procedural arena hazard that acts as a conveyor belt, passively increasing or decreasing ball movement speed based on direction. Hitting the edges of the treadmill forces an immediate direction reverse, conserving momentum.
