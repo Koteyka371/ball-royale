@@ -35,12 +35,15 @@ def test_random_portals_spawn():
     for p in mode.portals:
         assert 100 <= p["x"] <= 700
         assert 100 <= p["y"] <= 500
-        assert p["cooldown"] == 0.0
+        assert "cooldown" not in p
 
 def test_random_portals_teleport():
+    import math
     mode = RandomPortalsMode()
     world = MockWorld()
     b = MockBall(0, 0)
+    b.vx = 50
+    b.vy = 0
     balls = [b]
 
     mode.setup(world, balls)
@@ -52,27 +55,23 @@ def test_random_portals_teleport():
 
     mode.tick(world, balls, delta=0.016)
 
-    # Check that ball was teleported to one of the other portals
+    # Check that ball was teleported to one of the other portals and offset
     teleported_to_other = False
     for p in mode.portals[1:]:
-        if b.x == p["x"] and b.y == p["y"]:
+        dist = math.hypot(b.x - p["x"], b.y - p["y"])
+        # Expected distance: portal_radius (40) + ball_radius (10) + 5.0 = 55.0
+        if math.isclose(dist, 55.0, abs_tol=0.1):
             teleported_to_other = True
             break
 
-    assert teleported_to_other, "Ball should have teleported to another portal"
-    assert p1["cooldown"] == 0.5
-    assert mode.portals[0]["cooldown"] == 0.5
+    assert teleported_to_other, "Ball should have teleported to another portal and offset correctly"
 
-    # Cooldown should prevent instant re-teleport
-    b.x = p1["x"]
-    b.y = p1["y"]
-    old_vx = b.vx
-
+    # Edge offset naturally prevents instant re-teleport
+    old_x = b.x
+    old_y = b.y
     mode.tick(world, balls, delta=0.016)
-
-    # Cooldown decremented
-    assert p1["cooldown"] < 0.5
-    assert b.x == p1["x"] # Hasn't teleported again
+    assert b.x == old_x
+    assert b.y == old_y
 
 def test_random_portals_respawn_interval():
     mode = RandomPortalsMode()
