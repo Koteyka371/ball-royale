@@ -2498,7 +2498,7 @@ class GameMode:
 								if "x" in h: hx = h.x
 								if "y" in h: hy = h.y
 
-							if d_timer > 0:
+							if d_timer > 0 and d_timer < 1.0:
 								var pull_targets = []
 								for b in balls:
 									var alive = false
@@ -2544,7 +2544,7 @@ class GameMode:
 												if "vy" in b: bvy = b.vy
 												b.vx = bvx + (dx/dist) * pull_strength * delta
 												b.vy = bvy + (dy/dist) * pull_strength * delta
-							else:
+							elif d_timer <= 0:
 								if typeof(h) == TYPE_DICTIONARY:
 									h["is_detonating"] = false
 									h["duration"] = 0.0

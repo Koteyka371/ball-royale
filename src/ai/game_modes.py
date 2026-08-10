@@ -1306,7 +1306,7 @@ class GameMode:
             for h in world.arena.hazards:
                 if getattr(h, "is_detonating", False) and getattr(h, "kind", "") == "trap":
                     h.detonation_timer -= delta
-                    if h.detonation_timer > 0:
+                    if h.detonation_timer > 0 and h.detonation_timer < 1.0:
                         # Pull nearby enemies and physics objects
 
                         pull_targets = []
@@ -1324,7 +1324,7 @@ class GameMode:
                                     pull_strength = 200.0 * (1.0 - dist/300.0)
                                     b.vx = getattr(b, "vx", 0.0) + (dx/dist) * pull_strength * delta
                                     b.vy = getattr(b, "vy", 0.0) + (dy/dist) * pull_strength * delta
-                    else:
+                    elif h.detonation_timer <= 0:
                         h.is_detonating = False
                         h.duration = 0.0
                         # Explosive damage
