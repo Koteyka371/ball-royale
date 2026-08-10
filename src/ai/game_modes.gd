@@ -85709,3 +85709,72 @@ class TetheredRoyaleMode extends GameMode:
 										elif typeof(other) == TYPE_DICTIONARY:
 											ohp = other.get("hp", 100.0)
 											other["hp"] = ohp - chain_damage * delta * 60
+
+class BlackHoleBoundariesMode extends GameMode:
+	var activation_time = 30.0
+	var match_time = 0.0
+	var pull_strength = 200.0
+
+	func _init().():
+		name = "Black Hole Boundaries"
+		description = "When the game reaches a certain time, all boundaries become black hole edges and slowly suck all players to the center."
+
+	func setup(world, balls):
+		.setup(world, balls)
+		match_time = 0.0
+
+	func apply_dynamic_traits(world, balls, delta):
+		match_time += delta
+		if match_time >= activation_time:
+			if match_time - delta < activation_time and world.has_method("add_event"):
+				world.add_event("black_hole_boundaries_activated", {"message": "The boundaries have become black holes!"})
+
+			var arena_w = 1000.0
+			var arena_h = 1000.0
+			if typeof(world) == TYPE_OBJECT and "arena" in world:
+				var arena = world.arena
+				if typeof(arena) == TYPE_OBJECT:
+					if "width" in arena: arena_w = arena.width
+					if "height" in arena: arena_h = arena.height
+				elif typeof(arena) == TYPE_DICTIONARY:
+					if arena.has("width"): arena_w = arena["width"]
+					if arena.has("height"): arena_h = arena["height"]
+			elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+				var arena = world["arena"]
+				if typeof(arena) == TYPE_DICTIONARY:
+					if arena.has("width"): arena_w = arena["width"]
+					if arena.has("height"): arena_h = arena["height"]
+
+			var cx = arena_w / 2.0
+			var cy = arena_h / 2.0
+
+			for b in balls:
+				var is_alive = false
+				var ball_type = ""
+				var bx = 0.0
+				var by = 0.0
+
+				if typeof(b) == TYPE_OBJECT:
+					if "alive" in b: is_alive = b.alive
+					if "ball_type" in b: ball_type = b.ball_type
+					if "x" in b: bx = b.x
+					if "y" in b: by = b.y
+				elif typeof(b) == TYPE_DICTIONARY:
+					if b.has("alive"): is_alive = b["alive"]
+					if b.has("ball_type"): ball_type = b["ball_type"]
+					if b.has("x"): bx = b["x"]
+					if b.has("y"): by = b["y"]
+
+				if is_alive and ball_type != "spectator":
+					var dx = cx - bx
+					var dy = cy - by
+					var dist = sqrt(dx * dx + dy * dy)
+					if dist > 0:
+						if typeof(b) == TYPE_OBJECT:
+							if "vx" in b: b.vx += (dx / dist) * pull_strength * delta
+							if "vy" in b: b.vy += (dy / dist) * pull_strength * delta
+						elif typeof(b) == TYPE_DICTIONARY:
+							if b.has("vx"): b["vx"] += (dx / dist) * pull_strength * delta
+							if b.has("vy"): b["vy"] += (dy / dist) * pull_strength * delta
+
+GAME_MODES['black_hole_boundaries'] = BlackHoleBoundariesMode.new()
