@@ -54378,3 +54378,38 @@ class QuantumCloneFieldMode(GameMode):
 
 
 GAME_MODES['quantum_clone_field'] = QuantumCloneFieldMode()
+
+class BlackHoleBoundariesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Black Hole Boundaries"
+        self.description = "When the game reaches a certain time, all boundaries become black hole edges and slowly suck all players to the center."
+        self.activation_time = 30.0
+        self.match_time = 0.0
+        self.pull_strength = 200.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.match_time = 0.0
+
+    def apply_dynamic_traits(self, world, balls, delta):
+        self.match_time += delta
+        if self.match_time >= self.activation_time:
+            # Emit an event if it just activated
+            if self.match_time - delta < self.activation_time and hasattr(world, "add_event"):
+                world.add_event("black_hole_boundaries_activated", {"message": "The boundaries have become black holes!"})
+
+            import math
+            arena_w = getattr(world.arena, 'width', 1000.0) if hasattr(world, 'arena') else 1000.0
+            arena_h = getattr(world.arena, 'height', 1000.0) if hasattr(world, 'arena') else 1000.0
+            cx, cy = arena_w / 2.0, arena_h / 2.0
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
+                    dx = cx - b.x
+                    dy = cy - b.y
+                    dist = math.hypot(dx, dy)
+                    if dist > 0:
+                        b.vx += (dx / dist) * self.pull_strength * delta
+                        b.vy += (dy / dist) * self.pull_strength * delta
+
+GAME_MODES['black_hole_boundaries'] = BlackHoleBoundariesMode()
