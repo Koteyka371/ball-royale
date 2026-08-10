@@ -75,17 +75,17 @@
     "agent-9": {
       "name": "Jules Worker 9",
       "area": "behaviors",
-      "task_id": null,
-      "status": "idle",
-      "started_at": null,
+      "task_id": "idea-1920",
+      "status": "assigned",
+      "started_at": "2026-08-10T09:57:38.735424+00:00",
       "cycles_today": 0
     },
     "agent-10": {
       "name": "Jules Worker 10",
       "area": "meta",
-      "task_id": null,
-      "status": "idle",
-      "started_at": null,
+      "task_id": "idea-1928",
+      "status": "assigned",
+      "started_at": "2026-08-10T09:57:38.735424+00:00",
       "cycles_today": 1
     },
     "agent-11": {
@@ -179,9 +179,9 @@
     "agent-22": {
       "name": "Jules Worker 22",
       "area": "behaviors",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-1973",
+      "started_at": "2026-08-10T09:57:38.735424+00:00",
       "cycles_today": 2
     },
     "agent-23": {
@@ -203,9 +203,9 @@
     "agent-25": {
       "name": "Jules Worker 25",
       "area": "meta",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-1974",
+      "started_at": "2026-08-10T09:57:38.735424+00:00",
       "cycles_today": 0
     },
     "agent-26": {
