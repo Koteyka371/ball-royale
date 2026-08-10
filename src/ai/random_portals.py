@@ -40,19 +40,11 @@ class RandomPortalsMode(GameMode):
 
         self.teleport_timer += delta
         if self.teleport_timer >= self.teleport_interval:
-            self.teleport_timer = 0.0
+            self.teleport_timer -= self.teleport_interval
             self._spawn_portals(world)
-
-        # Update portal cooldowns
-        for portal in self.portals:
-            if portal.get("cooldown", 0) > 0:
-                portal["cooldown"] -= delta
 
         # Process collisions with balls
         for portal in self.portals:
-            if portal.get("cooldown", 0) > 0:
-                continue
-
             px, py, pr = portal["x"], portal["y"], portal["radius"]
             for b in balls:
                 if not getattr(b, "alive", False):
@@ -72,11 +64,20 @@ class RandomPortalsMode(GameMode):
                         continue
 
                     target_portal = random.choice(other_portals)
-                    b.x = target_portal["x"]
-                    b.y = target_portal["y"]
 
-                    portal["cooldown"] = 0.5
-                    target_portal["cooldown"] = 0.5
+                    vx = getattr(b, "vx", 0.0)
+                    vy = getattr(b, "vy", 0.0)
+                    if vx == 0.0 and vy == 0.0:
+                        vx = 1.0
+                        vy = 0.0
+
+                    v_len = math.hypot(vx, vy)
+                    nx = vx / v_len
+                    ny = vy / v_len
+
+                    offset = target_portal["radius"] + br + 5.0
+                    b.x = target_portal["x"] + nx * offset
+                    b.y = target_portal["y"] + ny * offset
 
                     if hasattr(world, "add_event"):
                         world.add_event("random_portal_teleport", {"x": target_portal["x"], "y": target_portal["y"]})
