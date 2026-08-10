@@ -76,8 +76,8 @@
       "name": "Jules Worker 9",
       "area": "behaviors",
       "task_id": "idea-1879",
-      "status": "assigned",
-      "started_at": "2026-08-10T06:06:21.710077+00:00",
+      "status": "working",
+      "started_at": "2026-08-10T06:16:41.736912+00:00",
       "cycles_today": 0
     },
     "agent-10": {
