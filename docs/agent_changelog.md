@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1965] Quantum Treadmill Hazard — *2026-08-10 00:50:34 UTC*
+
+A new procedural arena hazard that acts as a conveyor belt, passively increasing or decreasing ball movement speed based on direction. Hitting the edges of the treadmill forces an immediate direction reverse, conserving momentum.
+
+---
+
 ## [idea-1957] Guild Bank Investment System — *2026-08-10 00:07:27 UTC*
 
 Allow guilds to invest their resources into a timed vault. After a set period of days, the vault opens, yielding a percentage return based on the guild's level and investment perks, but during this time the guild is vulnerable to sieges where attackers can steal a portion of the locked funds.
