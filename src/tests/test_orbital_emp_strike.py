@@ -43,6 +43,7 @@ def test_orbital_emp_strike_collection():
     world = MockWorld()
 
     b1 = MockBall(500, 500)
+    b1.id = 1
     world.balls.append(b1)
 
     # Give ball a booster
@@ -61,6 +62,7 @@ def test_orbital_emp_strike_active_strips_buffs():
     world = MockWorld()
 
     b1 = MockBall(500, 500)
+    b1.id = 1
     world.balls.append(b1)
 
     # Add active EMP strike over the ball

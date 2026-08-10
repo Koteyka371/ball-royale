@@ -225,8 +225,9 @@ func generate():
         elif r < 0.98:
             var r_bump = randf()
             if r_bump < 0.7: kind = "bumper"
-            elif r_bump < 0.85: kind = "chain_reaction_bumper"
-            else: kind = "time_dilation_bumper"
+            elif r_bump < 0.80: kind = "chain_reaction_bumper"
+            elif r_bump < 0.90: kind = "time_dilation_bumper"
+            else: kind = "pinball_bumper"
         elif r < 0.983:
             kind = "shrink_ray_trap"
         elif r < 0.985:
