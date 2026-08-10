@@ -41,6 +41,15 @@ class PortalArena extends ProceduralArena:
 		hazards.append(ArenaTypes.Portal.new(2, w-150.0, 150.0, 30.0, 150.0, h-150.0))
 		hazards.append(ArenaTypes.Portal.new(3, 150.0, h-150.0, 30.0, w-150.0, 150.0))
 
+class Treadmill extends ProceduralArena.Hazard:
+    var direction_vector: Array
+    var speed_magnitude: float
+
+    func _init(_id: int, _x: float, _y: float, _radius: float, _damage: float, _direction_vector: Array, _speed_magnitude: float):
+        super(_id, _x, _y, _radius, "treadmill", _damage)
+        self.direction_vector = _direction_vector
+        self.speed_magnitude = _speed_magnitude
+
 class ConveyorBelt extends ProceduralArena.Hazard:
     var direction_vector: Array
     var speed_magnitude: float
