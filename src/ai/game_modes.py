@@ -54149,3 +54149,6 @@ class OutsideInFallingTilesMode(GameMode):
                         world.add_event("ball_fell", {"id": getattr(b, "id", None)})
 
 GAME_MODES['outside_in_falling_tiles'] = OutsideInFallingTilesMode()
+
+from ai.random_portals import RandomPortalsMode
+GAME_MODES['random_portals'] = RandomPortalsMode()
