@@ -52561,6 +52561,44 @@ class StaticFieldMutatorMode(GameMode):
 
         world.arena.hazards = active_hazards
 
+
+class LowGravityZoneMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Low Gravity Zone"
+        self.description = "An area where jumps go much higher and falling is slow."
+        self.zone_radius = 250.0
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        self.apply_dynamic_traits(world, balls, delta)
+
+        if not hasattr(world, 'arena'):
+            return
+
+        cx = getattr(world.arena, "width", 1000) / 2.0
+        cy = getattr(world.arena, "height", 1000) / 2.0
+
+        for b in balls:
+            if not getattr(b, 'alive', False) or getattr(b, 'ball_type', None) == 'spectator':
+                continue
+
+            dist = ((getattr(b, "x", 0) - cx)**2 + (getattr(b, "y", 0) - cy)**2)**0.5
+            if dist < self.zone_radius:
+                if not getattr(b, '_low_gravity_zone_active', False):
+                    b._low_gravity_zone_active = True
+                    b._base_mass_low_grav = getattr(b, 'mass', 1.0)
+
+                # Apply low gravity effects
+                b.mass = getattr(b, '_base_mass_low_grav', 1.0) * 0.2
+                if getattr(b, 'vy', 0) > 0:
+                    b.vy = max(0.0, b.vy - 1200.0 * delta) # Counteract downward velocity smoothly without jitter
+            else:
+                if getattr(b, '_low_gravity_zone_active', False):
+                    b._low_gravity_zone_active = False
+                    if hasattr(b, '_base_mass_low_grav'):
+                        b.mass = getattr(b, '_base_mass_low_grav', 1.0)
+
+
 GAME_MODES['static_field_mutator'] = StaticFieldMutatorMode()
 
 GAME_MODES['super_vortex'] = SuperVortexMode()
@@ -54413,3 +54451,5 @@ class BlackHoleBoundariesMode(GameMode):
                         b.vy += (dy / dist) * self.pull_strength * delta
 
 GAME_MODES['black_hole_boundaries'] = BlackHoleBoundariesMode()
+
+GAME_MODES['low_gravity_zone'] = LowGravityZoneMode()

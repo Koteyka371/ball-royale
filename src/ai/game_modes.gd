@@ -85777,4 +85777,86 @@ class BlackHoleBoundariesMode extends GameMode:
 							if b.has("vx"): b["vx"] += (dx / dist) * pull_strength * delta
 							if b.has("vy"): b["vy"] += (dy / dist) * pull_strength * delta
 
+
+class LowGravityZoneMode extends GameMode:
+	var zone_radius = 250.0
+
+	func _init():
+		super._init()
+		name = "Low Gravity Zone"
+		description = "An area where jumps go much higher and falling is slow."
+
+	func tick(world: Object, balls: Array, delta: float = 0.016) -> void:
+		apply_dynamic_traits(world, balls, delta)
+
+		if not world.has_method("get") or typeof(world.get("arena")) != TYPE_OBJECT:
+			return
+
+		var arena = world.get("arena")
+		var cx = arena.width / 2.0
+		var cy = arena.height / 2.0
+
+		for b in balls:
+			var b_type = typeof(b)
+			if b_type != TYPE_OBJECT and b_type != TYPE_DICTIONARY:
+				continue
+
+			var alive = false
+			var ball_type = ""
+			var bx = 0.0
+			var by = 0.0
+
+			if b_type == TYPE_OBJECT:
+				alive = b.get("alive") if b.has_method("get") else false
+				ball_type = b.get("ball_type") if b.has_method("get") else ""
+				bx = b.get("x") if b.has_method("get") else 0.0
+				by = b.get("y") if b.has_method("get") else 0.0
+			else:
+				alive = b.get("alive", false)
+				ball_type = b.get("ball_type", "")
+				bx = b.get("x", 0.0)
+				by = b.get("y", 0.0)
+
+			if not alive or ball_type == "spectator":
+				continue
+
+			var dist = sqrt((bx - cx) * (bx - cx) + (by - cy) * (by - cy))
+
+			if b_type == TYPE_OBJECT:
+				if dist < zone_radius:
+					if not b.has_meta("_low_gravity_zone_active") or not b.get_meta("_low_gravity_zone_active"):
+						b.set_meta("_low_gravity_zone_active", true)
+						b.set_meta("_base_mass_low_grav", b.get("mass") if b.has_method("get") else 1.0)
+
+					var base_mass = b.get_meta("_base_mass_low_grav")
+					if base_mass != null:
+						b.set("mass", base_mass * 0.2)
+
+					var bvy = b.get("vy") if b.has_method("get") else 0.0
+					if bvy > 0:
+						b.set("vy", max(0.0, bvy - 1200.0 * delta))
+				else:
+					if b.has_meta("_low_gravity_zone_active") and b.get_meta("_low_gravity_zone_active"):
+						b.set_meta("_low_gravity_zone_active", false)
+						if b.has_meta("_base_mass_low_grav"):
+							b.set("mass", b.get_meta("_base_mass_low_grav"))
+			else:
+				if dist < zone_radius:
+					if not b.get("_low_gravity_zone_active", false):
+						b["_low_gravity_zone_active"] = true
+						b["_base_mass_low_grav"] = b.get("mass", 1.0)
+
+					b["mass"] = b.get("_base_mass_low_grav", 1.0) * 0.2
+					if b.get("vy", 0.0) > 0:
+						b["vy"] = max(0.0, b.get("vy", 0.0) - 1200.0 * delta)
+				else:
+					if b.get("_low_gravity_zone_active", false):
+						b["_low_gravity_zone_active"] = false
+						if b.has("_base_mass_low_grav"):
+							b["mass"] = b.get("_base_mass_low_grav", 1.0)
+
 GAME_MODES['black_hole_boundaries'] = BlackHoleBoundariesMode.new()
+
+
+
+GAME_MODES['low_gravity_zone'] = LowGravityZoneMode.new()
