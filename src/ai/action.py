@@ -22617,24 +22617,17 @@ class Action:
                                     self.world.items.append(mat)
                 else:
                     # Grapple to wall
-                    # Tangential swing along the wall instead of pulling towards it
-                    speed_boost = 500.0  # Increased for rapid momentum gain
+                    # Bouncy pad effect: propel player in opposite direction of the wall
+                    bounce_speed = 800.0  # Speed to propel away from the wall
                     if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
-                        current_speed = math.sqrt(self.ball.vx**2 + self.ball.vy**2)
-                        if current_speed >= 0:
-                            # Boost along the wall direction
-                            if closest_wall in ["left", "right"]:
-                                # Wall is vertical, boost in y direction
-                                if self.ball.vy >= 0:
-                                    self.ball.vy += speed_boost
-                                else:
-                                    self.ball.vy -= speed_boost
-                            elif closest_wall in ["top", "bottom"]:
-                                # Wall is horizontal, boost in x direction
-                                if self.ball.vx >= 0:
-                                    self.ball.vx += speed_boost
-                                else:
-                                    self.ball.vx -= speed_boost
+                        if closest_wall == "left":
+                            self.ball.vx = bounce_speed
+                        elif closest_wall == "right":
+                            self.ball.vx = -bounce_speed
+                        elif closest_wall == "top":
+                            self.ball.vy = bounce_speed
+                        elif closest_wall == "bottom":
+                            self.ball.vy = -bounce_speed
 
                 self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
 

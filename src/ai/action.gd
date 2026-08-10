@@ -43494,8 +43494,8 @@ func _use_skill():
                     ball_radius = float(self.ball.radius)
                 elif self.ball.has_method("get_meta") and self.ball.has_meta("radius"):
                     ball_radius = float(self.ball.get_meta("radius"))
-                # Grapple to wall (swing tangentially instead of pulling in)
-                var speed_boost = 500.0
+                # Grapple to wall: Bouncy pad effect (propel away from wall)
+                var bounce_speed = 800.0
                 var b_vx = 0.0
                 var b_vy = 0.0
                 if typeof(self.ball) == TYPE_DICTIONARY:
@@ -43505,25 +43505,21 @@ func _use_skill():
                     if "vx" in self.ball: b_vx = float(self.ball.vx)
                     if "vy" in self.ball: b_vy = float(self.ball.vy)
 
-                var current_speed = sqrt(b_vx * b_vx + b_vy * b_vy)
-                if current_speed >= 0.0:
-                    if min_dist == dist_left or min_dist == dist_right:
-                        if b_vy >= 0:
-                            b_vy += speed_boost
-                        else:
-                            b_vy -= speed_boost
-                    elif min_dist == dist_top or min_dist == dist_bottom:
-                        if b_vx >= 0:
-                            b_vx += speed_boost
-                        else:
-                            b_vx -= speed_boost
+                if min_dist == dist_left:
+                    b_vx = bounce_speed
+                elif min_dist == dist_right:
+                    b_vx = -bounce_speed
+                elif min_dist == dist_top:
+                    b_vy = bounce_speed
+                elif min_dist == dist_bottom:
+                    b_vy = -bounce_speed
 
-                    if typeof(self.ball) == TYPE_DICTIONARY:
-                        self.ball.vx = b_vx
-                        self.ball.vy = b_vy
-                    elif typeof(self.ball) != TYPE_DICTIONARY:
-                        if "vx" in self.ball: self.ball.vx = b_vx
-                        if "vy" in self.ball: self.ball.vy = b_vy
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball.vx = b_vx
+                    self.ball.vy = b_vy
+                elif typeof(self.ball) != TYPE_DICTIONARY:
+                    if "vx" in self.ball: self.ball.vx = b_vx
+                    if "vy" in self.ball: self.ball.vy = b_vy
 
             if "skill_cooldown" in self.ball:
                 self.ball.skill_timer = self.ball.skill_cooldown

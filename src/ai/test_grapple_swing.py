@@ -46,13 +46,13 @@ def test_grapple_swing_wall_speed_boost():
     action = Action(ball, world)
     action._use_skill()
 
-    # No longer pulled to wall when swinging!
+    # Grappling a wall acts like a bouncy pad, propelling player away from wall
     assert ball.x == 100.0
     assert ball.y == 500.0
 
-    # Check speed boost (since wall is on left/right, boost is along y axis)
-    assert ball.vx == 10.0
-    assert ball.vy == 500.0  # Boosted because vy was >= 0
+    # Bounces right because left wall is closer
+    assert ball.vx == 800.0
+    assert ball.vy == 0.0
 
 def test_grapple_swing_hazard_speed_boost():
     world = MockWorld()
