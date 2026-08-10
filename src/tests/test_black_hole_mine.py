@@ -48,7 +48,7 @@ def test_black_hole_mine():
 
     # Step on it
     mine.is_detonating = True
-    mine.detonation_timer = 3.0
+    mine.detonation_timer = 0.5
 
     # Tick should pull
     mode.tick(world, world.balls, 0.1)
@@ -84,7 +84,7 @@ def test_black_hole_mine_pulls_boosters():
 
     # Step on it
     mine.is_detonating = True
-    mine.detonation_timer = 3.0
+    mine.detonation_timer = 0.5
 
     # Tick should pull
     mode.tick(world, world.balls, 0.1)
