@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1849] Jolt Reflex Skill — *2026-08-10 05:11:14 UTC*
+
+A defensive skill where being hit by any form of lightning gives the player a brief burst of incredible speed and makes their next attack bounce to up to 2 nearby enemies.
+
+---
+
 ## [idea-1966] Time dilation zones — *2026-08-10 04:18:45 UTC*
 
 Areas in the arena where time flows slower. Projectiles and balls moving through these zones lose half their speed and delta multipliers are halved.
