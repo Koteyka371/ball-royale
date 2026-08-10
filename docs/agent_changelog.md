@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1962] Summoner Build — *2026-08-10 07:37:48 UTC*
+
+Add a summoner active item that spawns 3 little minion balls around you to protect you.
+
+---
+
 ## [idea-1970] Thermal Overload — *2026-08-10 06:35:41 UTC*
 
 Players who stay in a heat zone for too long after being thawed will begin to take continuous fire damage. They must weigh the benefit of unfreezing against the risk of taking severe burn damage.
