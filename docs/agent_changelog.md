@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1967] Chain Reaction Ice Zone — *2026-08-10 05:49:50 UTC*
+
+When a frozen player is shattered in a frost zone, they explode in a burst of ice shrapnel that applies a massive slowing effect or instant freeze to nearby players, creating a deadly chain reaction.
+
+---
+
 ## [idea-1849] Jolt Reflex Skill — *2026-08-10 05:11:14 UTC*
 
 A defensive skill where being hit by any form of lightning gives the player a brief burst of incredible speed and makes their next attack bounce to up to 2 nearby enemies.
