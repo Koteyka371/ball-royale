@@ -54036,3 +54036,116 @@ class HealthyGravityWellMode(GameMode):
                     b.y += (dy / dist) * pull_strength * delta * delta
 
 GAME_MODES['healthy_gravity_well'] = HealthyGravityWellMode()
+
+
+class OutsideInFallingTilesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Outside-In Falling Tiles"
+        self.description = "Tiles fall from the outside in, slowly making the arena smaller in a grid-like fashion."
+        self.grid_size = 50.0
+        self.tiles = {}
+        self.timer = 0.0
+        self.phase = "wait"
+        self.warning_duration = 2.0
+        self.fall_duration = 3.0
+        self.falling_tiles = []
+        self.is_falling_tiles_royale = True
+        self.current_ring = 0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.tiles = {}
+        arena_width = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+        arena_height = getattr(world.arena, "height", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+
+        self.cols = int(arena_width / self.grid_size)
+        self.rows = int(arena_height / self.grid_size)
+
+        for c in range(self.cols):
+            for r in range(self.rows):
+                self.tiles[(c, r)] = {"state": "normal"}
+
+        self.timer = 5.0
+        self.phase = "wait"
+        self.current_ring = 0
+        self.falling_tiles = []
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        self.timer -= delta
+
+        if self.phase == "wait":
+            if self.timer <= 0:
+                normal_tiles = [k for k, v in self.tiles.items() if v["state"] == "normal"]
+                if len(normal_tiles) > 4:
+                    self.phase = "warning"
+                    self.timer = self.warning_duration
+
+                    ring_tiles = []
+                    while self.current_ring <= max(self.cols, self.rows) / 2:
+                        for c in range(self.cols):
+                            for r in range(self.rows):
+                                if (c, r) in self.tiles and self.tiles[(c, r)]["state"] == "normal":
+                                    ring_index = min(c, r, self.cols - 1 - c, self.rows - 1 - r)
+                                    if ring_index == self.current_ring:
+                                        ring_tiles.append((c, r))
+                        if ring_tiles:
+                            break
+                        self.current_ring += 1
+
+                    if len(normal_tiles) - len(ring_tiles) < 4:
+                        tiles_to_keep = 4 - (len(normal_tiles) - len(ring_tiles))
+                        if len(ring_tiles) > tiles_to_keep:
+                            ring_tiles = ring_tiles[:-tiles_to_keep]
+
+                    self.falling_tiles = ring_tiles
+                    for k in self.falling_tiles:
+                        self.tiles[k]["state"] = "warning"
+
+                    if hasattr(world, "add_event") and self.falling_tiles:
+                        world.add_event("tiles_warning", {"message": "Outer tiles are lighting up!", "tiles": self.falling_tiles})
+                else:
+                    self.timer = 5.0
+
+        elif self.phase == "warning":
+            if self.timer <= 0:
+                self.phase = "falling"
+                self.timer = self.fall_duration
+                for k in self.falling_tiles:
+                    self.tiles[k]["state"] = "falling"
+                if hasattr(world, "add_event") and self.falling_tiles:
+                    world.add_event("tiles_falling", {"message": "Outer tiles are falling!", "tiles": self.falling_tiles})
+
+        elif self.phase == "falling":
+            if self.timer <= 0:
+                self.phase = "wait"
+                self.timer = 5.0
+                if hasattr(world, "add_event") and self.falling_tiles:
+                    world.add_event("tiles_pit", {"message": "Outer tiles have fallen!", "tiles": self.falling_tiles})
+                for k in self.falling_tiles:
+                    self.tiles[k]["state"] = "pit"
+                self.falling_tiles = []
+                self.current_ring += 1
+
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            bx, by = getattr(b, "x", 0.0), getattr(b, "y", 0.0)
+            c = int(bx / self.grid_size)
+            r = int(by / self.grid_size)
+
+            if (c, r) in self.tiles:
+                state = self.tiles[(c, r)]["state"]
+                if state == "pit":
+                    if hasattr(b, "take_damage"):
+                        b.take_damage(9999.0)
+                    else:
+                        b.hp = 0.0
+                        b.alive = False
+
+                    if not getattr(b, "alive", False) and hasattr(world, "add_event"):
+                        world.add_event("ball_fell", {"id": getattr(b, "id", None)})
+
+GAME_MODES['outside_in_falling_tiles'] = OutsideInFallingTilesMode()
