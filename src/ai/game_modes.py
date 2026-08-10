@@ -41428,6 +41428,17 @@ class ThermalFreezeTagMode(FreezeTagMode):
                                     world.dead_balls.append(b.id)
                                 if hasattr(world, 'add_event'):
                                     world.add_event('ball_died', {'id': b.id, 'reason': 'shattered', 'killer_id': -1})
+
+                                # ICE SHRAPNEL EXPLOSION
+                                for other_b in balls:
+                                    if other_b == b: continue
+                                    if not getattr(other_b, "alive", False) or getattr(other_b, "ball_type", "") == "spectator":
+                                        continue
+                                    ob_x, ob_y = getattr(other_b, "x", 0.0), getattr(other_b, "y", 0.0)
+                                    b_x, b_y = getattr(b, "x", 0.0), getattr(b, "y", 0.0)
+                                    dist = math.hypot(ob_x - b_x, ob_y - b_y)
+                                    if dist < 150.0:
+                                        self._freeze_ball(other_b)
         for h in to_remove:
             if h in world.arena.hazards:
                 world.arena.hazards.remove(h)
