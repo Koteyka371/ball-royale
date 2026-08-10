@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1957] Guild Bank Investment System — *2026-08-10 00:07:27 UTC*
+
+Allow guilds to invest their resources into a timed vault. After a set period of days, the vault opens, yielding a percentage return based on the guild's level and investment perks, but during this time the guild is vulnerable to sieges where attackers can steal a portion of the locked funds.
+
+---
+
 ## [idea-1807] Wind Shield Booster — *2026-08-09 22:12:31 UTC*
 
 A new booster that grants a temporary wind shield, making the ball immune to wind pushes and tornado pulls, and allowing it to travel through storms unaffected.
