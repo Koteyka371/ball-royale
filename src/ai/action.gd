@@ -20703,6 +20703,35 @@ func execute(strategy: String, delta: float):
                             elif "base_speed" in self.ball:
                                 base_speed = self.ball.base_speed
                             self.ball.speed = base_speed * 0.1
+                elif hazard.kind == "treadmill":
+                    var dx = hazard.x - self.ball.x
+                    var dy = hazard.y - self.ball.y
+                    var dist_sq = dx * dx + dy * dy
+                    if dist_sq < hazard.radius * hazard.radius:
+                        if "direction_vector" in hazard and "speed_magnitude" in hazard:
+                            var dir_x = hazard.direction_vector[0]
+                            var dir_y = hazard.direction_vector[1]
+                            if not ("vx" in self.ball): self.ball.vx = 0.0
+                            if not ("vy" in self.ball): self.ball.vy = 0.0
+                            self.ball.vx += dir_x * hazard.speed_magnitude * delta
+                            self.ball.vy += dir_y * hazard.speed_magnitude * delta
+
+                        var dist = sqrt(dist_sq) if dist_sq > 0 else 0.0
+                        var ball_radius = self.ball.get("radius") if self.ball.get("radius") != null else 10.0
+                        if dist + ball_radius >= hazard.radius:
+                            var nx = dx / dist if dist > 0 else 0.0
+                            var ny = dy / dist if dist > 0 else 0.0
+                            var b_vx = self.ball.vx if "vx" in self.ball else 0.0
+                            var b_vy = self.ball.vy if "vy" in self.ball else 0.0
+
+                            # Normal points to center. If moving outward, dot product is negative
+                            if b_vx * nx + b_vy * ny < 0:
+                                self.ball.vx = -b_vx
+                                self.ball.vy = -b_vy
+
+                                var overlap = dist + ball_radius - hazard.radius
+                                self.ball.x += nx * (overlap + 1.0)
+                                self.ball.y += ny * (overlap + 1.0)
                 elif hazard.kind == "conveyor_belt":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y

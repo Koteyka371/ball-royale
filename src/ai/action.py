@@ -10715,6 +10715,33 @@ class Action:
                             ny = dy / dist
                             self.ball.x += nx * pull_strength
                             self.ball.y += ny * pull_strength
+                    elif hazard.kind == "treadmill":
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx * dx + dy * dy
+                        if dist_sq < hazard.radius * hazard.radius:
+                            if hasattr(hazard, "direction_vector") and hasattr(hazard, "speed_magnitude"):
+                                dir_x = hazard.direction_vector[0]
+                                dir_y = hazard.direction_vector[1]
+                                self.ball.vx = getattr(self.ball, "vx", 0.0) + dir_x * hazard.speed_magnitude * delta
+                                self.ball.vy = getattr(self.ball, "vy", 0.0) + dir_y * hazard.speed_magnitude * delta
+
+                            dist = math.sqrt(dist_sq) if dist_sq > 0 else 0.0
+                            ball_radius = getattr(self.ball, 'radius', 10.0)
+                            if dist + ball_radius >= hazard.radius:
+                                nx = dx / dist if dist > 0 else 0.0
+                                ny = dy / dist if dist > 0 else 0.0
+                                vx = getattr(self.ball, "vx", 0.0)
+                                vy = getattr(self.ball, "vy", 0.0)
+
+                                # Normal points to center. If moving outward, dot product is negative
+                                if vx * nx + vy * ny < 0:
+                                    self.ball.vx = -vx
+                                    self.ball.vy = -vy
+
+                                    overlap = dist + ball_radius - hazard.radius
+                                    self.ball.x += nx * (overlap + 1.0)
+                                    self.ball.y += ny * (overlap + 1.0)
                     elif hazard.kind == "conveyor_belt":
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
