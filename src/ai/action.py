@@ -4564,6 +4564,50 @@ class Action:
             if self.ball.quantum_relay_timer <= 0:
                 self.ball.has_quantum_relay = False
 
+        if getattr(self.ball, "minion_summoner_timer", 0.0) > 0.0:
+            self.ball.minion_summoner_timer -= delta
+
+            if not getattr(self.ball, "minion_summoner_spawned", False):
+                self.ball.minion_summoner_spawned = True
+
+                import math
+                import copy
+                num_minions = 3
+                for i in range(num_minions):
+                    angle = (i * 2 * math.pi) / num_minions
+                    dist = 40.0
+
+                    minion = copy.copy(self.ball)
+                    minion.id = self.world.next_id() if callable(self.world.next_id) else self.world.next_id
+                    if not callable(self.world.next_id):
+                        self.world.next_id += 1
+
+                    minion.x = self.ball.x + math.cos(angle) * dist
+                    minion.y = self.ball.y + math.sin(angle) * dist
+                    minion.radius = getattr(self.ball, "radius", 10.0) * 0.5
+                    minion.mass = getattr(self.ball, "mass", 1.0) * 0.5
+
+                    minion.max_hp = getattr(self.ball, "max_hp", 100.0) * 0.2
+                    minion.hp = minion.max_hp
+                    minion.is_decoy = True
+                    minion.owner_id = self.ball.id
+                    minion.minion_summoner_lifetime = 15.0
+
+                    # Tether to owner
+                    minion.tether_target = self.ball.id
+                    minion.tether_length = 50.0
+
+                    if hasattr(self.world, "balls"):
+                        self.world.balls.append(minion)
+
+            if self.ball.minion_summoner_timer <= 0:
+                self.ball.minion_summoner_timer = 0.0
+
+        if getattr(self.ball, "minion_summoner_lifetime", 0.0) > 0.0:
+            self.ball.minion_summoner_lifetime -= delta
+            if self.ball.minion_summoner_lifetime <= 0:
+                self.ball.alive = False
+
         if getattr(self.ball, "echo_booster_timer", 0.0) > 0.0:
             self.ball.echo_booster_timer -= delta
             if self.ball.echo_booster_timer <= 0:
@@ -16467,7 +16511,7 @@ class Action:
                         self.world.arena.hazards.remove(b)
 
                 elif getattr(b, "kind", "") == "grave_robber_shovel":
-                    dist = __import__('math').sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
+                    dist = __import__("math").sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
                     if dist <= getattr(self.ball, "radius", 10.0) + getattr(b, "radius", 15.0) + 5.0:
                         self.ball.grave_robber_shovel_active = True
                         b.active = False
@@ -16476,7 +16520,7 @@ class Action:
                         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and b in self.world.arena.hazards:
                             self.world.arena.hazards.remove(b)
                 elif getattr(b, "kind", "") == "wind_shield_booster":
-                    dist = __import__('math').sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
+                    dist = __import__("math").sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
                     if dist <= getattr(self.ball, "radius", 10.0) + getattr(b, "radius", 15.0) + 5.0:
                         self.ball.wind_shield_booster_timer = 15.0
                         b.active = False
@@ -16484,8 +16528,18 @@ class Action:
                             self.world.boosters.remove(b)
                         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and b in self.world.arena.hazards:
                             self.world.arena.hazards.remove(b)
+                elif getattr(b, "kind", "") == "minion_summoner_item":
+                    dist = __import__("math").sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
+                    if dist <= getattr(self.ball, "radius", 10.0) + getattr(b, "radius", 15.0) + 5.0:
+                        self.ball.minion_summoner_timer = 15.0
+                        self.ball.minion_summoner_spawned = False
+                        b.active = False
+                        if hasattr(self.world, "boosters") and b in self.world.boosters:
+                            self.world.boosters.remove(b)
+                        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and b in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(b)
                 elif getattr(b, "kind", "") == "echo_booster":
-                    dist = __import__('math').sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
+                    dist = __import__("math").sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
                     if dist <= getattr(self.ball, "radius", 10.0) + getattr(b, "radius", 15.0) + 5.0:
                         self.ball.echo_booster_timer = 10.0
                         self.ball.echo_booster_spawn_timer = 0.0
@@ -16495,7 +16549,7 @@ class Action:
                         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and b in self.world.arena.hazards:
                             self.world.arena.hazards.remove(b)
                 elif getattr(b, "kind", "") == "eclipse_booster_item":
-                    dist = __import__('math').sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
+                    dist = __import__("math").sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
                     if dist <= getattr(self.ball, "radius", 10.0) + getattr(b, "radius", 15.0) + 5.0:
                         if not hasattr(self.ball, "inventory"):
                             self.ball.inventory = []
@@ -16506,7 +16560,7 @@ class Action:
                         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and b in self.world.arena.hazards:
                             self.world.arena.hazards.remove(b)
                 elif getattr(b, "kind", "") == "overload_zone_item":
-                    dist = __import__('math').sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
+                    dist = __import__("math").sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
                     if dist <= getattr(self.ball, "radius", 10.0) + getattr(b, "radius", 15.0) + 5.0:
                         if not hasattr(self.ball, "inventory"):
                             self.ball.inventory = []
@@ -16517,7 +16571,7 @@ class Action:
                         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and b in self.world.arena.hazards:
                             self.world.arena.hazards.remove(b)
                 elif getattr(b, "kind", "") == "magnetic_aura_booster":
-                    dist = __import__('math').sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
+                    dist = __import__("math").sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
                     if dist <= getattr(self.ball, "radius", 10.0) + getattr(b, "radius", 15.0) + 5.0:
                         self.ball.magnetic_aura_timer = 15.0
                         b.active = False
@@ -16526,7 +16580,7 @@ class Action:
                         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and b in self.world.arena.hazards:
                             self.world.arena.hazards.remove(b)
                 elif getattr(b, "kind", "") == "magnetic_field_booster":
-                    dist = __import__('math').sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
+                    dist = __import__("math").sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
                     if dist <= getattr(self.ball, "radius", 10.0) + getattr(b, "radius", 15.0) + 5.0:
                         self.ball.magnetic_field_timer = 15.0
                         b.active = False
@@ -16535,7 +16589,7 @@ class Action:
                         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and b in self.world.arena.hazards:
                             self.world.arena.hazards.remove(b)
                 elif getattr(b, "kind", "") == "anchor_repulsor_booster":
-                    dist = __import__('math').sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
+                    dist = __import__("math").sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
                     if dist <= getattr(self.ball, "radius", 10.0) + getattr(b, "radius", 15.0) + 5.0:
                         self.ball.anchor_booster_timer = max(getattr(self.ball, "anchor_booster_timer", 0.0), 10.0)
                         self.ball.anchor_repulsor_timer = max(getattr(self.ball, "anchor_repulsor_timer", 0.0), 10.0)
@@ -16545,7 +16599,7 @@ class Action:
                         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and b in self.world.arena.hazards:
                             self.world.arena.hazards.remove(b)
                 elif getattr(b, "kind", "") == "silence_immunity_booster":
-                    dist = __import__('math').sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
+                    dist = __import__("math").sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
                     if dist <= getattr(self.ball, "radius", 10.0) + getattr(b, "radius", 15.0) + 5.0:
                         self.ball.silence_immunity_timer = 15.0
                         b.active = False
@@ -16555,7 +16609,7 @@ class Action:
                             self.world.arena.hazards.remove(b)
 
                 elif getattr(b, "kind", "") == "meteor_fragment":
-                    dist = __import__('math').sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
+                    dist = __import__("math").sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
                     if dist <= getattr(self.ball, "radius", 10.0) + getattr(b, "radius", 15.0) + 5.0:
                         self.ball.damage_booster_timer = max(getattr(self.ball, "damage_booster_timer", 0.0), 15.0)
                         b.active = False
@@ -16565,7 +16619,7 @@ class Action:
                             self.world.arena.hazards.remove(b)
                 elif getattr(b, "kind", "") == "ghost_booster":
 
-                    dist = __import__('math').sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
+                    dist = __import__("math").sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
                     if dist <= getattr(self.ball, "radius", 10.0) + getattr(b, "radius", 15.0) + 5.0:
                         self.ball.ghost_booster_timer = 10.0
                         self.ball.ghost_mode_active = True
@@ -16578,7 +16632,7 @@ class Action:
                         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and b in self.world.arena.hazards:
                             self.world.arena.hazards.remove(b)
                 elif getattr(b, "kind", "") == "flashbang_booster":
-                    dist = __import__('math').sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
+                    dist = __import__("math").sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
                     if dist <= getattr(self.ball, "radius", 10.0) + getattr(b, "radius", 15.0) + 5.0:
                         if hasattr(self.world, "balls"):
                             for other in self.world.balls:
@@ -16602,7 +16656,7 @@ class Action:
                         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and b in self.world.arena.hazards:
                             self.world.arena.hazards.remove(b)
                 elif getattr(b, "kind", "") == "chameleon_item":
-                    dist = math.sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
+                    dist = __import__("math").sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
                     if dist <= getattr(self.ball, "radius", 10.0) + getattr(b, "radius", 15.0) + 5.0:
                         # Find nearest hazard or enemy
                         candidates = []
