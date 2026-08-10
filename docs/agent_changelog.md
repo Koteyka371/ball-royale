@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1972] Gravity Mine Mode — *2026-08-10 07:57:56 UTC*
+
+Mines pull players in slightly before detonating.
+
+---
+
 ## [idea-1962] Summoner Build — *2026-08-10 07:37:48 UTC*
 
 Add a summoner active item that spawns 3 little minion balls around you to protect you.
