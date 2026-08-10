@@ -62067,6 +62067,7 @@ class ConveyorBeltArenaMode extends GameMode:
 
 
 var GAME_MODES = {
+	"tethered_royale": TetheredRoyaleMode.new(),
 	"conveyor_belt_arena": ConveyorBeltArenaMode.new(),
     "quantum_anomaly_field": QuantumAnomalyFieldMode.new(),
 	"volcano_boss_mode": VolcanoBossMode.new(),
@@ -85391,3 +85392,320 @@ class QuantumCloneFieldMode extends GameMode:
 
 
 GAME_MODES['quantum_clone_field'] = QuantumCloneFieldMode.new()
+
+class TetheredRoyaleMode extends GameMode:
+	var tethers = {}
+	var prev_alive = {}
+	var max_distance: float = 300.0
+	var pull_force: float = 800.0
+	var chain_damage: float = 25.0
+
+	func _init() -> void:
+		name = "Tethered Royale"
+		description = "Players are paired and permanently tethered. The tether limits distance but also deals damage to any other ball that passes through it. The chained players must coordinate to move, and they share damage taken but gain a unified health pool until the chain breaks."
+
+	func setup(world, balls: Array) -> void:
+		.setup(world, balls)
+		tethers = {}
+		prev_alive = {}
+
+		var alive_balls = []
+		for b in balls:
+			var btype = null
+			if typeof(b) == TYPE_OBJECT and "ball_type" in b:
+				btype = b.get("ball_type")
+			elif typeof(b) == TYPE_DICTIONARY and b.has("ball_type"):
+				btype = b["ball_type"]
+			if btype != "spectator":
+				alive_balls.append(b)
+
+		alive_balls.shuffle()
+
+		var n = alive_balls.size()
+		for i in range(0, n - 1, 2):
+			var b1 = alive_balls[i]
+			var b2 = alive_balls[i+1]
+
+			var id1 = null
+			var id2 = null
+
+			if typeof(b1) == TYPE_OBJECT:
+				b1.set_meta("tether_target", b2)
+				id1 = b1.get("id")
+			elif typeof(b1) == TYPE_DICTIONARY:
+				b1["tether_target"] = b2
+				id1 = b1.get("id")
+
+			if typeof(b2) == TYPE_OBJECT:
+				b2.set_meta("tether_target", b1)
+				id2 = b2.get("id")
+			elif typeof(b2) == TYPE_DICTIONARY:
+				b2["tether_target"] = b1
+				id2 = b2.get("id")
+
+			if id1 != null and id2 != null:
+				tethers[id1] = b2
+				tethers[id2] = b1
+
+			var hp1 = 100.0
+			var hp2 = 100.0
+			var max_hp1 = 100.0
+			var max_hp2 = 100.0
+
+			if typeof(b1) == TYPE_OBJECT:
+				hp1 = b1.get("hp") if "hp" in b1 else 100.0
+				max_hp1 = b1.get("max_hp") if "max_hp" in b1 else 100.0
+			elif typeof(b1) == TYPE_DICTIONARY:
+				hp1 = b1.get("hp", 100.0)
+				max_hp1 = b1.get("max_hp", 100.0)
+
+			if typeof(b2) == TYPE_OBJECT:
+				hp2 = b2.get("hp") if "hp" in b2 else 100.0
+				max_hp2 = b2.get("max_hp") if "max_hp" in b2 else 100.0
+			elif typeof(b2) == TYPE_DICTIONARY:
+				hp2 = b2.get("hp", 100.0)
+				max_hp2 = b2.get("max_hp", 100.0)
+
+			var total_hp = hp1 + hp2
+			var total_max_hp = max_hp1 + max_hp2
+
+			if typeof(b1) == TYPE_OBJECT:
+				b1.set("max_hp", total_max_hp)
+				b1.set("hp", total_hp)
+			elif typeof(b1) == TYPE_DICTIONARY:
+				b1["max_hp"] = total_max_hp
+				b1["hp"] = total_hp
+
+			if typeof(b2) == TYPE_OBJECT:
+				b2.set("max_hp", total_max_hp)
+				b2.set("hp", total_hp)
+			elif typeof(b2) == TYPE_DICTIONARY:
+				b2["max_hp"] = total_max_hp
+				b2["hp"] = total_hp
+
+		if n % 2 != 0:
+			var b_last = alive_balls[n - 1]
+			if typeof(b_last) == TYPE_OBJECT:
+				b_last.set_meta("tether_target", null)
+			elif typeof(b_last) == TYPE_DICTIONARY:
+				b_last["tether_target"] = null
+
+		for b in balls:
+			var is_alive = false
+			var bid = null
+			if typeof(b) == TYPE_OBJECT:
+				is_alive = b.get("alive") if "alive" in b else false
+				bid = b.get("id")
+			elif typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+				bid = b.get("id")
+			if bid != null:
+				prev_alive[bid] = is_alive
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		.tick(world, balls, delta)
+
+		var processed_pairs = {}
+
+		for b in balls:
+			var is_alive = false
+			var bid = null
+
+			if typeof(b) == TYPE_OBJECT:
+				is_alive = b.get("alive") if "alive" in b else false
+				bid = b.get("id")
+			elif typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+				bid = b.get("id")
+
+			if bid == null:
+				continue
+
+			var was_alive = prev_alive.get(bid, false)
+
+			if was_alive and not is_alive:
+				var bx = 0.0
+				var by = 0.0
+				if typeof(b) == TYPE_OBJECT:
+					bx = b.get("x") if "x" in b else 0.0
+					by = b.get("y") if "y" in b else 0.0
+				elif typeof(b) == TYPE_DICTIONARY:
+					bx = b.get("x", 0.0)
+					by = b.get("y", 0.0)
+
+				var h = {}
+				h["id"] = "recoil_" + str(bid)
+				h["x"] = bx
+				h["y"] = by
+				h["kind"] = "recoil_explosion"
+				h["radius"] = 100.0
+				h["damage"] = 50.0
+				h["duration"] = 0.2
+
+				if typeof(world) == TYPE_OBJECT and "arena" in world and typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+					world.arena.hazards.append(h)
+
+				var target = null
+				if typeof(b) == TYPE_OBJECT and b.has_meta("tether_target"):
+					target = b.get_meta("tether_target")
+				elif typeof(b) == TYPE_DICTIONARY and b.has("tether_target"):
+					target = b["tether_target"]
+
+				if target != null:
+					if typeof(target) == TYPE_OBJECT:
+						target.set_meta("tether_target", null)
+						var base_max_hp = target.get("base_max_hp") if "base_max_hp" in target else 100.0
+						target.set("max_hp", base_max_hp)
+						var thp = target.get("hp") if "hp" in target else 100.0
+						if thp > base_max_hp:
+							target.set("hp", base_max_hp)
+					elif typeof(target) == TYPE_DICTIONARY:
+						target["tether_target"] = null
+						var base_max_hp = target.get("base_max_hp", 100.0)
+						target["max_hp"] = base_max_hp
+						var thp = target.get("hp", 100.0)
+						if thp > base_max_hp:
+							target["hp"] = base_max_hp
+
+			prev_alive[bid] = is_alive
+
+			if not is_alive:
+				continue
+
+			var target = null
+			if typeof(b) == TYPE_OBJECT and b.has_meta("tether_target"):
+				target = b.get_meta("tether_target")
+			elif typeof(b) == TYPE_DICTIONARY and b.has("tether_target"):
+				target = b["tether_target"]
+
+			var target_alive = false
+			var tid = null
+			if target != null:
+				if typeof(target) == TYPE_OBJECT:
+					target_alive = target.get("alive") if "alive" in target else false
+					tid = target.get("id")
+				elif typeof(target) == TYPE_DICTIONARY:
+					target_alive = target.get("alive", false)
+					tid = target.get("id")
+
+			if target != null and target_alive and tid != null:
+				var pair_id = ""
+				if str(bid) < str(tid):
+					pair_id = str(bid) + "_" + str(tid)
+				else:
+					pair_id = str(tid) + "_" + str(bid)
+
+				if not processed_pairs.has(pair_id):
+					processed_pairs[pair_id] = true
+
+					var hp1 = 100.0
+					var hp2 = 100.0
+					if typeof(b) == TYPE_OBJECT:
+						hp1 = b.get("hp") if "hp" in b else 100.0
+					elif typeof(b) == TYPE_DICTIONARY:
+						hp1 = b.get("hp", 100.0)
+					if typeof(target) == TYPE_OBJECT:
+						hp2 = target.get("hp") if "hp" in target else 100.0
+					elif typeof(target) == TYPE_DICTIONARY:
+						hp2 = target.get("hp", 100.0)
+
+					var avg_hp = (hp1 + hp2) / 2.0
+					if typeof(b) == TYPE_OBJECT:
+						b.set("hp", avg_hp)
+					elif typeof(b) == TYPE_DICTIONARY:
+						b["hp"] = avg_hp
+					if typeof(target) == TYPE_OBJECT:
+						target.set("hp", avg_hp)
+					elif typeof(target) == TYPE_DICTIONARY:
+						target["hp"] = avg_hp
+
+					var bx = 0.0
+					var by = 0.0
+					var tx = 0.0
+					var ty = 0.0
+					if typeof(b) == TYPE_OBJECT:
+						bx = b.get("x") if "x" in b else 0.0
+						by = b.get("y") if "y" in b else 0.0
+					elif typeof(b) == TYPE_DICTIONARY:
+						bx = b.get("x", 0.0)
+						by = b.get("y", 0.0)
+					if typeof(target) == TYPE_OBJECT:
+						tx = target.get("x") if "x" in target else 0.0
+						ty = target.get("y") if "y" in target else 0.0
+					elif typeof(target) == TYPE_DICTIONARY:
+						tx = target.get("x", 0.0)
+						ty = target.get("y", 0.0)
+
+					var dx = tx - bx
+					var dy = ty - by
+					var dist = sqrt(dx*dx + dy*dy)
+
+					if dist > 0:
+						var nx = dx / dist
+						var ny = dy / dist
+
+						if dist > max_distance:
+							var excess = dist - max_distance
+							var pull = min((excess / 50.0) * pull_force, pull_force * 2.0)
+
+							if typeof(b) == TYPE_OBJECT:
+								b.set("vx", b.get("vx") + nx * pull * delta)
+								b.set("vy", b.get("vy") + ny * pull * delta)
+							elif typeof(b) == TYPE_DICTIONARY:
+								b["vx"] = b.get("vx", 0.0) + nx * pull * delta
+								b["vy"] = b.get("vy", 0.0) + ny * pull * delta
+
+							if typeof(target) == TYPE_OBJECT:
+								target.set("vx", target.get("vx") - nx * pull * delta)
+								target.set("vy", target.get("vy") - ny * pull * delta)
+							elif typeof(target) == TYPE_DICTIONARY:
+								target["vx"] = target.get("vx", 0.0) - nx * pull * delta
+								target["vy"] = target.get("vy", 0.0) - ny * pull * delta
+
+						for other in balls:
+							var other_alive = false
+							var oid = null
+							if typeof(other) == TYPE_OBJECT:
+								other_alive = other.get("alive") if "alive" in other else false
+								oid = other.get("id")
+							elif typeof(other) == TYPE_DICTIONARY:
+								other_alive = other.get("alive", false)
+								oid = other.get("id")
+
+							if not other_alive or oid == bid or oid == tid:
+								continue
+
+							var ox = 0.0
+							var oy = 0.0
+							var oradius = 15.0
+							if typeof(other) == TYPE_OBJECT:
+								ox = other.get("x") if "x" in other else 0.0
+								oy = other.get("y") if "y" in other else 0.0
+								oradius = other.get("radius") if "radius" in other else 15.0
+							elif typeof(other) == TYPE_DICTIONARY:
+								ox = other.get("x", 0.0)
+								oy = other.get("y", 0.0)
+								oradius = other.get("radius", 15.0)
+
+							var px = ox - bx
+							var py = oy - by
+							var dot = px * nx + py * ny
+
+							if dot >= 0 and dot <= dist:
+								var cx = bx + dot * nx
+								var cy = by + dot * ny
+								var cdx = ox - cx
+								var cdy = oy - cy
+								var cdist = sqrt(cdx*cdx + cdy*cdy)
+
+								if cdist <= oradius + 5.0:
+									if typeof(world) == TYPE_OBJECT and world.has_method("_deal_damage"):
+										world._deal_damage(b, other, chain_damage * delta * 60)
+									else:
+										var ohp = 100.0
+										if typeof(other) == TYPE_OBJECT:
+											ohp = other.get("hp") if "hp" in other else 100.0
+											other.set("hp", ohp - chain_damage * delta * 60)
+										elif typeof(other) == TYPE_DICTIONARY:
+											ohp = other.get("hp", 100.0)
+											other["hp"] = ohp - chain_damage * delta * 60
