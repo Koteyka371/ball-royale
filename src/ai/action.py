@@ -2662,7 +2662,7 @@ class Action:
             closest_bumper = None
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "kind", "") in ["bumper", "electric_bumper", "magnetic_bumper", "link_bumper", "chain_reaction_bumper", "time_dilation_bumper", "pinball_bumper"]:
+                    if getattr(hazard, "kind", "") in ["bumper", "electric_bumper", "magnetic_bumper", "link_bumper", "chain_reaction_bumper", "time_dilation_bumper", "pinball_bumper", "stationary_bumper"]:
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
                         dist_sq = dx*dx + dy*dy
@@ -13375,7 +13375,7 @@ class Action:
                                     # Reflect ball
                                     nx = dx / dist
                                     ny = dy / dist
-                                    bounce_strength = 3600.0 * delta if getattr(hazard, "kind", "") == "pinball_bumper" else 1200.0 * delta
+                                    bounce_strength = 3600.0 * delta if getattr(hazard, "kind", "") in ["pinball_bumper", "stationary_bumper"] else 1200.0 * delta
                                     if getattr(self.ball, "kinetic_shield_active", False):
                                         bounce_strength *= 0.5
                                         if getattr(self.ball, "bumper_synergy_active", False):
@@ -13389,7 +13389,7 @@ class Action:
                                     self.ball.x += nx * bounce_strength
                                     self.ball.y += ny * bounce_strength
 
-                                    speed_mult = 8000.0 if getattr(hazard, "kind", "") == "pinball_bumper" else 4000.0
+                                    speed_mult = 8000.0 if getattr(hazard, "kind", "") in ["pinball_bumper", "stationary_bumper"] else 4000.0
                                     self.ball.vx = nx * speed_mult
                                     self.ball.vy = ny * speed_mult
                                     if getattr(self.ball, "kinetic_shield_active", False):
@@ -13424,7 +13424,7 @@ class Action:
                                                 'type': 'visual_effect',
                                                 'data': {'type': 'link_line', 'x': self.ball.x, 'y': self.ball.y, 'target_x': target.x, 'target_y': target.y, 'color': 'purple'}
                                             })
-                        elif hazard.kind in ["bumper", "chain_reaction_bumper", "time_dilation_bumper", "pinball_bumper"]:
+                        elif hazard.kind in ["bumper", "chain_reaction_bumper", "time_dilation_bumper", "pinball_bumper", "stationary_bumper"]:
 
                             dx = self.ball.x - hazard.x
                             dy = self.ball.y - hazard.y
@@ -13438,7 +13438,7 @@ class Action:
                                 bvy = getattr(self.ball, "vy", 0.0)
                                 speed = math.hypot(bvx, bvy)
 
-                                if hazard.kind != "pinball_bumper" and speed > 500.0:
+                                if hazard.kind not in ["pinball_bumper", "stationary_bumper"] and speed > 500.0:
                                     hazard.duration = 0.0
 
                                     if hasattr(self.world, "events"):
@@ -13464,7 +13464,7 @@ class Action:
                                 nx = math.cos(angle)
                                 ny = math.sin(angle)
 
-                                bounce_strength = 3600.0 * delta if hazard.kind == "pinball_bumper" else 1200.0 * delta
+                                bounce_strength = 3600.0 * delta if hazard.kind in ["pinball_bumper", "stationary_bumper"] else 1200.0 * delta
                                 ks_active = getattr(self.ball, "kinetic_shield_active", False)
                                 syn_active = getattr(self.ball, "bumper_synergy_active", False)
 
@@ -13484,7 +13484,7 @@ class Action:
                                 self.ball.x += nx * bounce_strength
                                 self.ball.y += ny * bounce_strength
                                 # Accelerate ball significantly to create chaotic pinball-like movement
-                                speed_mult = 8000.0 if hazard.kind == "pinball_bumper" else 4000.0
+                                speed_mult = 8000.0 if hazard.kind in ["pinball_bumper", "stationary_bumper"] else 4000.0
                                 self.ball.vx = nx * speed_mult
                                 self.ball.vy = ny * speed_mult
                                 if ks_active:
