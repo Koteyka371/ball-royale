@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1959] Quantum Tunnels Game Mode — *2026-08-10 08:50:42 UTC*
+
+Portals appear across the map. Balls entering a portal exit immediately from a random other portal, maintaining their velocity. The portals change locations every 20 seconds.
+
+---
+
 ## [idea-1810] Quantum Singularity Mine — *2026-08-10 08:41:53 UTC*
 
 A new mine variant that, upon detonation, spawns a massive expanding slow-motion zone. Any entities or projectiles caught inside the zone move at 20% speed for 8 seconds, creating high-tension dodges and setup combos.
