@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1896] Low Gravity Zone — *2026-08-10 11:43:22 UTC*
+
+An area where jumps go much higher and falling is slow.
+
+---
+
 ## [idea-1801] Moon Gravity Adjuster — *2026-08-10 10:05:47 UTC*
 
 During lunar events (like lunar eclipse), overall gravity drops by 50%. Bouncing off walls or other balls propels balls further, and jump pads have 2x vertical lift, fundamentally changing the arena physics for the duration.
