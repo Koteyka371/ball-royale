@@ -62141,6 +62141,7 @@ var GAME_MODES = {
 	"aura_pulse_event": AuraPulseEventMode.new(),
 	"waterfalls_mode": WaterfallsMode.new(),
 	"falling_tiles_royale": FallingTilesRoyaleMode.new(),
+	"outside_in_falling_tiles": OutsideInFallingTilesMode.new(),
 	"tilting_platform": TiltingPlatformMode.new(),
 	"collapsing_ceiling": CollapsingCeilingMode.new(),
 	"radiation_windstorm": RadiationWindstormMode.new(),
@@ -84933,3 +84934,159 @@ class HealthyGravityWellMode extends GameMode:
 						b["y"] += (dy / dist) * pull_strength * delta * delta
 
 GAME_MODES['healthy_gravity_well'] = HealthyGravityWellMode.new()
+
+class OutsideInFallingTilesMode extends GameMode:
+	var grid_size = 50.0
+	var tiles = {}
+	var timer = 0.0
+	var phase = "wait"
+	var warning_duration = 2.0
+	var fall_duration = 3.0
+	var falling_tiles = []
+	var is_falling_tiles_royale = true
+	var current_ring = 0
+	var cols = 0
+	var rows = 0
+
+	func _init():
+		name = "Outside-In Falling Tiles"
+		description = "Tiles fall from the outside in, slowly making the arena smaller in a grid-like fashion."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		tiles = {}
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if "arena" in world and world.arena != null:
+			arena_width = world.arena.get("width") if typeof(world.arena) == TYPE_DICTIONARY else world.arena.width
+			arena_height = world.arena.get("height") if typeof(world.arena) == TYPE_DICTIONARY else world.arena.height
+
+		cols = int(arena_width / grid_size)
+		rows = int(arena_height / grid_size)
+
+		for c in range(cols):
+			for r in range(rows):
+				tiles[str(c) + "," + str(r)] = {"state": "normal"}
+
+		timer = 5.0
+		phase = "wait"
+		current_ring = 0
+		falling_tiles = []
+
+	func tick(world, balls, delta=0.016):
+		super.tick(world, balls, delta)
+		timer -= delta
+
+		if phase == "wait":
+			if timer <= 0:
+				var normal_tiles = []
+				for k in tiles.keys():
+					if tiles[k]["state"] == "normal":
+						normal_tiles.append(k)
+
+				if normal_tiles.size() > 4:
+					phase = "warning"
+					timer = warning_duration
+					var ring_tiles = []
+
+					var max_ring = (cols if cols > rows else rows) / 2
+					while current_ring <= max_ring:
+						for c in range(cols):
+							for r in range(rows):
+								var k = str(c) + "," + str(r)
+								if tiles.has(k) and tiles[k]["state"] == "normal":
+									var c_dist = c if c < cols - 1 - c else cols - 1 - c
+									var r_dist = r if r < rows - 1 - r else rows - 1 - r
+									var ring_index = c_dist if c_dist < r_dist else r_dist
+									if ring_index == current_ring:
+										ring_tiles.append(k)
+						if ring_tiles.size() > 0:
+							break
+						current_ring += 1
+
+					if normal_tiles.size() - ring_tiles.size() < 4:
+						var tiles_to_keep = 4 - (normal_tiles.size() - ring_tiles.size())
+						if ring_tiles.size() > tiles_to_keep:
+							var new_ring = []
+							for i in range(ring_tiles.size() - tiles_to_keep):
+								new_ring.append(ring_tiles[i])
+							ring_tiles = new_ring
+
+					falling_tiles = ring_tiles
+					for k in falling_tiles:
+						tiles[k]["state"] = "warning"
+
+					if falling_tiles.size() > 0:
+						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+							world.add_event("tiles_warning", {"message": "Outer tiles are lighting up!", "tiles": falling_tiles})
+						elif typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+							world.add_event.call("tiles_warning", {"message": "Outer tiles are lighting up!", "tiles": falling_tiles})
+				else:
+					timer = 5.0
+
+		elif phase == "warning":
+			if timer <= 0:
+				phase = "falling"
+				timer = fall_duration
+				for k in falling_tiles:
+					tiles[k]["state"] = "falling"
+				if falling_tiles.size() > 0:
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						world.add_event("tiles_falling", {"message": "Outer tiles are falling!", "tiles": falling_tiles})
+					elif typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+						world.add_event.call("tiles_falling", {"message": "Outer tiles are falling!", "tiles": falling_tiles})
+
+		elif phase == "falling":
+			if timer <= 0:
+				phase = "wait"
+				timer = 5.0
+				if falling_tiles.size() > 0:
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						world.add_event("tiles_pit", {"message": "Outer tiles have fallen!", "tiles": falling_tiles})
+					elif typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+						world.add_event.call("tiles_pit", {"message": "Outer tiles have fallen!", "tiles": falling_tiles})
+				for k in falling_tiles:
+					tiles[k]["state"] = "pit"
+				falling_tiles.clear()
+				current_ring += 1
+
+		for b in balls:
+			var is_alive = false
+			var b_type = null
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+				b_type = b.get("ball_type", null)
+			else:
+				is_alive = b.alive if "alive" in b else false
+				b_type = b.ball_type if "ball_type" in b else null
+
+			if not is_alive or b_type == "spectator":
+				continue
+
+			var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.x
+			var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.y
+			var c = int(bx / grid_size)
+			var r = int(by / grid_size)
+			var k = str(c) + "," + str(r)
+
+			if tiles.has(k):
+				var state = tiles[k]["state"]
+				if state == "pit":
+					if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+						b.take_damage(9999.0)
+					else:
+						if typeof(b) == TYPE_DICTIONARY:
+							b["hp"] = 0.0
+							b["alive"] = false
+						else:
+							b.hp = 0.0
+							b.alive = false
+
+					var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else false)
+					if not b_alive:
+						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+							var id_val = b.get("id", null) if typeof(b) == TYPE_DICTIONARY else (b.id if "id" in b else null)
+							world.add_event("ball_fell", {"id": id_val})
+						elif typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+							var id_val = b.get("id", null) if typeof(b) == TYPE_DICTIONARY else (b.id if "id" in b else null)
+							world.add_event.call("ball_fell", {"id": id_val})
