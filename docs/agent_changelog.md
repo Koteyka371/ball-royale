@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1810] Quantum Singularity Mine — *2026-08-10 08:41:53 UTC*
+
+A new mine variant that, upon detonation, spawns a massive expanding slow-motion zone. Any entities or projectiles caught inside the zone move at 20% speed for 8 seconds, creating high-tension dodges and setup combos.
+
+---
+
 ## [idea-1972] Gravity Mine Mode — *2026-08-10 07:57:56 UTC*
 
 Mines pull players in slightly before detonating.
