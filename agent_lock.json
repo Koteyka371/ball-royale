@@ -11,25 +11,25 @@
     "agent-2": {
       "name": "Jules Behaviors",
       "area": "behaviors",
-      "task_id": null,
-      "status": "idle",
-      "started_at": null,
+      "task_id": "idea-1832",
+      "status": "assigned",
+      "started_at": "2026-08-10T19:29:37.307346+00:00",
       "cycles_today": 1
     },
     "agent-3": {
       "name": "Jules Tests",
       "area": "tests",
-      "task_id": null,
-      "status": "idle",
-      "started_at": null,
+      "task_id": "idea-1837",
+      "status": "assigned",
+      "started_at": "2026-08-10T19:29:37.307346+00:00",
       "cycles_today": 1
     },
     "agent-4": {
       "name": "Jules Content",
       "area": "content",
-      "task_id": null,
-      "status": "idle",
-      "started_at": null,
+      "task_id": "idea-1879",
+      "status": "assigned",
+      "started_at": "2026-08-10T19:29:37.307346+00:00",
       "cycles_today": 1
     },
     "agent-5": {
@@ -37,7 +37,7 @@
       "area": "meta",
       "task_id": "idea-1907",
       "status": "assigned",
-      "started_at": "2026-08-10T18:12:29.421954+00:00",
+      "started_at": "2026-08-10T19:29:37.307346+00:00",
       "cycles_today": 1
     },
     "agent-6": {
@@ -67,9 +67,9 @@
     "agent-8": {
       "name": "Jules Worker 8",
       "area": "tests",
-      "task_id": null,
-      "status": "idle",
-      "started_at": null,
+      "task_id": "idea-1923",
+      "status": "assigned",
+      "started_at": "2026-08-10T19:29:37.307346+00:00",
       "cycles_today": 1
     },
     "agent-9": {
@@ -77,15 +77,15 @@
       "area": "behaviors",
       "task_id": "idea-1928",
       "status": "assigned",
-      "started_at": "2026-08-10T18:12:29.421954+00:00",
+      "started_at": "2026-08-10T19:29:37.307346+00:00",
       "cycles_today": 0
     },
     "agent-10": {
       "name": "Jules Worker 10",
       "area": "meta",
-      "task_id": null,
-      "status": "idle",
-      "started_at": null,
+      "task_id": "idea-1936",
+      "status": "assigned",
+      "started_at": "2026-08-10T19:29:37.307346+00:00",
       "cycles_today": 1
     },
     "agent-11": {
@@ -101,23 +101,23 @@
       "area": "ai-core",
       "task_id": "idea-1950",
       "status": "assigned",
-      "started_at": "2026-08-10T18:12:29.421954+00:00",
+      "started_at": "2026-08-10T19:29:37.307346+00:00",
       "cycles_today": 4
     },
     "agent-13": {
       "name": "Jules Worker 13",
       "area": "tests",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-1952",
+      "started_at": "2026-08-10T19:29:37.307346+00:00",
       "cycles_today": 0
     },
     "agent-14": {
       "name": "Jules Worker 14",
       "area": "content",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-1953",
+      "started_at": "2026-08-10T19:29:37.307346+00:00",
       "cycles_today": 5
     },
     "agent-15": {
@@ -131,9 +131,9 @@
     "agent-16": {
       "name": "Jules Worker 16",
       "area": "innovation",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-1963",
+      "started_at": "2026-08-10T19:29:37.307346+00:00",
       "cycles_today": 0
     },
     "agent-17": {
@@ -147,9 +147,9 @@
     "agent-18": {
       "name": "Jules Worker 18",
       "area": "behaviors",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-1968",
+      "started_at": "2026-08-10T19:29:37.307346+00:00",
       "cycles_today": 0
     },
     "agent-19": {
@@ -157,7 +157,7 @@
       "area": "tests",
       "status": "assigned",
       "task_id": "idea-1969",
-      "started_at": "2026-08-10T18:12:29.421954+00:00",
+      "started_at": "2026-08-10T19:29:37.307346+00:00",
       "cycles_today": 1
     },
     "agent-20": {
@@ -165,39 +165,39 @@
       "area": "content",
       "status": "assigned",
       "task_id": "idea-1971",
-      "started_at": "2026-08-10T18:12:29.421954+00:00",
+      "started_at": "2026-08-10T19:29:37.307346+00:00",
       "cycles_today": 1
     },
     "agent-21": {
       "name": "Jules Worker 21",
       "area": "ai-core",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-1973",
+      "started_at": "2026-08-10T19:29:37.307346+00:00",
       "cycles_today": 0
     },
     "agent-22": {
       "name": "Jules Worker 22",
       "area": "behaviors",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-1974",
+      "started_at": "2026-08-10T19:29:37.307346+00:00",
       "cycles_today": 2
     },
     "agent-23": {
       "name": "Jules Worker 23",
       "area": "tests",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-1975",
+      "started_at": "2026-08-10T19:29:37.307346+00:00",
       "cycles_today": 0
     },
     "agent-24": {
       "name": "Jules Worker 24",
       "area": "content",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-1976",
+      "started_at": "2026-08-10T19:29:37.307346+00:00",
       "cycles_today": 0
     },
     "agent-25": {
@@ -205,7 +205,7 @@
       "area": "meta",
       "status": "assigned",
       "task_id": "idea-1979",
-      "started_at": "2026-08-10T18:12:29.421954+00:00",
+      "started_at": "2026-08-10T19:29:37.307346+00:00",
       "cycles_today": 0
     },
     "agent-26": {
@@ -221,7 +221,7 @@
       "area": "content",
       "status": "assigned",
       "task_id": "idea-1981",
-      "started_at": "2026-08-10T18:12:29.421954+00:00",
+      "started_at": "2026-08-10T19:29:37.307346+00:00",
       "cycles_today": 1
     },
     "agent-28": {
@@ -229,15 +229,15 @@
       "area": "tests",
       "status": "assigned",
       "task_id": "idea-1982",
-      "started_at": "2026-08-10T18:12:29.421954+00:00",
+      "started_at": "2026-08-10T19:29:37.307346+00:00",
       "cycles_today": 2
     },
     "agent-29": {
       "name": "Jules Worker 29",
       "area": "behaviors",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-1983",
+      "started_at": "2026-08-10T19:29:37.307346+00:00",
       "cycles_today": 1
     },
     "agent-30": {
@@ -245,7 +245,7 @@
       "area": "meta",
       "status": "assigned",
       "task_id": "idea-1984",
-      "started_at": "2026-08-10T18:12:29.421954+00:00",
+      "started_at": "2026-08-10T19:29:37.307346+00:00",
       "cycles_today": 2
     }
   },
