@@ -22840,6 +22840,22 @@ func execute(strategy: String, delta: float):
                                 elif "duration" in hazard:
                                     hazard.duration = 0.0
 
+                            elif trap_variant == "time_dilation_mine":
+                                var h_dict = {
+                                    "id": self.world.arena.hazards.size() + (randi() % 5000 + 5000),
+                                    "x": hazard.x,
+                                    "y": hazard.y,
+                                    "radius": 20.0,
+                                    "kind": "slow_zone",
+                                    "damage": 0.0,
+                                    "duration": 10.0,
+                                    "active": true
+                                }
+                                self.world.arena.hazards.append(h_dict)
+                                if typeof(hazard) == TYPE_DICTIONARY:
+                                    hazard["duration"] = 0.0
+                                else:
+                                    hazard.duration = 0.0
                             elif trap_variant == "mine":
                                 var is_detonating = false
                                 if hazard.has_method("get_meta") and hazard.has_meta("is_detonating"):

@@ -11740,6 +11740,18 @@ class Action:
                                     self.world.arena.hazards.append(new_hazard)
                                     hazard.duration = 0.0
 
+
+                                elif trap_variant == "time_dilation_mine":
+                                    new_hazard = type("Hazard", (), {})()
+                                    new_hazard.id = len(self.world.arena.hazards) + getattr(self, "random", __import__("random")).randint(5000, 9999)
+                                    new_hazard.x = hazard.x
+                                    new_hazard.y = hazard.y
+                                    new_hazard.radius = 20.0
+                                    new_hazard.kind = "slow_zone"
+                                    new_hazard.damage = 0.0
+                                    new_hazard.duration = 10.0
+                                    self.world.arena.hazards.append(new_hazard)
+                                    hazard.duration = 0.0
                                 elif trap_variant == "mine":
                                     # Black Hole Mine: Pull nearby enemies and physics objects for 3s before detonating
                                     if not getattr(hazard, "is_detonating", False):
@@ -12863,6 +12875,39 @@ class Action:
                                                         other.stun_timer = 0.5
                                                     if hasattr(self.world, "events"):
                                                         self.world.events.append(('visual_effect', {'type': 'lightning', 'x': self.ball.x, 'y': self.ball.y, 'tx': other.x, 'ty': other.y}))
+                            continue
+
+                        elif hazard.kind == "slow_zone":
+                            dx = self.ball.x - hazard.x
+                            dy = self.ball.y - hazard.y
+                            import math
+                            dist = math.hypot(dx, dy)
+
+                            # Expand zone globally only once per tick
+                            current_tick = getattr(self.world, "tick", 0)
+                            last_updated = getattr(hazard, "last_updated_tick", -1)
+                            if last_updated != current_tick:
+                                hazard.radius = min(hazard.radius + 200.0 * delta, 800.0)
+                                hazard.last_updated_tick = current_tick
+
+                            if dist < (self.ball.radius + hazard.radius):
+                                # 8s 20% slow debuff
+                                self.ball.speed_debuff_timer = max(getattr(self.ball, "speed_debuff_timer", 0.0), 8.0)
+                                self.ball.speed_debuff_multiplier = min(getattr(self.ball, "speed_debuff_multiplier", 1.0), 0.2)
+
+                                # Projectile slowing
+                                if hasattr(self.world, "balls"):
+                                    for p in self.world.balls:
+                                        if getattr(p, "ball_type", "") in ("projectile", "spell") and getattr(p, "alive", True):
+                                            p_dx = p.x - hazard.x
+                                            p_dy = p.y - hazard.y
+                                            p_dist = math.hypot(p_dx, p_dy)
+                                            if p_dist < (getattr(p, "radius", 10.0) + hazard.radius):
+                                                # Slow the projectile
+                                                if hasattr(p, "vx"):
+                                                    p.vx *= 0.8
+                                                if hasattr(p, "vy"):
+                                                    p.vy *= 0.8
                             continue
                         elif hazard.kind == "slow_wall":
                             dx = self.ball.x - hazard.x

@@ -67,7 +67,7 @@ class PreGameLobby:
         return False
 
     def select_trap_variant(self, ball_id, variant):
-        if variant in ["normal", "poison", "stun", "ricochet", "emp", "hologram", "blindness", "shriek", "decoy", "mine", "elemental_mine", "warp", "clone", "tar", "link", "repulsion", "swap", "reversal"]:
+        if variant in ["normal", "poison", "stun", "ricochet", "emp", "hologram", "blindness", "shriek", "decoy", "mine", "elemental_mine", "time_dilation_mine", "warp", "clone", "tar", "link", "repulsion", "swap", "reversal"]:
             self.selections[ball_id] = variant
 
     def get_trap_variant(self, ball_id):

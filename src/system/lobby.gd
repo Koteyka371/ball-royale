@@ -77,7 +77,7 @@ func reroll_daily_quest(profile, quest_index: int) -> bool:
     return false
 
 func select_trap_variant(ball_id: int, variant: String) -> void:
-    if variant in ["normal", "poison", "stun", "ricochet", "emp", "hologram", "chain_lightning", "decoy", "blindness", "shriek", "mine", "elemental_mine", "warp", "clone", "tar", "link", "repulsion", "swap", "reversal"]:
+    if variant in ["normal", "poison", "stun", "ricochet", "emp", "hologram", "chain_lightning", "decoy", "blindness", "shriek", "mine", "elemental_mine", "time_dilation_mine", "warp", "clone", "tar", "link", "repulsion", "swap", "reversal"]:
         selections[ball_id] = variant
 
 func get_trap_variant(ball_id: int) -> String:
