@@ -59,3 +59,8 @@ def test_healthy_gravity_well_damage():
     # Should take damage
     assert b1.hp < 100
     assert b1.hp == 75.0 # hp - 25*1.0
+
+def test_healthy_gravity_well_registered():
+    from ai.game_modes import GAME_MODES
+    assert 'healthy_gravity_well' in GAME_MODES
+    assert GAME_MODES['healthy_gravity_well'].name == "Healthy Gravity Well"
