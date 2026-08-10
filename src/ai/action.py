@@ -1311,6 +1311,39 @@ class Action:
                     except AttributeError:
                         setattr(attacker, "damage", old_dmg)
 
+            if getattr(attacker, "lightning_conductor_charges", 0) > 0:
+                attacker.lightning_conductor_charges -= 1
+                bounces = 2
+                chain_damage = original_damage * 0.5
+                bounced_targets = [target.id if hasattr(target, "id") else target]
+                current_target = target
+                while bounces > 0:
+                    bounces -= 1
+                    next_target = None
+                    min_dist = float('inf')
+                    for b in getattr(self.world, "balls", []):
+                        if b != attacker and b != current_target and getattr(b, "alive", True) and (not hasattr(b, "id") or b.id not in bounced_targets):
+                            dist = ((current_target.x - b.x)**2 + (current_target.y - b.y)**2)**0.5
+                            if dist < 150.0 and dist < min_dist:
+                                min_dist = dist
+                                next_target = b
+                    if next_target:
+                        if hasattr(self, "_spawn_skill_particles"):
+                            self._spawn_skill_particles("lightning")
+                        if hasattr(self.world, "add_event"):
+                            self.world.add_event("visual_effect", {"type": "lightning", "x": current_target.x, "y": current_target.y, "tx": next_target.x, "ty": next_target.y})
+
+                        if hasattr(next_target, "take_damage"):
+                            next_target.take_damage(chain_damage)
+                        elif hasattr(next_target, "hp"):
+                            next_target.hp -= chain_damage
+                            if next_target.hp <= 0:
+                                next_target.alive = False
+                        bounced_targets.append(next_target.id if hasattr(next_target, "id") else next_target)
+                        current_target = next_target
+                    else:
+                        break
+
             if getattr(attacker, "supercharge_stun_ready", False):
                 target.stutter_timer = max(getattr(target, "stutter_timer", 0.0), 1.0)
                 attacker.supercharge_stun_ready = False
@@ -12752,7 +12785,10 @@ class Action:
                                             self.ball.alive = False
                                     if hasattr(self, "_spawn_skill_particles"):
                                         self._spawn_skill_particles("lightning")
-                                    if b_type in ["drone", "juggernaut", "tank", "neural"] or "metal" in b_type or "armor" in b_type or "metal" in getattr(self.ball, "traits", []) or "armor" in getattr(self.ball, "traits", []):
+                                    if "lightning_conductor" in getattr(self.ball, "traits", []):
+                                        self.ball.speed_buff_timer = max(getattr(self.ball, "speed_buff_timer", 0.0), 3.0)
+                                        self.ball.lightning_conductor_charges = 1
+                                    elif b_type in ["drone", "juggernaut", "tank", "neural"] or "metal" in b_type or "armor" in b_type or "metal" in getattr(self.ball, "traits", []) or "armor" in getattr(self.ball, "traits", []):
                                         self.ball.supercharge_timer = 10.0
                                         self.ball.supercharge_stun_ready = True
                                         self.ball.speed_buff_timer = getattr(self.ball, "speed_buff_timer", 0.0) + 3.0 # Speed boost
