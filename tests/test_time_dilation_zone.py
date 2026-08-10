@@ -55,7 +55,7 @@ def test_time_dilation_zone():
 
     assert ball.x == 475.0, f"Ball x was {ball.x}"
     assert ball.dash_cooldown == 2.25, f"Ball cooldown was {ball.dash_cooldown}"
-    assert hazard.x == 525.0, f"Hazard x was {hazard.x}"
-    assert hazard.explosion_timer == 1.75, f"Hazard timer was {hazard.explosion_timer}"
-    assert proj.x == 525.0, f"Proj x was {proj.x}"
-    assert proj.duration == 1.75, f"Proj duration was {proj.duration}"
+    assert hazard.x == 475.0, f"Hazard x was {hazard.x}"
+    assert hazard.explosion_timer == 2.25, f"Hazard timer was {hazard.explosion_timer}"
+    assert proj.x == 475.0, f"Proj x was {proj.x}"
+    assert proj.duration == 2.25, f"Proj duration was {proj.duration}"

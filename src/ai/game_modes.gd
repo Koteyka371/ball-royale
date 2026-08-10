@@ -68302,7 +68302,7 @@ class TimeDilationZoneMode extends GameMode:
 	func _init():
 		pass
 		name = "Time Dilation Zone"
-		description = "A localized hazard zone that sporadically slows down time for entities inside it but speeds up projectiles and hazards passing through it."
+		description = "Areas in the arena where time flows slower. Projectiles and balls moving through these zones lose half their speed and delta multipliers are halved."
 
 	func setup(world, balls):
 		super.setup(world, balls)
@@ -68409,25 +68409,25 @@ class TimeDilationZoneMode extends GameMode:
 						var hvy = h.get("vy") if typeof(h) == TYPE_DICTIONARY else h.vy if "vy" in h else 0.0
 
 						if typeof(h) == TYPE_DICTIONARY:
-							h["x"] += hvx * delta * 0.5
-							h["y"] += hvy * delta * 0.5
+							h["x"] -= hvx * delta * 0.5
+							h["y"] -= hvy * delta * 0.5
 
 							var keys = h.keys()
 							for k in keys:
 								if typeof(k) == TYPE_STRING and (k.ends_with("_timer") or k.ends_with("_duration") or k.ends_with("_cooldown") or k == "duration" or k == "lifetime"):
 									var val = h[k]
 									if typeof(val) == TYPE_INT or typeof(val) == TYPE_FLOAT:
-										h[k] = max(0.0, val - delta * 0.5)
+										h[k] = val + delta * 0.5
 						else:
-							if "x" in h: h.x += hvx * delta * 0.5
-							if "y" in h: h.y += hvy * delta * 0.5
+							if "x" in h: h.x -= hvx * delta * 0.5
+							if "y" in h: h.y -= hvy * delta * 0.5
 
 							var attrs = ["duration", "lifetime", "explosion_timer"]
 							for attr in attrs:
 								if attr in h:
 									var val = h.get(attr)
 									if typeof(val) == TYPE_INT or typeof(val) == TYPE_FLOAT:
-										h.set(attr, max(0.0, val - delta * 0.5))
+										h.set(attr, val + delta * 0.5)
 
 		var projectiles = null
 		if world != null:
@@ -68454,25 +68454,25 @@ class TimeDilationZoneMode extends GameMode:
 					var pvy = p.get("vy") if typeof(p) == TYPE_DICTIONARY else p.vy if "vy" in p else 0.0
 
 					if typeof(p) == TYPE_DICTIONARY:
-						p["x"] += pvx * delta * 0.5
-						p["y"] += pvy * delta * 0.5
+						p["x"] -= pvx * delta * 0.5
+						p["y"] -= pvy * delta * 0.5
 
 						var keys = p.keys()
 						for k in keys:
 							if typeof(k) == TYPE_STRING and (k.ends_with("_timer") or k.ends_with("_duration") or k.ends_with("_cooldown") or k == "duration"):
 								var val = p[k]
 								if typeof(val) == TYPE_INT or typeof(val) == TYPE_FLOAT:
-									p[k] = max(0.0, val - delta * 0.5)
+									p[k] = val + delta * 0.5
 					else:
-						if "x" in p: p.x += pvx * delta * 0.5
-						if "y" in p: p.y += pvy * delta * 0.5
+						if "x" in p: p.x -= pvx * delta * 0.5
+						if "y" in p: p.y -= pvy * delta * 0.5
 
 						var attrs = ["duration", "lifetime", "explosion_timer"]
 						for attr in attrs:
 							if attr in p:
 								var val = p.get(attr)
 								if typeof(val) == TYPE_INT or typeof(val) == TYPE_FLOAT:
-									p.set(attr, max(0.0, val - delta * 0.5))
+									p.set(attr, val + delta * 0.5)
 
 class OverdriveZoneMode extends GameMode:
 	var zone_x: float = 500.0
