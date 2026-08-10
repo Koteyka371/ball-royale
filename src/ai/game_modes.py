@@ -40290,9 +40290,13 @@ class TetheredRoyaleMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "Tethered Royale"
-        self.description = "Players are paired and permanently tethered. Moving in opposite directions drains stamina. Coordinated movement grants buffs. Breaking a tether creates an explosion."
+        self.description = "Players are paired and permanently tethered. The tether limits distance but also deals damage to any other ball that passes through it. The chained players must coordinate to move, and they share damage taken but gain a unified health pool until the chain breaks."
         self.tethers = {}
         self.prev_alive = {}
+        self.prev_hp = {}
+        self.max_distance = 300.0
+        self.pull_force = 800.0
+        self.chain_damage = 25.0
 
     def setup(self, world, balls):
         super().setup(world, balls)
@@ -40302,6 +40306,7 @@ class TetheredRoyaleMode(GameMode):
 
         self.tethers = {}
         self.prev_alive = {}
+        self.prev_hp = {}
 
         for i in range(0, len(alive_balls) - 1, 2):
             b1 = alive_balls[i]
@@ -40311,14 +40316,25 @@ class TetheredRoyaleMode(GameMode):
             self.tethers[b1.id] = b2
             self.tethers[b2.id] = b1
 
+            # Unified health pool
+            total_hp = getattr(b1, "hp", 100.0) + getattr(b2, "hp", 100.0)
+            b1.max_hp = getattr(b1, "max_hp", 100.0) + getattr(b2, "max_hp", 100.0)
+            b2.max_hp = b1.max_hp
+            b1.hp = total_hp
+            b2.hp = total_hp
+
         if len(alive_balls) % 2 != 0:
             alive_balls[-1].tether_target = None
 
         for b in balls:
             self.prev_alive[b.id] = getattr(b, "alive", False)
+            self.prev_hp[b.id] = getattr(b, "hp", 100.0)
 
     def tick(self, world, balls, delta: float = 0.016):
         super().tick(world, balls, delta)
+        import math
+
+        processed_pairs = set()
 
         for b in balls:
             was_alive = self.prev_alive.get(b.id, False)
@@ -40334,6 +40350,14 @@ class TetheredRoyaleMode(GameMode):
                 if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
                     world.arena.hazards.append(h)
 
+                # Unlink partner
+                target = getattr(b, "tether_target", None)
+                if target:
+                    target.tether_target = None
+                    # Revert max hp
+                    target.max_hp = getattr(target, "base_max_hp", 100.0)
+                    target.hp = min(target.hp, target.max_hp)
+
             self.prev_alive[b.id] = is_alive
 
             if not is_alive:
@@ -40341,34 +40365,73 @@ class TetheredRoyaleMode(GameMode):
 
             target = getattr(b, "tether_target", None)
             if target and getattr(target, "alive", False):
-                # Calculate movement coordination
-                v1x = getattr(b, "vx", 0.0)
-                v1y = getattr(b, "vy", 0.0)
-                v2x = getattr(target, "vx", 0.0)
-                v2y = getattr(target, "vy", 0.0)
+                pair_id = tuple(sorted([b.id, target.id]))
+                if pair_id not in processed_pairs:
+                    processed_pairs.add(pair_id)
 
-                # Use delta position or velocity to determine direction
-                # Dot product of velocities
-                import math
-                m1 = math.hypot(v1x, v1y)
-                m2 = math.hypot(v2x, v2y)
+                    # Sync HP correctly (sum of damage taken)
+                    b_prev_hp = self.prev_hp.get(b.id, getattr(b, "hp", 100.0))
+                    t_prev_hp = self.prev_hp.get(target.id, getattr(target, "hp", 100.0))
 
-                if m1 > 0.1 and m2 > 0.1:
-                    dot = (v1x * v2x + v1y * v2y) / (m1 * m2)
+                    b_dmg = b_prev_hp - getattr(b, "hp", 100.0)
+                    t_dmg = t_prev_hp - getattr(target, "hp", 100.0)
+                    total_dmg = max(0.0, b_dmg) + max(0.0, t_dmg)
 
-                    if dot < -0.5: # Moving opposite directions
-                        b.stamina = max(0.0, getattr(b, "stamina", 100.0) - 20.0 * delta)
-                    elif dot > 0.5: # Coordinated movement
-                        b.speed = getattr(b, "base_speed", 100.0) * 1.5
-                        # We also need to give a damage buff. Since damage logic might be elsewhere,
-                        # we can set a flag or multiplier that action/decision could use.
-                        b.damage = getattr(b, "damage", 20.0) * 1.5
-                else:
-                    b.speed = getattr(b, "base_speed", 100.0)
-                    b.damage = getattr(b, "base_damage", 20.0)
+                    # Assume they share the same hp pool at the start of tick, so b_prev_hp == t_prev_hp ideally,
+                    # but if there are small sync errors, we just take the max previous hp.
+                    new_hp = max(b_prev_hp, t_prev_hp) - total_dmg
+
+                    b.hp = new_hp
+                    target.hp = new_hp
+
+                    self.prev_hp[b.id] = new_hp
+                    self.prev_hp[target.id] = new_hp
+
+                    # Distance limit and pull
+                    dx = target.x - b.x
+                    dy = target.y - b.y
+                    dist = math.hypot(dx, dy)
+
+                    if dist > 0:
+                        nx = dx / dist
+                        ny = dy / dist
+
+                        if dist > self.max_distance:
+                            excess = dist - self.max_distance
+                            pull = min((excess / 50.0) * self.pull_force, self.pull_force * 2.0)
+
+                            b.vx = getattr(b, "vx", 0.0) + nx * pull * delta
+                            b.vy = getattr(b, "vy", 0.0) + ny * pull * delta
+
+                            target.vx = getattr(target, "vx", 0.0) - nx * pull * delta
+                            target.vy = getattr(target, "vy", 0.0) - ny * pull * delta
+
+                        # Check chain damage
+                        for other in balls:
+                            if not getattr(other, "alive", False) or other == b or other == target:
+                                continue
+
+                            # Project other onto the line segment
+                            px = other.x - b.x
+                            py = other.y - b.y
+                            dot = px * nx + py * ny
+
+                            if 0 <= dot <= dist:
+                                cx = b.x + dot * nx
+                                cy = b.y + dot * ny
+                                cdx = other.x - cx
+                                cdy = other.y - cy
+                                cdist = math.hypot(cdx, cdy)
+
+                                radius = getattr(other, "radius", 15.0)
+                                if cdist <= radius + 5.0:
+                                    if hasattr(world, "_deal_damage"):
+                                        world._deal_damage(b, other, self.chain_damage * delta * 60)
+                                    else:
+                                        other.hp = getattr(other, "hp", 100.0) - self.chain_damage * delta * 60
             else:
-                b.speed = getattr(b, "base_speed", 100.0)
-                b.damage = getattr(b, "base_damage", 20.0)
+                self.prev_hp[b.id] = getattr(b, "hp", 100.0)
+
 
 GAME_MODES["tethered_royale"] = TetheredRoyaleMode()
 GAME_MODES["elastic_tether"] = ElasticTetherMode()
