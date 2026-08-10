@@ -62,3 +62,22 @@ def test_healthy_gravity_well_ignores_low_hp():
 
     # Should not move
     assert final_vel == initial_vel
+
+def test_healthy_gravity_well_damages_in_horizon():
+    world = DummyWorld()
+    # Place ball exactly at the center (dist < horizon_radius)
+    ball = DummyBall(x=500.0, y=500.0, radius=10.0, hp=100.0)
+
+    mode = GAME_MODES["healthy_gravity_well"]
+    mode.setup(world, [ball])
+
+    initial_hp = ball.hp
+
+    # Tick for 1.0 seconds to cause damage (damage is 25.0 * delta)
+    mode.tick(world, [ball], 1.0)
+
+    final_hp = ball.hp
+
+    # Needs to take damage
+    assert final_hp < initial_hp
+    assert final_hp == 75.0
