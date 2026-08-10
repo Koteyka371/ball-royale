@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1801] Moon Gravity Adjuster — *2026-08-10 10:05:47 UTC*
+
+During lunar events (like lunar eclipse), overall gravity drops by 50%. Bouncing off walls or other balls propels balls further, and jump pads have 2x vertical lift, fundamentally changing the arena physics for the duration.
+
+---
+
 ## [idea-1961] Black Hole Collapse — *2026-08-10 09:34:06 UTC*
 
 When the game reaches a certain time, all boundaries become black hole edges and slowly suck all players to the center.
