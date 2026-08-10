@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1936] Sticky Boundaries — *2026-08-10 21:09:04 UTC*
+
+Arena boundaries become covered in sticky slime, catching colliding balls and freezing their momentum for 3 seconds before slowly releasing them.
+
+---
+
 ## [idea-1879] Gravity well that specifically targets high health players — *2026-08-10 20:12:53 UTC*
 
 A gravity well that pulls players with hp > 75 towards the center.
