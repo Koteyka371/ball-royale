@@ -85090,3 +85090,6 @@ class OutsideInFallingTilesMode extends GameMode:
 						elif typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
 							var id_val = b.get("id", null) if typeof(b) == TYPE_DICTIONARY else (b.id if "id" in b else null)
 							world.add_event.call("ball_fell", {"id": id_val})
+
+const RandomPortalsModeClass = preload("res://src/ai/random_portals.gd")
+GAME_MODES['random_portals'] = RandomPortalsModeClass.new()
