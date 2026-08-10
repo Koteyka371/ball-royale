@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1970] Thermal Overload — *2026-08-10 06:35:41 UTC*
+
+Players who stay in a heat zone for too long after being thawed will begin to take continuous fire damage. They must weigh the benefit of unfreezing against the risk of taking severe burn damage.
+
+---
+
 ## [idea-1941] Quantum Resonance Fields — *2026-08-10 06:21:32 UTC*
 
 A dynamic arena event where invisible quantum fields spawn. When a player dashes through a field, they create a temporary clone of themselves that mimics their last 3 seconds of movement and attacks, confusing enemies and amplifying overall team damage output.
