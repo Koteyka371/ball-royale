@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1977] Bouncy Grapple Mod — *2026-08-10 13:41:52 UTC*
+
+Grappling to a surface now acts like a bouncy pad, propelling the player in the opposite direction after they hit the wall.
+
+---
+
 ## [idea-1978] Electric Grapple — *2026-08-10 13:08:34 UTC*
 
 Grappling an enemy zaps them, dealing minor damage and slowing them down for a short duration while they are pulled.
