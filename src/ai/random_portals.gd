@@ -54,17 +54,10 @@ func tick(world, balls, delta = 0.016):
 
 	teleport_timer += delta
 	if teleport_timer >= teleport_interval:
-		teleport_timer = 0.0
+		teleport_timer -= teleport_interval
 		_spawn_portals(world)
 
 	for portal in portals:
-		if portal.has("cooldown") and portal["cooldown"] > 0:
-			portal["cooldown"] -= delta
-
-	for portal in portals:
-		if portal.has("cooldown") and portal["cooldown"] > 0:
-			continue
-
 		var px = portal["x"]
 		var py = portal["y"]
 		var pr = portal["radius"]
@@ -98,15 +91,33 @@ func tick(world, balls, delta = 0.016):
 					if other_portals.size() > 0:
 						var target_portal = other_portals[randi() % other_portals.size()]
 
+						var vx = 0.0
+						var vy = 0.0
 						if typeof(b) == TYPE_DICTIONARY:
-							b["x"] = target_portal["x"]
-							b["y"] = target_portal["y"]
+							vx = b.get("vx", 0.0)
+							vy = b.get("vy", 0.0)
 						else:
-							if "x" in b: b.x = target_portal["x"]
-							if "y" in b: b.y = target_portal["y"]
+							if "vx" in b: vx = b.vx
+							if "vy" in b: vy = b.vy
 
-						portal["cooldown"] = 0.5
-						target_portal["cooldown"] = 0.5
+						if vx == 0.0 and vy == 0.0:
+							vx = 1.0
+							vy = 0.0
+
+						var v_len = sqrt(vx * vx + vy * vy)
+						var nx = vx / v_len
+						var ny = vy / v_len
+
+						var offset = target_portal["radius"] + br + 5.0
+						var target_x = target_portal["x"] + nx * offset
+						var target_y = target_portal["y"] + ny * offset
+
+						if typeof(b) == TYPE_DICTIONARY:
+							b["x"] = target_x
+							b["y"] = target_y
+						else:
+							if "x" in b: b.x = target_x
+							if "y" in b: b.y = target_y
 
 						if typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
 							world.add_event("random_portal_teleport", {"x": target_portal["x"], "y": target_portal["y"]})

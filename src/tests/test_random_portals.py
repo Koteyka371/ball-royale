@@ -35,9 +35,9 @@ def test_random_portals_spawn():
     for p in mode.portals:
         assert 100 <= p["x"] <= 700
         assert 100 <= p["y"] <= 500
-        assert p["cooldown"] == 0.0
 
 def test_random_portals_teleport():
+    import math
     mode = RandomPortalsMode()
     world = MockWorld()
     b = MockBall(0, 0)
@@ -52,27 +52,36 @@ def test_random_portals_teleport():
 
     mode.tick(world, balls, delta=0.016)
 
+    v_len = math.hypot(b.vx, b.vy)
+    nx = b.vx / v_len
+    ny = b.vy / v_len
+    offset = p1["radius"] + b.radius + 5.0
+
     # Check that ball was teleported to one of the other portals
+    # at the correct offset based on velocity
     teleported_to_other = False
     for p in mode.portals[1:]:
-        if b.x == p["x"] and b.y == p["y"]:
+        target_x = p["x"] + nx * offset
+        target_y = p["y"] + ny * offset
+        if math.isclose(b.x, target_x, abs_tol=0.1) and math.isclose(b.y, target_y, abs_tol=0.1):
             teleported_to_other = True
             break
 
-    assert teleported_to_other, "Ball should have teleported to another portal"
-    assert p1["cooldown"] == 0.5
-    assert mode.portals[0]["cooldown"] == 0.5
+    assert teleported_to_other, "Ball should have teleported to another portal at the correct offset"
 
-    # Cooldown should prevent instant re-teleport
-    b.x = p1["x"]
-    b.y = p1["y"]
-    old_vx = b.vx
+    # Ball shouldn't instantly teleport if placed just outside the offset
+    # since it's > p["radius"] + b.radius
+    b.x = p1["x"] + nx * (offset + 1.0)
+    b.y = p1["y"] + ny * (offset + 1.0)
+
+    start_x = b.x
+    start_y = b.y
 
     mode.tick(world, balls, delta=0.016)
 
-    # Cooldown decremented
-    assert p1["cooldown"] < 0.5
-    assert b.x == p1["x"] # Hasn't teleported again
+    # Shouldn't teleport
+    assert b.x == start_x
+    assert b.y == start_y
 
 def test_random_portals_respawn_interval():
     mode = RandomPortalsMode()
