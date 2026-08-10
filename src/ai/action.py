@@ -7892,6 +7892,10 @@ class Action:
                 if getattr(gm, "mutators_active", False) and "zero_gravity" in getattr(gm, "mutators", []):
                     is_zero_gravity = True
 
+        is_lunar_eclipse = False
+        if hasattr(self.world, "arena") and getattr(self.world.arena, "is_lunar_eclipse", False):
+            is_lunar_eclipse = True
+
         if is_zero_gravity:
             # Apply friction
             if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
@@ -7902,6 +7906,10 @@ class Action:
         else:
             arena = getattr(self.world, "arena", None)
             base_friction = getattr(arena, "base_friction", None) if arena else None
+
+            if is_lunar_eclipse and base_friction is not None:
+                base_friction *= 0.5
+
             if base_friction is not None and not getattr(self.ball, "is_frictionless", False):
                 if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
                     fm = getattr(self.ball, "friction_multiplier", 1.0)
@@ -13043,8 +13051,11 @@ class Action:
                             dist = math.hypot(dx, dy)
                             if dist < (self.ball.radius + hazard.radius) and dist > 0.0001:
                                 nx, ny = dx / dist, dy / dist
-                                self.ball.vx = nx * 1500.0
-                                self.ball.vy = ny * 1500.0
+                                push_force = 1500.0
+                                if hasattr(self.world, "arena") and getattr(self.world.arena, "is_lunar_eclipse", False):
+                                    push_force = 3000.0
+                                self.ball.vx = nx * push_force
+                                self.ball.vy = ny * push_force
                                 # Add a little bit of position bump so they actually move
                                 self.ball.x += nx * 20.0
                                 self.ball.y += ny * 20.0
@@ -24298,7 +24309,11 @@ class Action:
         cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
         is_magnetic = getattr(self.ball, "magnetic_boots_timer", 0.0) > 0.0 or cosmetic == "magnetic_boots"
 
-        if bounced and gm and getattr(gm, "name", "") in ["Ricochet Arena", "Extreme Bounciness", "Super Bouncy Arena", "Chaotic Pinball Machine", "Jump Pad Boundaries"]:
+        is_lunar_eclipse_bounce = False
+        if hasattr(self.world, "arena") and getattr(self.world.arena, "is_lunar_eclipse", False):
+            is_lunar_eclipse_bounce = True
+
+        if bounced and (gm and getattr(gm, "name", "") in ["Ricochet Arena", "Extreme Bounciness", "Super Bouncy Arena", "Chaotic Pinball Machine", "Jump Pad Boundaries"] or is_lunar_eclipse_bounce):
             if getattr(gm, "name", "") == "Ricochet Arena":
                 mult = getattr(gm, "velocity_multiplier", 3.0)
             elif getattr(gm, "name", "") == "Jump Pad Boundaries":

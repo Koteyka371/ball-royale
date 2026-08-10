@@ -15609,6 +15609,15 @@ func execute(strategy: String, delta: float):
         elif my_ball.has_method("has_meta") and my_ball.has_meta("is_frictionless") and my_ball.get_meta("is_frictionless"): is_frictionless = true
         elif typeof(my_ball) == TYPE_DICTIONARY and my_ball.has("is_frictionless") and my_ball.is_frictionless: is_frictionless = true
 
+        var is_lunar_eclipse = false
+        if typeof(self.world) == TYPE_OBJECT and "arena" in self.world and "is_lunar_eclipse" in self.world.arena and self.world.arena.is_lunar_eclipse:
+            is_lunar_eclipse = true
+        elif typeof(self.world) == TYPE_DICTIONARY and self.world.has("arena") and self.world.arena.has("is_lunar_eclipse") and self.world.arena.is_lunar_eclipse:
+            is_lunar_eclipse = true
+
+        if is_lunar_eclipse and base_frict != null:
+            base_frict *= 0.5
+
         if base_frict != null and not is_frictionless:
             if "vx" in my_ball and "vy" in my_ball:
                 var fm = 1.0
@@ -24734,12 +24743,18 @@ func execute(strategy: String, delta: float):
                         if d < (b_rad + hazard.radius) and d > 0.0001:
                             var nx = dx / d
                             var ny = dy / d
+                            var push_force = 1000.0
+                            if typeof(self.world) == TYPE_OBJECT and "arena" in self.world and "is_lunar_eclipse" in self.world.arena and self.world.arena.is_lunar_eclipse:
+                                push_force = 2000.0
+                            elif typeof(self.world) == TYPE_DICTIONARY and self.world.has("arena") and self.world.arena.has("is_lunar_eclipse") and self.world.arena.is_lunar_eclipse:
+                                push_force = 2000.0
+
                             if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
-                                self.ball.set_meta("vx", nx * 1000.0)
-                                self.ball.set_meta("vy", ny * 1000.0)
+                                self.ball.set_meta("vx", nx * push_force)
+                                self.ball.set_meta("vy", ny * push_force)
                             elif "vx" in self.ball:
-                                self.ball.vx = nx * 1000.0
-                                self.ball.vy = ny * 1000.0
+                                self.ball.vx = nx * push_force
+                                self.ball.vy = ny * push_force
                         continue
 
                     elif hazard.kind == "slime_bouncer":
@@ -47215,7 +47230,13 @@ func _clamp_position() -> bool:
 
         var is_magnetic = (mb_timer > 0.0 or cosmetic_val == "magnetic_boots")
 
-        if bounced and "game_mode" in self.world and self.world.game_mode != null and "name" in self.world.game_mode and self.world.game_mode.name in ["Ricochet Arena", "Extreme Bounciness", "Super Bouncy Arena", "Chaotic Pinball Machine", "Jump Pad Boundaries"]:
+        var is_lunar_eclipse_bounce = false
+        if typeof(self.world) == TYPE_OBJECT and "arena" in self.world and "is_lunar_eclipse" in self.world.arena and self.world.arena.is_lunar_eclipse:
+            is_lunar_eclipse_bounce = true
+        elif typeof(self.world) == TYPE_DICTIONARY and self.world.has("arena") and self.world.arena.has("is_lunar_eclipse") and self.world.arena.is_lunar_eclipse:
+            is_lunar_eclipse_bounce = true
+
+        if bounced and (("game_mode" in self.world and self.world.game_mode != null and "name" in self.world.game_mode and self.world.game_mode.name in ["Ricochet Arena", "Extreme Bounciness", "Super Bouncy Arena", "Chaotic Pinball Machine", "Jump Pad Boundaries"]) or is_lunar_eclipse_bounce):
             var mult = 2.0
             if self.world.game_mode.name == "Ricochet Arena":
                 mult = 3.0
