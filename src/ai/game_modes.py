@@ -54417,6 +54417,68 @@ class QuantumCloneFieldMode(GameMode):
 
 GAME_MODES['quantum_clone_field'] = QuantumCloneFieldMode()
 
+class StickyBoundariesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Sticky Slime Boundaries"
+        self.description = "Arena boundaries become covered in sticky slime, catching colliding balls and freezing their momentum for 3 seconds before slowly releasing them."
+        self.freeze_duration = 3.0
+
+    def tick(self, world, balls, delta):
+        super().tick(world, balls, delta)
+
+        arena_width = getattr(getattr(world, "arena", None), "width", 1000)
+        arena_height = getattr(getattr(world, "arena", None), "height", 1000)
+
+        for b in balls:
+            if not getattr(b, "alive", True) or getattr(b, "ball_type", "") == "spectator":
+                continue
+
+            x = getattr(b, "x", 0)
+            y = getattr(b, "y", 0)
+            radius = getattr(b, "radius", 15.0)
+            vx = getattr(b, "vx", 0)
+            vy = getattr(b, "vy", 0)
+
+            # Immunity after release
+            immunity = getattr(b, "slime_immunity_timer", 0.0)
+            if immunity > 0:
+                b.slime_immunity_timer = max(0.0, immunity - delta)
+                continue
+
+            # If stuck
+            stuck_timer = getattr(b, "slime_stuck_timer", 0.0)
+            if stuck_timer > 0:
+                b.slime_stuck_timer = max(0.0, stuck_timer - delta)
+                b.vx = 0.0
+                b.vy = 0.0
+                # When timer expires, grant immunity to prevent infinite freeze loop
+                if b.slime_stuck_timer <= 0:
+                    b.slime_immunity_timer = 0.5
+                continue
+
+            # Check for boundary collision
+            hit_boundary = False
+            if x - radius <= 0 and vx < 0:
+                hit_boundary = True
+                b.x = radius
+            elif x + radius >= arena_width and vx > 0:
+                hit_boundary = True
+                b.x = arena_width - radius
+            if y - radius <= 0 and vy < 0:
+                hit_boundary = True
+                b.y = radius
+            elif y + radius >= arena_height and vy > 0:
+                hit_boundary = True
+                b.y = arena_height - radius
+
+            if hit_boundary:
+                b.slime_stuck_timer = self.freeze_duration
+                b.vx = 0.0
+                b.vy = 0.0
+                if hasattr(world, "add_event"):
+                    world.add_event("slime_stuck", {"x": b.x, "y": b.y, "target": getattr(b, "id", -1)})
+
 class BlackHoleBoundariesMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -54453,3 +54515,4 @@ class BlackHoleBoundariesMode(GameMode):
 GAME_MODES['black_hole_boundaries'] = BlackHoleBoundariesMode()
 
 GAME_MODES['low_gravity_zone'] = LowGravityZoneMode()
+GAME_MODES['sticky_boundaries'] = StickyBoundariesMode()

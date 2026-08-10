@@ -85710,6 +85710,157 @@ class TetheredRoyaleMode extends GameMode:
 											ohp = other.get("hp", 100.0)
 											other["hp"] = ohp - chain_damage * delta * 60
 
+class StickyBoundariesMode extends GameMode:
+	var freeze_duration = 3.0
+
+	func _init():
+		name = "Sticky Slime Boundaries"
+		description = "Arena boundaries become covered in sticky slime, catching colliding balls and freezing their momentum for 3 seconds before slowly releasing them."
+
+	func tick(world, balls, delta):
+		super.tick(world, balls, delta)
+
+		var arena_width = 1000
+		var arena_height = 1000
+		var arena = world.get("arena")
+		if arena != null:
+			if typeof(arena) == TYPE_DICTIONARY:
+				arena_width = arena.get("width", 1000)
+				arena_height = arena.get("height", 1000)
+			elif typeof(arena) == TYPE_OBJECT:
+				arena_width = arena.get("width") if arena.get("width") != null else 1000
+				arena_height = arena.get("height") if arena.get("height") != null else 1000
+
+		for b in balls:
+			var is_alive = true
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", true)
+				if not is_alive or b.get("ball_type", "") == "spectator":
+					continue
+			elif typeof(b) == TYPE_OBJECT:
+				is_alive = b.get("alive") if b.get("alive") != null else true
+				if not is_alive or b.get("ball_type") == "spectator":
+					continue
+
+			var x = 0.0
+			var y = 0.0
+			var radius = 15.0
+			var vx = 0.0
+			var vy = 0.0
+
+			if typeof(b) == TYPE_DICTIONARY:
+				x = b.get("x", 0.0)
+				y = b.get("y", 0.0)
+				radius = b.get("radius", 15.0)
+				vx = b.get("vx", 0.0)
+				vy = b.get("vy", 0.0)
+			elif typeof(b) == TYPE_OBJECT:
+				x = b.get("x") if b.get("x") != null else 0.0
+				y = b.get("y") if b.get("y") != null else 0.0
+				radius = b.get("radius") if b.get("radius") != null else 15.0
+				vx = b.get("vx") if b.get("vx") != null else 0.0
+				vy = b.get("vy") if b.get("vy") != null else 0.0
+
+			var immunity = 0.0
+			if typeof(b) == TYPE_DICTIONARY:
+				immunity = b.get("slime_immunity_timer", 0.0)
+			elif typeof(b) == TYPE_OBJECT:
+				if b.has_meta("slime_immunity_timer"):
+					immunity = b.get_meta("slime_immunity_timer")
+				elif b.get("slime_immunity_timer") != null:
+					immunity = b.get("slime_immunity_timer")
+
+			if immunity > 0.0:
+				immunity = max(0.0, immunity - delta)
+				if typeof(b) == TYPE_DICTIONARY:
+					b["slime_immunity_timer"] = immunity
+				elif typeof(b) == TYPE_OBJECT:
+					if b.has_meta("slime_immunity_timer") or not ("slime_immunity_timer" in b):
+						b.set_meta("slime_immunity_timer", immunity)
+					else:
+						b.set("slime_immunity_timer", immunity)
+				continue
+
+			var stuck_timer = 0.0
+			if typeof(b) == TYPE_DICTIONARY:
+				stuck_timer = b.get("slime_stuck_timer", 0.0)
+			elif typeof(b) == TYPE_OBJECT:
+				if b.has_meta("slime_stuck_timer"):
+					stuck_timer = b.get_meta("slime_stuck_timer")
+				elif b.get("slime_stuck_timer") != null:
+					stuck_timer = b.get("slime_stuck_timer")
+
+			if stuck_timer > 0.0:
+				stuck_timer = max(0.0, stuck_timer - delta)
+				if typeof(b) == TYPE_DICTIONARY:
+					b["slime_stuck_timer"] = stuck_timer
+					b["vx"] = 0.0
+					b["vy"] = 0.0
+					if stuck_timer <= 0.0:
+						b["slime_immunity_timer"] = 0.5
+				elif typeof(b) == TYPE_OBJECT:
+					if b.has_meta("slime_stuck_timer") or not ("slime_stuck_timer" in b):
+						b.set_meta("slime_stuck_timer", stuck_timer)
+					else:
+						b.set("slime_stuck_timer", stuck_timer)
+					b.set("vx", 0.0)
+					b.set("vy", 0.0)
+					if stuck_timer <= 0.0:
+						if b.has_meta("slime_immunity_timer") or not ("slime_immunity_timer" in b):
+							b.set_meta("slime_immunity_timer", 0.5)
+						else:
+							b.set("slime_immunity_timer", 0.5)
+				continue
+
+			var hit_boundary = false
+			if x - radius <= 0 and vx < 0:
+				hit_boundary = true
+				if typeof(b) == TYPE_DICTIONARY:
+					b["x"] = radius
+				elif typeof(b) == TYPE_OBJECT:
+					b.set("x", radius)
+			elif x + radius >= arena_width and vx > 0:
+				hit_boundary = true
+				if typeof(b) == TYPE_DICTIONARY:
+					b["x"] = arena_width - radius
+				elif typeof(b) == TYPE_OBJECT:
+					b.set("x", arena_width - radius)
+
+			if typeof(b) == TYPE_DICTIONARY:
+				x = b.get("x", 0.0)
+			elif typeof(b) == TYPE_OBJECT:
+				x = b.get("x") if b.get("x") != null else 0.0
+
+			if y - radius <= 0 and vy < 0:
+				hit_boundary = true
+				if typeof(b) == TYPE_DICTIONARY:
+					b["y"] = radius
+				elif typeof(b) == TYPE_OBJECT:
+					b.set("y", radius)
+			elif y + radius >= arena_height and vy > 0:
+				hit_boundary = true
+				if typeof(b) == TYPE_DICTIONARY:
+					b["y"] = arena_height - radius
+				elif typeof(b) == TYPE_OBJECT:
+					b.set("y", arena_height - radius)
+
+			if hit_boundary:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["slime_stuck_timer"] = freeze_duration
+					b["vx"] = 0.0
+					b["vy"] = 0.0
+					if world.has("add_event"):
+						world.add_event("slime_stuck", {"x": b.get("x", 0.0), "y": b.get("y", 0.0), "target": b.get("id", -1)})
+				elif typeof(b) == TYPE_OBJECT:
+					if b.has_meta("slime_stuck_timer") or not ("slime_stuck_timer" in b):
+						b.set_meta("slime_stuck_timer", freeze_duration)
+					else:
+						b.set("slime_stuck_timer", freeze_duration)
+					b.set("vx", 0.0)
+					b.set("vy", 0.0)
+					if world.has_method("add_event"):
+						world.add_event("slime_stuck", {"x": b.get("x", 0.0), "y": b.get("y", 0.0), "target": b.get("id", -1)})
+
 class BlackHoleBoundariesMode extends GameMode:
 	var activation_time = 30.0
 	var match_time = 0.0
@@ -85860,3 +86011,4 @@ GAME_MODES['black_hole_boundaries'] = BlackHoleBoundariesMode.new()
 
 
 GAME_MODES['low_gravity_zone'] = LowGravityZoneMode.new()
+GAME_MODES['sticky_boundaries'] = StickyBoundariesMode.new()
