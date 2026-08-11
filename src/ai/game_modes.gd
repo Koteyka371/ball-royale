@@ -62268,7 +62268,166 @@ class FrostbiteMode extends GameMode:
 
 var _frostbite_mode_inst = FrostbiteMode.new()
 
+
+class CurrencyBountyMode extends GameMode:
+	var currency_spawn_timer = 0.0
+
+	func _init():
+		super._init()
+		name = "Currency Bounty"
+		description = "Whenever a ball hits a certain currency threshold, a bounty is placed on them and other balls gain bonus stats when moving towards them."
+
+	func setup(world: Dictionary, balls: Array) -> void:
+		super.setup(world, balls)
+		if not "currency_pickups" in world:
+			world.currency_pickups = []
+
+		var arena_width = 1000
+		var arena_height = 1000
+		if "arena" in world and typeof(world.arena) == TYPE_DICTIONARY:
+			arena_width = world.arena.get("width", 1000)
+			arena_height = world.arena.get("height", 1000)
+
+		# Initial currency
+		for i in range(15):
+			world.currency_pickups.append({
+				"x": randf_range(50, arena_width - 50),
+				"y": randf_range(50, arena_height - 50),
+				"type": "currency"
+			})
+
+		for b in balls:
+			var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else (b.ball_type if "ball_type" in b else null)
+			if b_type != "spectator":
+				if typeof(b) == TYPE_DICTIONARY:
+					if not b.has("currency"): b["currency"] = 0
+				elif b.has_method("set_meta"):
+					if not b.has_meta("currency"): b.set_meta("currency", 0)
+
+	func tick(world: Dictionary, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		var arena_width = 1000
+		var arena_height = 1000
+		if "arena" in world and typeof(world.arena) == TYPE_DICTIONARY:
+			arena_width = world.arena.get("width", 1000)
+			arena_height = world.arena.get("height", 1000)
+
+		currency_spawn_timer += delta
+		if currency_spawn_timer >= 1.5:
+			currency_spawn_timer = 0.0
+			if "currency_pickups" in world and world.currency_pickups.size() < 40:
+				world.currency_pickups.append({
+					"x": randf_range(50, arena_width - 50),
+					"y": randf_range(50, arena_height - 50),
+					"type": "currency"
+				})
+
+		var bounty_target = null
+		for b in balls:
+			var is_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else false)
+			var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else (b.ball_type if "ball_type" in b else null)
+			if not is_alive or b_type == "spectator":
+				continue
+
+			var b_speed = b.get("speed", 100.0) if typeof(b) == TYPE_DICTIONARY else (b.speed if "speed" in b else 100.0)
+			var b_damage = b.get("damage", 10.0) if typeof(b) == TYPE_DICTIONARY else (b.damage if "damage" in b else 10.0)
+			var b_radius = b.get("radius", 15.0) if typeof(b) == TYPE_DICTIONARY else (b.radius if "radius" in b else 15.0)
+
+			var b_base_speed = b.get("base_speed") if typeof(b) == TYPE_DICTIONARY and b.has("base_speed") else (b.get_meta("base_speed") if typeof(b) != TYPE_DICTIONARY and b.has_meta("base_speed") else b_speed)
+			var b_base_damage = b.get("base_damage") if typeof(b) == TYPE_DICTIONARY and b.has("base_damage") else (b.get_meta("base_damage") if typeof(b) != TYPE_DICTIONARY and b.has_meta("base_damage") else b_damage)
+
+			if typeof(b) == TYPE_DICTIONARY:
+				if not b.has("base_speed"): b["base_speed"] = b_base_speed
+				if not b.has("base_damage"): b["base_damage"] = b_base_damage
+				b["speed"] = b_base_speed
+				b["damage"] = b_base_damage
+			else:
+				if not b.has_meta("base_speed"): b.set_meta("base_speed", b_base_speed)
+				if not b.has_meta("base_damage"): b.set_meta("base_damage", b_base_damage)
+				b.set("speed", b_base_speed)
+				b.set("damage", b_base_damage)
+
+			var bcurrency = 0
+			if typeof(b) == TYPE_DICTIONARY:
+				bcurrency = int(b.get("currency", 0))
+			else:
+				bcurrency = int(b.get_meta("currency")) if b.has_meta("currency") else 0
+
+			# Collect currency
+			var b_x = float(b["x"] if typeof(b) == TYPE_DICTIONARY and b.has("x") else (b.get("x") if "x" in b else 0))
+			var b_y = float(b["y"] if typeof(b) == TYPE_DICTIONARY and b.has("y") else (b.get("y") if "y" in b else 0))
+
+			if "currency_pickups" in world:
+				var pickups_to_remove = []
+				for i in range(world.currency_pickups.size()):
+					var c = world.currency_pickups[i]
+					var cx = float(c.get("x", 0))
+					var cy = float(c.get("y", 0))
+					var dx = b_x - cx
+					var dy = b_y - cy
+					var dist = sqrt(dx*dx + dy*dy)
+					if dist <= b_radius + 15.0:
+						bcurrency += 1
+						pickups_to_remove.append(c)
+
+				for c in pickups_to_remove:
+					var idx = world.currency_pickups.find(c)
+					if idx >= 0 and idx < world.currency_pickups.size():
+						world.currency_pickups.remove_at(idx)
+
+			if typeof(b) == TYPE_DICTIONARY:
+				b["currency"] = bcurrency
+			else:
+				b.set_meta("currency", bcurrency)
+
+			if bcurrency >= 10:
+				bounty_target = b
+
+		if bounty_target != null:
+			var target_id = bounty_target.get("id") if typeof(bounty_target) == TYPE_DICTIONARY else (bounty_target.get("id") if "id" in bounty_target else null)
+			var target_x = float(bounty_target["x"] if typeof(bounty_target) == TYPE_DICTIONARY and bounty_target.has("x") else (bounty_target.get("x") if "x" in bounty_target else 0))
+			var target_y = float(bounty_target["y"] if typeof(bounty_target) == TYPE_DICTIONARY and bounty_target.has("y") else (bounty_target.get("y") if "y" in bounty_target else 0))
+
+			var world_tick = world.get("tick", 0) if typeof(world) == TYPE_DICTIONARY else (world.tick if "tick" in world else 0)
+			if int(world_tick) % 30 == 0:
+				if world.has_method("add_event"):
+					world.add_event("bounty_compass", {"target_x": target_x, "target_y": target_y, "owner_id": target_id})
+				elif "events" in world and typeof(world.events) == TYPE_ARRAY:
+					world.events.append({"type": "bounty_compass", "data": {"target_x": target_x, "target_y": target_y, "owner_id": target_id}})
+
+			for b in balls:
+				var is_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else false)
+				var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else (b.ball_type if "ball_type" in b else null)
+				if not is_alive or b_type == "spectator" or b == bounty_target:
+					continue
+
+				var b_x = float(b["x"] if typeof(b) == TYPE_DICTIONARY and b.has("x") else (b.get("x") if "x" in b else 0))
+				var b_y = float(b["y"] if typeof(b) == TYPE_DICTIONARY and b.has("y") else (b.get("y") if "y" in b else 0))
+				var b_vx = float(b["vx"] if typeof(b) == TYPE_DICTIONARY and b.has("vx") else (b.get("vx") if "vx" in b else 0))
+				var b_vy = float(b["vy"] if typeof(b) == TYPE_DICTIONARY and b.has("vy") else (b.get("vy") if "vy" in b else 0))
+
+				var dx = target_x - b_x
+				var dy = target_y - b_y
+				var dist = sqrt(dx*dx + dy*dy)
+				var v_mag = sqrt(b_vx*b_vx + b_vy*b_vy)
+
+				if dist > 0 and v_mag > 0:
+					var dot_product = (dx * b_vx + dy * b_vy) / (dist * v_mag)
+					if dot_product > 0.5:
+						var b_base_speed = b.get("base_speed") if typeof(b) == TYPE_DICTIONARY and b.has("base_speed") else (b.get_meta("base_speed") if typeof(b) != TYPE_DICTIONARY and b.has_meta("base_speed") else 100.0)
+						var b_base_damage = b.get("base_damage") if typeof(b) == TYPE_DICTIONARY and b.has("base_damage") else (b.get_meta("base_damage") if typeof(b) != TYPE_DICTIONARY and b.has_meta("base_damage") else 10.0)
+
+						if typeof(b) == TYPE_DICTIONARY:
+							b["speed"] = b_base_speed * 1.5
+							b["damage"] = b_base_damage * 1.5
+						else:
+							b.set("speed", b_base_speed * 1.5)
+							b.set("damage", b_base_damage * 1.5)
+
+
 var GAME_MODES = {
+	"currency_bounty": CurrencyBountyMode.new(),
     "frostbite": _frostbite_mode_inst,
 	"giant_bouncy_royale": GiantBouncyRoyaleMode.new(),
 	"tethered_royale": TetheredRoyaleMode.new(),
