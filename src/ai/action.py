@@ -8103,26 +8103,56 @@ class Action:
                     if hasattr(self.ball, "base_damage"):
                         self.ball.base_damage *= 1.5
                     self.ball.ball_type = "elite_minion"
+                    import random
+                    self.ball.elite_mutation = random.choice(["ranged", "leap", "poison"])
                     if hasattr(self.world, "add_event"):
-                        self.world.add_event("minion_evolution", {"minion_id": self.ball.id})
+                        self.world.add_event("minion_evolution", {"minion_id": self.ball.id, "mutation": self.ball.elite_mutation})
 
             if getattr(self.ball, "is_elite_minion", False):
-                # Autonomous ranged attack for elite minion
-                if not hasattr(self.ball, "ranged_attack_timer"):
-                    self.ball.ranged_attack_timer = 2.0
-                self.ball.ranged_attack_timer -= delta
-                if self.ball.ranged_attack_timer <= 0:
-                    self.ball.ranged_attack_timer = 2.0
+                mutation = getattr(self.ball, "elite_mutation", "ranged")
+
+                # Autonomous ability for elite minion
+                if not hasattr(self.ball, "elite_ability_timer"):
+                    self.ball.elite_ability_timer = 2.0 if mutation == "ranged" else (3.0 if mutation == "leap" else 4.0)
+
+                self.ball.elite_ability_timer -= delta
+
+                if self.ball.elite_ability_timer <= 0:
+                    self.ball.elite_ability_timer = 2.0 if mutation == "ranged" else (3.0 if mutation == "leap" else 4.0)
                     # Find a target
                     enemies = [b for b in getattr(self.world, "balls", []) if getattr(b, "team", "") != getattr(self.ball, "team", "") and getattr(b, "alive", True)]
                     if enemies:
                         import math
                         target = min(enemies, key=lambda b: math.hypot(b.x - self.ball.x, b.y - self.ball.y))
-                        if math.hypot(target.x - self.ball.x, target.y - self.ball.y) < 200:
+                        dist = math.hypot(target.x - self.ball.x, target.y - self.ball.y)
+
+                        if mutation == "ranged" and dist < 200:
                             # Deal ranged damage
                             target.hp -= self.ball.damage * 0.5
                             if hasattr(self.world, "add_event"):
                                 self.world.add_event("ranged_attack", {"attacker_id": self.ball.id, "target_id": target.id})
+                        elif mutation == "leap" and dist < 300:
+                            # Small leap towards target
+                            speed_burst = 600.0
+                            if dist > 0:
+                                dx, dy = (target.x - self.ball.x) / dist, (target.y - self.ball.y) / dist
+                                self.ball.vx = getattr(self.ball, "vx", 0) + dx * speed_burst
+                                self.ball.vy = getattr(self.ball, "vy", 0) + dy * speed_burst
+                            if hasattr(self.world, "add_event"):
+                                self.world.add_event("minion_leap", {"attacker_id": self.ball.id, "target_id": target.id})
+                        elif mutation == "poison" and dist < 250:
+                            # Spawn poison cloud at target
+                            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                                try:
+                                    from arena.procedural_arena import Hazard
+                                    h_id = 90000 + len(self.world.arena.hazards) + int(target.x) + int(target.y)
+                                    cloud = Hazard(id=h_id, x=target.x, y=target.y, radius=60.0, kind="poison_cloud", damage=10.0)
+                                    setattr(cloud, "duration", 4.0)
+                                    self.world.arena.hazards.append(cloud)
+                                except Exception:
+                                    pass
+                            if hasattr(self.world, "add_event"):
+                                self.world.add_event("minion_poison", {"attacker_id": self.ball.id, "target_id": target.id})
 
             self.ball.hp -= 2.0 * delta  # Decay 2 HP per second
             if self.ball.hp <= 0:
