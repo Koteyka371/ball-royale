@@ -54696,3 +54696,4 @@ class LaserTagMode(GameMode):
                         world.add_event("death", {"id": getattr(b, "id", None), "reason": "laser_tag_elimination"})
 
 GAME_MODES['laser_tag'] = LaserTagMode()
+GAME_MODES['gold_rush'] = __import__('ai.gold_rush', fromlist=['']).GoldRushMode()
