@@ -86171,3 +86171,6 @@ class LaserTagMode extends GameMode:
 						world["events"].append({"type": "death", "data": {"id": b.get("id"), "reason": "laser_tag_elimination"}})
 
 GAME_MODES['laser_tag'] = LaserTagMode.new()
+
+const GoldRushMode = preload("res://src/ai/gold_rush.gd")
+GAME_MODES['gold_rush'] = GoldRushMode.new()
