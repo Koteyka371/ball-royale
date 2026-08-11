@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1963] Frostbite Weather Mutation — *2026-08-11 09:15:14 UTC*
+
+A new weather event 'Frostbite' that slowly freezes balls unless they keep moving constantly or stay near temporary heat vents that spawn around the arena.
+
+---
+
 ## [idea-1960] Bumper Car Madness Game Mode — *2026-08-11 07:24:32 UTC*
 
 All balls have double size and double bounce physics, causing massive chaotic collisions and ricochets. Arena boundaries are replaced by bouncy forcefields.
