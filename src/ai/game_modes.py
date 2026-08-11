@@ -54516,3 +54516,183 @@ GAME_MODES['black_hole_boundaries'] = BlackHoleBoundariesMode()
 
 GAME_MODES['low_gravity_zone'] = LowGravityZoneMode()
 GAME_MODES['sticky_boundaries'] = StickyBoundariesMode()
+
+
+class LaserTagMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Laser Tag"
+        self.description = "Players shoot non-lethal lasers that bounce off walls. If hit, you are disabled for 3 seconds. The last player remaining without being hit wins."
+        self.laser_cooldown = 1.0
+        self.laser_speed = 600.0
+
+    def tick(self, world, balls, delta):
+        super().tick(world, balls, delta)
+
+        # We need to spawn lasers for alive players
+        for b in balls:
+            if not getattr(b, "alive", True) or getattr(b, "ball_type", "") == "spectator":
+                continue
+
+            # Decrease laser cooldown
+            cd = getattr(b, "laser_tag_cd", 0.0)
+            if cd > 0:
+                setattr(b, "laser_tag_cd", cd - delta)
+
+            # If cooldown is up, fire a laser at nearest enemy
+            if getattr(b, "laser_tag_cd", 0.0) <= 0:
+                # Find nearest enemy
+                nearest_enemy = None
+                min_dist = 999999.0
+                for e in balls:
+                    if e == b or not getattr(e, "alive", True) or getattr(e, "ball_type", "") == "spectator":
+                        continue
+                    if getattr(e, "team", None) == getattr(b, "team", None) and getattr(b, "team", None) is not None:
+                        continue
+
+                    dx = e.x - b.x
+                    dy = e.y - b.y
+                    dist = (dx**2 + dy**2)**0.5
+                    if dist < min_dist:
+                        min_dist = dist
+                        nearest_enemy = e
+
+                if nearest_enemy:
+                    # Shoot a laser towards nearest enemy
+                    dx = nearest_enemy.x - b.x
+                    dy = nearest_enemy.y - b.y
+                    import math
+                    angle = math.atan2(dy, dx)
+
+                    try:
+                        from arena.procedural_arena import Hazard
+                        laser = Hazard(getattr(world, "next_id", 99999) + 100, b.x + math.cos(angle)*25, b.y + math.sin(angle)*25, 10.0, "laser_beam", 0.0)
+                    except:
+                        class FallbackLaser:
+                            def __init__(self, id, x, y, radius, kind, damage):
+                                self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
+                        laser = FallbackLaser(getattr(world, "next_id", 99999) + 100, b.x + math.cos(angle)*25, b.y + math.sin(angle)*25, 10.0, "laser_beam", 0.0)
+
+                    setattr(laser, "vx", math.cos(angle) * self.laser_speed)
+                    setattr(laser, "vy", math.sin(angle) * self.laser_speed)
+                    setattr(laser, "is_projectile", True)
+                    setattr(laser, "bounces", 10)
+                    setattr(laser, "owner_id", getattr(b, "id", None))
+                    setattr(laser, "alive", True)
+                    setattr(laser, "duration", 5.0)
+
+                    if not hasattr(world, "projectiles"):
+                        world.projectiles = []
+                    world.projectiles.append(laser)
+
+                    setattr(b, "laser_tag_cd", self.laser_cooldown)
+
+        # Handle projectile collisions manually if needed,
+        # or normally game mode handles it.
+        # Let's handle it manually to be safe.
+        if hasattr(world, "projectiles"):
+            projs_to_remove = []
+            for p in world.projectiles:
+                if getattr(p, "kind", "") != "laser_beam":
+                    continue
+
+                # Update position and bounce
+                p.duration -= delta
+                if p.duration <= 0:
+                    projs_to_remove.append(p)
+                    continue
+
+                p.x += getattr(p, "vx", 0) * delta
+                p.y += getattr(p, "vy", 0) * delta
+
+                aw = getattr(world.arena, "width", 1000)
+                ah = getattr(world.arena, "height", 1000)
+                bounced = False
+                if p.x - p.radius < 0:
+                    p.x = p.radius
+                    p.vx = abs(p.vx)
+                    bounced = True
+                elif p.x + p.radius > aw:
+                    p.x = aw - p.radius
+                    p.vx = -abs(p.vx)
+                    bounced = True
+
+                if p.y - p.radius < 0:
+                    p.y = p.radius
+                    p.vy = abs(p.vy)
+                    bounced = True
+                elif p.y + p.radius > ah:
+                    p.y = ah - p.radius
+                    p.vy = -abs(p.vy)
+                    bounced = True
+
+                if bounced:
+                    p.bounces -= 1
+                    if p.bounces <= 0:
+                        projs_to_remove.append(p)
+                        continue
+
+                # Check collision with balls
+                for b in balls:
+                    if not getattr(b, "alive", True) or getattr(b, "ball_type", "") == "spectator":
+                        continue
+                    if getattr(p, "owner_id", None) == getattr(b, "id", None):
+                        continue
+
+                    dx = b.x - p.x
+                    dy = b.y - p.y
+                    dist = (dx**2 + dy**2)**0.5
+                    if dist <= b.radius + p.radius:
+                        # Hit!
+                        # Disable for 3 seconds
+                        b.silence_timer = max(getattr(b, "silence_timer", 0.0), 3.0)
+                        b.stun_timer = max(getattr(b, "stun_timer", 0.0), 3.0)
+                        # Eliminates the player from winning?
+                        # 'The last player remaining without being hit wins'
+                        # Thus we mark them as hit.
+                        setattr(b, "has_been_hit", True)
+
+                        projs_to_remove.append(p)
+
+                        # Apply elimination condition: if everyone else is hit, the remaining player wins.
+                        # Wait, what if they get eliminated on hit instead of just 'has_been_hit'?
+                        # Let's eliminate them if we want standard BR, but 'disabled for 3 seconds' implies they stay alive.
+                        break
+
+
+            # Filter unique list without set since Hazard may be unhashable
+            unique_projs = []
+            for p in projs_to_remove:
+                if p not in unique_projs:
+                    unique_projs.append(p)
+            for p in unique_projs:
+
+                if p in world.projectiles:
+                    world.projectiles.remove(p)
+
+        # Check win condition:
+        # If there is exactly one player who hasn't been hit, they win.
+        # Or if everyone but one is eliminated.
+        # But how to trigger win? Normally BR mode handles wins when 1 player is alive.
+        # Should we kill players who have been hit?
+        # If they are just "disabled for 3 seconds", then they eventually take damage from the zone and die.
+        # Wait, the task says: 'The last player remaining without being hit wins.'
+        # That means if you get hit, you are OUT (eliminated from winning).
+        # Maybe we should set hp to 0 if they get hit? But then why 'disabled for 3 seconds'?
+        # Oh, maybe getting hit disables them, AND they are disqualified. So they wander as zombies?
+        # Let's just set hp = 0 after 3 seconds, or maybe they just lose HP.
+        # Actually, maybe the simplest thing is:
+        # You are disabled for 3 seconds. The last player remaining without being hit wins.
+        # If they are disabled for 3 seconds, they can't move or shoot.
+        # We can just check how many players have NOT been hit.
+        not_hit_count = sum(1 for b in balls if getattr(b, "alive", True) and not getattr(b, "has_been_hit", False) and getattr(b, "ball_type", "") != "spectator")
+        if not_hit_count == 1:
+            # We have a winner! We should kill everyone else.
+            for b in balls:
+                if getattr(b, "has_been_hit", False) and getattr(b, "alive", True):
+                    b.hp = 0
+                    b.alive = False
+                    if hasattr(world, "add_event"):
+                        world.add_event("death", {"id": getattr(b, "id", None), "reason": "laser_tag_elimination"})
+
+GAME_MODES['laser_tag'] = LaserTagMode()
