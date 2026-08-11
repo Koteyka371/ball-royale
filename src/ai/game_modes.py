@@ -38299,7 +38299,113 @@ class FrostbiteMode(GameMode):
 
 
 
+
+class CurrencyBountyMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Currency Bounty"
+        self.description = "Whenever a ball hits a certain currency threshold, a bounty is placed on them and other balls gain bonus stats when moving towards them."
+        self.currency_spawn_timer = 0.0
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        if getattr(world, "currency_pickups", None) is None:
+            world.currency_pickups = []
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        import random
+        # Initial currency
+        for _ in range(15):
+            world.currency_pickups.append({
+                "x": random.uniform(50, arena_width - 50),
+                "y": random.uniform(50, arena_height - 50),
+                "type": "currency"
+            })
+
+        for b in balls:
+            if getattr(b, "ball_type", None) != "spectator":
+                b.currency = getattr(b, "currency", 0)
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import random
+        import math
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        self.currency_spawn_timer += delta
+        if self.currency_spawn_timer >= 1.5:
+            self.currency_spawn_timer = 0.0
+            if len(world.currency_pickups) < 40:
+                world.currency_pickups.append({
+                    "x": random.uniform(50, arena_width - 50),
+                    "y": random.uniform(50, arena_height - 50),
+                    "type": "currency"
+                })
+
+        bounty_target = None
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            if not hasattr(b, "base_speed"):
+                b.base_speed = getattr(b, "speed", 100.0)
+            if not hasattr(b, "base_damage"):
+                b.base_damage = getattr(b, "damage", 10.0)
+
+            # Reset stats to base first
+            b.speed = b.base_speed
+            b.damage = b.base_damage
+
+            # Collect currency
+            pickups_to_remove = []
+            for c in world.currency_pickups:
+                dx = b.x - c["x"]
+                dy = b.y - c["y"]
+                dist = math.sqrt(dx*dx + dy*dy)
+                if dist <= getattr(b, "radius", 15.0) + 15.0:
+                    b.currency = getattr(b, "currency", 0) + 1
+                    pickups_to_remove.append(c)
+
+            for c in pickups_to_remove:
+                if c in world.currency_pickups:
+                    world.currency_pickups.remove(c)
+
+            if getattr(b, "currency", 0) >= 10:
+                bounty_target = b
+
+        if bounty_target:
+            if int(getattr(world, "tick", 0)) % 30 == 0:
+                if hasattr(world, "add_event"):
+                    world.add_event("bounty_compass", {"target_x": float(bounty_target.x), "target_y": float(bounty_target.y), "owner_id": getattr(bounty_target, "id", None)})
+                elif hasattr(world, "events"):
+                    world.events.append({"type": "bounty_compass", "data": {"target_x": float(bounty_target.x), "target_y": float(bounty_target.y), "owner_id": getattr(bounty_target, "id", None)}})
+
+            for b in balls:
+                if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator" or b == bounty_target:
+                    continue
+
+                dx = bounty_target.x - b.x
+                dy = bounty_target.y - b.y
+                dist = math.sqrt(dx*dx + dy*dy)
+
+                vx = getattr(b, "vx", 0.0)
+                vy = getattr(b, "vy", 0.0)
+                v_mag = math.sqrt(vx*vx + vy*vy)
+
+                if dist > 0 and v_mag > 0:
+                    dot_product = (dx * vx + dy * vy) / (dist * v_mag)
+                    # If moving generally towards the target
+                    if dot_product > 0.5:
+                        b.speed = getattr(b, "base_speed", 100.0) * 1.5
+                        b.damage = getattr(b, "base_damage", 10.0) * 1.5
+
+
 GAME_MODES = {
+    "currency_bounty": CurrencyBountyMode(),
     'frostbite': FrostbiteMode(),
     "giant_bouncy_royale": GiantBouncyRoyaleMode(),
     'conveyor_belt_arena': ConveyorBeltArenaMode(),
