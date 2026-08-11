@@ -24348,7 +24348,7 @@ class Action:
         if hasattr(self.world, "arena") and getattr(self.world.arena, "is_lunar_eclipse", False):
             is_lunar_eclipse_bounce = True
 
-        if bounced and (gm and getattr(gm, "name", "") in ["Ricochet Arena", "Extreme Bounciness", "Super Bouncy Arena", "Chaotic Pinball Machine", "Jump Pad Boundaries"] or is_lunar_eclipse_bounce):
+        if bounced and (gm and getattr(gm, "name", "") in ["Ricochet Arena", "Extreme Bounciness", "Super Bouncy Arena", "Chaotic Pinball Machine", "Jump Pad Boundaries", "Giant Bouncy Royale"] or is_lunar_eclipse_bounce):
             if getattr(gm, "name", "") == "Ricochet Arena":
                 mult = getattr(gm, "velocity_multiplier", 3.0)
             elif getattr(gm, "name", "") == "Jump Pad Boundaries":
@@ -24461,6 +24461,9 @@ class Action:
                     knockback_multiplier = 5.0
                 elif gm and getattr(gm, "name", "") == "Pacifist Knockout":
                     knockback_multiplier = 5.0
+
+                elif gm and getattr(gm, "name", "") == "Giant Bouncy Royale":
+                    knockback_multiplier = 2.0
                 if gm and getattr(gm, "name", "") in ["Bumper Balls", "Bumper Royale"]:
                     knockback_multiplier = 5.0
                     if getattr(gm, "name", "") == "Bumper Royale":

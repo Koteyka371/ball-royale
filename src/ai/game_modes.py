@@ -38199,7 +38199,27 @@ class ConveyorBeltArenaMode(GameMode):
                 b.vx += current_direction * self.conveyor_speed * delta
 
 
+class GiantBouncyRoyaleMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Giant Bouncy Royale"
+        self.description = "All balls have double size and double bounce physics, causing massive chaotic collisions and ricochets. Arena boundaries are replaced by bouncy forcefields."
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        for b in balls:
+            if not getattr(b, "alive", True) or getattr(b, "ball_type", "") == "spectator":
+                continue
+            b.radius = getattr(b, "base_radius", 15.0) * 2.0
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if not getattr(b, "alive", True) or getattr(b, "ball_type", "") == "spectator":
+                continue
+            b.radius = getattr(b, "base_radius", 15.0) * 2.0
+
 GAME_MODES = {
+    "giant_bouncy_royale": GiantBouncyRoyaleMode(),
     'conveyor_belt_arena': ConveyorBeltArenaMode(),
     'quantum_anomaly_field': QuantumAnomalyFieldMode(),
 
