@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1960] Bumper Car Madness Game Mode — *2026-08-11 07:24:32 UTC*
+
+All balls have double size and double bounce physics, causing massive chaotic collisions and ricochets. Arena boundaries are replaced by bouncy forcefields.
+
+---
+
 ## [idea-1973] Minion Evolution System — *2026-08-11 06:05:45 UTC*
 
 Minions that survive for an extended period or participate in kills can evolve into stronger variants, gaining abilities like small leaps or poison attacks.
