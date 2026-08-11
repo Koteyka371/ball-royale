@@ -2491,6 +2491,16 @@ class Action:
 
 
 
+        if getattr(self.ball, "heroism_booster_timer", 0.0) > 0.0:
+            self.ball.heroism_booster_timer -= delta
+            # Health regen and glow
+            if hasattr(self.ball, "hp") and hasattr(self.ball, "max_hp"):
+                self.ball.hp = min(self.ball.hp + 20.0 * delta, self.ball.max_hp)
+            if self.ball.heroism_booster_timer <= 0.0:
+                self.ball.heroism_booster_timer = 0.0
+                if getattr(self.ball, "emotion", "") == "heroism":
+                    self.ball.emotion = "neutral"
+                self.ball.is_glowing = False
         if getattr(self.ball, "flight_booster_timer", 0.0) > 0.0:
             self.ball.flight_booster_timer -= delta
             if self.ball.flight_booster_timer <= 0.0:
@@ -15538,6 +15548,11 @@ class Action:
             import random as _rnd
             return _rnd.choice(enemies)
 
+        # Check for heroism first (draws aggro)
+        heroes = [e for e in enemies if getattr(e, "emotion", "") == "heroism"]
+        if heroes:
+            return min(heroes, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
+
         # Check for taunting decoys first
         taunt_decoys = [e for e in enemies if getattr(e, "is_decoy", False) and getattr(e, "decoy_type", "") == "taunt"]
         if taunt_decoys:
@@ -16602,6 +16617,17 @@ class Action:
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and b in self.world.arena.hazards:
                         self.world.arena.hazards.remove(b)
 
+                elif getattr(b, "kind", "") == "heroism_booster":
+                    dist = __import__("math").sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
+                    if dist <= getattr(self.ball, "radius", 10.0) + getattr(b, "radius", 15.0) + 5.0:
+                        self.ball.heroism_booster_timer = 10.0
+                        self.ball.emotion = "heroism"
+                        self.ball.is_glowing = True
+                        b.active = False
+                        if hasattr(self.world, "boosters") and b in self.world.boosters:
+                            self.world.boosters.remove(b)
+                        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and b in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(b)
                 elif getattr(b, "kind", "") == "grave_robber_shovel":
                     dist = __import__("math").sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
                     if dist <= getattr(self.ball, "radius", 10.0) + getattr(b, "radius", 15.0) + 5.0:
