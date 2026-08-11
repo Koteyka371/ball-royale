@@ -62109,7 +62109,167 @@ class GiantBouncyRoyaleMode extends GameMode:
 					continue
 				b["radius"] = b.get("base_radius", 15.0) * 2.0
 
+
+class FrostbiteMode extends GameMode:
+    var heat_vents = []
+    var vent_spawn_timer = 0.0
+    var vent_spawn_interval = 5.0
+    var vent_duration = 10.0
+
+    func _init():
+        super._init()
+        name = "Frostbite"
+        description = "Players must keep moving or stay near heat vents to avoid freezing to death."
+
+    func setup(world, balls):
+        super.setup(world, balls)
+        heat_vents = []
+        vent_spawn_timer = 0.0
+
+    func tick(world, balls, delta = 0.016):
+        super.tick(world, balls, delta)
+
+        var arena_w = 1000
+        var arena_h = 1000
+        if typeof(world) == TYPE_OBJECT and world.get("arena") != null:
+            arena_w = world.arena.get("width", 1000)
+            arena_h = world.arena.get("height", 1000)
+        elif typeof(world) == TYPE_DICTIONARY and world.has("arena") and world.arena != null:
+            arena_w = world.arena.get("width", 1000)
+            arena_h = world.arena.get("height", 1000)
+
+        vent_spawn_timer += delta
+        if vent_spawn_timer >= vent_spawn_interval:
+            vent_spawn_timer = 0.0
+            heat_vents.append({
+                "x": randf_range(100, arena_w - 100),
+                "y": randf_range(100, arena_h - 100),
+                "radius": 150.0,
+                "timer": vent_duration
+            })
+
+        var active_vents = []
+        for vent in heat_vents:
+            vent["timer"] -= delta
+            if vent["timer"] > 0:
+                active_vents.append(vent)
+        heat_vents = active_vents
+
+        for b in balls:
+            var alive = false
+            if typeof(b) == TYPE_OBJECT:
+                alive = b.get("alive")
+            elif typeof(b) == TYPE_DICTIONARY:
+                alive = b.get("alive", false)
+
+            if not alive:
+                continue
+
+            var is_spectator = false
+            if typeof(b) == TYPE_OBJECT:
+                is_spectator = b.get("ball_type") == "spectator"
+            elif typeof(b) == TYPE_DICTIONARY:
+                is_spectator = b.get("ball_type") == "spectator"
+
+            if is_spectator:
+                continue
+
+            var near_vent = false
+            var bx = 0.0
+            var by = 0.0
+            if typeof(b) == TYPE_OBJECT:
+                bx = b.get("x")
+                by = b.get("y")
+            elif typeof(b) == TYPE_DICTIONARY:
+                bx = b.get("x", 0.0)
+                by = b.get("y", 0.0)
+
+            for vent in heat_vents:
+                var dist_sq = pow(bx - vent["x"], 2) + pow(by - vent["y"], 2)
+                if dist_sq <= pow(vent["radius"], 2):
+                    near_vent = true
+                    break
+
+            var vx = 0.0
+            var vy = 0.0
+            if typeof(b) == TYPE_OBJECT:
+                vx = b.get("vx")
+                vy = b.get("vy")
+            elif typeof(b) == TYPE_DICTIONARY:
+                vx = b.get("vx", 0.0)
+                vy = b.get("vy", 0.0)
+
+            var speed = sqrt(vx * vx + vy * vy)
+
+            var frostbite_stack = 0.0
+            if typeof(b) == TYPE_OBJECT:
+                if b.has_meta("frostbite_stack"):
+                    frostbite_stack = b.get_meta("frostbite_stack")
+                else:
+                    frostbite_stack = b.get("frostbite_stack")
+            elif typeof(b) == TYPE_DICTIONARY:
+                frostbite_stack = b.get("frostbite_stack", 0.0)
+
+            if frostbite_stack == null:
+                frostbite_stack = 0.0
+
+            if near_vent:
+                frostbite_stack = max(0.0, frostbite_stack - 20.0 * delta)
+            elif speed < 50.0:
+                frostbite_stack = min(100.0, frostbite_stack + 10.0 * delta)
+            else:
+                frostbite_stack = max(0.0, frostbite_stack - 5.0 * delta)
+
+            if typeof(b) == TYPE_OBJECT:
+                b.set("frostbite_stack", frostbite_stack)
+                b.set_meta("frostbite_stack", frostbite_stack)
+            elif typeof(b) == TYPE_DICTIONARY:
+                b["frostbite_stack"] = frostbite_stack
+
+            if frostbite_stack > 50.0:
+                var curr_speed_debuff_timer = 0.0
+                var curr_speed_debuff_multiplier = 1.0
+                if typeof(b) == TYPE_OBJECT:
+                    curr_speed_debuff_timer = b.get("speed_debuff_timer")
+                    curr_speed_debuff_multiplier = b.get("speed_debuff_multiplier")
+                elif typeof(b) == TYPE_DICTIONARY:
+                    curr_speed_debuff_timer = b.get("speed_debuff_timer", 0.0)
+                    curr_speed_debuff_multiplier = b.get("speed_debuff_multiplier", 1.0)
+                if curr_speed_debuff_timer == null: curr_speed_debuff_timer = 0.0
+                if curr_speed_debuff_multiplier == null: curr_speed_debuff_multiplier = 1.0
+
+                var new_timer = max(curr_speed_debuff_timer, 0.1)
+                var new_multiplier = min(curr_speed_debuff_multiplier, max(0.2, 1.0 - (frostbite_stack - 50.0) / 50.0 * 0.8))
+
+                if typeof(b) == TYPE_OBJECT:
+                    b.set("speed_debuff_timer", new_timer)
+                    b.set("speed_debuff_multiplier", new_multiplier)
+                elif typeof(b) == TYPE_DICTIONARY:
+                    b["speed_debuff_timer"] = new_timer
+                    b["speed_debuff_multiplier"] = new_multiplier
+
+                if frostbite_stack >= 100.0:
+                    var hp = 0.0
+                    if typeof(b) == TYPE_OBJECT:
+                        hp = b.get("hp")
+                    elif typeof(b) == TYPE_DICTIONARY:
+                        hp = b.get("hp", 0.0)
+
+                    hp -= 5.0 * delta
+
+                    if typeof(b) == TYPE_OBJECT:
+                        b.set("hp", hp)
+                        if hp <= 0:
+                            b.set("alive", false)
+                    elif typeof(b) == TYPE_DICTIONARY:
+                        b["hp"] = hp
+                        if hp <= 0:
+                            b["alive"] = false
+
+var _frostbite_mode_inst = FrostbiteMode.new()
+
 var GAME_MODES = {
+    "frostbite": _frostbite_mode_inst,
 	"giant_bouncy_royale": GiantBouncyRoyaleMode.new(),
 	"tethered_royale": TetheredRoyaleMode.new(),
 	"conveyor_belt_arena": ConveyorBeltArenaMode.new(),

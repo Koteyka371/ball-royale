@@ -38218,7 +38218,89 @@ class GiantBouncyRoyaleMode(GameMode):
                 continue
             b.radius = getattr(b, "base_radius", 15.0) * 2.0
 
+
+class FrostbiteMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Frostbite"
+        self.description = "Players must keep moving or stay near heat vents to avoid freezing to death."
+        self.heat_vents = []
+        self.vent_spawn_timer = 0.0
+        self.vent_spawn_interval = 5.0
+        self.vent_duration = 10.0
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        self.heat_vents = []
+        self.vent_spawn_timer = 0.0
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import random
+
+        arena_w = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_h = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        self.vent_spawn_timer += delta
+        if self.vent_spawn_timer >= self.vent_spawn_interval:
+            self.vent_spawn_timer = 0.0
+            self.heat_vents.append({
+                "x": random.uniform(100, arena_w - 100),
+                "y": random.uniform(100, arena_h - 100),
+                "radius": 150.0,
+                "timer": self.vent_duration
+            })
+
+        active_vents = []
+        for vent in self.heat_vents:
+            vent["timer"] -= delta
+            if vent["timer"] > 0:
+                active_vents.append(vent)
+        self.heat_vents = active_vents
+
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            near_vent = False
+            bx = getattr(b, "x", 0.0)
+            by = getattr(b, "y", 0.0)
+            for vent in self.heat_vents:
+                dist_sq = (bx - vent["x"])**2 + (by - vent["y"])**2
+                if dist_sq <= vent["radius"]**2:
+                    near_vent = True
+                    break
+
+            vx = getattr(b, "vx", 0.0)
+            vy = getattr(b, "vy", 0.0)
+            speed = (vx**2 + vy**2)**0.5
+
+            frostbite_stack = getattr(b, "frostbite_stack", 0.0)
+
+            if near_vent:
+                frostbite_stack = max(0.0, frostbite_stack - 20.0 * delta)
+            elif speed < 50.0:
+                frostbite_stack = min(100.0, frostbite_stack + 10.0 * delta)
+            else:
+                frostbite_stack = max(0.0, frostbite_stack - 5.0 * delta)
+
+            b.frostbite_stack = frostbite_stack
+
+            base_speed = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+            if frostbite_stack > 50.0:
+                # Apply speed debuff and damage
+                b.speed_debuff_timer = max(getattr(b, "speed_debuff_timer", 0.0), 0.1)
+                b.speed_debuff_multiplier = min(getattr(b, "speed_debuff_multiplier", 1.0), max(0.2, 1.0 - (frostbite_stack - 50.0) / 50.0 * 0.8))
+
+                if frostbite_stack >= 100.0:
+                    b.hp -= 5.0 * delta
+                    if b.hp <= 0:
+                        b.alive = False
+
+
+
 GAME_MODES = {
+    'frostbite': FrostbiteMode(),
     "giant_bouncy_royale": GiantBouncyRoyaleMode(),
     'conveyor_belt_arena': ConveyorBeltArenaMode(),
     'quantum_anomaly_field': QuantumAnomalyFieldMode(),
