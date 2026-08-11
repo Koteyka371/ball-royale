@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1969] Laser Tag Mode — *2026-08-11 02:13:32 UTC*
+
+Players shoot non-lethal lasers that bounce off walls. If hit, you are disabled for 3 seconds. The last player remaining without being hit wins.
+
+---
+
 ## [idea-1936] Sticky Boundaries — *2026-08-10 21:09:04 UTC*
 
 Arena boundaries become covered in sticky slime, catching colliding balls and freezing their momentum for 3 seconds before slowly releasing them.
