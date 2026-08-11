@@ -4896,6 +4896,59 @@ func execute(strategy: String, delta: float):
 
 
 
+	var hbt = 0.0
+	if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("heroism_booster_timer"):
+		hbt = float(self.ball.get_meta("heroism_booster_timer"))
+	elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("heroism_booster_timer"):
+		hbt = float(self.ball["heroism_booster_timer"])
+	elif "heroism_booster_timer" in self.ball:
+		hbt = float(self.ball.heroism_booster_timer)
+
+	if hbt > 0.0:
+		hbt -= delta
+
+		# Health regen
+		var hp = 100.0
+		var max_hp = 100.0
+		if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta"):
+			if self.ball.has_meta("hp"): hp = float(self.ball.get_meta("hp"))
+			if self.ball.has_meta("max_hp"): max_hp = float(self.ball.get_meta("max_hp"))
+		elif typeof(self.ball) == TYPE_DICTIONARY:
+			if self.ball.has("hp"): hp = float(self.ball["hp"])
+			if self.ball.has("max_hp"): max_hp = float(self.ball["max_hp"])
+		elif "hp" in self.ball:
+			hp = float(self.ball.hp)
+			if "max_hp" in self.ball: max_hp = float(self.ball.max_hp)
+
+		hp = min(hp + 20.0 * delta, max_hp)
+
+		if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+			self.ball.set_meta("hp", hp)
+		elif typeof(self.ball) == TYPE_DICTIONARY:
+			self.ball["hp"] = hp
+		elif "hp" in self.ball:
+			self.ball.hp = hp
+
+		if hbt <= 0.0:
+			hbt = 0.0
+			var em = ""
+			if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("emotion"): em = self.ball.get_meta("emotion")
+			elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("emotion"): em = self.ball["emotion"]
+			elif "emotion" in self.ball: em = self.ball.emotion
+
+			if em == "heroism":
+				if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("emotion", "neutral")
+				elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["emotion"] = "neutral"
+				elif "emotion" in self.ball: self.ball.emotion = "neutral"
+
+			if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("is_glowing", false)
+			elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["is_glowing"] = false
+			elif "is_glowing" in self.ball: self.ball.is_glowing = false
+
+		if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("heroism_booster_timer", hbt)
+		elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["heroism_booster_timer"] = hbt
+		elif "heroism_booster_timer" in self.ball: self.ball.heroism_booster_timer = hbt
+
 	var fbt = 0.0
 	if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("flight_booster_timer"):
 		fbt = float(self.ball.get_meta("flight_booster_timer"))
@@ -30514,6 +30567,26 @@ func _get_target(enemies: Array) -> Object:
     if is_scrambled and enemies.size() > 0:
         return enemies[randi() % enemies.size()]
 
+    var heroes = []
+    for e in enemies:
+        var em = ""
+        if "emotion" in e: em = e.emotion
+        elif typeof(e) == TYPE_DICTIONARY and e.has("emotion"): em = e["emotion"]
+        elif typeof(e) == TYPE_OBJECT and e.has_method("has_meta") and e.has_meta("emotion"): em = e.get_meta("emotion")
+        if em == "heroism":
+            heroes.append(e)
+
+    if heroes.size() > 0:
+        var closest_hero = heroes[0]
+        var min_d_sq = pow(closest_hero.x - self.ball.x, 2) + pow(closest_hero.y - self.ball.y, 2)
+        for i in range(1, heroes.size()):
+            var e = heroes[i]
+            var d_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+            if d_sq < min_d_sq:
+                min_d_sq = d_sq
+                closest_hero = e
+        return closest_hero
+
     var taunts = []
     for e in enemies:
         var e_is_decoy = false
@@ -32165,6 +32238,38 @@ func _collect_booster(delta: float):
                     self.world.boosters.erase(b)
                 if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena and typeof(self.world.arena.hazards) == TYPE_ARRAY:
                     self.world.arena.hazards.erase(b)
+
+            elif b_kind == "heroism_booster":
+                var dx = get_bx(b) - my_x
+                var dy = get_by(b) - my_y
+                var b_radius = 15.0
+                if typeof(b) == TYPE_DICTIONARY and b.has("radius"): b_radius = b.radius
+                elif typeof(b) == TYPE_OBJECT and "radius" in b: b_radius = b.radius
+                var dist = sqrt(dx*dx + dy*dy)
+                if dist <= my_radius + b_radius + 5.0:
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["heroism_booster_timer"] = 10.0
+                        self.ball["emotion"] = "heroism"
+                        self.ball["is_glowing"] = true
+                    else:
+                        if "heroism_booster_timer" in self.ball:
+                            self.ball.heroism_booster_timer = 10.0
+                            if "emotion" in self.ball: self.ball.emotion = "heroism"
+                            if "is_glowing" in self.ball: self.ball.is_glowing = true
+                        elif self.ball.has_method("set_meta"):
+                            self.ball.set_meta("heroism_booster_timer", 10.0)
+                            self.ball.set_meta("emotion", "heroism")
+                            self.ball.set_meta("is_glowing", true)
+
+                    if typeof(b) == TYPE_DICTIONARY: b["active"] = false
+                    else:
+                        if "active" in b: b.active = false
+                        elif b.has_method("set_meta"): b.set_meta("active", false)
+
+                    if self.world != null and "boosters" in self.world and typeof(self.world.boosters) == TYPE_ARRAY:
+                        self.world.boosters.erase(b)
+                    if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena and typeof(self.world.arena.hazards) == TYPE_ARRAY:
+                        self.world.arena.hazards.erase(b)
 
             elif b_kind == "grave_robber_shovel":
                 var dx = get_bx(b) - my_x
