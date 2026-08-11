@@ -86012,3 +86012,162 @@ GAME_MODES['black_hole_boundaries'] = BlackHoleBoundariesMode.new()
 
 GAME_MODES['low_gravity_zone'] = LowGravityZoneMode.new()
 GAME_MODES['sticky_boundaries'] = StickyBoundariesMode.new()
+
+
+class LaserTagMode extends GameMode:
+	var laser_cooldown: float = 1.0
+	var laser_speed: float = 600.0
+
+	func _init():
+		name = "Laser Tag"
+		description = "Players shoot non-lethal lasers that bounce off walls. If hit, you are disabled for 3 seconds. The last player remaining without being hit wins."
+
+	func tick(world: Dictionary, balls: Array, delta: float) -> void:
+		super.tick(world, balls, delta)
+
+		for b in balls:
+			if not b.get("alive", true) or b.get("ball_type", "") == "spectator":
+				continue
+
+			var cd = b.get("laser_tag_cd", 0.0)
+			if cd > 0:
+				b["laser_tag_cd"] = cd - delta
+
+			if b.get("laser_tag_cd", 0.0) <= 0:
+				var nearest_enemy = null
+				var min_dist = 999999.0
+				for e in balls:
+					if typeof(e) != TYPE_DICTIONARY: continue
+					if e.get("id") == b.get("id") or not e.get("alive", true) or e.get("ball_type", "") == "spectator":
+						continue
+					if e.get("team") != null and b.get("team") != null and e.get("team") == b.get("team"):
+						continue
+
+					var dx = e.get("x", 0.0) - b.get("x", 0.0)
+					var dy = e.get("y", 0.0) - b.get("y", 0.0)
+					var dist = sqrt(dx*dx + dy*dy)
+					if dist < min_dist:
+						min_dist = dist
+						nearest_enemy = e
+
+				if nearest_enemy != null:
+					var dx = nearest_enemy.get("x", 0.0) - b.get("x", 0.0)
+					var dy = nearest_enemy.get("y", 0.0) - b.get("y", 0.0)
+					var angle = atan2(dy, dx)
+
+					var next_id = 99999
+					if world.has("next_id") and typeof(world["next_id"]) == TYPE_INT:
+						next_id = world["next_id"]
+						world["next_id"] += 1
+					elif world.has("next_id") and typeof(world["next_id"]) == TYPE_CALLABLE:
+						next_id = world["next_id"].call()
+
+					var laser = {
+						"id": next_id + 100,
+						"x": b.get("x", 0.0) + cos(angle)*25.0,
+						"y": b.get("y", 0.0) + sin(angle)*25.0,
+						"radius": 10.0,
+						"kind": "laser_beam",
+						"damage": 0.0,
+						"vx": cos(angle) * laser_speed,
+						"vy": sin(angle) * laser_speed,
+						"is_projectile": true,
+						"bounces": 10,
+						"owner_id": b.get("id"),
+						"alive": true,
+						"duration": 5.0
+					}
+
+					if not world.has("projectiles"):
+						world["projectiles"] = []
+					world["projectiles"].append(laser)
+
+					b["laser_tag_cd"] = laser_cooldown
+
+		if world.has("projectiles"):
+			var projs_to_remove = []
+			for p in world["projectiles"]:
+				if typeof(p) != TYPE_DICTIONARY or p.get("kind", "") != "laser_beam":
+					continue
+
+				p["duration"] -= delta
+				if p.get("duration", 0.0) <= 0:
+					projs_to_remove.append(p)
+					continue
+
+				var vx = p.get("vx", 0.0)
+				var vy = p.get("vy", 0.0)
+				p["x"] = p.get("x", 0.0) + vx * delta
+				p["y"] = p.get("y", 0.0) + vy * delta
+
+				var px = p.get("x", 0.0)
+				var py = p.get("y", 0.0)
+				var r = p.get("radius", 10.0)
+
+				var aw = 1000.0
+				var ah = 1000.0
+				if world.has("arena"):
+					aw = world["arena"].get("width", 1000.0)
+					ah = world["arena"].get("height", 1000.0)
+
+				var bounced = false
+				if px - r < 0:
+					p["x"] = r
+					p["vx"] = abs(vx)
+					bounced = true
+				elif px + r > aw:
+					p["x"] = aw - r
+					p["vx"] = -abs(vx)
+					bounced = true
+
+				if py - r < 0:
+					p["y"] = r
+					p["vy"] = abs(vy)
+					bounced = true
+				elif py + r > ah:
+					p["y"] = ah - r
+					p["vy"] = -abs(vy)
+					bounced = true
+
+				if bounced:
+					p["bounces"] = p.get("bounces", 0) - 1
+					if p.get("bounces", 0) <= 0:
+						projs_to_remove.append(p)
+						continue
+
+				for b in balls:
+					if not b.get("alive", true) or b.get("ball_type", "") == "spectator":
+						continue
+					if p.get("owner_id") == b.get("id"):
+						continue
+
+					var dx2 = b.get("x", 0.0) - p.get("x", 0.0)
+					var dy2 = b.get("y", 0.0) - p.get("y", 0.0)
+					var dist2 = sqrt(dx2*dx2 + dy2*dy2)
+					if dist2 <= b.get("radius", 15.0) + p.get("radius", 10.0):
+						b["silence_timer"] = maxf(b.get("silence_timer", 0.0), 3.0)
+						b["stun_timer"] = maxf(b.get("stun_timer", 0.0), 3.0)
+						b["has_been_hit"] = true
+						projs_to_remove.append(p)
+						break
+
+			var new_projs = []
+			for p in world["projectiles"]:
+				if not (p in projs_to_remove):
+					new_projs.append(p)
+			world["projectiles"] = new_projs
+
+		var not_hit_count = 0
+		for b in balls:
+			if b.get("alive", true) and not b.get("has_been_hit", false) and b.get("ball_type", "") != "spectator":
+				not_hit_count += 1
+
+		if not_hit_count == 1:
+			for b in balls:
+				if b.get("has_been_hit", false) and b.get("alive", true):
+					b["hp"] = 0
+					b["alive"] = false
+					if world.has("events") and typeof(world["events"]) == TYPE_ARRAY:
+						world["events"].append({"type": "death", "data": {"id": b.get("id"), "reason": "laser_tag_elimination"}})
+
+GAME_MODES['laser_tag'] = LaserTagMode.new()
