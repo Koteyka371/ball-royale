@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1975] Emotional Override Booster — *2026-08-11 10:19:16 UTC*
+
+A rare booster item that temporarily forces the collector into 'heroism' emotion and makes them glow, significantly boosting their health regen and drawing aggro away from allies.
+
+---
+
 ## [idea-1963] Frostbite Weather Mutation — *2026-08-11 09:15:14 UTC*
 
 A new weather event 'Frostbite' that slowly freezes balls unless they keep moving constantly or stay near temporary heat vents that spawn around the arena.
