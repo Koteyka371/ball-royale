@@ -16066,17 +16066,49 @@ func execute(strategy: String, delta: float):
                     self.ball.base_damage *= 1.5
                 if "ball_type" in self.ball:
                     self.ball.ball_type = "elite_minion"
+
+                var mutations = ["ranged", "leap", "poison"]
+                var mutation = mutations[randi() % mutations.size()]
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("elite_mutation", mutation)
+                elif typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["elite_mutation"] = mutation
+                elif "elite_mutation" in self.ball:
+                    self.ball.elite_mutation = mutation
+
                 if "add_event" in self.world:
-                    self.world.add_event("minion_evolution", {"minion_id": self.ball.id})
+                    self.world.add_event("minion_evolution", {"minion_id": self.ball.id, "mutation": mutation})
 
         if is_elite_minion:
-            # Autonomous ranged attack for elite minion
-            var ranged_attack_timer = 2.0
-            if self.ball.has_method("has_meta") and self.ball.has_meta("ranged_attack_timer"):
-                ranged_attack_timer = self.ball.get_meta("ranged_attack_timer")
-            ranged_attack_timer -= delta
-            if ranged_attack_timer <= 0:
-                ranged_attack_timer = 2.0
+            var mutation = "ranged"
+            if self.ball.has_method("has_meta") and self.ball.has_meta("elite_mutation"):
+                mutation = self.ball.get_meta("elite_mutation")
+            elif typeof(self.ball) == TYPE_DICTIONARY and "elite_mutation" in self.ball:
+                mutation = self.ball["elite_mutation"]
+            elif "elite_mutation" in self.ball:
+                mutation = self.ball.elite_mutation
+
+            var elite_ability_timer = 2.0
+            if mutation == "leap":
+                elite_ability_timer = 3.0
+            elif mutation == "poison":
+                elite_ability_timer = 4.0
+
+            if self.ball.has_method("has_meta") and self.ball.has_meta("elite_ability_timer"):
+                elite_ability_timer = self.ball.get_meta("elite_ability_timer")
+            elif typeof(self.ball) == TYPE_DICTIONARY and "elite_ability_timer" in self.ball:
+                elite_ability_timer = self.ball["elite_ability_timer"]
+            elif "elite_ability_timer" in self.ball:
+                elite_ability_timer = self.ball.elite_ability_timer
+
+            elite_ability_timer -= delta
+            if elite_ability_timer <= 0:
+                elite_ability_timer = 2.0
+                if mutation == "leap":
+                    elite_ability_timer = 3.0
+                elif mutation == "poison":
+                    elite_ability_timer = 4.0
+
                 var enemies = []
                 if "balls" in self.world:
                     for b in self.world.balls:
@@ -16107,20 +16139,51 @@ func execute(strategy: String, delta: float):
                             min_dist = dist
                             closest_enemy = b
 
-                    if min_dist < 200:
+                    var target_id = closest_enemy.id if typeof(closest_enemy) != TYPE_DICTIONARY else closest_enemy.id
+                    var ex = closest_enemy.x if typeof(closest_enemy) != TYPE_DICTIONARY else closest_enemy.x
+                    var ey = closest_enemy.y if typeof(closest_enemy) != TYPE_DICTIONARY else closest_enemy.y
+
+                    if mutation == "ranged" and min_dist < 200:
                         var dmg = 5.0
-                        if "damage" in self.ball:
-                            dmg = self.ball.damage * 0.5
+                        if "damage" in self.ball: dmg = self.ball.damage * 0.5
                         if typeof(closest_enemy) == TYPE_DICTIONARY:
-                            closest_enemy.hp -= dmg
+                            closest_enemy["hp"] -= dmg
                         else:
                             closest_enemy.hp -= dmg
+
                         if "add_event" in self.world:
-                            var c_id = closest_enemy.id if typeof(closest_enemy) != TYPE_DICTIONARY else closest_enemy.id
-                            self.world.add_event("ranged_attack", {"attacker_id": self.ball.id, "target_id": c_id})
+                            self.world.add_event("ranged_attack", {"attacker_id": self.ball.id, "target_id": target_id})
+                    elif mutation == "leap" and min_dist < 300:
+                        var speed_burst = 600.0
+                        if min_dist > 0:
+                            var dx = (ex - self.ball.x) / min_dist
+                            var dy = (ey - self.ball.y) / min_dist
+                            if typeof(self.ball) == TYPE_DICTIONARY:
+                                self.ball["vx"] = self.ball.get("vx", 0) + dx * speed_burst
+                                self.ball["vy"] = self.ball.get("vy", 0) + dy * speed_burst
+                            else:
+                                if "vx" in self.ball: self.ball.vx += dx * speed_burst
+                                if "vy" in self.ball: self.ball.vy += dy * speed_burst
+                        if "add_event" in self.world:
+                            self.world.add_event("minion_leap", {"attacker_id": self.ball.id, "target_id": target_id})
+                    elif mutation == "poison" and min_dist < 250:
+                        if "arena" in self.world and "hazards" in self.world.arena:
+                            var h_id = 90000 + self.world.arena.hazards.size() + int(ex) + int(ey)
+                            var HazardClass = load("res://src/arena/procedural_arena.gd").Hazard if load("res://src/arena/procedural_arena.gd") else null
+                            if HazardClass:
+                                var cloud = HazardClass.new(h_id, ex, ey, 60.0, "poison_cloud", 10.0)
+                                if "duration" in cloud:
+                                    cloud.duration = 4.0
+                                self.world.arena.hazards.append(cloud)
+                        if "add_event" in self.world:
+                            self.world.add_event("minion_poison", {"attacker_id": self.ball.id, "target_id": target_id})
 
             if self.ball.has_method("set_meta"):
-                self.ball.set_meta("ranged_attack_timer", ranged_attack_timer)
+                self.ball.set_meta("elite_ability_timer", elite_ability_timer)
+            elif typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["elite_ability_timer"] = elite_ability_timer
+            elif "elite_ability_timer" in self.ball:
+                self.ball.elite_ability_timer = elite_ability_timer
 
         self.ball.hp -= 2.0 * delta
         if self.ball.hp <= 0:
