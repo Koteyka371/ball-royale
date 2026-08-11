@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1973] Minion Evolution System — *2026-08-11 06:05:45 UTC*
+
+Minions that survive for an extended period or participate in kills can evolve into stronger variants, gaining abilities like small leaps or poison attacks.
+
+---
+
 ## [idea-1968] Treasure Hunter — *2026-08-11 05:51:54 UTC*
 
 Gold coins randomly spawn across the arena. The more coins you collect, the larger and slower you get. The player with the most coins at the end of the time limit wins.
