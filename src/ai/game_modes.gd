@@ -62066,7 +62066,51 @@ class ConveyorBeltArenaMode extends GameMode:
 					b.vx = current_vx + current_direction * conveyor_speed * delta
 
 
+class GiantBouncyRoyaleMode extends GameMode:
+	func _init():
+		super._init()
+		self.name = "Giant Bouncy Royale"
+		self.description = "All balls have double size and double bounce physics, causing massive chaotic collisions and ricochets. Arena boundaries are replaced by bouncy forcefields."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		for b in balls:
+			if typeof(b) == TYPE_OBJECT:
+				var alive = true
+				if b.get("alive") != null:
+					alive = b.get("alive")
+				var b_type = b.get("ball_type")
+				if not alive or b_type == "spectator":
+					continue
+				var base_rad = 15.0
+				if b.get("base_radius") != null:
+					base_rad = b.get("base_radius")
+				b.set("radius", base_rad * 2.0)
+			elif typeof(b) == TYPE_DICTIONARY:
+				if not b.get("alive", true) or b.get("ball_type", "") == "spectator":
+					continue
+				b["radius"] = b.get("base_radius", 15.0) * 2.0
+
+	func apply_dynamic_traits(world, balls, delta):
+		for b in balls:
+			if typeof(b) == TYPE_OBJECT:
+				var alive = true
+				if b.get("alive") != null:
+					alive = b.get("alive")
+				var b_type = b.get("ball_type")
+				if not alive or b_type == "spectator":
+					continue
+				var base_rad = 15.0
+				if b.get("base_radius") != null:
+					base_rad = b.get("base_radius")
+				b.set("radius", base_rad * 2.0)
+			elif typeof(b) == TYPE_DICTIONARY:
+				if not b.get("alive", true) or b.get("ball_type", "") == "spectator":
+					continue
+				b["radius"] = b.get("base_radius", 15.0) * 2.0
+
 var GAME_MODES = {
+	"giant_bouncy_royale": GiantBouncyRoyaleMode.new(),
 	"tethered_royale": TetheredRoyaleMode.new(),
 	"conveyor_belt_arena": ConveyorBeltArenaMode.new(),
     "quantum_anomaly_field": QuantumAnomalyFieldMode.new(),

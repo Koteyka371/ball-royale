@@ -47367,7 +47367,7 @@ func _clamp_position() -> bool:
         elif typeof(self.world) == TYPE_DICTIONARY and self.world.has("arena") and self.world.arena.has("is_lunar_eclipse") and self.world.arena.is_lunar_eclipse:
             is_lunar_eclipse_bounce = true
 
-        if bounced and (("game_mode" in self.world and self.world.game_mode != null and "name" in self.world.game_mode and self.world.game_mode.name in ["Ricochet Arena", "Extreme Bounciness", "Super Bouncy Arena", "Chaotic Pinball Machine", "Jump Pad Boundaries"]) or is_lunar_eclipse_bounce):
+        if bounced and (("game_mode" in self.world and self.world.game_mode != null and "name" in self.world.game_mode and self.world.game_mode.name in ["Ricochet Arena", "Extreme Bounciness", "Super Bouncy Arena", "Chaotic Pinball Machine", "Jump Pad Boundaries", "Giant Bouncy Royale"]) or is_lunar_eclipse_bounce):
             var mult = 2.0
             if self.world.game_mode.name == "Ricochet Arena":
                 mult = 3.0
@@ -47548,6 +47548,8 @@ func _resolve_collisions() -> bool:
             elif self.world != null and "game_mode" in self.world and self.world.game_mode != null:
                 if "name" in self.world.game_mode and self.world.game_mode.name == "Pacifist Knockout":
                     knockback_multiplier = 5.0
+				elif "name" in self.world.game_mode and self.world.game_mode.name == "Giant Bouncy Royale":
+					knockback_multiplier = 2.0
                 elif "name" in self.world.game_mode and self.world.game_mode.name in ["Bumper Balls", "Bumper Royale"]:
                     knockback_multiplier = 5.0
                     if self.world.game_mode.name == "Bumper Royale":
