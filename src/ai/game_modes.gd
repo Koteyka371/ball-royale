@@ -73840,27 +73840,169 @@ class WrapAroundMode extends GameMode:
 
 				var teleported = false
 
+				var is_blocked = false
+				var target_x = x
+				var target_y = y
+
+				# We will handle the dictionary checking logic within the loops below to avoid function scoping issues in gdscript
+
 				if x - radius <= 0:
-					b["x"] = arena_width - radius - 1.0
-					if b.has("vx"):
-						b["vx"] = -b["vx"]
-					teleported = true
+					target_x = arena_width - radius - 1.0
+					is_blocked = false
+					if arena.has("hazards"):
+						for h in arena["hazards"]:
+							var h_kind = ""
+							var h_x = 0.0
+							var h_y = 0.0
+							var h_r = 40.0
+							if typeof(h) == TYPE_DICTIONARY:
+								if h.has("kind"): h_kind = h["kind"]
+								if h.has("x"): h_x = h["x"]
+								if h.has("y"): h_y = h["y"]
+								if h.has("radius"): h_r = h["radius"]
+							elif h is Object:
+								if 'kind' in h: h_kind = h.kind
+								elif h.has_meta('kind'): h_kind = h.get_meta('kind')
+								if 'x' in h: h_x = h.x
+								elif h.has_meta('x'): h_x = h.get_meta('x')
+								if 'y' in h: h_y = h.y
+								elif h.has_meta('y'): h_y = h.get_meta('y')
+								if 'radius' in h: h_r = h.radius
+								elif h.has_meta('radius'): h_r = h.get_meta('radius')
+
+							if h_kind == "stabilizer_field":
+								var dist_sq = (target_x - h_x) * (target_x - h_x) + (y - h_y) * (y - h_y)
+								if dist_sq < (radius + h_r) * (radius + h_r):
+									is_blocked = true
+									break
+
+					if is_blocked:
+						b["x"] = radius + 1.0
+						if b.has("vx"):
+							b["vx"] = -b["vx"]
+					else:
+						b["x"] = target_x
+						if b.has("vx"):
+							b["vx"] = -b["vx"]
+						teleported = true
 				elif x + radius >= arena_width:
-					b["x"] = radius + 1.0
-					if b.has("vx"):
-						b["vx"] = -b["vx"]
-					teleported = true
+					target_x = radius + 1.0
+					is_blocked = false
+					if arena.has("hazards"):
+						for h in arena["hazards"]:
+							var h_kind = ""
+							var h_x = 0.0
+							var h_y = 0.0
+							var h_r = 40.0
+							if typeof(h) == TYPE_DICTIONARY:
+								if h.has("kind"): h_kind = h["kind"]
+								if h.has("x"): h_x = h["x"]
+								if h.has("y"): h_y = h["y"]
+								if h.has("radius"): h_r = h["radius"]
+							elif h is Object:
+								if 'kind' in h: h_kind = h.kind
+								elif h.has_meta('kind'): h_kind = h.get_meta('kind')
+								if 'x' in h: h_x = h.x
+								elif h.has_meta('x'): h_x = h.get_meta('x')
+								if 'y' in h: h_y = h.y
+								elif h.has_meta('y'): h_y = h.get_meta('y')
+								if 'radius' in h: h_r = h.radius
+								elif h.has_meta('radius'): h_r = h.get_meta('radius')
+
+							if h_kind == "stabilizer_field":
+								var dist_sq = (target_x - h_x) * (target_x - h_x) + (y - h_y) * (y - h_y)
+								if dist_sq < (radius + h_r) * (radius + h_r):
+									is_blocked = true
+									break
+
+					if is_blocked:
+						b["x"] = arena_width - radius - 1.0
+						if b.has("vx"):
+							b["vx"] = -b["vx"]
+					else:
+						b["x"] = target_x
+						if b.has("vx"):
+							b["vx"] = -b["vx"]
+						teleported = true
 
 				if y - radius <= 0:
-					b["y"] = arena_height - radius - 1.0
-					if b.has("vy"):
-						b["vy"] = -b["vy"]
-					teleported = true
+					target_y = arena_height - radius - 1.0
+					is_blocked = false
+					if arena.has("hazards"):
+						for h in arena["hazards"]:
+							var h_kind = ""
+							var h_x = 0.0
+							var h_y = 0.0
+							var h_r = 40.0
+							if typeof(h) == TYPE_DICTIONARY:
+								if h.has("kind"): h_kind = h["kind"]
+								if h.has("x"): h_x = h["x"]
+								if h.has("y"): h_y = h["y"]
+								if h.has("radius"): h_r = h["radius"]
+							elif h is Object:
+								if 'kind' in h: h_kind = h.kind
+								elif h.has_meta('kind'): h_kind = h.get_meta('kind')
+								if 'x' in h: h_x = h.x
+								elif h.has_meta('x'): h_x = h.get_meta('x')
+								if 'y' in h: h_y = h.y
+								elif h.has_meta('y'): h_y = h.get_meta('y')
+								if 'radius' in h: h_r = h.radius
+								elif h.has_meta('radius'): h_r = h.get_meta('radius')
+
+							if h_kind == "stabilizer_field":
+								var dist_sq = (x - h_x) * (x - h_x) + (target_y - h_y) * (target_y - h_y)
+								if dist_sq < (radius + h_r) * (radius + h_r):
+									is_blocked = true
+									break
+
+					if is_blocked:
+						b["y"] = radius + 1.0
+						if b.has("vy"):
+							b["vy"] = -b["vy"]
+					else:
+						b["y"] = target_y
+						if b.has("vy"):
+							b["vy"] = -b["vy"]
+						teleported = true
 				elif y + radius >= arena_height:
-					b["y"] = radius + 1.0
-					if b.has("vy"):
-						b["vy"] = -b["vy"]
-					teleported = true
+					target_y = radius + 1.0
+					is_blocked = false
+					if arena.has("hazards"):
+						for h in arena["hazards"]:
+							var h_kind = ""
+							var h_x = 0.0
+							var h_y = 0.0
+							var h_r = 40.0
+							if typeof(h) == TYPE_DICTIONARY:
+								if h.has("kind"): h_kind = h["kind"]
+								if h.has("x"): h_x = h["x"]
+								if h.has("y"): h_y = h["y"]
+								if h.has("radius"): h_r = h["radius"]
+							elif h is Object:
+								if 'kind' in h: h_kind = h.kind
+								elif h.has_meta('kind'): h_kind = h.get_meta('kind')
+								if 'x' in h: h_x = h.x
+								elif h.has_meta('x'): h_x = h.get_meta('x')
+								if 'y' in h: h_y = h.y
+								elif h.has_meta('y'): h_y = h.get_meta('y')
+								if 'radius' in h: h_r = h.radius
+								elif h.has_meta('radius'): h_r = h.get_meta('radius')
+
+							if h_kind == "stabilizer_field":
+								var dist_sq = (x - h_x) * (x - h_x) + (target_y - h_y) * (target_y - h_y)
+								if dist_sq < (radius + h_r) * (radius + h_r):
+									is_blocked = true
+									break
+
+					if is_blocked:
+						b["y"] = arena_height - radius - 1.0
+						if b.has("vy"):
+							b["vy"] = -b["vy"]
+					else:
+						b["y"] = target_y
+						if b.has("vy"):
+							b["vy"] = -b["vy"]
+						teleported = true
 			elif b is Object:
 				var is_alive = true
 				if 'alive' in b:
@@ -73890,63 +74032,239 @@ class WrapAroundMode extends GameMode:
 
 				var teleported = false
 
+				var is_blocked = false
+				var target_x = x
+				var target_y = y
+
 				if x - radius <= 0:
-					if 'x' in b:
-						b.x = arena_width - radius - 1.0
-					elif b.has_meta('x'):
-						b.set_meta('x', arena_width - radius - 1.0)
+					target_x = arena_width - radius - 1.0
+					is_blocked = false
+					if arena.has("hazards"):
+						for h in arena["hazards"]:
+							var h_kind = ""
+							var h_x = 0.0
+							var h_y = 0.0
+							var h_r = 40.0
+							if typeof(h) == TYPE_DICTIONARY:
+								if h.has("kind"): h_kind = h["kind"]
+								if h.has("x"): h_x = h["x"]
+								if h.has("y"): h_y = h["y"]
+								if h.has("radius"): h_r = h["radius"]
+							elif h is Object:
+								if 'kind' in h: h_kind = h.kind
+								elif h.has_meta('kind'): h_kind = h.get_meta('kind')
+								if 'x' in h: h_x = h.x
+								elif h.has_meta('x'): h_x = h.get_meta('x')
+								if 'y' in h: h_y = h.y
+								elif h.has_meta('y'): h_y = h.get_meta('y')
+								if 'radius' in h: h_r = h.radius
+								elif h.has_meta('radius'): h_r = h.get_meta('radius')
 
-					var vx = 0.0
-					if 'vx' in b:
-						vx = b.vx
-						b.vx = -vx
-					elif b.has_meta('vx'):
-						vx = b.get_meta('vx')
-						b.set_meta('vx', -vx)
-					teleported = true
+							if h_kind == "stabilizer_field":
+								var dist_sq = (target_x - h_x) * (target_x - h_x) + (y - h_y) * (y - h_y)
+								if dist_sq < (radius + h_r) * (radius + h_r):
+									is_blocked = true
+									break
+
+					if is_blocked:
+						if 'x' in b:
+							b.x = radius + 1.0
+						elif b.has_meta('x'):
+							b.set_meta('x', radius + 1.0)
+
+						var vx = 0.0
+						if 'vx' in b:
+							vx = b.vx
+							b.vx = -vx
+						elif b.has_meta('vx'):
+							vx = b.get_meta('vx')
+							b.set_meta('vx', -vx)
+					else:
+						if 'x' in b:
+							b.x = target_x
+						elif b.has_meta('x'):
+							b.set_meta('x', target_x)
+
+						var vx = 0.0
+						if 'vx' in b:
+							vx = b.vx
+							b.vx = -vx
+						elif b.has_meta('vx'):
+							vx = b.get_meta('vx')
+							b.set_meta('vx', -vx)
+						teleported = true
 				elif x + radius >= arena_width:
-					if 'x' in b:
-						b.x = radius + 1.0
-					elif b.has_meta('x'):
-						b.set_meta('x', radius + 1.0)
+					target_x = radius + 1.0
+					is_blocked = false
+					if arena.has("hazards"):
+						for h in arena["hazards"]:
+							var h_kind = ""
+							var h_x = 0.0
+							var h_y = 0.0
+							var h_r = 40.0
+							if typeof(h) == TYPE_DICTIONARY:
+								if h.has("kind"): h_kind = h["kind"]
+								if h.has("x"): h_x = h["x"]
+								if h.has("y"): h_y = h["y"]
+								if h.has("radius"): h_r = h["radius"]
+							elif h is Object:
+								if 'kind' in h: h_kind = h.kind
+								elif h.has_meta('kind'): h_kind = h.get_meta('kind')
+								if 'x' in h: h_x = h.x
+								elif h.has_meta('x'): h_x = h.get_meta('x')
+								if 'y' in h: h_y = h.y
+								elif h.has_meta('y'): h_y = h.get_meta('y')
+								if 'radius' in h: h_r = h.radius
+								elif h.has_meta('radius'): h_r = h.get_meta('radius')
 
-					var vx = 0.0
-					if 'vx' in b:
-						vx = b.vx
-						b.vx = -vx
-					elif b.has_meta('vx'):
-						vx = b.get_meta('vx')
-						b.set_meta('vx', -vx)
-					teleported = true
+							if h_kind == "stabilizer_field":
+								var dist_sq = (target_x - h_x) * (target_x - h_x) + (y - h_y) * (y - h_y)
+								if dist_sq < (radius + h_r) * (radius + h_r):
+									is_blocked = true
+									break
+
+					if is_blocked:
+						if 'x' in b:
+							b.x = arena_width - radius - 1.0
+						elif b.has_meta('x'):
+							b.set_meta('x', arena_width - radius - 1.0)
+
+						var vx = 0.0
+						if 'vx' in b:
+							vx = b.vx
+							b.vx = -vx
+						elif b.has_meta('vx'):
+							vx = b.get_meta('vx')
+							b.set_meta('vx', -vx)
+					else:
+						if 'x' in b:
+							b.x = target_x
+						elif b.has_meta('x'):
+							b.set_meta('x', target_x)
+
+						var vx = 0.0
+						if 'vx' in b:
+							vx = b.vx
+							b.vx = -vx
+						elif b.has_meta('vx'):
+							vx = b.get_meta('vx')
+							b.set_meta('vx', -vx)
+						teleported = true
 
 				if y - radius <= 0:
-					if 'y' in b:
-						b.y = arena_height - radius - 1.0
-					elif b.has_meta('y'):
-						b.set_meta('y', arena_height - radius - 1.0)
+					target_y = arena_height - radius - 1.0
+					is_blocked = false
+					if arena.has("hazards"):
+						for h in arena["hazards"]:
+							var h_kind = ""
+							var h_x = 0.0
+							var h_y = 0.0
+							var h_r = 40.0
+							if typeof(h) == TYPE_DICTIONARY:
+								if h.has("kind"): h_kind = h["kind"]
+								if h.has("x"): h_x = h["x"]
+								if h.has("y"): h_y = h["y"]
+								if h.has("radius"): h_r = h["radius"]
+							elif h is Object:
+								if 'kind' in h: h_kind = h.kind
+								elif h.has_meta('kind'): h_kind = h.get_meta('kind')
+								if 'x' in h: h_x = h.x
+								elif h.has_meta('x'): h_x = h.get_meta('x')
+								if 'y' in h: h_y = h.y
+								elif h.has_meta('y'): h_y = h.get_meta('y')
+								if 'radius' in h: h_r = h.radius
+								elif h.has_meta('radius'): h_r = h.get_meta('radius')
 
-					var vy = 0.0
-					if 'vy' in b:
-						vy = b.vy
-						b.vy = -vy
-					elif b.has_meta('vy'):
-						vy = b.get_meta('vy')
-						b.set_meta('vy', -vy)
-					teleported = true
+							if h_kind == "stabilizer_field":
+								var dist_sq = (x - h_x) * (x - h_x) + (target_y - h_y) * (target_y - h_y)
+								if dist_sq < (radius + h_r) * (radius + h_r):
+									is_blocked = true
+									break
+
+					if is_blocked:
+						if 'y' in b:
+							b.y = radius + 1.0
+						elif b.has_meta('y'):
+							b.set_meta('y', radius + 1.0)
+
+						var vy = 0.0
+						if 'vy' in b:
+							vy = b.vy
+							b.vy = -vy
+						elif b.has_meta('vy'):
+							vy = b.get_meta('vy')
+							b.set_meta('vy', -vy)
+					else:
+						if 'y' in b:
+							b.y = target_y
+						elif b.has_meta('y'):
+							b.set_meta('y', target_y)
+
+						var vy = 0.0
+						if 'vy' in b:
+							vy = b.vy
+							b.vy = -vy
+						elif b.has_meta('vy'):
+							vy = b.get_meta('vy')
+							b.set_meta('vy', -vy)
+						teleported = true
 				elif y + radius >= arena_height:
-					if 'y' in b:
-						b.y = radius + 1.0
-					elif b.has_meta('y'):
-						b.set_meta('y', radius + 1.0)
+					target_y = radius + 1.0
+					is_blocked = false
+					if arena.has("hazards"):
+						for h in arena["hazards"]:
+							var h_kind = ""
+							var h_x = 0.0
+							var h_y = 0.0
+							var h_r = 40.0
+							if typeof(h) == TYPE_DICTIONARY:
+								if h.has("kind"): h_kind = h["kind"]
+								if h.has("x"): h_x = h["x"]
+								if h.has("y"): h_y = h["y"]
+								if h.has("radius"): h_r = h["radius"]
+							elif h is Object:
+								if 'kind' in h: h_kind = h.kind
+								elif h.has_meta('kind'): h_kind = h.get_meta('kind')
+								if 'x' in h: h_x = h.x
+								elif h.has_meta('x'): h_x = h.get_meta('x')
+								if 'y' in h: h_y = h.y
+								elif h.has_meta('y'): h_y = h.get_meta('y')
+								if 'radius' in h: h_r = h.radius
+								elif h.has_meta('radius'): h_r = h.get_meta('radius')
 
-					var vy = 0.0
-					if 'vy' in b:
-						vy = b.vy
-						b.vy = -vy
-					elif b.has_meta('vy'):
-						vy = b.get_meta('vy')
-						b.set_meta('vy', -vy)
-					teleported = true
+							if h_kind == "stabilizer_field":
+								var dist_sq = (x - h_x) * (x - h_x) + (target_y - h_y) * (target_y - h_y)
+								if dist_sq < (radius + h_r) * (radius + h_r):
+									is_blocked = true
+									break
+
+					if is_blocked:
+						if 'y' in b:
+							b.y = arena_height - radius - 1.0
+						elif b.has_meta('y'):
+							b.set_meta('y', arena_height - radius - 1.0)
+
+						var vy = 0.0
+						if 'vy' in b:
+							vy = b.vy
+							b.vy = -vy
+						elif b.has_meta('vy'):
+							vy = b.get_meta('vy')
+							b.set_meta('vy', -vy)
+					else:
+						if 'y' in b:
+							b.y = target_y
+						elif b.has_meta('y'):
+							b.set_meta('y', target_y)
+
+						var vy = 0.0
+						if 'vy' in b:
+							vy = b.vy
+							b.vy = -vy
+						elif b.has_meta('vy'):
+							vy = b.get_meta('vy')
+							b.set_meta('vy', -vy)
+						teleported = true
 
 
 class InvisibleGravityWellsMode extends GameMode:

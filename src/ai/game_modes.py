@@ -30628,25 +30628,57 @@ class WrapAroundMode(GameMode):
 
             teleported = False
 
+            def is_blocked(target_x, target_y):
+                if hasattr(world.arena, "hazards"):
+                    for h in world.arena.hazards:
+                        if getattr(h, "kind", "") == "stabilizer_field":
+                            hr = getattr(h, "radius", 40.0)
+                            hx = getattr(h, "x", 0.0)
+                            hy = getattr(h, "y", 0.0)
+                            dist_sq = (target_x - hx)**2 + (target_y - hy)**2
+                            if dist_sq < (radius + hr)**2:
+                                return True
+                return False
+
             # Check horizontal boundaries
             if x - radius <= 0:
-                b.x = arena_width - radius - 1.0
-                b.vx = -getattr(b, "vx", 0.0)
-                teleported = True
+                target_x = arena_width - radius - 1.0
+                if is_blocked(target_x, y):
+                    b.x = radius + 1.0
+                    b.vx = -getattr(b, "vx", 0.0)
+                else:
+                    b.x = target_x
+                    b.vx = -getattr(b, "vx", 0.0)
+                    teleported = True
             elif x + radius >= arena_width:
-                b.x = radius + 1.0
-                b.vx = -getattr(b, "vx", 0.0)
-                teleported = True
+                target_x = radius + 1.0
+                if is_blocked(target_x, y):
+                    b.x = arena_width - radius - 1.0
+                    b.vx = -getattr(b, "vx", 0.0)
+                else:
+                    b.x = target_x
+                    b.vx = -getattr(b, "vx", 0.0)
+                    teleported = True
 
             # Check vertical boundaries
             if y - radius <= 0:
-                b.y = arena_height - radius - 1.0
-                b.vy = -getattr(b, "vy", 0.0)
-                teleported = True
+                target_y = arena_height - radius - 1.0
+                if is_blocked(x, target_y):
+                    b.y = radius + 1.0
+                    b.vy = -getattr(b, "vy", 0.0)
+                else:
+                    b.y = target_y
+                    b.vy = -getattr(b, "vy", 0.0)
+                    teleported = True
             elif y + radius >= arena_height:
-                b.y = radius + 1.0
-                b.vy = -getattr(b, "vy", 0.0)
-                teleported = True
+                target_y = radius + 1.0
+                if is_blocked(x, target_y):
+                    b.y = arena_height - radius - 1.0
+                    b.vy = -getattr(b, "vy", 0.0)
+                else:
+                    b.y = target_y
+                    b.vy = -getattr(b, "vy", 0.0)
+                    teleported = True
 
             if teleported and hasattr(world, "add_event"):
                 world.add_event("boundary_wrap", {"message": "Wrapped around the arena!", "ball_id": getattr(b, "id", None)})
