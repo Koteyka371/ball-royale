@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1979] Bounty Contract Drops — *2026-08-12 20:34:35 UTC*
+
+Whenever a ball hits a certain currency threshold, a bounty is placed on them and other balls gain bonus stats when moving towards them.
+
+---
+
 ## [idea-1991] Hall of Fame Contributor Titles — *2026-08-12 20:05:32 UTC*
 
 Automatically reward special cosmetic titles or auras to players who appear at the top of their guild's Hall of Fame across different categories (e.g., 'Top Donor', 'GvG Champion'). These prestigious titles would be visible next to their names during public matches.
