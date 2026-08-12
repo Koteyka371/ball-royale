@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1976] Emotion Sync Traps — *2026-08-12 05:55:29 UTC*
+
+Hazards that capture the emotion of the first ball that touches them, and radiate that emotion to all nearby balls in a wide aura for a limited time.
+
+---
+
 ## [idea-1975] Emotional Override Booster — *2026-08-11 10:19:16 UTC*
 
 A rare booster item that temporarily forces the collector into 'heroism' emotion and makes them glow, significantly boosting their health regen and drawing aggro away from allies.
