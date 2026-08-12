@@ -10607,6 +10607,22 @@ class Action:
                                 if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
                                     self.ball.x += flow_dx * flow_speed * delta
                                     self.ball.y += flow_dy * flow_speed * delta
+                    elif hazard.kind == "electrified_puddle":
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx * dx + dy * dy
+                        if dist_sq < hazard.radius * hazard.radius:
+                            self.ball.speed_debuff_multiplier = min(getattr(self.ball, "speed_debuff_multiplier", 1.0), 0.5)
+                            self.ball.speed_debuff_timer = max(getattr(self.ball, "speed_debuff_timer", 0.0), 0.5)
+
+                            hazard_damage = 20.0 * delta
+                            if hasattr(self.ball, "take_damage"):
+                                self.ball.take_damage(hazard_damage)
+                            elif hasattr(self.ball, "hp"):
+                                self.ball.hp -= hazard_damage
+                                if self.ball.hp <= 0:
+                                    self.ball.alive = False
+
                     elif hazard.kind == "puddle":
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
@@ -10614,6 +10630,17 @@ class Action:
                         if dist_sq < hazard.radius * hazard.radius:
                             self.ball.steering_mult = 0.5
                             self.ball.dash_range_mult = 1.5
+                            self.ball.speed_debuff_multiplier = min(getattr(self.ball, "speed_debuff_multiplier", 1.0), 0.5)
+                            self.ball.speed_debuff_timer = max(getattr(self.ball, "speed_debuff_timer", 0.0), 0.5)
+
+                            # Check if using an electric skill to electrify the puddle
+                            b_type = str(getattr(self.ball, "ball_type", "")).lower()
+                            traits = getattr(self.ball, "traits", [])
+                            is_electric = "lightning" in b_type or "lightning" in traits or "electric" in b_type or "electric" in traits
+                            sk = getattr(self.ball, "SKILL", "")
+                            if sk in ["lightning_strike", "deploy_electric_beam_trap", "chain_lightning", "throw_emp"] or is_electric:
+                                hazard.kind = "electrified_puddle"
+                                hazard.duration = getattr(hazard, "duration", 5.0) + 2.0
 
                             # Dynamic weather reactions for puddle
                             weather = getattr(self.world, "game_mode", None)

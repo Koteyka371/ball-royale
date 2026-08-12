@@ -47,8 +47,9 @@ def test_supercell_storm_mode():
     mode.wind_timer = 0.1
     mode.tick(world, balls, 0.2)
 
-    assert len(world.arena.hazards) == 1
-    tornado = world.arena.hazards[0]
+    hazards = [hz for hz in world.arena.hazards if getattr(hz, "kind", "") != "puddle"]
+    assert len(hazards) == 1
+    tornado = hazards[0]
     assert tornado.kind == "supercell_tornado"
     assert tornado.radius == 100.0
 

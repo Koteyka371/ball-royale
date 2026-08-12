@@ -890,7 +890,23 @@ class GameMode:
                     b.mass = getattr(b, "mass", 1.0) * 0.5
 
 
-    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        if hasattr(world, "arena") and getattr(world.arena, "weather", "") in ["heavy_rain", "thunderstorm", "rain", "monsoon"]:
+            if getattr(self, "random", __import__("random")).random() < 0.1 * delta * 60:
+                if hasattr(world.arena, "hazards") and len(world.arena.hazards) < 80:
+                    p_id = len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999)
+                    arena_w = getattr(world.arena, "width", 1000)
+                    arena_h = getattr(world.arena, "height", 1000)
+                    x = getattr(self, "random", __import__("random")).uniform(50, arena_w - 50)
+                    y = getattr(self, "random", __import__("random")).uniform(50, arena_h - 50)
+                    try:
+                        from arena.procedural_arena import Hazard
+                        puddle = Hazard(id=p_id, x=x, y=y, radius=40.0, kind="puddle", damage=0.0)
+                        puddle.duration = 5.0
+                        world.arena.hazards.append(puddle)
+                    except ImportError:
+                        pass
+
         # Supply Drop Mid-Air Shoot Down
         if hasattr(world, "projectiles") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
             projs_to_remove = []
@@ -27200,6 +27216,22 @@ class HeavyRainMode(GameMode):
         super().tick(world, balls, delta)
 
         self.obstacle_destroy_timer += delta
+
+        # Puddle generation in heavy rain
+        if getattr(self, "random", __import__("random")).random() < 0.05 * delta * 60: # approx once per second
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards") and len(world.arena.hazards) < 50:
+                p_id = len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999)
+                arena_w = getattr(world.arena, "width", 1000)
+                arena_h = getattr(world.arena, "height", 1000)
+                x = getattr(self, "random", __import__("random")).uniform(50, arena_w - 50)
+                y = getattr(self, "random", __import__("random")).uniform(50, arena_h - 50)
+                try:
+                    from arena.procedural_arena import Hazard
+                    puddle = Hazard(id=p_id, x=x, y=y, radius=40.0, kind="puddle", damage=0.0)
+                    puddle.duration = 5.0
+                    world.arena.hazards.append(puddle)
+                except ImportError:
+                    pass
 
         # Apply increased rain DoT
         for b in balls:

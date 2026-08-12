@@ -62,8 +62,9 @@ class TestOrbitalCrosshair(unittest.TestCase):
         # Test firing
         mode.tick(world, balls, 3.1)
         self.assertEqual(len(mode.crosshairs), 0)
-        self.assertGreaterEqual(len(world.arena.hazards), 1)
-        h = world.arena.hazards[0]
+        hazards = [hz for hz in world.arena.hazards if hz.kind != "puddle"]
+        self.assertGreaterEqual(len(hazards), 1)
+        h = hazards[0]
         self.assertEqual(h.kind, "irradiated_zone")
         self.assertEqual(h.x, 300)
         self.assertEqual(h.y, 300)

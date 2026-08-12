@@ -20614,6 +20614,44 @@ func execute(strategy: String, delta: float):
                             self.ball.set_meta("_chrono_slow", 0.5)
                         elif typeof(self.ball) == TYPE_DICTIONARY:
                             self.ball["_chrono_slow"] = 0.5
+                elif hazard.kind == "electrified_puddle":
+                    var dx = hazard.x - self.ball.x
+                    var dy = hazard.y - self.ball.y
+                    var dist_sq = dx * dx + dy * dy
+                    if dist_sq < hazard.radius * hazard.radius:
+                        var cur_sdm = 1.0
+                        var cur_sdt = 0.0
+                        if typeof(self.ball) == TYPE_DICTIONARY:
+                            cur_sdm = self.ball.get("speed_debuff_multiplier", 1.0)
+                            cur_sdt = self.ball.get("speed_debuff_timer", 0.0)
+                            self.ball["speed_debuff_multiplier"] = min(cur_sdm, 0.5)
+                            self.ball["speed_debuff_timer"] = max(cur_sdt, 0.5)
+                        elif typeof(self.ball) == TYPE_OBJECT:
+                            if "speed_debuff_multiplier" in self.ball:
+                                self.ball.speed_debuff_multiplier = min(self.ball.speed_debuff_multiplier, 0.5)
+                            elif self.ball.has_method("get"):
+                                var sdm = self.ball.get("speed_debuff_multiplier")
+                                if sdm == null: sdm = 1.0
+                                if self.ball.has_method("set"): self.ball.set("speed_debuff_multiplier", min(sdm, 0.5))
+                            if "speed_debuff_timer" in self.ball:
+                                self.ball.speed_debuff_timer = max(self.ball.speed_debuff_timer, 0.5)
+                            elif self.ball.has_method("get"):
+                                var sdt = self.ball.get("speed_debuff_timer")
+                                if sdt == null: sdt = 0.0
+                                if self.ball.has_method("set"): self.ball.set("speed_debuff_timer", max(sdt, 0.5))
+
+                        var hazard_damage = 20.0 * delta
+                        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("take_damage"):
+                            self.ball.take_damage(hazard_damage)
+                        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("hp"):
+                            self.ball["hp"] -= hazard_damage
+                            if self.ball["hp"] <= 0:
+                                self.ball["alive"] = false
+                        elif "hp" in self.ball:
+                            self.ball.hp -= hazard_damage
+                            if self.ball.hp <= 0:
+                                if "alive" in self.ball: self.ball.alive = false
+
                 elif hazard.kind == "puddle":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y
@@ -20625,6 +20663,47 @@ func execute(strategy: String, delta: float):
                         elif typeof(self.ball) == TYPE_DICTIONARY:
                             self.ball["steering_mult"] = 0.5
                             self.ball["dash_range_mult"] = 1.5
+
+                        var cur_sdm = 1.0
+                        var cur_sdt = 0.0
+                        if typeof(self.ball) == TYPE_DICTIONARY:
+                            cur_sdm = self.ball.get("speed_debuff_multiplier", 1.0)
+                            cur_sdt = self.ball.get("speed_debuff_timer", 0.0)
+                            self.ball["speed_debuff_multiplier"] = min(cur_sdm, 0.5)
+                            self.ball["speed_debuff_timer"] = max(cur_sdt, 0.5)
+                        elif typeof(self.ball) == TYPE_OBJECT:
+                            if "speed_debuff_multiplier" in self.ball:
+                                self.ball.speed_debuff_multiplier = min(self.ball.speed_debuff_multiplier, 0.5)
+                            elif self.ball.has_method("get"):
+                                var sdm = self.ball.get("speed_debuff_multiplier")
+                                if sdm == null: sdm = 1.0
+                                if self.ball.has_method("set"): self.ball.set("speed_debuff_multiplier", min(sdm, 0.5))
+                            if "speed_debuff_timer" in self.ball:
+                                self.ball.speed_debuff_timer = max(self.ball.speed_debuff_timer, 0.5)
+                            elif self.ball.has_method("get"):
+                                var sdt = self.ball.get("speed_debuff_timer")
+                                if sdt == null: sdt = 0.0
+                                if self.ball.has_method("set"): self.ball.set("speed_debuff_timer", max(sdt, 0.5))
+
+                        var b_type = ""
+                        if typeof(self.ball) == TYPE_DICTIONARY: b_type = self.ball.get("ball_type", "")
+                        else: b_type = self.ball.get("ball_type") if self.ball.get("ball_type") != null else ""
+                        var traits = []
+                        if typeof(self.ball) == TYPE_DICTIONARY: traits = self.ball.get("traits", [])
+                        else: traits = self.ball.get("traits") if self.ball.get("traits") != null else []
+                        var sk = ""
+                        if typeof(self.ball) == TYPE_DICTIONARY: sk = self.ball.get("SKILL", "")
+                        else: sk = self.ball.get("SKILL") if self.ball.get("SKILL") != null else ""
+                        var is_electric = b_type.find("lightning") != -1 or traits.has("lightning") or b_type.find("electric") != -1 or traits.has("electric")
+                        if sk in ["lightning_strike", "deploy_electric_beam_trap", "chain_lightning", "throw_emp"] or is_electric:
+                            if typeof(hazard) == TYPE_DICTIONARY:
+                                hazard["kind"] = "electrified_puddle"
+                                hazard["duration"] = hazard.get("duration", 5.0) + 2.0
+                            else:
+                                hazard.kind = "electrified_puddle"
+                                var d = hazard.get("duration")
+                                if d == null: d = 5.0
+                                hazard.duration = d + 2.0
 
                         var weather = ""
                         if self.world != null and "game_mode" in self.world and self.world.game_mode != null and "weather" in self.world.game_mode:

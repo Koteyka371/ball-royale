@@ -61,7 +61,8 @@ def test_weapon_collection_pickup():
     # Spawn a weapon
     mode.tick(world, [b1], delta=4.0)
 
-    assert len(world.arena.hazards) == 1
+    hazards = [hz for hz in world.arena.hazards if getattr(hz, "kind", "") != "puddle"]
+    assert len(hazards) == 1
     hazard = world.arena.hazards[0]
 
     # Move ball to weapon

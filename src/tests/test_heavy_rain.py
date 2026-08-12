@@ -72,5 +72,6 @@ def test_heavy_rain_mutator():
     assert b2.hp == 100.0
 
     # Check obstacles
-    assert len(world.arena.hazards) == 1
+    hazards = [h for h in world.arena.hazards if getattr(h, "kind", "") != "puddle"]
+    assert len(hazards) == 1
     assert world.arena.hazards[0].radius == 30.0
