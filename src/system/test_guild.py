@@ -614,3 +614,35 @@ def test_daily_events(temp_guild_file):
 
     # Second time on same day should not trigger
     assert gm.process_daily_events("2025-01-01") == False
+
+def test_reward_hall_of_fame_top_players(temp_guild_file):
+    import tempfile
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".json") as pm_file:
+        pm_path = pm_file.name
+
+    gm = GuildManager(temp_guild_file)
+    from unittest.mock import MagicMock
+    pm = MagicMock()
+
+    gm.create_guild("MyGuild", "p1")
+    gm.add_to_hall_of_fame("MyGuild", "p1", "Top Donor", 1000)
+    gm.add_to_hall_of_fame("MyGuild", "p2", "Top Donor", 500)
+    gm.add_to_hall_of_fame("MyGuild", "p3", "GvG Champion", 10)
+
+    # p1 is top donor
+    assert gm.reward_hall_of_fame_top_players("MyGuild", pm, "p1") == True
+    pm.add_title.assert_called_with("Top Donor Champion")
+    pm.add_cosmetic.assert_called_with("Top Donor Aura")
+    pm.reset_mock()
+
+    # p2 is not top in anything
+    assert gm.reward_hall_of_fame_top_players("MyGuild", pm, "p2") == False
+
+    # p3 is top in GvG
+    assert gm.reward_hall_of_fame_top_players("MyGuild", pm, "p3") == True
+    pm.add_title.assert_called_with("GvG Champion Champion")
+    pm.add_cosmetic.assert_called_with("GvG Champion Aura")
+
+    import os
+    os.remove(pm_path)
