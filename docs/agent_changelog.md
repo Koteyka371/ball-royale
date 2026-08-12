@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1991] Hall of Fame Contributor Titles — *2026-08-12 20:05:32 UTC*
+
+Automatically reward special cosmetic titles or auras to players who appear at the top of their guild's Hall of Fame across different categories (e.g., 'Top Donor', 'GvG Champion'). These prestigious titles would be visible next to their names during public matches.
+
+---
+
 ## [idea-1920] Necromancer Blood Pact — *2026-08-12 19:52:49 UTC*
 
 A new Necromancer active skill: 'Blood Pact'. Sacrifices 20% of current HP to instantly resurrect one dead teammate as an Elite Minion (with higher base stats than regular minions but lower than a full player). If all teammates are alive, it instead grants all active minions a temporary lifesteal aura that heals the Necromancer.
