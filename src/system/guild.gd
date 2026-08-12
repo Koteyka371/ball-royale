@@ -1222,6 +1222,46 @@ func get_hall_of_fame(guild_name: String) -> Array:
             return guild["hq"]["hall_of_fame"]
     return []
 
+func reward_hall_of_fame_top_players(guild_name: String, profile_manager, local_player_id: String) -> bool:
+    if not data["guilds"].has(guild_name):
+        return false
+
+    var hof = get_hall_of_fame(guild_name)
+    if hof.size() == 0:
+        return false
+
+    var categories = {}
+    for entry in hof:
+        var cat = entry.get("category", "")
+        if not categories.has(cat):
+            categories[cat] = []
+        categories[cat].append(entry)
+
+    var rewarded = false
+    for cat in categories.keys():
+        var entries = categories[cat]
+        if entries.size() == 0:
+            continue
+
+        # Bubble sort by value descending
+        var n = entries.size()
+        for i in range(n):
+            for j in range(0, n - i - 1):
+                if entries[j].get("value", 0) < entries[j + 1].get("value", 0):
+                    var temp = entries[j]
+                    entries[j] = entries[j + 1]
+                    entries[j + 1] = temp
+
+        var top_player = entries[0].get("player_id", "")
+        if top_player == local_player_id:
+            if profile_manager.has_method("add_title"):
+                profile_manager.call("add_title", cat + " Champion")
+            if profile_manager.has_method("add_cosmetic"):
+                profile_manager.call("add_cosmetic", cat + " Aura")
+            rewarded = true
+
+    return rewarded
+
 func get_alliance_leaderboard() -> Array:
     var visited = {}
     var alliances = []

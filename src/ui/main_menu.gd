@@ -48,6 +48,13 @@ func _ready():
     add_child(clan_emissary_ui)
     clan_emissary_ui.visible = false
 
+    var guild_manager = GuildManager.new("user://guilds.json")
+    var guild_name = profile_manager.data.get("guild_name", "")
+    if guild_name != "":
+        var local_id = profile_manager.data.get("player_id", "local_player")
+        guild_manager.reward_hall_of_fame_top_players(guild_name, profile_manager, local_id)
+
+
     var open_emblem_btn = Button.new()
     open_emblem_btn.text = "Open Emblem Editor"
     open_emblem_btn.pressed.connect(self._on_open_emblem_pressed)

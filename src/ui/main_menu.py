@@ -2,6 +2,7 @@ from ui.prestige_shop.prestige_shop import PrestigeShop
 from ui.nemesis_screen.nemesis_screen import NemesisScreen
 from ui.guild_emblem_editor.guild_emblem_editor import GuildEmblemEditor
 from ui.clan_emissary_quests import ClanEmissary
+from system.guild import GuildManager
 from system.profile import ProfileManager
 from system.leaderboard import LeaderboardManager
 
@@ -11,6 +12,14 @@ class MainMenu:
         self.leaderboard_manager = LeaderboardManager("leaderboard.json", profile_manager=self.profile_manager)
         self.prestige_shop = PrestigeShop(self.profile_manager)
         self.clan_emissary = ClanEmissary(self.profile_manager)
+        self.guild_manager = GuildManager("guilds.json")
+
+        # Automatically reward Hall of Fame top players upon entering Main Menu
+        guild_name = self.profile_manager.data.get("guild_name")
+        if guild_name:
+            local_id = self.profile_manager.data.get("player_id", "local_player")
+            self.guild_manager.reward_hall_of_fame_top_players(guild_name, self.profile_manager, local_id)
+
         self.active_screen = "main"
 
         season = self.leaderboard_manager.data.get("current_season", 1)

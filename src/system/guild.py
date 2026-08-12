@@ -991,6 +991,38 @@ class GuildManager:
             return hq.get("hall_of_fame", [])
         return []
 
+    def reward_hall_of_fame_top_players(self, guild_name, profile_manager, local_player_id):
+        if guild_name not in self.data["guilds"]:
+            return False
+
+        hof = self.get_hall_of_fame(guild_name)
+        if not hof:
+            return False
+
+        categories = {}
+        for entry in hof:
+            cat = entry.get("category")
+            if cat not in categories:
+                categories[cat] = []
+            categories[cat].append(entry)
+
+        rewarded = False
+        for cat, entries in categories.items():
+            if not entries:
+                continue
+
+            entries.sort(key=lambda x: x.get("value", 0), reverse=True)
+            top_player = entries[0].get("player_id")
+
+            if top_player == local_player_id:
+                if hasattr(profile_manager, "add_title"):
+                    profile_manager.add_title(f"{cat} Champion")
+                if hasattr(profile_manager, "add_cosmetic"):
+                    profile_manager.add_cosmetic(f"{cat} Aura")
+                rewarded = True
+
+        return rewarded
+
 
     def unlock_emblem_part(self, guild_name, part_type, part_id, cost):
         if guild_name in self.data["guilds"]:
