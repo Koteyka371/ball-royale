@@ -1788,6 +1788,9 @@ func update_zone(current_tick: int, delta: float) -> void:
                     h.kind = "decoy_item"
                     h.damage = 0.0
                 elif randf() < 0.05:
+                    h.kind = "emotion_resonator"
+                    h.damage = 0.0
+                elif randf() < 0.05:
                     h.kind = "silence_booster"
                     h.damage = 0.0
                 elif randf() < 0.05:

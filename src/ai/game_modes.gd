@@ -152,6 +152,100 @@ class GameMode:
 					elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
 
+
+					if h_kind == "emotion_resonator":
+						var m_x = 0.0
+						if typeof(hazard) == TYPE_DICTIONARY and "x" in hazard: m_x = hazard.x
+						elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("x"): m_x = hazard.get_meta("x")
+
+						var m_y = 0.0
+						if typeof(hazard) == TYPE_DICTIONARY and "y" in hazard: m_y = hazard.y
+						elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("y"): m_y = hazard.get_meta("y")
+
+						var m_radius = 40.0
+						if typeof(hazard) == TYPE_DICTIONARY and "radius" in hazard: m_radius = hazard.radius
+						elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("radius"): m_radius = hazard.get_meta("radius")
+
+						var captured_emotion = null
+						var radiate_timer = 0.0
+
+						if typeof(hazard) == TYPE_DICTIONARY:
+							if not hazard.has("captured_emotion"): hazard["captured_emotion"] = null
+							if not hazard.has("radiate_timer"): hazard["radiate_timer"] = 0.0
+							captured_emotion = hazard["captured_emotion"]
+							radiate_timer = hazard["radiate_timer"]
+							if hazard["radiate_timer"] > 0: hazard["radiate_timer"] -= delta
+						elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta"):
+							if not hazard.has_meta("captured_emotion"): hazard.set_meta("captured_emotion", null)
+							if not hazard.has_meta("radiate_timer"): hazard.set_meta("radiate_timer", 0.0)
+							captured_emotion = hazard.get_meta("captured_emotion")
+							radiate_timer = hazard.get_meta("radiate_timer")
+							if radiate_timer > 0: hazard.set_meta("radiate_timer", radiate_timer - delta)
+
+						for b in balls:
+							var is_alive = false
+							if typeof(b) == TYPE_DICTIONARY and "alive" in b: is_alive = b.alive
+							elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
+							elif "alive" in b: is_alive = b.alive
+
+							if not is_alive: continue
+
+							var b_type = ""
+							if typeof(b) == TYPE_DICTIONARY and "ball_type" in b: b_type = b.ball_type
+							elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("ball_type"): b_type = b.get_meta("ball_type")
+							elif "ball_type" in b: b_type = b.ball_type
+
+							if b_type == "spectator": continue
+
+							var b_x = 0.0
+							var b_y = 0.0
+							var b_radius = 15.0
+
+							if typeof(b) == TYPE_DICTIONARY:
+								if "x" in b: b_x = b.x
+								if "y" in b: b_y = b.y
+								if "radius" in b: b_radius = b.radius
+							elif typeof(b) == TYPE_OBJECT:
+								if b.has_method("get_meta") and b.has_meta("x"): b_x = b.get_meta("x")
+								elif "x" in b: b_x = b.x
+								if b.has_method("get_meta") and b.has_meta("y"): b_y = b.get_meta("y")
+								elif "y" in b: b_y = b.y
+								if b.has_method("get_meta") and b.has_meta("radius"): b_radius = b.get_meta("radius")
+								elif "radius" in b: b_radius = b.radius
+
+							var dist_sq = (b_x - m_x) * (b_x - m_x) + (b_y - m_y) * (b_y - m_y)
+
+							var current_captured_emotion = null
+							if typeof(hazard) == TYPE_DICTIONARY: current_captured_emotion = hazard["captured_emotion"]
+							elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta"): current_captured_emotion = hazard.get_meta("captured_emotion")
+
+							var current_radiate_timer = 0.0
+							if typeof(hazard) == TYPE_DICTIONARY: current_radiate_timer = hazard["radiate_timer"]
+							elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta"): current_radiate_timer = hazard.get_meta("radiate_timer")
+
+							if current_captured_emotion == null:
+								if dist_sq < (m_radius + b_radius) * (m_radius + b_radius):
+									var b_em = "neutral"
+									if typeof(b) == TYPE_DICTIONARY and "emotion" in b: b_em = b.emotion
+									elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("emotion"): b_em = b.get_meta("emotion")
+									elif "emotion" in b: b_em = b.emotion
+
+									if b_em != "neutral":
+										if typeof(hazard) == TYPE_DICTIONARY:
+											hazard["captured_emotion"] = b_em
+											hazard["radiate_timer"] = 10.0
+										elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"):
+											hazard.set_meta("captured_emotion", b_em)
+											hazard.set_meta("radiate_timer", 10.0)
+							elif current_radiate_timer > 0:
+								var aura_radius = 400.0
+								if dist_sq < (aura_radius + b_radius) * (aura_radius + b_radius):
+									if typeof(b) == TYPE_DICTIONARY:
+										b["emotion"] = current_captured_emotion
+									elif typeof(b) == TYPE_OBJECT:
+										if "emotion" in b: b.emotion = current_captured_emotion
+										elif b.has_method("set_meta"): b.set_meta("emotion", current_captured_emotion)
+
 					if h_kind == "momentum_mirror":
 						var m_x = 0.0
 						if typeof(hazard) == TYPE_DICTIONARY and "x" in hazard: m_x = hazard.x

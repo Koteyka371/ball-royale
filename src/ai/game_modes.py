@@ -101,6 +101,65 @@ class GameMode:
                                 b.x = b_x + move_x
                                 b.y = b_y + move_y
 
+
+                if h_kind == "emotion_resonator":
+                    m_x = hazard.get("x", 0.0) if is_dict else getattr(hazard, "x", 0.0)
+                    m_y = hazard.get("y", 0.0) if is_dict else getattr(hazard, "y", 0.0)
+                    m_radius = hazard.get("radius", 40.0) if is_dict else getattr(hazard, "radius", 40.0)
+
+                    # Custom attributes
+                    if is_dict:
+                        if "captured_emotion" not in hazard: hazard["captured_emotion"] = None
+                        if "radiate_timer" not in hazard: hazard["radiate_timer"] = 0.0
+                        captured_em = hazard["captured_emotion"]
+                        rad_timer = hazard["radiate_timer"]
+                    else:
+                        if not hasattr(hazard, "captured_emotion"): hazard.captured_emotion = None
+                        if not hasattr(hazard, "radiate_timer"): hazard.radiate_timer = 0.0
+                        captured_em = hazard.captured_emotion
+                        rad_timer = hazard.radiate_timer
+
+                    if is_dict:
+                        if hazard["radiate_timer"] > 0: hazard["radiate_timer"] -= delta
+                    else:
+                        if hazard.radiate_timer > 0: hazard.radiate_timer -= delta
+
+                    for b in balls:
+                        is_alive = b.get("alive", False) if isinstance(b, dict) else getattr(b, "alive", False)
+                        if not is_alive: continue
+                        b_type = b.get("ball_type", "") if isinstance(b, dict) else getattr(b, "ball_type", "")
+                        if b_type == "spectator": continue
+
+                        b_x = b.get("x", 0.0) if isinstance(b, dict) else getattr(b, "x", 0.0)
+                        b_y = b.get("y", 0.0) if isinstance(b, dict) else getattr(b, "y", 0.0)
+                        b_radius = b.get("radius", 15.0) if isinstance(b, dict) else getattr(b, "radius", 15.0)
+
+                        dist_sq = (b_x - m_x)**2 + (b_y - m_y)**2
+
+                        # Capture phase
+                        if (is_dict and hazard["captured_emotion"] is None) or (not is_dict and hazard.captured_emotion is None):
+                            if dist_sq < (m_radius + b_radius)**2:
+                                # Capture emotion
+                                b_em = b.get("emotion", "neutral") if isinstance(b, dict) else getattr(b, "emotion", "neutral")
+                                if b_em != "neutral":
+                                    if is_dict:
+                                        hazard["captured_emotion"] = b_em
+                                        hazard["radiate_timer"] = 10.0 # 10 seconds duration
+                                    else:
+                                        hazard.captured_emotion = b_em
+                                        hazard.radiate_timer = 10.0
+
+                        # Radiate phase
+                        elif (is_dict and hazard["radiate_timer"] > 0) or (not is_dict and hazard.radiate_timer > 0):
+                            aura_radius = 400.0 # Wide aura
+                            if dist_sq < (aura_radius + b_radius)**2:
+                                # Apply captured emotion
+                                em_to_apply = hazard["captured_emotion"] if is_dict else hazard.captured_emotion
+                                if isinstance(b, dict):
+                                    b["emotion"] = em_to_apply
+                                else:
+                                    b.emotion = em_to_apply
+
                 if h_kind == "kinetic_reflector":
                     m_x = hazard.get("x", 0.0) if is_dict else getattr(hazard, "x", 0.0)
                     m_y = hazard.get("y", 0.0) if is_dict else getattr(hazard, "y", 0.0)
