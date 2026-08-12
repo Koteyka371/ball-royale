@@ -38,6 +38,7 @@ def test_currency_bounty_mode():
     balls = [b1, b2]
 
     mode.setup(world, balls)
+    world.currency_pickups = []
 
     # After setup, get the real base_speed (it could be 120 due to setup base logic, but let's check it dynamically)
     b2_base_speed = getattr(b2, "base_speed", getattr(b2, "speed", 100.0))
@@ -69,5 +70,30 @@ def test_currency_bounty_mode():
     mode.tick(world, balls, 0.016)
 
     # b2 should no longer have bonus stats
+    assert b2.speed == b2_base_speed
+    assert b2.damage == b2_base_damage
+
+def test_currency_bounty_mode_no_bounty():
+    mode = CurrencyBountyMode()
+    world = MockWorld()
+    b1 = MockBall(1, 100, 100)
+    b2 = MockBall(2, 500, 500)
+    balls = [b1, b2]
+
+    mode.setup(world, balls)
+    world.currency_pickups = []
+
+    b2_base_speed = getattr(b2, "base_speed", getattr(b2, "speed", 100.0))
+    b2_base_damage = getattr(b2, "base_damage", getattr(b2, "damage", 10.0))
+
+    # Give b1 9 currency (less than threshold)
+    for i in range(9):
+        world.currency_pickups.append({"x": 100, "y": 100, "type": "currency"})
+
+    b2.vx = -1.0
+    b2.vy = -1.0
+    mode.tick(world, balls, 0.016)
+
+    assert b1.currency == 9
     assert b2.speed == b2_base_speed
     assert b2.damage == b2_base_damage
