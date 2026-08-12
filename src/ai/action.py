@@ -1489,6 +1489,17 @@ class Action:
                 if actual_damage_dealt > 0:
                     attacker.hp = min(getattr(attacker, 'hp', 100.0) + actual_damage_dealt * 0.3, getattr(attacker, 'max_hp', 100.0))
 
+
+        if new_hp < old_hp and getattr(attacker, "lifesteal_aura_timer", 0.0) > 0.0:
+            damage_dealt = old_hp - new_hp
+            heal_amount = damage_dealt * 0.5
+            owner_id = getattr(attacker, "lifesteal_aura_owner", None)
+            if owner_id is not None and hasattr(self.world, "balls"):
+                for b in self.world.balls:
+                    if getattr(b, "id", None) == owner_id and getattr(b, "alive", False):
+                        b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + heal_amount)
+                        break
+
         if new_hp < old_hp:
             gm = getattr(self.world, "game_mode", None)
             if gm and getattr(gm, "name", "") == "Crimson Fog Event" and getattr(gm, "crimson_fog_active", False) and attacker is not None:
@@ -20576,6 +20587,36 @@ class Action:
                     wall.active = True
                     self.world.arena.hazards.append(wall)
                 self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 8.0)
+            elif skill_name == "blood_pact":
+                hp_cost = getattr(self.ball, "hp", 100.0) * 0.2
+                if self.ball.hp > hp_cost:
+                    self.ball.hp -= hp_cost
+                    if hasattr(self.world, "events"):
+                        self.world.events.append(("visual_effect", {"type": "blood_pact_activation", "x": self.ball.x, "y": self.ball.y}))
+
+                    if hasattr(self.world, "balls"):
+                        dead_teammates = [b for b in self.world.balls if getattr(b, "team", "") == getattr(self.ball, "team", "") and not getattr(b, "alive", True) and getattr(b, "ball_type", "") not in ["minion", "elite_minion", "skeletal_dragon"]]
+
+                        if dead_teammates:
+                            target = dead_teammates[0]
+                            target.alive = True
+                            target.hp = getattr(target, "max_hp", 100.0)
+                            target.ball_type = "elite_minion"
+                            target.base_speed = getattr(target, 'base_speed', getattr(target, 'speed', 15.0)) * 1.5
+                            target.base_damage = getattr(target, 'base_damage', getattr(target, 'damage', 10.0)) * 1.5
+                            target.speed = target.base_speed
+                            target.damage = target.base_damage
+                            target.minion_owner = self.ball.id
+                            if hasattr(self.world, "events"):
+                                self.world.events.append(("visual_effect", {"type": "blood_pact_resurrect", "x": target.x, "y": target.y}))
+                        else:
+                            active_minions = [b for b in self.world.balls if getattr(b, "team", "") == getattr(self.ball, "team", "") and getattr(b, "alive", True) and getattr(b, "ball_type", "") in ["minion", "elite_minion", "skeletal_dragon"]]
+                            if active_minions:
+                                for minion in active_minions:
+                                    minion.lifesteal_aura_timer = 10.0
+                                    minion.lifesteal_aura_owner = self.ball.id
+                                if hasattr(self.world, "events"):
+                                    self.world.events.append(("visual_effect", {"type": "blood_pact_aura", "x": self.ball.x, "y": self.ball.y}))
             elif skill_name == "corpse_explosion":
                 if hasattr(self.world, "balls"):
                     minions = [b for b in self.world.balls if getattr(b, "ball_type", "") in ["minion", "elite_minion"] and getattr(b, "team", "") == getattr(self.ball, "team", "")]
@@ -25322,6 +25363,9 @@ class Action:
                                 self.ball.speed = getattr(self.ball, "speed", 0.0) * 0.7
 
     def _update_skill_timer(self, delta: float) -> None:
+
+        if getattr(self.ball, "lifesteal_aura_timer", 0.0) > 0.0:
+            self.ball.lifesteal_aura_timer -= delta
 
         if getattr(self.ball, "active_stealth_active", False):
             stamina = getattr(self.ball, "stamina", 0.0)
