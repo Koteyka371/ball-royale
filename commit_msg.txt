@@ -1,0 +1,7 @@
+Implement Necromancer 'Blood Pact' skill
+
+- Sacrifices 20% of current HP to resurrect a dead teammate as an Elite Minion.
+- If no teammates are dead, grants a temporary lifesteal aura to active minions.
+- Applies healing back to the Necromancer when minions with the aura deal damage.
+- Replaces 'corpse_explosion' skill with 'blood_pact' for Necromancer.
+- Updated python and gdscript side logic.
