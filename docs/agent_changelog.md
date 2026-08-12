@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1953] Quantum Ricochet Mode — *2026-08-12 11:30:43 UTC*
+
+Balls that hit the arena boundaries don't just bounce, they teleport to the opposite side of the arena with reversed velocity. Players can deploy a temporary 'stabilizer field' that acts as a solid wall for incoming teleported objects, protecting them from surprise attacks.
+
+---
+
 ## [idea-1976] Emotion Sync Traps — *2026-08-12 05:55:29 UTC*
 
 Hazards that capture the emotion of the first ball that touches them, and radiate that emotion to all nearby balls in a wide aura for a limited time.
