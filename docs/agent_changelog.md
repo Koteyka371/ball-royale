@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1920] Necromancer Blood Pact — *2026-08-12 19:52:49 UTC*
+
+A new Necromancer active skill: 'Blood Pact'. Sacrifices 20% of current HP to instantly resurrect one dead teammate as an Elite Minion (with higher base stats than regular minions but lower than a full player). If all teammates are alive, it instead grants all active minions a temporary lifesteal aura that heals the Necromancer.
+
+---
+
 ## [idea-1953] Quantum Ricochet Mode — *2026-08-12 11:30:43 UTC*
 
 Balls that hit the arena boundaries don't just bounce, they teleport to the opposite side of the arena with reversed velocity. Players can deploy a temporary 'stabilizer field' that acts as a solid wall for incoming teleported objects, protecting them from surprise attacks.
