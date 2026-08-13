@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1999] Mercenary AI Bots — *2026-08-13 15:55:00 UTC*
+
+Introduce AI mercenary bots that spawn at camps around the arena. Players can pay them using in-game currency or prestige tokens to follow them and attack enemies for a set duration.
+
+---
+
 ## [idea-1980] Blinding Flashbang Trap — *2026-08-13 12:59:11 UTC*
 
 A new hazard that detonates when approached, temporarily setting the vision radius of nearby balls to zero and disabling their ability to attack or pick up items for a brief period.
