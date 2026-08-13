@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1993] Toxic Minion Mutator — *2026-08-13 19:48:15 UTC*
+
+A new mutator or item that infuses minions with toxic sludge. When they decay and explode, instead of instant burst damage, they leave behind a persistent poison cloud that slows enemies and deals damage over time.
+
+---
+
 ## [idea-1999] Mercenary AI Bots — *2026-08-13 15:55:00 UTC*
 
 Introduce AI mercenary bots that spawn at camps around the arena. Players can pay them using in-game currency or prestige tokens to follow them and attack enemies for a set duration.
