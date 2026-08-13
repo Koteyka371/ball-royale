@@ -7770,9 +7770,6 @@ class EscortMode(GameMode):
                             self.payload.energy_cores = 0
                             self.payload.overcharge_timer = 5.0
                             self.payload.shield = 100.0
-                            self.payload.shield = 100.0
-                            self.payload.shield = 100.0
-                            self.payload.shield = 100.0
 
 
             if dist > 0:
@@ -19580,6 +19577,100 @@ class CrowdedSafeZoneMode(SafeZoneMode):
         # Adjust shrink rate based on players outside
         # Shrinks much faster with more players outside
         self.shrink_rate = self.base_shrink_rate * (1.0 + float(players_outside) * 0.5)
+
+
+class PhantomSafeZoneMode(SafeZoneMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Phantom Safe Zones"
+        self.description = "A Safe Zone mode where phantom safe zones occasionally spawn which look completely real but only last for 15 seconds. Stepping into them provides brief immunity from storm damage before unexpectedly dissipating."
+        self.phantom_zones = []
+        self.phantom_spawn_timer = 0.0
+
+    def setup(self, world, balls):
+        import random
+        super().setup(world, balls)
+        self.phantom_zones = []
+        self.phantom_spawn_timer = random.uniform(10.0, 20.0)
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        import random
+
+        # Tick phantom zones
+        new_phantoms = []
+        for zone in self.phantom_zones:
+            zone["timer"] -= delta
+            if zone["timer"] > 0:
+                new_phantoms.append(zone)
+            else:
+                if hasattr(world, "add_event"):
+                    world.add_event("phantom_zone_despawn", {"type": "phantom_zone", "id": zone.get("id")})
+        self.phantom_zones = new_phantoms
+
+        # Spawn new phantom zones
+        self.phantom_spawn_timer -= delta
+        if self.phantom_spawn_timer <= 0.0:
+            self.phantom_spawn_timer = random.uniform(20.0, 30.0)
+
+            arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+            arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+            spawn_x = random.uniform(200.0, arena_width - 200.0)
+            spawn_y = random.uniform(200.0, arena_height - 200.0)
+
+            new_radius = random.uniform(100.0, 200.0)
+            pz_id = id(self) + int(self.phantom_spawn_timer * 1000)
+            self.phantom_zones.append({
+                "id": pz_id,
+                "x": spawn_x,
+                "y": spawn_y,
+                "radius": new_radius,
+                "timer": 15.0
+            })
+
+            if hasattr(world, "add_event"):
+                world.add_event("phantom_zone_spawn", {"type": "phantom_zone", "x": spawn_x, "y": spawn_y, "radius": new_radius, "id": pz_id})
+
+        # Capture HP before base tick to calculate damage manually
+        hp_before = {id(b): b.hp for b in balls if hasattr(b, 'hp')}
+
+        # Super tick applies damage to everything outside main zone
+        super().tick(world, balls, delta)
+
+        # Check if we should refund damage because they are in a phantom zone
+        max_arena_dim = max(getattr(world.arena, "width", 1000), getattr(world.arena, "height", 1000)) if hasattr(world, "arena") and world.arena else 1000
+        shrink_ratio = max(0.0, min(1.0, 1.0 - (self.zone_radius / max_arena_dim)))
+        base_dmg = self.outside_damage_per_second + (shrink_ratio * self.outside_damage_per_second * 4.0)
+        damage_this_tick = base_dmg * (10.0 if getattr(self, 'collapse_triggered', False) else 1.0) * delta
+
+        # Even if they died, we want to revive them if they were in a phantom zone
+        for b in balls:
+            if getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            dx = b.x - self.zone_x
+            dy = b.y - self.zone_y
+            dist_to_main = math.sqrt(dx*dx + dy*dy)
+
+            if dist_to_main > self.zone_radius:
+                in_phantom = False
+                for pz in self.phantom_zones:
+                    pdx = b.x - pz["x"]
+                    pdy = b.y - pz["y"]
+                    p_dist = math.sqrt(pdx*pdx + pdy*pdy)
+                    if p_dist <= pz["radius"]:
+                        in_phantom = True
+                        break
+
+                if in_phantom:
+                    # Refund damage and clear minimap ping timer
+                    b.hp += damage_this_tick
+                    if getattr(b, "hp", 0) > 0:
+                        b.alive = True
+                    # Also refund slow
+                    b.slow_timer = max(0.0, getattr(b, "slow_timer", 0.0) - 0.5)
+
 
 class MutantSafeZoneMode(SafeZoneMode):
     def __init__(self):
@@ -38743,6 +38834,7 @@ GAME_MODES = {
     "shrinking_boundary": ShrinkingBoundaryMode(),
     "inverse_safe_zone": InverseSafeZoneMode(),
     "safe_zone": SafeZoneMode(),
+    "phantom_safe_zone": PhantomSafeZoneMode(),
     "mutant_safe_zone": MutantSafeZoneMode(),
     "crowded_safe_zone": CrowdedSafeZoneMode(),
     "merging_safe_zones": MergingSafeZonesMode(),

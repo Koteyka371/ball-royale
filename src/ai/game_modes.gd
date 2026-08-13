@@ -19609,6 +19609,126 @@ class CrowdedSafeZoneMode extends SafeZoneMode:
 		shrink_rate = base_shrink_rate * (1.0 + float(players_outside) * 0.5)
 
 
+
+class PhantomSafeZoneMode extends SafeZoneMode:
+	var phantom_zones = []
+	var phantom_spawn_timer = 0.0
+
+	func _init():
+		super._init()
+		name = "Phantom Safe Zones"
+		description = "A Safe Zone mode where phantom safe zones occasionally spawn which look completely real but only last for 15 seconds. Stepping into them provides brief immunity from storm damage before unexpectedly dissipating."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		phantom_zones = []
+		phantom_spawn_timer = randf_range(10.0, 20.0)
+
+	func tick(world, balls, delta=0.016):
+		# First tick the phantom zones
+		var new_phantoms = []
+		for zone in phantom_zones:
+			zone["timer"] -= delta
+			if zone["timer"] > 0:
+				new_phantoms.append(zone)
+			else:
+				if world.has_method("add_event"):
+					world.add_event("phantom_zone_despawn", {"type": "phantom_zone", "id": zone.get("id")})
+		phantom_zones = new_phantoms
+
+		# Spawn new phantom zones occasionally
+		phantom_spawn_timer -= delta
+		if phantom_spawn_timer <= 0.0:
+			phantom_spawn_timer = randf_range(20.0, 30.0)
+
+			var arena_width = 1000.0
+			var arena_height = 1000.0
+			if world.has("arena") and world.arena != null:
+				if world.arena.has("width"): arena_width = float(world.arena.width)
+				if world.arena.has("height"): arena_height = float(world.arena.height)
+
+			var spawn_x = randf_range(200.0, arena_width - 200.0)
+			var spawn_y = randf_range(200.0, arena_height - 200.0)
+
+			var new_radius = randf_range(100.0, 200.0)
+			var pz_id = randi()
+			phantom_zones.append({
+				"id": pz_id,
+				"x": spawn_x,
+				"y": spawn_y,
+				"radius": new_radius,
+				"timer": 15.0
+			})
+
+			if world.has_method("add_event"):
+				world.add_event("phantom_zone_spawn", {"type": "phantom_zone", "x": spawn_x, "y": spawn_y, "radius": new_radius, "id": pz_id})
+
+		# Override storm damage logic to account for phantom zones
+		super.tick(world, balls, delta)
+
+		# Fix damage for balls inside phantom zones
+		var damage_this_tick = 0.0
+		if not collapse_triggered:
+			var shrink_ratio = max(0.0, min(1.0, 1.0 - (zone_radius / 1000.0)))
+			var base_dmg = outside_damage_per_second + (shrink_ratio * outside_damage_per_second * 4.0)
+			damage_this_tick = base_dmg * delta
+		else:
+			damage_this_tick = outside_damage_per_second * 10.0 * delta
+
+		for b in balls:
+			var w_timer = 0.0
+			if typeof(b) == TYPE_DICTIONARY and b.has("weather_immunity_timer"): w_timer = b["weather_immunity_timer"]
+			elif b.get("weather_immunity_timer") != null: w_timer = b.weather_immunity_timer
+
+			var is_immune = w_timer > 0.0
+
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY and b.has("alive"): is_alive = b["alive"]
+			elif b.get("alive") != null: is_alive = b.alive
+
+			var ball_type = ""
+			if typeof(b) == TYPE_DICTIONARY and b.has("ball_type"): ball_type = b["ball_type"]
+			elif b.get("ball_type") != null: ball_type = b.ball_type
+
+			if ball_type != "spectator":
+				var bx = 0.0
+				var by = 0.0
+				if typeof(b) == TYPE_DICTIONARY:
+					if b.has("x"): bx = b["x"]
+					if b.has("y"): by = b["y"]
+				else:
+					bx = b.x
+					by = b.y
+
+				var dx = bx - zone_x
+				var dy = by - zone_y
+				var dist_to_main = sqrt(dx*dx + dy*dy)
+
+				# If outside main zone, we took damage in super.tick().
+				# Let's check if we are actually in a phantom zone.
+				if dist_to_main > zone_radius:
+					var in_phantom = false
+					for pz in phantom_zones:
+						var pdx = bx - pz["x"]
+						var pdy = by - pz["y"]
+						var p_dist = sqrt(pdx*pdx + pdy*pdy)
+						if p_dist <= pz["radius"]:
+							in_phantom = true
+							break
+
+					if in_phantom:
+						# Refund the damage taken
+						if typeof(b) == TYPE_DICTIONARY:
+							b["hp"] += damage_this_tick
+							if b["hp"] > 0: b["alive"] = true
+						elif b.has_method("set_meta"):
+							b.hp += damage_this_tick
+							if b.hp > 0: b.alive = true
+						else:
+							b.hp += damage_this_tick
+							if b.hp > 0: b.alive = true
+
+
 class MutantSafeZoneMode extends SafeZoneMode:
 	func _init() -> void:
 		name = "Mutant Safe Zone"
@@ -63212,6 +63332,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"shrinking_boundary": ShrinkingBoundaryMode.new(),
 	"inverse_safe_zone": InverseSafeZoneMode.new(),
 	"safe_zone": SafeZoneMode.new(),
+	"phantom_safe_zone": PhantomSafeZoneMode.new(),
 	"mutant_safe_zone": MutantSafeZoneMode.new(),
 	"crowded_safe_zone": CrowdedSafeZoneMode.new(),
 	"merging_safe_zones": MergingSafeZonesMode.new(),
