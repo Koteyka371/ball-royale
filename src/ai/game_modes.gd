@@ -62640,7 +62640,107 @@ class CurrencyBountyMode extends GameMode:
 							b.set("damage", b_base_damage * 1.5)
 
 
+
+class IrradiationSurvivalMode extends GameMode:
+    var irradiation_zones = []
+    var zone_timer = 0.0
+    var booster_timer = 0.0
+
+    func _init():
+        super._init()
+        irradiation_zones = []
+        zone_timer = 0.0
+        booster_timer = 0.0
+
+    func setup(world, balls):
+        super.setup(world, balls)
+        irradiation_zones = []
+        zone_timer = 5.0
+        booster_timer = 10.0
+
+    func tick(world, balls, delta = 0.016):
+        zone_timer -= delta
+        if zone_timer <= 0:
+            zone_timer = randf_range(8.0, 15.0)
+            var x = randf_range(50.0, 950.0)
+            var y = randf_range(50.0, 950.0)
+            var z_id = 0
+            if "next_id" in world:
+                if typeof(world.next_id) == TYPE_CALLABLE:
+                    z_id = world.next_id.call()
+                else:
+                    z_id = world.next_id
+            else:
+                z_id = randi() % 900000 + 100000
+
+            var zone = {
+                "id": z_id,
+                "x": x,
+                "y": y,
+                "radius": 30.0,
+                "kind": "irradiation_zone",
+                "active": true
+            }
+            irradiation_zones.append(zone)
+
+        booster_timer -= delta
+        if booster_timer <= 0:
+            booster_timer = randf_range(10.0, 20.0)
+            if "boosters" in world and "arena" in world and "hazards" in world.arena:
+                var b_id = 0
+                if "next_id" in world:
+                    if typeof(world.next_id) == TYPE_CALLABLE:
+                        b_id = world.next_id.call()
+                    else:
+                        b_id = world.next_id
+                else:
+                    b_id = randi() % 900000 + 100000
+
+                var booster = {
+                    "id": b_id,
+                    "x": randf_range(50.0, 950.0),
+                    "y": randf_range(50.0, 950.0),
+                    "radius": 15.0,
+                    "kind": "anti_radiation_booster",
+                    "damage": 0.0,
+                    "active": true
+                }
+                world.boosters.append(booster)
+                world.arena.hazards.append(booster)
+
+        for z in irradiation_zones:
+            if not z.get("active", true):
+                continue
+            z["radius"] = min(250.0, z["radius"] + 4.0 * delta)
+
+            for b in balls:
+                if (typeof(b) == TYPE_OBJECT and not b.get("alive")) or (typeof(b) == TYPE_DICTIONARY and not b.get("alive", true)):
+                    continue
+                var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+                if b_type == "spectator":
+                    continue
+                var b_x = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get_meta("x") if typeof(b) == TYPE_OBJECT and b.has_meta("x") else b.get("x"))
+                var b_y = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get_meta("y") if typeof(b) == TYPE_OBJECT and b.has_meta("y") else b.get("y"))
+                var dx = b_x - z["x"]
+                var dy = b_y - z["y"]
+                var dist = sqrt(dx * dx + dy * dy)
+                var b_rad = b.get("radius", 15.0) if typeof(b) == TYPE_DICTIONARY else b.get("radius")
+                if dist < z["radius"] + b_rad:
+                    if typeof(b) == TYPE_OBJECT:
+                        var mut_lvl = b.get_meta("mutation_level") if b.has_meta("mutation_level") else 0.0
+                        b.set_meta("mutation_level", mut_lvl + 1.0 * delta)
+                        var max_stam = b.get_meta("max_stamina") if b.has_meta("max_stamina") else 100.0
+                        b.set_meta("max_stamina", max(20.0, max_stam - 2.0 * delta))
+                        if b.get_meta("mutation_level") > 5.0:
+                            b.set_meta("mutant", true)
+                    else:
+                        b["mutation_level"] = b.get("mutation_level", 0.0) + 1.0 * delta
+                        b["max_stamina"] = max(20.0, b.get("max_stamina", 100.0) - 2.0 * delta)
+                        if b["mutation_level"] > 5.0:
+                            b["mutant"] = true
+
 var GAME_MODES = {
+    "irradiation_survival": IrradiationSurvivalMode.new(),
 	"currency_bounty": CurrencyBountyMode.new(),
     "frostbite": _frostbite_mode_inst,
 	"giant_bouncy_royale": GiantBouncyRoyaleMode.new(),

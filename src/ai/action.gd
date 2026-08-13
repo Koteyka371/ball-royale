@@ -32263,6 +32263,23 @@ func _collect_booster(delta: float):
             elif typeof(b) == TYPE_OBJECT and "owner_id" in b: b_owner = b.owner_id
             elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("owner_id"): b_owner = b.get_meta("owner_id")
 
+            if b_kind == "anti_radiation_booster" and (b.get("active", true) if typeof(b) == TYPE_DICTIONARY else (b.get_meta("active") if b.has_meta("active") else true)):
+                if typeof(ball) == TYPE_OBJECT:
+                    ball.set_meta("mutation_level", 0.0)
+                    ball.set_meta("mutant", false)
+                    ball.set_meta("max_stamina", 100.0)
+                else:
+                    ball["mutation_level"] = 0.0
+                    ball["mutant"] = false
+                    ball["max_stamina"] = 100.0
+                if typeof(b) == TYPE_OBJECT:
+                    b.set_meta("active", false)
+                else:
+                    b["active"] = false
+                if "boosters" in world and b in world.boosters:
+                    world.boosters.erase(b)
+                if "arena" in world and "hazards" in world.arena and b in world.arena.hazards:
+                    world.arena.hazards.erase(b)
             if b_kind == "phylactery_item" and b_owner == b_id:
                 if typeof(self.ball) == TYPE_DICTIONARY: self.ball["phylactery_active"] = true
                 else:
