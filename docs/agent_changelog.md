@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1995] Phantom Safe Zone — *2026-08-13 00:49:39 UTC*
+
+In a special variation of the Safe Zone mode, phantom safe zones occasionally spawn which look completely real but only last for 15 seconds. Stepping into them provides brief immunity from storm damage before unexpectedly dissipating and leaving the players vulnerable.
+
+---
+
 ## [idea-1979] Bounty Contract Drops — *2026-08-12 20:34:35 UTC*
 
 Whenever a ball hits a certain currency threshold, a bounty is placed on them and other balls gain bonus stats when moving towards them.
