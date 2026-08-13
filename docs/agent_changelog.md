@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1992] Cosmic Distortion Event — *2026-08-13 10:42:50 UTC*
+
+A dynamic arena event where gravity randomly shifts in strength and direction every 15 seconds. Balls with lower mass are affected more strongly, creating unpredictable trajectories and forcing AI to adapt their movement strategies on the fly. Balls with the 'Juggernaut' booster or similar heavy traits are more resistant but suffer from increased stamina drain.
+
+---
+
 ## [idea-1989] Radioactive Fallout Game Mode — *2026-08-13 10:00:51 UTC*
 
 A survival-focused game mode where random patches of the arena become irradiated. These radioactive zones slowly expand, applying a unique mutation debuff to any ball caught inside, reducing max stamina and gradually transforming their appearance until they find an anti-radiation booster.
