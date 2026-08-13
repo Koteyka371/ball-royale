@@ -447,7 +447,9 @@ class GameMode:
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -2480,7 +2482,9 @@ class DraftRoyaleMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -2784,7 +2788,9 @@ class BattleRoyaleMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -5301,7 +5307,9 @@ class TeamDeathmatchMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -5438,7 +5446,9 @@ class ZombieInfectionMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -5620,7 +5630,9 @@ class GuildBossFightMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -5858,7 +5870,9 @@ class BossFightMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -6321,7 +6335,9 @@ class DualPayloadMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -7036,7 +7052,9 @@ class EscortMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -7944,7 +7962,9 @@ class VIPDefenseMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -8088,7 +8108,9 @@ class SurvivalMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -8301,7 +8323,9 @@ class CaptureTheFlagMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -8460,7 +8484,9 @@ class EvolutionarySimulationMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -8737,7 +8763,9 @@ class MassiveGravityWellMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -9053,7 +9081,9 @@ class KingOfTheHillMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -9251,7 +9281,9 @@ class SweepingBlackHoleMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -9626,7 +9658,9 @@ class WeatherChaosMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -10517,7 +10551,9 @@ class DominationMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -10903,7 +10939,9 @@ class MemoryTrapsMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -11086,7 +11124,9 @@ class CustomMatchMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -11369,7 +11409,9 @@ class EcholocationMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -11733,7 +11775,9 @@ class VisionReducedMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -11920,7 +11964,9 @@ class EMPBurstMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -12072,7 +12118,9 @@ class DynamicHazardsMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -13538,7 +13586,9 @@ class MirrorMatchMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -13685,7 +13735,9 @@ class VolatileClonesMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -13942,7 +13994,9 @@ class CloneChaosMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -14276,7 +14330,9 @@ class BumperBallsMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -14609,7 +14665,9 @@ class ModifierZonesMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -14844,7 +14902,9 @@ class WindstormMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -15298,7 +15358,9 @@ class BountyHuntMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -15904,7 +15966,9 @@ class GravityWellMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -17030,7 +17094,9 @@ class MagneticCollisionsMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -17639,7 +17705,9 @@ class PinballMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -19108,7 +19176,9 @@ class StaminaSpeedMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -19293,7 +19363,9 @@ class HazardBilliardsMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -20177,7 +20249,9 @@ class DailyMutatorMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -20351,7 +20425,9 @@ class BlackMarketMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -20823,7 +20899,9 @@ class BlizzardMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -21044,7 +21122,9 @@ class MeteorShowerMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -21285,7 +21365,9 @@ class CursedBuffZoneMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -21474,7 +21556,9 @@ class RhythmPanelsMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -22097,7 +22181,9 @@ class ArtifactUpgraderMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -22343,7 +22429,9 @@ class SweepingPaddlesMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -22967,7 +23055,9 @@ class InvisibleDecoysMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -23752,7 +23842,9 @@ class JuggernautMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -24236,7 +24328,9 @@ class TickingPayloadMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -24814,7 +24908,9 @@ class WeaponCollectionMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -25321,7 +25417,9 @@ class CenterBlackHoleMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -38834,7 +38932,9 @@ class RollingBouldersMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -39137,7 +39237,9 @@ class SoulLinkMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -39845,7 +39947,9 @@ class TagTeamMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -40206,7 +40310,9 @@ class CrossfireMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -40373,7 +40479,9 @@ class TeleporterHubMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
@@ -41394,7 +41502,9 @@ class FreezeTagMode(GameMode):
                         b.speed = b.base_speed
 
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            timer = getattr(world, "gravity_reversal_timer", 0.0)
+            timer = timer if isinstance(timer, (int, float)) else 0.0
+            timer += delta
             if timer > 10.0:
                 timer = 0.0
                 current = getattr(world, "gravity_reversal_active", False)
