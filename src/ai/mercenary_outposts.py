@@ -3,7 +3,7 @@ import random
 from ai.game_modes import GameMode
 
 class MercenaryBall:
-    def __init__(self, x, y, owner_team, owner_id):
+    def __init__(self, x, y, owner_team=None, owner_id=None):
         self.id = id(self)
         self.x = x
         self.y = y
@@ -25,6 +25,7 @@ class MercenaryBall:
         self.damage_multiplier = 1.0
         self.perception_radius = 400.0
         self.base_perception_radius = 400.0
+        self.hire_timer = 0.0
 
     def to_dict(self):
         return {
@@ -47,7 +48,8 @@ class MercenaryBall:
             "damage": getattr(self, "damage", 15.0),
             "base_damage": getattr(self, "base_damage", 15.0),
             "speed_multiplier": self.speed_multiplier,
-            "damage_multiplier": self.damage_multiplier
+            "damage_multiplier": self.damage_multiplier,
+            "hire_timer": self.hire_timer
         }
 
 class MercenaryOutpostHazard:
@@ -56,10 +58,6 @@ class MercenaryOutpostHazard:
         self.x = x
         self.y = y
         self.radius = 80.0
-        self.capture_progress = 0.0
-        self.capture_threshold = 10.0
-        self.owner_id = None
-        self.owner_team = None
         self.spawn_timer = 0.0
         self.spawn_interval = 5.0
 
@@ -85,37 +83,58 @@ class MercenaryOutpostsMode(GameMode):
 
         for b in balls:
             if getattr(b, "ball_type", "") == "mercenary" and getattr(b, "alive", True):
-                closest_enemy = None
-                closest_dist = float('inf')
-                for other in balls:
-                    if getattr(other, "alive", True) and getattr(other, "team", None) != getattr(b, "team", None) and getattr(other, "ball_type", "") != "spectator":
-                        dist = math.hypot(b.x - other.x, b.y - other.y)
-                        if dist < closest_dist:
-                            closest_dist = dist
-                            closest_enemy = other
-                if closest_enemy and closest_dist < getattr(b, "perception_radius", 400.0):
-                    dx = closest_enemy.x - b.x
-                    dy = closest_enemy.y - b.y
-                    mag = math.hypot(dx, dy)
-                    if mag > 0:
-                        b.vx = (dx / mag) * getattr(b, "speed", 120.0)
-                        b.vy = (dy / mag) * getattr(b, "speed", 120.0)
-                else:
-                    owner = None
+                if getattr(b, "owner_id", None) is not None:
+                    # Hired logic
+                    closest_enemy = None
+                    closest_dist = float('inf')
                     for other in balls:
-                        if getattr(other, "id", None) == getattr(b, "owner_id", None):
-                            owner = other
-                            break
-                    if owner:
-                        dx = owner.x - b.x
-                        dy = owner.y - b.y
+                        if getattr(other, "alive", True) and getattr(other, "team", None) != getattr(b, "team", None) and getattr(other, "ball_type", "") != "spectator":
+                            dist = math.hypot(b.x - other.x, b.y - other.y)
+                            if dist < closest_dist:
+                                closest_dist = dist
+                                closest_enemy = other
+                    if closest_enemy and closest_dist < getattr(b, "perception_radius", 400.0):
+                        dx = closest_enemy.x - b.x
+                        dy = closest_enemy.y - b.y
                         mag = math.hypot(dx, dy)
-                        if mag > 100:
+                        if mag > 0:
                             b.vx = (dx / mag) * getattr(b, "speed", 120.0)
                             b.vy = (dy / mag) * getattr(b, "speed", 120.0)
-                        else:
-                            b.vx = 0.0
-                            b.vy = 0.0
+                    else:
+                        owner = None
+                        for other in balls:
+                            if getattr(other, "id", None) == getattr(b, "owner_id", None):
+                                owner = other
+                                break
+                        if owner:
+                            dx = owner.x - b.x
+                            dy = owner.y - b.y
+                            mag = math.hypot(dx, dy)
+                            if mag > 100:
+                                b.vx = (dx / mag) * getattr(b, "speed", 120.0)
+                                b.vy = (dy / mag) * getattr(b, "speed", 120.0)
+                            else:
+                                b.vx = 0.0
+                                b.vy = 0.0
+                else:
+                    # Neutral logic - wander near camp
+                    # Find closest camp
+                    if hasattr(world.arena, "hazards"):
+                        camps = [h for h in world.arena.hazards if getattr(h, "kind", "") == "mercenary_outpost"]
+                        if camps:
+                            camp = min(camps, key=lambda c: math.hypot(c.x - b.x, c.y - b.y))
+                            dist_to_camp = math.hypot(camp.x - b.x, camp.y - b.y)
+                            if dist_to_camp > 100:
+                                dx = camp.x - b.x
+                                dy = camp.y - b.y
+                                b.vx = (dx / dist_to_camp) * (getattr(b, "speed", 120.0) * 0.5)
+                                b.vy = (dy / dist_to_camp) * (getattr(b, "speed", 120.0) * 0.5)
+                            else:
+                                if random.random() < 0.05:
+                                    angle = random.uniform(0, 2 * math.pi)
+                                    b.vx = math.cos(angle) * (getattr(b, "speed", 120.0) * 0.3)
+                                    b.vy = math.sin(angle) * (getattr(b, "speed", 120.0) * 0.3)
+
                 b.x += b.vx * delta
                 b.y += b.vy * delta
 
@@ -129,38 +148,62 @@ class MercenaryOutpostsMode(GameMode):
             if self.active_timer <= 0.0:
                 self.active = False
 
+        for b in balls:
+            if getattr(b, "purchase_cooldown", 0.0) > 0.0:
+                b.purchase_cooldown -= delta
+            if getattr(b, "purchase_cooldown", 0.0) < 0.0:
+                b.purchase_cooldown = 0.0
+
+        # Mercenary duration logic
+        for b in balls:
+            if getattr(b, "ball_type", "") == "mercenary" and getattr(b, "alive", True):
+                if getattr(b, "hire_timer", 0.0) > 0.0:
+                    b.hire_timer -= delta
+                    if b.hire_timer <= 0.0:
+                        b.owner_id = None
+                        b.team = None
+                        b.hire_timer = 0.0
+
+        # Hire logic
+        for b in balls:
+            if getattr(b, "ball_type", "") not in ("mercenary", "spectator") and getattr(b, "alive", True):
+                for m in balls:
+                    if getattr(m, "ball_type", "") == "mercenary" and getattr(m, "alive", True) and getattr(m, "owner_id", None) is None:
+                        dist = math.hypot(b.x - m.x, b.y - m.y)
+                        if dist < getattr(b, "radius", 20.0) + getattr(m, "radius", 20.0) + 20.0:
+                            if getattr(b, "purchase_cooldown", 0.0) <= 0.0:
+                                currency = getattr(b, "currency", 0)
+                                prestige = getattr(b, "prestige_tokens", 0)
+                                hired = False
+                                if prestige >= 1:
+                                    b.prestige_tokens = prestige - 1
+                                    hired = True
+                                elif currency >= 10:
+                                    b.currency = currency - 10
+                                    hired = True
+
+                                if hired:
+                                    m.owner_id = getattr(b, "id", None)
+                                    m.team = getattr(b, "team", None)
+                                    m.hire_timer = 30.0
+                                    b.purchase_cooldown = 1.0
+                                    break
+
         new_mercenaries = []
         for h in world.arena.hazards:
             if getattr(h, "kind", "") == "mercenary_outpost":
-                if h.capture_progress < h.capture_threshold:
-                    capturing_balls = []
-                    for b in balls:
-                        if getattr(b, "alive", True) and getattr(b, "ball_type", "") != "spectator" and getattr(b, "ball_type", "") != "mercenary":
-                            dist = math.hypot(b.x - h.x, b.y - h.y)
-                            if dist < h.radius:
-                                capturing_balls.append(b)
+                h.spawn_timer += delta
+                if h.spawn_timer >= h.spawn_interval:
+                    # Count unowned mercs near outpost
+                    unowned = 0
+                    for m in balls:
+                        if getattr(m, "ball_type", "") == "mercenary" and getattr(m, "owner_id", None) is None and getattr(m, "alive", True):
+                            if math.hypot(m.x - h.x, m.y - h.y) < 200:
+                                unowned += 1
 
-                    if len(capturing_balls) == 1:
-                        cb = capturing_balls[0]
-                        if h.owner_id != getattr(cb, "id", None):
-                            h.owner_id = getattr(cb, "id", None)
-                            h.owner_team = getattr(cb, "team", None)
-                            h.capture_progress = 0.0
-                        h.capture_progress += delta
-                        if h.capture_progress >= h.capture_threshold:
-                            h.capture_progress = h.capture_threshold
-                            if hasattr(world, "events"):
-                                world.events.append({
-                                    'type': 'outpost_captured',
-                                    'data': {
-                                        'owner_id': h.owner_id
-                                    }
-                                })
-                else:
-                    h.spawn_timer += delta
-                    if h.spawn_timer >= h.spawn_interval:
+                    if unowned < 3:
                         h.spawn_timer = 0.0
-                        merc = MercenaryBall(h.x, h.y, h.owner_team, h.owner_id)
+                        merc = MercenaryBall(h.x, h.y)
                         new_mercenaries.append(merc)
 
         if new_mercenaries:
