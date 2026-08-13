@@ -22401,6 +22401,50 @@ func execute(strategy: String, delta: float):
                                             elif b.has_method("set_meta"): b.set_meta("is_invisible", false)
 
                                 hazard.duration = 0.0
+                            elif trap_variant == "blackout":
+                                var is_blinded = false
+                                if "is_blinded" in self.ball:
+                                    is_blinded = self.ball.is_blinded
+                                elif self.ball.has_method("get_meta") and self.ball.has_meta("is_blinded"):
+                                    is_blinded = self.ball.get_meta("is_blinded")
+
+                                if not is_blinded:
+                                    if "is_blinded" in self.ball:
+                                        self.ball.is_blinded = true
+                                        self.ball.blindness_timer = 5.0
+                                        var p_rad = 250.0
+                                        if "perception_radius" in self.ball: p_rad = self.ball.perception_radius
+                                        if not ("base_perception_radius" in self.ball):
+                                            if self.ball.has_method("set_meta"): self.ball.set_meta("base_perception_radius", p_rad)
+                                            elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["base_perception_radius"] = p_rad
+                                        self.ball.perception_radius = 0.0
+                                    else:
+                                        self.ball.set_meta("is_blinded", true)
+                                        self.ball.set_meta("blindness_timer", 5.0)
+                                        var p_rad = 250.0
+                                        if self.ball.has_method("get_meta") and self.ball.has_meta("perception_radius"):
+                                            p_rad = self.ball.get_meta("perception_radius")
+                                        if not (self.ball.has_method("has_meta") and self.ball.has_meta("base_perception_radius")):
+                                            if self.ball.has_method("set_meta"): self.ball.set_meta("base_perception_radius", p_rad)
+                                        if self.ball.has_method("set_meta"): self.ball.set_meta("perception_radius", 0.0)
+                                else:
+                                    if "blindness_timer" in self.ball:
+                                        self.ball.blindness_timer = maxf(self.ball.blindness_timer, 5.0)
+                                    elif self.ball.has_method("set_meta"):
+                                        var c_blind = 0.0
+                                        if self.ball.has_meta("blindness_timer"): c_blind = self.ball.get_meta("blindness_timer")
+                                        self.ball.set_meta("blindness_timer", maxf(c_blind, 5.0))
+
+                                var current_silence = 0.0
+                                if "silence_timer" in self.ball:
+                                    current_silence = self.ball.silence_timer
+                                elif self.ball.has_method("get_meta") and self.ball.has_meta("silence_timer"):
+                                    current_silence = self.ball.get_meta("silence_timer")
+                                if "silence_timer" in self.ball:
+                                    self.ball.silence_timer = maxf(current_silence, 5.0)
+                                elif self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("silence_timer", maxf(current_silence, 5.0))
+                                hazard.duration = 0.0
                             elif trap_variant == "blindness":
                                 var is_blinded = false
                                 if "is_blinded" in self.ball:
