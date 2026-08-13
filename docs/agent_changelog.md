@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1980] Blinding Flashbang Trap — *2026-08-13 12:59:11 UTC*
+
+A new hazard that detonates when approached, temporarily setting the vision radius of nearby balls to zero and disabling their ability to attack or pick up items for a brief period.
+
+---
+
 ## [idea-1992] Cosmic Distortion Event — *2026-08-13 10:42:50 UTC*
 
 A dynamic arena event where gravity randomly shifts in strength and direction every 15 seconds. Balls with lower mass are affected more strongly, creating unpredictable trajectories and forcing AI to adapt their movement strategies on the fly. Balls with the 'Juggernaut' booster or similar heavy traits are more resistant but suffer from increased stamina drain.
