@@ -38782,7 +38782,83 @@ class CurrencyBountyMode(GameMode):
                         b.damage = getattr(b, "base_damage", 10.0) * 1.5
 
 
+
+class IrradiationSurvivalMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.irradiation_zones = []
+        self.zone_timer = 0.0
+        self.booster_timer = 0.0
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        self.irradiation_zones = []
+        self.zone_timer = 5.0
+        self.booster_timer = 10.0
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        import random
+        import math
+
+        class Hazard:
+            def __init__(self, id, x, y, radius, kind, damage):
+                self.id = id
+                self.x = x
+                self.y = y
+                self.radius = radius
+                self.kind = kind
+                self.damage = damage
+                self.active = True
+
+        self.zone_timer -= delta
+        if self.zone_timer <= 0:
+            self.zone_timer = random.uniform(8.0, 15.0)
+            x = random.uniform(50, 950)
+            y = random.uniform(50, 950)
+            z_id = world.next_id() if callable(getattr(world, "next_id", None)) else (world.next_id if isinstance(getattr(world, "next_id", None), int) else random.randint(100000, 999999))
+            zone = {
+                'id': z_id,
+                'x': x,
+                'y': y,
+                'radius': 30.0,
+                'kind': 'irradiation_zone',
+                'active': True
+            }
+            if not hasattr(self, "irradiation_zones"):
+                self.irradiation_zones = []
+            self.irradiation_zones.append(zone)
+
+        self.booster_timer -= delta
+        if self.booster_timer <= 0:
+            self.booster_timer = random.uniform(10.0, 20.0)
+            if hasattr(world, 'boosters') and hasattr(world, 'arena') and hasattr(world.arena, 'hazards'):
+                b_id = world.next_id() if callable(getattr(world, "next_id", None)) else (world.next_id if isinstance(getattr(world, "next_id", None), int) else random.randint(100000, 999999))
+                booster = Hazard(b_id, random.uniform(50, 950), random.uniform(50, 950), 15.0, 'anti_radiation_booster', 0.0)
+                world.boosters.append(booster)
+                world.arena.hazards.append(booster)
+
+        if not hasattr(self, "irradiation_zones"):
+            self.irradiation_zones = []
+
+        for z in self.irradiation_zones:
+            if not z.get('active', True):
+                continue
+            z['radius'] = min(250.0, z['radius'] + 4.0 * delta)
+
+            for b in balls:
+                if not getattr(b, 'alive', True) or getattr(b, 'ball_type', '') == 'spectator':
+                    continue
+                dx = getattr(b, 'x', 0) - z['x']
+                dy = getattr(b, 'y', 0) - z['y']
+                dist = math.hypot(dx, dy)
+                if dist < z['radius'] + getattr(b, 'radius', 15.0):
+                    b.mutation_level = getattr(b, 'mutation_level', 0.0) + 1.0 * delta
+                    b.max_stamina = max(20.0, getattr(b, 'max_stamina', 100.0) - 2.0 * delta)
+                    if getattr(b, 'mutation_level', 0.0) > 5.0:
+                        b.mutant = True
+
 GAME_MODES = {
+    'irradiation_survival': IrradiationSurvivalMode(),
     "currency_bounty": CurrencyBountyMode(),
     'frostbite': FrostbiteMode(),
     "giant_bouncy_royale": GiantBouncyRoyaleMode(),

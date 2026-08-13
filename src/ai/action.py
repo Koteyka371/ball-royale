@@ -16620,6 +16620,15 @@ class Action:
 
             # Check for phylactery_item and chameleon_item
             for b in boosters:
+                if getattr(b, 'kind', '') == 'anti_radiation_booster' and getattr(b, 'active', True):
+                    self.ball.mutation_level = 0.0
+                    self.ball.mutant = False
+                    self.ball.max_stamina = 100.0
+                    b.active = False
+                    if hasattr(self.world, 'boosters') and b in self.world.boosters:
+                        self.world.boosters.remove(b)
+                    if hasattr(self.world, 'arena') and hasattr(self.world.arena, 'hazards') and b in self.world.arena.hazards:
+                        self.world.arena.hazards.remove(b)
                 if getattr(b, "kind", "") == "phylactery_item" and getattr(b, "owner_id", None) == getattr(self.ball, "id", None):
                     self.ball.phylactery_active = True
                     b.active = False
