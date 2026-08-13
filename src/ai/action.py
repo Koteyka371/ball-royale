@@ -8088,28 +8088,40 @@ class Action:
                     self.ball.is_enraged = False
 
                     if died_from_decay:
-                        # Explode on death
-                        max_hp = getattr(self.ball, "max_hp", 20.0)
-                        explosion_damage = max_hp * 0.5
-                        if hasattr(self.world, "add_event"):
-                            self.world.add_event("explosion", {"x": self.ball.x, "y": self.ball.y, "radius": 80.0, "damage": explosion_damage})
-                        if hasattr(self.world, "balls"):
-                            for b in getattr(self.world, "balls", []):
-                                if b != self.ball and getattr(b, "alive", True) and getattr(b, "team", "") != getattr(self.ball, "team", ""):
-                                    dist = ((self.ball.x - b.x)**2 + (self.ball.y - b.y)**2)**0.5
-                                    if dist <= 80.0:
-                                        if hasattr(self.world, "_deal_damage"):
-                                            old_dmg = getattr(self.ball, "damage", 10.0)
-                                            self.ball.damage = explosion_damage
-                                            try:
-                                                self.world._deal_damage(self.ball, b, dmg=explosion_damage)
-                                            except TypeError:
-                                                self.world._deal_damage(self.ball, b)
-                                            self.ball.damage = old_dmg
-                                        elif hasattr(b, "take_damage"):
-                                            b.take_damage(explosion_damage)
-                                        elif hasattr(b, "hp"):
-                                            b.hp -= explosion_damage
+                        is_toxic = getattr(self.world, "mutators_active", False) and "toxic_sludge" in getattr(self.world, "mutators", [])
+                        if is_toxic:
+                            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                                try:
+                                    from arena.procedural_arena import Hazard
+                                    h_id = 15000 + len(self.world.arena.hazards) + int(self.ball.x) + int(self.ball.y)
+                                    cloud = Hazard(id=h_id, x=self.ball.x, y=self.ball.y, radius=120.0, kind="poison_cloud", damage=10.0)
+                                    setattr(cloud, "duration", 5.0)
+                                    self.world.arena.hazards.append(cloud)
+                                except Exception:
+                                    pass
+                        else:
+                            # Explode on death
+                            max_hp = getattr(self.ball, "max_hp", 20.0)
+                            explosion_damage = max_hp * 0.5
+                            if hasattr(self.world, "add_event"):
+                                self.world.add_event("explosion", {"x": self.ball.x, "y": self.ball.y, "radius": 80.0, "damage": explosion_damage})
+                            if hasattr(self.world, "balls"):
+                                for b in getattr(self.world, "balls", []):
+                                    if b != self.ball and getattr(b, "alive", True) and getattr(b, "team", "") != getattr(self.ball, "team", ""):
+                                        dist = ((self.ball.x - b.x)**2 + (self.ball.y - b.y)**2)**0.5
+                                        if dist <= 80.0:
+                                            if hasattr(self.world, "_deal_damage"):
+                                                old_dmg = getattr(self.ball, "damage", 10.0)
+                                                self.ball.damage = explosion_damage
+                                                try:
+                                                    self.world._deal_damage(self.ball, b, dmg=explosion_damage)
+                                                except TypeError:
+                                                    self.world._deal_damage(self.ball, b)
+                                                self.ball.damage = old_dmg
+                                            elif hasattr(b, "take_damage"):
+                                                b.take_damage(explosion_damage)
+                                            elif hasattr(b, "hp"):
+                                                b.hp -= explosion_damage
 
             # Check for elite minion evolution
             if not getattr(self.ball, "is_elite_minion", False):
