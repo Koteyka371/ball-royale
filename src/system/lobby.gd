@@ -77,7 +77,7 @@ func reroll_daily_quest(profile, quest_index: int) -> bool:
     return false
 
 func select_trap_variant(ball_id: int, variant: String) -> void:
-    if variant in ["normal", "poison", "stun", "ricochet", "emp", "hologram", "chain_lightning", "decoy", "blindness", "shriek", "mine", "elemental_mine", "time_dilation_mine", "warp", "clone", "tar", "link", "repulsion", "swap", "reversal"]:
+    if variant in ["normal", "poison", "stun", "ricochet", "emp", "hologram", "chain_lightning", "decoy", "blackout", "blindness", "shriek", "mine", "elemental_mine", "time_dilation_mine", "warp", "clone", "tar", "link", "repulsion", "swap", "reversal"]:
         selections[ball_id] = variant
 
 func get_trap_variant(ball_id: int) -> String:
@@ -219,7 +219,7 @@ func apply_random_loadout(ball_id: int, profile: ProfileManager) -> bool:
         unlocked_balls = ["basic"]
 
     var ball_type = unlocked_balls[randi() % unlocked_balls.size()]
-    var trap_variants = ["normal", "poison", "stun", "ricochet", "emp", "hologram", "chain_lightning", "decoy", "mine", "elemental_mine", "warp", "siphon", "clone", "tar", "link", "web", "sticky_bomb", "swap", "reversal"]
+    var trap_variants = ["normal", "poison", "stun", "ricochet", "emp", "hologram", "chain_lightning", "decoy", "blackout", "mine", "elemental_mine", "warp", "siphon", "clone", "tar", "link", "web", "sticky_bomb", "swap", "reversal"]
     var trap_variant = trap_variants[randi() % trap_variants.size()]
 
     select_trap_variant(ball_id, trap_variant)

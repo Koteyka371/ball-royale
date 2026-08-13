@@ -67,7 +67,7 @@ class PreGameLobby:
         return False
 
     def select_trap_variant(self, ball_id, variant):
-        if variant in ["normal", "poison", "stun", "ricochet", "emp", "hologram", "blindness", "shriek", "decoy", "mine", "elemental_mine", "time_dilation_mine", "warp", "clone", "tar", "link", "repulsion", "swap", "reversal"]:
+        if variant in ["normal", "poison", "stun", "ricochet", "emp", "hologram", "blindness", "shriek", "decoy", "blackout", "mine", "elemental_mine", "time_dilation_mine", "warp", "clone", "tar", "link", "repulsion", "swap", "reversal"]:
             self.selections[ball_id] = variant
 
     def get_trap_variant(self, ball_id):
@@ -195,7 +195,7 @@ class PreGameLobby:
             unlocked_balls = ["basic"]
 
         ball_type = random.choice(unlocked_balls)
-        trap_variants = ["normal", "poison", "stun", "ricochet", "emp", "hologram", "blindness", "shriek", "chain_lightning", "decoy", "mine", "elemental_mine", "warp", "siphon", "clone", "tar", "link", "web", "sticky_bomb", "swap", "reversal"]
+        trap_variants = ["normal", "poison", "stun", "ricochet", "emp", "hologram", "blindness", "shriek", "chain_lightning", "decoy", "blackout", "mine", "elemental_mine", "warp", "siphon", "clone", "tar", "link", "web", "sticky_bomb", "swap", "reversal"]
         trap_variant = random.choice(trap_variants)
 
         self.select_trap_variant(ball_id, trap_variant)

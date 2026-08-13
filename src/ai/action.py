@@ -11664,6 +11664,17 @@ class Action:
                                                     if hasattr(b, "is_invisible"):
                                                         b.is_invisible = False
                                     hazard.duration = 0.0
+                                elif trap_variant == "blackout":
+                                    if not getattr(self.ball, "is_blinded", False):
+                                        self.ball.is_blinded = True
+                                        self.ball.blindness_timer = 5.0
+                                        if not hasattr(self.ball, "base_perception_radius"):
+                                            self.ball.base_perception_radius = getattr(self.ball, "perception_radius", 250.0)
+                                        self.ball.perception_radius = 0.0
+                                    else:
+                                        self.ball.blindness_timer = max(getattr(self.ball, "blindness_timer", 0.0), 5.0)
+                                    self.ball.silence_timer = max(getattr(self.ball, "silence_timer", 0.0), 5.0)
+                                    hazard.duration = 0.0
                                 elif trap_variant == "blindness":
                                     if not getattr(self.ball, "is_blinded", False):
                                         self.ball.is_blinded = True
@@ -16606,6 +16617,9 @@ class Action:
         self._idle(delta * 0.5)
 
     def _collect_booster(self, delta: float) -> None:
+        if getattr(self.ball, "is_blinded", False) and getattr(self.ball, "perception_radius", 1.0) == 0.0:
+            self._idle(delta)
+            return
         if getattr(self.ball, "intangible", False) or getattr(self.ball, "intangible_timer", 0.0) > 0.0:
             self._idle(delta)
             return
