@@ -33880,7 +33880,7 @@ class RandomGravityShiftMode(GameMode):
         self.name = "Random Gravity Shift"
         self.description = "A mode where gravity periodically shifts in random directions."
         self.shift_timer = 0.0
-        self.shift_interval = 10.0
+        self.shift_interval = 15.0
         self.gravity_dir_x = 0.0
         self.gravity_dir_y = 1.0
         self.gravity_strength = 300.0
@@ -33907,10 +33907,20 @@ class RandomGravityShiftMode(GameMode):
 
             mass = getattr(b, 'mass', 1.0)
             gravity_mult = -1.0 if getattr(b, "in_reverse_physics_zone", False) else 1.0
+
+            # Lower mass is affected more strongly.
+            mass_effect = 1.0 / max(mass, 0.1)
+
+            is_juggernaut = getattr(b, 'ball_type', None) == 'juggernaut' or getattr(b, 'juggernaut_booster_timer', 0.0) > 0 or mass >= 2.0
+            if is_juggernaut:
+                mass_effect *= 0.5  # more resistant
+                if hasattr(b, 'stamina'):
+                    b.stamina = max(0.0, b.stamina - 40.0 * delta)
+
             if hasattr(b, 'vx'):
-                b.vx += self.gravity_strength * self.gravity_dir_x * mass * delta * gravity_mult
+                b.vx += self.gravity_strength * self.gravity_dir_x * mass_effect * delta * gravity_mult
             if hasattr(b, 'vy'):
-                b.vy += self.gravity_strength * self.gravity_dir_y * mass * delta * gravity_mult
+                b.vy += self.gravity_strength * self.gravity_dir_y * mass_effect * delta * gravity_mult
 
         if hasattr(world, 'arena') and hasattr(world.arena, 'hazards'):
             for h in world.arena.hazards:
@@ -47757,7 +47767,7 @@ class RandomGravityShiftMode(GameMode):
         self.name = "Random Gravity Shift"
         self.description = "A mode where gravity periodically shifts in random directions."
         self.shift_timer = 0.0
-        self.shift_interval = 10.0
+        self.shift_interval = 15.0
         self.gravity_dir_x = 0.0
         self.gravity_dir_y = 1.0
         self.gravity_strength = 300.0
@@ -47784,10 +47794,20 @@ class RandomGravityShiftMode(GameMode):
 
             mass = getattr(b, 'mass', 1.0)
             gravity_mult = -1.0 if getattr(b, "in_reverse_physics_zone", False) else 1.0
+
+            # Lower mass is affected more strongly.
+            mass_effect = 1.0 / max(mass, 0.1)
+
+            is_juggernaut = getattr(b, 'ball_type', None) == 'juggernaut' or getattr(b, 'juggernaut_booster_timer', 0.0) > 0 or mass >= 2.0
+            if is_juggernaut:
+                mass_effect *= 0.5  # more resistant
+                if hasattr(b, 'stamina'):
+                    b.stamina = max(0.0, b.stamina - 40.0 * delta)
+
             if hasattr(b, 'vx'):
-                b.vx += self.gravity_strength * self.gravity_dir_x * mass * delta * gravity_mult
+                b.vx += self.gravity_strength * self.gravity_dir_x * mass_effect * delta * gravity_mult
             if hasattr(b, 'vy'):
-                b.vy += self.gravity_strength * self.gravity_dir_y * mass * delta * gravity_mult
+                b.vy += self.gravity_strength * self.gravity_dir_y * mass_effect * delta * gravity_mult
 
         if hasattr(world, 'arena') and hasattr(world.arena, 'hazards'):
             for h in world.arena.hazards:
