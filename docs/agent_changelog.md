@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1989] Radioactive Fallout Game Mode — *2026-08-13 10:00:51 UTC*
+
+A survival-focused game mode where random patches of the arena become irradiated. These radioactive zones slowly expand, applying a unique mutation debuff to any ball caught inside, reducing max stamina and gradually transforming their appearance until they find an anti-radiation booster.
+
+---
+
 ## [idea-1995] Phantom Safe Zone — *2026-08-13 00:49:39 UTC*
 
 In a special variation of the Safe Zone mode, phantom safe zones occasionally spawn which look completely real but only last for 15 seconds. Stepping into them provides brief immunity from storm damage before unexpectedly dissipating and leaving the players vulnerable.
