@@ -54989,7 +54989,7 @@ class SingularityBombEventMode extends GameMode:
 
 class RandomGravityShiftMode extends GameMode:
 	var shift_timer = 0.0
-	var shift_interval = 10.0
+	var shift_interval = 15.0
 	var gravity_dir_x = 0.0
 	var gravity_dir_y = 1.0
 	var gravity_strength = 300.0
@@ -55021,13 +55021,27 @@ class RandomGravityShiftMode extends GameMode:
 				continue
 
 			var mass = b.get("mass") if typeof(b) == TYPE_DICTIONARY else b.get_meta("mass") if typeof(b) == TYPE_OBJECT and b.has_meta("mass") else b.mass if typeof(b) == TYPE_OBJECT and "mass" in b else 1.0
+			var mass_effect = 1.0 / max(mass, 0.1)
+
+			var b_type_check = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get_meta("ball_type") if typeof(b) == TYPE_OBJECT and b.has_meta("ball_type") else b.ball_type if typeof(b) == TYPE_OBJECT and "ball_type" in b else null
+			var jugg_timer = b.get("juggernaut_booster_timer") if typeof(b) == TYPE_DICTIONARY else b.get_meta("juggernaut_booster_timer") if typeof(b) == TYPE_OBJECT and b.has_meta("juggernaut_booster_timer") else b.juggernaut_booster_timer if typeof(b) == TYPE_OBJECT and "juggernaut_booster_timer" in b else 0.0
+
+			var is_juggernaut = b_type_check == "juggernaut" or jugg_timer > 0 or mass >= 2.0
+			if is_juggernaut:
+				mass_effect *= 0.5
+				if typeof(b) == TYPE_DICTIONARY and b.has("stamina"):
+					b["stamina"] = max(0.0, b["stamina"] - 40.0 * delta)
+				elif typeof(b) == TYPE_OBJECT and "stamina" in b:
+					b.stamina = max(0.0, b.stamina - 40.0 * delta)
+				elif typeof(b) == TYPE_OBJECT and b.has_meta("stamina"):
+					b.set_meta("stamina", max(0.0, b.get_meta("stamina") - 40.0 * delta))
 
 			if typeof(b) == TYPE_DICTIONARY:
 				var gravity_mult = -1.0 if b.get("in_reverse_physics_zone", false) else 1.0
 				if b.has("vx"):
-					b["vx"] += gravity_strength * gravity_dir_x * mass * delta * gravity_mult
+					b["vx"] += gravity_strength * gravity_dir_x * mass_effect * delta * gravity_mult
 				if b.has("vy"):
-					b["vy"] += gravity_strength * gravity_dir_y * mass * delta * gravity_mult
+					b["vy"] += gravity_strength * gravity_dir_y * mass_effect * delta * gravity_mult
 			else:
 				var in_rev = false
 				if "in_reverse_physics_zone" in b:
@@ -55037,13 +55051,13 @@ class RandomGravityShiftMode extends GameMode:
 				var gravity_mult = -1.0 if in_rev else 1.0
 
 				if "vx" in b:
-					b.vx += gravity_strength * gravity_dir_x * mass * delta * gravity_mult
+					b.vx += gravity_strength * gravity_dir_x * mass_effect * delta * gravity_mult
 				elif b.has_meta("vx"):
-					b.set_meta("vx", b.get_meta("vx") + gravity_strength * gravity_dir_x * mass * delta * gravity_mult)
+					b.set_meta("vx", b.get_meta("vx") + gravity_strength * gravity_dir_x * mass_effect * delta * gravity_mult)
 				if "vy" in b:
-					b.vy += gravity_strength * gravity_dir_y * mass * delta * gravity_mult
+					b.vy += gravity_strength * gravity_dir_y * mass_effect * delta * gravity_mult
 				elif b.has_meta("vy"):
-					b.set_meta("vy", b.get_meta("vy") + gravity_strength * gravity_dir_y * mass * delta * gravity_mult)
+					b.set_meta("vy", b.get_meta("vy") + gravity_strength * gravity_dir_y * mass_effect * delta * gravity_mult)
 
 		if world != null and typeof(world) == TYPE_DICTIONARY and "arena" in world and typeof(world.arena) == TYPE_DICTIONARY and "hazards" in world.arena:
 			for h in world.arena.hazards:

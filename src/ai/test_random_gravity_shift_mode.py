@@ -8,7 +8,7 @@ def test_random_gravity_shift_mode_registered():
 
 def test_random_gravity_shift_mode_interval():
     mode = RandomGravityShiftMode()
-    assert mode.shift_interval == 10.0
+    assert mode.shift_interval == 15.0
 
 def test_random_gravity_shift_mode_tick():
     mode = RandomGravityShiftMode()
@@ -27,6 +27,8 @@ def test_random_gravity_shift_mode_tick():
     b.vx = 0.0
     b.vy = 0.0
     b.mass = 1.0
+    b.juggernaut_booster_timer = 0.0
+    b.stamina = 100.0
 
     balls = [b]
 
