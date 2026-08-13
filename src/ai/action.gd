@@ -48107,6 +48107,202 @@ func _resolve_collisions() -> bool:
                         self.ball.kinetic_absorbed_energy = new_ka
                         self.ball.speed_boost_timer = new_sbt
 
+            var self_cr_timer = 0.0
+            var other_cr_timer = 0.0
+            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("cursed_relic_timer"): self_cr_timer = float(self.ball["cursed_relic_timer"])
+            elif typeof(self.ball) == TYPE_OBJECT and "cursed_relic_timer" in self.ball: self_cr_timer = float(self.ball.cursed_relic_timer)
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("cursed_relic_timer"): self_cr_timer = float(self.ball.get_meta("cursed_relic_timer"))
+
+            if typeof(other) == TYPE_DICTIONARY and other.has("cursed_relic_timer"): other_cr_timer = float(other["cursed_relic_timer"])
+            elif typeof(other) == TYPE_OBJECT and "cursed_relic_timer" in other: other_cr_timer = float(other.cursed_relic_timer)
+            elif typeof(other) == TYPE_OBJECT and other.has_method("has_meta") and other.has_meta("cursed_relic_timer"): other_cr_timer = float(other.get_meta("cursed_relic_timer"))
+
+            var self_cr_cooldown = 0.0
+            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("cursed_relic_cooldown"): self_cr_cooldown = float(self.ball["cursed_relic_cooldown"])
+            elif typeof(self.ball) == TYPE_OBJECT and "cursed_relic_cooldown" in self.ball: self_cr_cooldown = float(self.ball.cursed_relic_cooldown)
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("cursed_relic_cooldown"): self_cr_cooldown = float(self.ball.get_meta("cursed_relic_cooldown"))
+
+            if self_cr_timer > 0.0 and other_cr_timer <= 0.0 and self_cr_cooldown <= 0.0:
+                if typeof(other) == TYPE_DICTIONARY:
+                    other["cursed_relic_cooldown"] = 1.0
+                elif typeof(other) == TYPE_OBJECT and "cursed_relic_cooldown" in other:
+                    other.cursed_relic_cooldown = 1.0
+                elif typeof(other) == TYPE_OBJECT and other.has_method("set_meta"):
+                    other.set_meta("cursed_relic_cooldown", 1.0)
+                elif typeof(other) == TYPE_OBJECT:
+                    other.set("cursed_relic_cooldown", 1.0)
+
+                if typeof(other) == TYPE_DICTIONARY: other["cursed_relic_timer"] = self_cr_timer
+                elif typeof(other) == TYPE_OBJECT and "cursed_relic_timer" in other: other.cursed_relic_timer = self_cr_timer
+                elif typeof(other) == TYPE_OBJECT and other.has_method("set_meta"): other.set_meta("cursed_relic_timer", self_cr_timer)
+                elif typeof(other) == TYPE_OBJECT: other.set("cursed_relic_timer", self_cr_timer)
+
+                if typeof(self.ball) == TYPE_DICTIONARY: self.ball["cursed_relic_timer"] = 0.0
+                elif typeof(self.ball) == TYPE_OBJECT and "cursed_relic_timer" in self.ball: self.ball.cursed_relic_timer = 0.0
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("cursed_relic_timer", 0.0)
+
+                var self_cr_app = false
+                if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("cursed_relic_applied"): self_cr_app = self.ball["cursed_relic_applied"]
+                elif typeof(self.ball) == TYPE_OBJECT and "cursed_relic_applied" in self.ball: self_cr_app = self.ball.cursed_relic_applied
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("cursed_relic_applied"): self_cr_app = self.ball.get_meta("cursed_relic_applied")
+
+                if self_cr_app:
+                    var has_base_pr = false
+                    var base_pr = 0.0
+                    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("base_perception_radius_relic"):
+                        has_base_pr = true
+                        base_pr = float(self.ball["base_perception_radius_relic"])
+                    elif typeof(self.ball) == TYPE_OBJECT and "base_perception_radius_relic" in self.ball:
+                        has_base_pr = true
+                        base_pr = float(self.ball.base_perception_radius_relic)
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("base_perception_radius_relic"):
+                        has_base_pr = true
+                        base_pr = float(self.ball.get_meta("base_perception_radius_relic"))
+
+                    if has_base_pr:
+                        if typeof(self.ball) == TYPE_DICTIONARY: self.ball["perception_radius"] = base_pr
+                        elif typeof(self.ball) == TYPE_OBJECT and "perception_radius" in self.ball: self.ball.perception_radius = base_pr
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("perception_radius", base_pr)
+                    else:
+                        var pr = 250.0
+                        if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("perception_radius"): pr = float(self.ball["perception_radius"])
+                        elif typeof(self.ball) == TYPE_OBJECT and "perception_radius" in self.ball: pr = float(self.ball.perception_radius)
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("perception_radius"): pr = float(self.ball.get_meta("perception_radius"))
+                        pr *= 10.0
+                        if typeof(self.ball) == TYPE_DICTIONARY: self.ball["perception_radius"] = pr
+                        elif typeof(self.ball) == TYPE_OBJECT and "perception_radius" in self.ball: self.ball.perception_radius = pr
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("perception_radius", pr)
+
+                    var has_base_sp = false
+                    var base_sp = 0.0
+                    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("base_speed_relic"):
+                        has_base_sp = true
+                        base_sp = float(self.ball["base_speed_relic"])
+                    elif typeof(self.ball) == TYPE_OBJECT and "base_speed_relic" in self.ball:
+                        has_base_sp = true
+                        base_sp = float(self.ball.base_speed_relic)
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("base_speed_relic"):
+                        has_base_sp = true
+                        base_sp = float(self.ball.get_meta("base_speed_relic"))
+
+                    if has_base_sp:
+                        if typeof(self.ball) == TYPE_DICTIONARY: self.ball["speed"] = base_sp
+                        elif typeof(self.ball) == TYPE_OBJECT and "speed" in self.ball: self.ball.speed = base_sp
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("speed", base_sp)
+                    else:
+                        var sp = 2.0
+                        if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("speed"): sp = float(self.ball["speed"])
+                        elif typeof(self.ball) == TYPE_OBJECT and "speed" in self.ball: sp = float(self.ball.speed)
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("speed"): sp = float(self.ball.get_meta("speed"))
+                        sp /= 3.0
+                        if typeof(self.ball) == TYPE_DICTIONARY: self.ball["speed"] = sp
+                        elif typeof(self.ball) == TYPE_OBJECT and "speed" in self.ball: self.ball.speed = sp
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("speed", sp)
+
+                    var has_base_dmg = false
+                    var base_dmg = 0.0
+                    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("base_damage_relic"):
+                        has_base_dmg = true
+                        base_dmg = float(self.ball["base_damage_relic"])
+                    elif typeof(self.ball) == TYPE_OBJECT and "base_damage_relic" in self.ball:
+                        has_base_dmg = true
+                        base_dmg = float(self.ball.base_damage_relic)
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("base_damage_relic"):
+                        has_base_dmg = true
+                        base_dmg = float(self.ball.get_meta("base_damage_relic"))
+
+                    if has_base_dmg:
+                        if typeof(self.ball) == TYPE_DICTIONARY: self.ball["damage"] = base_dmg
+                        elif typeof(self.ball) == TYPE_OBJECT and "damage" in self.ball: self.ball.damage = base_dmg
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("damage", base_dmg)
+                    else:
+                        var dmg = 10.0
+                        if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("damage"): dmg = float(self.ball["damage"])
+                        elif typeof(self.ball) == TYPE_OBJECT and "damage" in self.ball: dmg = float(self.ball.damage)
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("damage"): dmg = float(self.ball.get_meta("damage"))
+                        dmg /= 3.0
+                        if typeof(self.ball) == TYPE_DICTIONARY: self.ball["damage"] = dmg
+                        elif typeof(self.ball) == TYPE_OBJECT and "damage" in self.ball: self.ball.damage = dmg
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("damage", dmg)
+
+                    if typeof(self.ball) == TYPE_DICTIONARY: self.ball["cursed_relic_applied"] = false
+                    elif typeof(self.ball) == TYPE_OBJECT and "cursed_relic_applied" in self.ball: self.ball.cursed_relic_applied = false
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("cursed_relic_applied", false)
+
+                var other_cr_app = false
+                if typeof(other) == TYPE_DICTIONARY and other.has("cursed_relic_applied"): other_cr_app = other["cursed_relic_applied"]
+                elif typeof(other) == TYPE_OBJECT and "cursed_relic_applied" in other: other_cr_app = other.cursed_relic_applied
+                elif typeof(other) == TYPE_OBJECT and other.has_method("has_meta") and other.has_meta("cursed_relic_applied"): other_cr_app = other.get_meta("cursed_relic_applied")
+
+                if not other_cr_app:
+                    var other_pr = 250.0
+                    if typeof(other) == TYPE_DICTIONARY and other.has("perception_radius"): other_pr = float(other["perception_radius"])
+                    elif typeof(other) == TYPE_OBJECT and "perception_radius" in other: other_pr = float(other.perception_radius)
+                    elif typeof(other) == TYPE_OBJECT and other.has_method("has_meta") and other.has_meta("perception_radius"): other_pr = float(other.get_meta("perception_radius"))
+
+                    var has_other_base_pr = false
+                    if typeof(other) == TYPE_DICTIONARY and other.has("base_perception_radius_relic"): has_other_base_pr = true
+                    elif typeof(other) == TYPE_OBJECT and "base_perception_radius_relic" in other: has_other_base_pr = true
+                    elif typeof(other) == TYPE_OBJECT and other.has_method("has_meta") and other.has_meta("base_perception_radius_relic"): has_other_base_pr = true
+
+                    if not has_other_base_pr:
+                        if typeof(other) == TYPE_DICTIONARY: other["base_perception_radius_relic"] = other_pr
+                        elif typeof(other) == TYPE_OBJECT and "base_perception_radius_relic" in other: other.base_perception_radius_relic = other_pr
+                        elif typeof(other) == TYPE_OBJECT and other.has_method("set_meta"): other.set_meta("base_perception_radius_relic", other_pr)
+                        elif typeof(other) == TYPE_OBJECT: other.set("base_perception_radius_relic", other_pr)
+
+                    other_pr *= 0.1
+                    if typeof(other) == TYPE_DICTIONARY: other["perception_radius"] = other_pr
+                    elif typeof(other) == TYPE_OBJECT and "perception_radius" in other: other.perception_radius = other_pr
+                    elif typeof(other) == TYPE_OBJECT and other.has_method("set_meta"): other.set_meta("perception_radius", other_pr)
+
+                    var other_sp = 2.0
+                    if typeof(other) == TYPE_DICTIONARY and other.has("speed"): other_sp = float(other["speed"])
+                    elif typeof(other) == TYPE_OBJECT and "speed" in other: other_sp = float(other.speed)
+                    elif typeof(other) == TYPE_OBJECT and other.has_method("has_meta") and other.has_meta("speed"): other_sp = float(other.get_meta("speed"))
+
+                    var has_other_base_sp = false
+                    if typeof(other) == TYPE_DICTIONARY and other.has("base_speed_relic"): has_other_base_sp = true
+                    elif typeof(other) == TYPE_OBJECT and "base_speed_relic" in other: has_other_base_sp = true
+                    elif typeof(other) == TYPE_OBJECT and other.has_method("has_meta") and other.has_meta("base_speed_relic"): has_other_base_sp = true
+
+                    if not has_other_base_sp:
+                        if typeof(other) == TYPE_DICTIONARY: other["base_speed_relic"] = other_sp
+                        elif typeof(other) == TYPE_OBJECT and "base_speed_relic" in other: other.base_speed_relic = other_sp
+                        elif typeof(other) == TYPE_OBJECT and other.has_method("set_meta"): other.set_meta("base_speed_relic", other_sp)
+                        elif typeof(other) == TYPE_OBJECT: other.set("base_speed_relic", other_sp)
+
+                    other_sp *= 3.0
+                    if typeof(other) == TYPE_DICTIONARY: other["speed"] = other_sp
+                    elif typeof(other) == TYPE_OBJECT and "speed" in other: other.speed = other_sp
+                    elif typeof(other) == TYPE_OBJECT and other.has_method("set_meta"): other.set_meta("speed", other_sp)
+
+                    var other_dmg = 10.0
+                    if typeof(other) == TYPE_DICTIONARY and other.has("damage"): other_dmg = float(other["damage"])
+                    elif typeof(other) == TYPE_OBJECT and "damage" in other: other_dmg = float(other.damage)
+                    elif typeof(other) == TYPE_OBJECT and other.has_method("has_meta") and other.has_meta("damage"): other_dmg = float(other.get_meta("damage"))
+
+                    var has_other_base_dmg = false
+                    if typeof(other) == TYPE_DICTIONARY and other.has("base_damage_relic"): has_other_base_dmg = true
+                    elif typeof(other) == TYPE_OBJECT and "base_damage_relic" in other: has_other_base_dmg = true
+                    elif typeof(other) == TYPE_OBJECT and other.has_method("has_meta") and other.has_meta("base_damage_relic"): has_other_base_dmg = true
+
+                    if not has_other_base_dmg:
+                        if typeof(other) == TYPE_DICTIONARY: other["base_damage_relic"] = other_dmg
+                        elif typeof(other) == TYPE_OBJECT and "base_damage_relic" in other: other.base_damage_relic = other_dmg
+                        elif typeof(other) == TYPE_OBJECT and other.has_method("set_meta"): other.set_meta("base_damage_relic", other_dmg)
+                        elif typeof(other) == TYPE_OBJECT: other.set("base_damage_relic", other_dmg)
+
+                    other_dmg *= 3.0
+                    if typeof(other) == TYPE_DICTIONARY: other["damage"] = other_dmg
+                    elif typeof(other) == TYPE_OBJECT and "damage" in other: other.damage = other_dmg
+                    elif typeof(other) == TYPE_OBJECT and other.has_method("set_meta"): other.set_meta("damage", other_dmg)
+
+                    if typeof(other) == TYPE_DICTIONARY: other["cursed_relic_applied"] = true
+                    elif typeof(other) == TYPE_OBJECT and "cursed_relic_applied" in other: other.cursed_relic_applied = true
+                    elif typeof(other) == TYPE_OBJECT and other.has_method("set_meta"): other.set_meta("cursed_relic_applied", true)
+                    elif typeof(other) == TYPE_OBJECT: other.set("cursed_relic_applied", true)
+
             var hgt = 0.0
             if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("heavy_gravity_timer"):
                 hgt = float(self.ball["heavy_gravity_timer"])
@@ -56004,6 +56200,17 @@ func _update_skill_timer(delta: float):
 
                 if "blink_relic_applied" in self.ball: self.ball.blink_relic_applied = false
                 elif self.ball.has_method("set_meta"): self.ball.set_meta("blink_relic_applied", false)
+
+    var cr_cooldown_val = 0.0
+    if "cursed_relic_cooldown" in self.ball:
+        cr_cooldown_val = float(self.ball.cursed_relic_cooldown)
+    elif self.ball.has_method("has_meta") and self.ball.has_meta("cursed_relic_cooldown"):
+        cr_cooldown_val = float(self.ball.get_meta("cursed_relic_cooldown"))
+
+    if cr_cooldown_val > 0:
+        cr_cooldown_val = max(0.0, cr_cooldown_val - delta)
+        if "cursed_relic_cooldown" in self.ball: self.ball.cursed_relic_cooldown = cr_cooldown_val
+        elif self.ball.has_method("set_meta"): self.ball.set_meta("cursed_relic_cooldown", cr_cooldown_val)
 
     var cr_timer_val = 0.0
     if "cursed_relic_timer" in self.ball:

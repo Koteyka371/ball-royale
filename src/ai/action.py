@@ -24601,6 +24601,42 @@ class Action:
                     if getattr(self.ball, "has_kinetic_absorber", False):
                         self.ball.supercharge_timer = min(5.0, getattr(self.ball, "supercharge_timer", 0.0) + (overlap * 0.1))
 
+                # Allow transferring relic but add a short cooldown to avoid instant pass-back
+                if getattr(self.ball, "cursed_relic_timer", 0.0) > 0.0 and getattr(other, "cursed_relic_timer", 0.0) <= 0.0 and getattr(self.ball, "cursed_relic_cooldown", 0.0) <= 0.0:
+                    other.cursed_relic_timer = getattr(self.ball, "cursed_relic_timer", 10.0)
+                    other.cursed_relic_cooldown = 1.0 # 1 second before passing it again
+                    self.ball.cursed_relic_timer = 0.0
+
+                    if getattr(self.ball, "cursed_relic_applied", False):
+                        if hasattr(self.ball, "base_perception_radius_relic"):
+                            self.ball.perception_radius = self.ball.base_perception_radius_relic
+                            delattr(self.ball, "base_perception_radius_relic")
+                        else:
+                            self.ball.perception_radius /= 0.1
+                        if hasattr(self.ball, "base_speed_relic"):
+                            self.ball.speed = self.ball.base_speed_relic
+                            delattr(self.ball, "base_speed_relic")
+                        else:
+                            self.ball.speed /= 3.0
+                        if hasattr(self.ball, "base_damage_relic"):
+                            self.ball.damage = self.ball.base_damage_relic
+                            delattr(self.ball, "base_damage_relic")
+                        else:
+                            self.ball.damage /= 3.0
+                        self.ball.cursed_relic_applied = False
+
+                    if not getattr(other, "cursed_relic_applied", False):
+                        if not hasattr(other, "base_perception_radius_relic"):
+                            other.base_perception_radius_relic = getattr(other, "perception_radius", 250.0)
+                        other.perception_radius *= 0.1
+                        if not hasattr(other, "base_speed_relic"):
+                            other.base_speed_relic = getattr(other, "speed", 2.0)
+                        other.speed *= 3.0
+                        if not hasattr(other, "base_damage_relic"):
+                            other.base_damage_relic = getattr(other, "damage", 10.0)
+                        other.damage *= 3.0
+                        other.cursed_relic_applied = True
+
                 if getattr(self.ball, "heavy_gravity_timer", 0.0) > 0.0:
                     knockback_multiplier = 0.0
 
@@ -28131,6 +28167,9 @@ class Action:
                         delattr(self.ball, "base_max_hp_blink_relic")
                     self.ball.blink_relic_applied = False
 
+        if getattr(self.ball, "cursed_relic_cooldown", 0.0) > 0.0:
+            self.ball.cursed_relic_cooldown = max(0.0, self.ball.cursed_relic_cooldown - delta)
+
         if getattr(self.ball, "cursed_relic_timer", 0.0) > 0.0:
             self.ball.cursed_relic_timer -= delta
 
@@ -28161,7 +28200,7 @@ class Action:
                         self.ball.perception_radius = self.ball.base_perception_radius_relic
                         delattr(self.ball, "base_perception_radius_relic")
                     else:
-                        self.ball.perception_radius /= 0.1
+                        self.ball.perception_radius *= 10.0
                     if hasattr(self.ball, "base_speed_relic"):
                         self.ball.speed = self.ball.base_speed_relic
                         delattr(self.ball, "base_speed_relic")
