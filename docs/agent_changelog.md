@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2005] Black Market Altars — *2026-08-14 22:43:44 UTC*
+
+Special altars that only appear during specific weather conditions. They offer extremely rare and powerful items, but purchasing them permanently reduces a player's max health or base speed for the rest of the match.
+
+---
+
 ## [idea-1996] EMP Shield Cosmetic — *2026-08-14 22:06:26 UTC*
 
 A cosmetic shield that passively nullifies incoming EMP effects but increases gravity.
