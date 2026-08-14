@@ -40,7 +40,7 @@ class GameMode:
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
         for b in balls:
             if getattr(b, "in_puddle", False):
-                if hasattr(b, "base_speed"):
+                if hasattr(b, "base_speed") and hasattr(b, "speed"):
                     # Avoid breaking MagicMock in tests
                     try:
                         is_mock = b.speed.__class__.__name__ == 'MagicMock' or b.base_speed.__class__.__name__ == 'MagicMock'
@@ -48,7 +48,8 @@ class GameMode:
                         is_mock = False
 
                     if not is_mock and getattr(b, 'speed', None) != 0.0:
-                        b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                        # Use a fallback value if neither is usable
+                        b.speed = getattr(b, "base_speed", 100.0)
                 b.in_puddle = False
 
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
@@ -4524,18 +4525,6 @@ class BattleRoyaleMode(GameMode):
                         lightning = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=30.0, kind="lightning_strike", damage=50.0)
                         setattr(lightning, 'duration', 1.0)
                         world.arena.hazards.append(lightning)
-            if self.weather in ["rain", "heavy_rain", "thunderstorm", "monsoon"]:
-                # Ensure random generator for puddle spawn
-                r_val = getattr(self, "random", __import__("random")).random()
-                # Test check logic to pass test while making it work
-                if r_val > 0.001 and r_val < 0.2 * delta:
-                    from arena.procedural_arena import Hazard
-                    x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
-                    y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
-                    puddle = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=50.0, kind="puddle", damage=0.0)
-                    setattr(puddle, 'duration', 10.0)
-                    world.arena.hazards.append(puddle)
-
             if self.weather in ["rain", "heavy_rain", "thunderstorm", "monsoon"]:
                 # Ensure random generator for puddle spawn
                 r_val = getattr(self, "random", __import__("random")).random()
@@ -10366,18 +10355,6 @@ class WeatherChaosMode(GameMode):
                         lightning = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=30.0, kind="lightning_strike", damage=50.0)
                         setattr(lightning, 'duration', 1.0)
                         world.arena.hazards.append(lightning)
-            if self.weather in ["rain", "heavy_rain", "thunderstorm", "monsoon"]:
-                # Ensure random generator for puddle spawn
-                r_val = getattr(self, "random", __import__("random")).random()
-                # Test check logic to pass test while making it work
-                if r_val > 0.001 and r_val < 0.2 * delta:
-                    from arena.procedural_arena import Hazard
-                    x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
-                    y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
-                    puddle = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=50.0, kind="puddle", damage=0.0)
-                    setattr(puddle, 'duration', 10.0)
-                    world.arena.hazards.append(puddle)
-
             if self.weather in ["rain", "heavy_rain", "thunderstorm", "monsoon"]:
                 # Ensure random generator for puddle spawn
                 r_val = getattr(self, "random", __import__("random")).random()
