@@ -55720,3 +55720,93 @@ class OrbitalStrikeEventMode(GameMode):
                 world.add_event("orbital_strike_warning", {"x": x, "y": y, "radius": self.strike_radius, "message": "Orbital strike incoming!"})
 
 GAME_MODES['orbital_strike_event'] = OrbitalStrikeEventMode()
+
+
+class GuildObstacleCourseMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Guild Obstacle Course"
+        self.description = "Players race through a custom obstacle course within their guild HQ layout using unlocked defenses and traps, competing for the best time."
+        self.course_active = False
+        self.start_x = 0.0
+        self.start_y = 0.0
+        self.finish_x = 0.0
+        self.finish_y = 0.0
+        self.player_timers = {}
+        self.finished_players = set()
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.course_active = True
+        self.player_timers = {}
+        self.finished_players = set()
+
+        # In a real scenario, these would be loaded from the guild's layout
+        # We set default values if they are not initialized
+        arena_w = getattr(world.arena, "width", 2000.0)
+        arena_h = getattr(world.arena, "height", 2000.0)
+
+        self.start_x = 100.0
+        self.start_y = 100.0
+        self.finish_x = arena_w - 100.0
+        self.finish_y = arena_h - 100.0
+
+        # Load custom defenses and traps from guild layout as hazards
+        # This assumes the world has a reference to the active guild's layout
+        if hasattr(world, 'guild_manager') and hasattr(world, 'active_guild_name'):
+            guild_name = world.active_guild_name
+            layout = world.guild_manager.get_hq_status(guild_name).get("layout", {})
+            defenses = layout.get("defenses", {})
+
+            try:
+                from arena.procedural_arena import Hazard
+                for trap_id, trap_info in defenses.items():
+                    # Create hazards based on placed traps
+                    x = trap_info.get("x", arena_w / 2.0)
+                    y = trap_info.get("y", arena_h / 2.0)
+                    world.arena.hazards.append(Hazard(getattr(world, "next_id", 99999), x, y, 30.0, "trap", 20.0))
+            except ImportError:
+                class DummyHazard:
+                    def __init__(self, hid, x, y, r, k, damage):
+                        self.id = hid; self.x = x; self.y = y; self.radius = r; self.kind = k; self.damage = damage
+                        self.active = True
+                for trap_id, trap_info in defenses.items():
+                    x = trap_info.get("x", arena_w / 2.0)
+                    y = trap_info.get("y", arena_h / 2.0)
+                    world.arena.hazards.append(DummyHazard(getattr(world, "next_id", 99999), x, y, 30.0, "trap", 20.0))
+
+        for b in balls:
+            b.x = self.start_x
+            b.y = self.start_y
+            self.player_timers[b.id] = 0.0
+
+    def tick(self, world, balls, delta):
+        if not self.course_active:
+            return
+
+        for b in balls:
+            if b.id in self.finished_players:
+                continue
+
+            self.player_timers[b.id] += delta
+
+            # Check if reached finish line
+            dist_sq = (b.x - self.finish_x)**2 + (b.y - self.finish_y)**2
+            # Assume finish zone has radius 50
+            if dist_sq < 2500.0:
+                self.finished_players.add(b.id)
+                completion_time = self.player_timers[b.id]
+
+                # Record score (lower is better, but leaderboard might sort high to low,
+                # so we can use a negative or inverse time, or assume UI handles it.
+                # For simplicity, we store the time.)
+                if hasattr(world, 'guild_manager') and hasattr(world, 'active_guild_name'):
+                    world.guild_manager.record_mini_game_score(
+                        world.active_guild_name,
+                        "obstacle_course",
+                        str(b.id),
+                        completion_time
+                    )
+                world.add_event("obstacle_course_finish", {"ball_id": b.id, "time": completion_time})
+
+GAME_MODES['guild_obstacle_course'] = GuildObstacleCourseMode()

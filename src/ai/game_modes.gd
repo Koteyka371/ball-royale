@@ -87442,6 +87442,119 @@ GAME_MODES['laser_tag'] = LaserTagMode.new()
 const GoldRushMode = preload("res://src/ai/gold_rush.gd")
 GAME_MODES['gold_rush'] = GoldRushMode.new()
 
+class GuildObstacleCourseMode extends GameMode:
+    var course_active = false
+    var start_x = 0.0
+    var start_y = 0.0
+    var finish_x = 0.0
+    var finish_y = 0.0
+    var player_timers = {}
+    var finished_players = {}
+
+    func _init():
+        name = "Guild Obstacle Course"
+        description = "Players race through a custom obstacle course within their guild HQ layout using unlocked defenses and traps, competing for the best time."
+
+    func setup(world, balls):
+        super.setup(world, balls)
+        course_active = true
+        player_timers = {}
+        finished_players = {}
+
+        var arena_w = 2000.0
+        var arena_h = 2000.0
+        if world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY:
+            if world.arena.has("width"): arena_w = world.arena.width
+            if world.arena.has("height"): arena_h = world.arena.height
+
+        start_x = 100.0
+        start_y = 100.0
+        finish_x = arena_w - 100.0
+        finish_y = arena_h - 100.0
+
+        if world.has("guild_manager") and world.has("active_guild_name"):
+            var guild_name = world.active_guild_name
+            var layout = {}
+            if world.guild_manager.has_method("get_hq_status"):
+                var status = world.guild_manager.call("get_hq_status", guild_name)
+                if typeof(status) == TYPE_DICTIONARY and status.has("layout"):
+                    layout = status["layout"]
+
+            var defenses = {}
+            if layout.has("defenses"):
+                defenses = layout["defenses"]
+
+            for trap_id in defenses.keys():
+                var trap_info = defenses[trap_id]
+                var tx = arena_w / 2.0
+                var ty = arena_h / 2.0
+                if typeof(trap_info) == TYPE_DICTIONARY:
+                    if trap_info.has("x"): tx = trap_info.x
+                    if trap_info.has("y"): ty = trap_info.y
+
+                var trap_hazard = {
+                    "id": world.get("next_id", 99999) + randi() % 1000,
+                    "x": tx,
+                    "y": ty,
+                    "radius": 30.0,
+                    "kind": "trap",
+                    "damage": 20.0,
+                    "active": true
+                }
+                if world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+                    world.arena.hazards.append(trap_hazard)
+
+        for b in balls:
+            if typeof(b) == TYPE_DICTIONARY:
+                b.x = start_x
+                b.y = start_y
+                player_timers[str(b.id)] = 0.0
+            else:
+                b.set("x", start_x)
+                b.set("y", start_y)
+                player_timers[str(b.get("id", -1))] = 0.0
+
+    func tick(world, balls, delta):
+        if not course_active:
+            return
+
+        for b in balls:
+            var b_id = str(-1)
+            var bx = 0.0
+            var by = 0.0
+            if typeof(b) == TYPE_DICTIONARY:
+                b_id = str(b.id)
+                bx = b.x
+                by = b.y
+            else:
+                b_id = str(b.get("id", -1))
+                bx = b.get("x", 0.0)
+                by = b.get("y", 0.0)
+
+            if finished_players.has(b_id):
+                continue
+
+            if not player_timers.has(b_id):
+                player_timers[b_id] = 0.0
+            player_timers[b_id] += delta
+
+            var dist_sq = (bx - finish_x) * (bx - finish_x) + (by - finish_y) * (by - finish_y)
+            if dist_sq < 2500.0:
+                finished_players[b_id] = true
+                var completion_time = player_timers[b_id]
+
+                if world.has("guild_manager") and world.has("active_guild_name"):
+                    if world.guild_manager.has_method("record_mini_game_score"):
+                        world.guild_manager.call("record_mini_game_score", world.active_guild_name, "obstacle_course", b_id, completion_time)
+
+                if typeof(world) == TYPE_DICTIONARY and world.has("events"):
+                    world.events.append({"type": "obstacle_course_finish", "data": {"ball_id": b_id, "time": completion_time}})
+                elif world.has_method("add_event"):
+                    world.call("add_event", "obstacle_course_finish", {"ball_id": b_id, "time": completion_time})
+
+GAME_MODES['guild_obstacle_course'] = GuildObstacleCourseMode.new()
+
+
 
 class OrbitalStrikeEventMode extends GameMode:
 	var strikes = []
