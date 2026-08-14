@@ -38940,14 +38940,33 @@ func _use_skill():
             var target = null
 
             if decoy_targets.size() > 0:
-                var max_dist_sq = -1.0
-                for e in decoy_targets:
-                    var e_x = e.x if "x" in e else e.get("position").x if e.get("position") != null else 0.0
-                    var e_y = e.y if "y" in e else e.get("position").y if e.get("position") != null else 0.0
-                    var d_sq = (e_x - self.ball.x) * (e_x - self.ball.x) + (e_y - self.ball.y) * (e_y - self.ball.y)
-                    if d_sq > max_dist_sq:
-                        max_dist_sq = d_sq
-                        target = e
+                var trickster_target_id = null
+                if "trickster_swap_target_id" in self.ball:
+                    trickster_target_id = self.ball.trickster_swap_target_id
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("trickster_swap_target_id"):
+                    trickster_target_id = self.ball.get_meta("trickster_swap_target_id")
+                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("trickster_swap_target_id"):
+                    trickster_target_id = self.ball.get("trickster_swap_target_id")
+
+                var manual_target = null
+                if trickster_target_id != null:
+                    for e in decoy_targets:
+                        var e_id = e.id if "id" in e else e.get("id") if typeof(e) == TYPE_DICTIONARY else e.get_meta("id") if e.has_method("has_meta") else null
+                        if e_id == trickster_target_id:
+                            manual_target = e
+                            break
+
+                if manual_target != null:
+                    target = manual_target
+                else:
+                    var max_dist_sq = -1.0
+                    for e in decoy_targets:
+                        var e_x = e.x if "x" in e else e.get("position").x if e.get("position") != null else 0.0
+                        var e_y = e.y if "y" in e else e.get("position").y if e.get("position") != null else 0.0
+                        var d_sq = (e_x - self.ball.x) * (e_x - self.ball.x) + (e_y - self.ball.y) * (e_y - self.ball.y)
+                        if d_sq > max_dist_sq:
+                            max_dist_sq = d_sq
+                            target = e
             elif valid_targets.size() > 0:
                 var min_dist_sq = 99999999.0
                 for e in valid_targets:
