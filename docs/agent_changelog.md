@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1996] EMP Shield Cosmetic — *2026-08-14 22:06:26 UTC*
+
+A cosmetic shield that passively nullifies incoming EMP effects but increases gravity.
+
+---
+
 ## [idea-1947] Thermal Glider Item — *2026-08-14 17:09:56 UTC*
 
 An item that allows players to ride the updrafts from lava geysers, granting temporary invulnerability to floor hazards and a significant speed boost while airborne, but making them vulnerable to anti-air attacks.
