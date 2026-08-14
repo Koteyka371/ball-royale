@@ -6814,7 +6814,7 @@ class DualPayloadMode(GameMode):
                         max_hp_val = getattr(b, "max_hp", 100.0)
                         current_hp = getattr(b, "hp", 100.0)
                         if current_hp >= max_hp_val:
-                            b.shield = getattr(b, "shield", 0.0) + 15.0 * delta
+                            b.shield = min(getattr(b, "max_shield", 100.0), getattr(b, "shield", 0.0) + 15.0 * delta)
                         else:
                             b.hp = min(max_hp_val, current_hp + 15.0 * delta)
 
@@ -6953,7 +6953,7 @@ class DualPayloadMode(GameMode):
                         max_hp_val = getattr(b, "max_hp", 100.0)
                         current_hp = getattr(b, "hp", 100.0)
                         if current_hp >= max_hp_val:
-                            b.shield = getattr(b, "shield", 0.0) + 15.0 * delta
+                            b.shield = min(getattr(b, "max_shield", 100.0), getattr(b, "shield", 0.0) + 15.0 * delta)
                         else:
                             b.hp = min(max_hp_val, current_hp + 15.0 * delta)
 
@@ -7618,7 +7618,7 @@ class EscortMode(GameMode):
                         max_hp_val = getattr(b, "max_hp", 100.0)
                         current_hp = getattr(b, "hp", 100.0)
                         if current_hp >= max_hp_val:
-                            b.shield = getattr(b, "shield", 0.0) + 15.0 * delta
+                            b.shield = min(getattr(b, "max_shield", 100.0), getattr(b, "shield", 0.0) + 15.0 * delta)
                         else:
                             b.hp = min(max_hp_val, current_hp + 15.0 * delta)
 
@@ -24352,7 +24352,7 @@ class ReverseTugOfWarMode(GameMode):
                         max_hp_val = getattr(b, "max_hp", 100.0)
                         current_hp = getattr(b, "hp", 100.0)
                         if current_hp >= max_hp_val:
-                            b.shield = getattr(b, "shield", 0.0) + 15.0 * delta
+                            b.shield = min(getattr(b, "max_shield", 100.0), getattr(b, "shield", 0.0) + 15.0 * delta)
                         else:
                             b.hp = min(max_hp_val, current_hp + 15.0 * delta)
 
@@ -24731,7 +24731,7 @@ class TickingPayloadMode(GameMode):
                         max_hp_val = getattr(b, "max_hp", 100.0)
                         current_hp = getattr(b, "hp", 100.0)
                         if current_hp >= max_hp_val:
-                            b.shield = getattr(b, "shield", 0.0) + 15.0 * delta
+                            b.shield = min(getattr(b, "max_shield", 100.0), getattr(b, "shield", 0.0) + 15.0 * delta)
                         else:
                             b.hp = min(max_hp_val, current_hp + 15.0 * delta)
 

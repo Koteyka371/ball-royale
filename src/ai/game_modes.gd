@@ -12238,10 +12238,11 @@ class EscortMode extends GameMode:
 							var new_hp = bhp + 15.0 * delta
 							if bhp >= bmax_hp:
 								if typeof(b) == TYPE_DICTIONARY:
-									b["shield"] = b.get("shield", 0.0) + 15.0 * delta
+									b["shield"] = min(b.get("max_shield", 100.0), b.get("shield", 0.0) + 15.0 * delta)
 								else:
 									var curr_shield = b.get("shield") if b.get("shield") != null else 0.0
-									b.set("shield", curr_shield + 15.0 * delta)
+									var max_shield = b.get("max_shield") if b.get("max_shield") != null else 100.0
+									b.set("shield", min(max_shield, curr_shield + 15.0 * delta))
 							else:
 								new_hp = min(bmax_hp, new_hp)
 								if typeof(b) == TYPE_DICTIONARY:
@@ -38659,13 +38660,14 @@ class ReverseTugOfWarMode extends GameMode:
 							var max_hp = b.get("max_hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.max_hp
 							if typeof(b) == TYPE_DICTIONARY:
 								if hp >= max_hp:
-									b["shield"] = b.get("shield", 0.0) + 15.0 * delta
+									b["shield"] = min(b.get("max_shield", 100.0), b.get("shield", 0.0) + 15.0 * delta)
 								else:
 									b["hp"] = min(max_hp, hp + 15.0 * delta)
 							else:
 								if hp >= max_hp:
 									var curr_shield = b.get("shield") if b.get("shield") != null else 0.0
-									b.shield = curr_shield + 15.0 * delta
+									var max_shield = b.get("max_shield") if b.get("max_shield") != null else 100.0
+									b.shield = min(max_shield, curr_shield + 15.0 * delta)
 								else:
 									b.hp = min(max_hp, hp + 15.0 * delta)
 
@@ -39341,13 +39343,14 @@ class TickingPayloadMode extends GameMode:
 						var max_hp = b.get("max_hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.get("max_hp")
 						if typeof(b) == TYPE_DICTIONARY:
 							if hp >= max_hp:
-								b["shield"] = b.get("shield", 0.0) + 15.0 * delta
+								b["shield"] = min(b.get("max_shield", 100.0), b.get("shield", 0.0) + 15.0 * delta)
 							else:
 								b["hp"] = min(max_hp, hp + 15.0 * delta)
 						else:
 							if hp >= max_hp:
 								var curr_shield = b.get("shield") if b.get("shield") != null else 0.0
-								b.set("shield", curr_shield + 15.0 * delta)
+								var max_shield = b.get("max_shield") if b.get("max_shield") != null else 100.0
+								b.set("shield", min(max_shield, curr_shield + 15.0 * delta))
 							else:
 								b.set("hp", min(max_hp, hp + 15.0 * delta))
 
