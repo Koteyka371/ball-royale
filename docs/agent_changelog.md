@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1997] Trickster Swap Mastery — *2026-08-14 16:07:06 UTC*
+
+Tricksters can manually choose which decoy they want to swap positions with instead of it being random, allowing for extreme jukes and tactical escapes.
+
+---
+
 ## [idea-1803] Dynamic Puddles — *2026-08-14 15:00:44 UTC*
 
 During heavy rain or thunderstorm conditions, temporary puddles form on the arena. Moving through puddles slows balls down, but using an electric skill while standing in a puddle electrifies it, damaging nearby enemies.
