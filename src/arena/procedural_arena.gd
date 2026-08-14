@@ -25,6 +25,7 @@ var is_windy: bool = false
 var is_foggy: bool = false
 var is_sandstorming: bool = false
 var is_acid_raining: bool = false
+var is_hailing: bool = false
 var is_gravity_storm: bool = false
 
 
@@ -710,6 +711,7 @@ func update_zone(current_tick: int, delta: float) -> void:
             is_foggy = false
             is_sandstorming = false
             is_acid_raining = false
+            is_hailing = false
             is_gravity_storm = false
         elif current_tick % 600 == 300:
             var weathers = ["rain", "snow", "heatwave", "wind", "fog", "sandstorm", "acid_rain", "gravity_storm"]
@@ -721,6 +723,7 @@ func update_zone(current_tick: int, delta: float) -> void:
             is_foggy = weather == "fog"
             is_sandstorming = weather == "sandstorm"
             is_acid_raining = weather == "acid_rain"
+            is_hailing = weather == "hail"
             is_gravity_storm = weather == "gravity_storm"
 
 
