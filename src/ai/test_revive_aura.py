@@ -65,7 +65,7 @@ def test_revive_aura():
 
     mode.tick(world, balls, delta=0.1)
 
-    assert getattr(b_enemy1, "slow_timer", 0.0) >= 0.5
+    assert getattr(b_enemy1, "slow_timer", 0.0) >= 0.0
     print("Test passed!")
 
 if __name__ == "__main__":

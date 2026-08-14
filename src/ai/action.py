@@ -2033,6 +2033,10 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        if getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") == "emp_shield":
+            self.ball.emp_immunity_timer = max(getattr(self.ball, "emp_immunity_timer", 0.0), 0.1)
+            self.ball.gravity_multiplier_timer = max(getattr(self.ball, "gravity_multiplier_timer", 0.0), 0.1)
+
         old_x = getattr(self.ball, "x", 0.0)
         old_y = getattr(self.ball, "y", 0.0)
 
