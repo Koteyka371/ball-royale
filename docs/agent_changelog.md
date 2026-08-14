@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1947] Thermal Glider Item — *2026-08-14 17:09:56 UTC*
+
+An item that allows players to ride the updrafts from lava geysers, granting temporary invulnerability to floor hazards and a significant speed boost while airborne, but making them vulnerable to anti-air attacks.
+
+---
+
 ## [idea-1990] Interactive HQ Obstacle Course Minigame — *2026-08-14 16:39:49 UTC*
 
 Allow guild members to create custom obstacle courses within their interactive HQ layout using unlocked defenses and traps. Other members can then try to run through the obstacle course as quickly as possible, competing for the best time on a dedicated minigame leaderboard.
