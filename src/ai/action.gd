@@ -20289,14 +20289,63 @@ func execute(strategy: String, delta: float):
                         var dy = hazard.y - self.ball.y
                         var dist_sq = dx * dx + dy * dy
                         if dist_sq < hazard.radius * hazard.radius:
-                            if self.ball.has_method("set_meta"): self.ball.set_meta("is_in_lava", true)
-                            elif "is_in_lava" in self.ball: self.ball.is_in_lava = true
-
-                            var new_friction = 0.5
+                            var has_geyser_boots = false
                             if typeof(self.ball) == TYPE_DICTIONARY:
-                                self.ball["friction_multiplier"] = new_friction
-                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
-                                self.ball.set_meta("friction_multiplier", new_friction)
+                                has_geyser_boots = self.ball.get("geyser_boots_timer", 0.0) > 0.0
+                            elif typeof(self.ball) == TYPE_OBJECT:
+                                if "geyser_boots_timer" in self.ball and self.ball.geyser_boots_timer > 0.0:
+                                    has_geyser_boots = true
+                                elif self.ball.has_method("has_meta") and self.ball.has_meta("geyser_boots_timer") and self.ball.get_meta("geyser_boots_timer") > 0.0:
+                                    has_geyser_boots = true
+
+                            if has_geyser_boots:
+                                if self.ball.has_method("set_meta"): self.ball.set_meta("is_in_lava", false)
+                                elif "is_in_lava" in self.ball: self.ball.is_in_lava = false
+
+                                var current_fly_timer = 0.0
+                                if typeof(self.ball) == TYPE_DICTIONARY:
+                                    current_fly_timer = self.ball.get("fly_timer", 0.0)
+                                elif typeof(self.ball) == TYPE_OBJECT:
+                                    if "fly_timer" in self.ball:
+                                        current_fly_timer = self.ball.fly_timer
+                                    elif self.ball.has_method("has_meta") and self.ball.has_meta("fly_timer"):
+                                        current_fly_timer = self.ball.get_meta("fly_timer")
+
+                                var new_fly_timer = max(current_fly_timer, 2.0)
+                                if typeof(self.ball) == TYPE_DICTIONARY:
+                                    self.ball["fly_timer"] = new_fly_timer
+                                elif typeof(self.ball) == TYPE_OBJECT:
+                                    if "fly_timer" in self.ball:
+                                        self.ball.fly_timer = new_fly_timer
+                                    elif self.ball.has_method("set_meta"):
+                                        self.ball.set_meta("fly_timer", new_fly_timer)
+                                var current_speed_buff = 0.0
+                                if typeof(self.ball) == TYPE_DICTIONARY:
+                                    current_speed_buff = self.ball.get("speed_buff_timer", 0.0)
+                                elif typeof(self.ball) == TYPE_OBJECT:
+                                    if "speed_buff_timer" in self.ball:
+                                        current_speed_buff = self.ball.speed_buff_timer
+                                    elif self.ball.has_method("has_meta") and self.ball.has_meta("speed_buff_timer"):
+                                        current_speed_buff = self.ball.get_meta("speed_buff_timer")
+
+                                var new_speed_buff = max(current_speed_buff, 2.0)
+                                if typeof(self.ball) == TYPE_DICTIONARY:
+                                    self.ball["speed_buff_timer"] = new_speed_buff
+                                elif typeof(self.ball) == TYPE_OBJECT:
+                                    if "speed_buff_timer" in self.ball:
+                                        self.ball.speed_buff_timer = new_speed_buff
+                                    elif self.ball.has_method("set_meta"):
+                                        self.ball.set_meta("speed_buff_timer", new_speed_buff)
+                            else:
+                                if self.ball.has_method("set_meta"): self.ball.set_meta("is_in_lava", true)
+                                elif "is_in_lava" in self.ball: self.ball.is_in_lava = true
+
+                                var new_friction = 0.5
+                                if typeof(self.ball) == TYPE_DICTIONARY:
+                                    self.ball["friction_multiplier"] = new_friction
+                                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("friction_multiplier", new_friction)
+
                 elif hazard.kind == "flood_zone":
                     if self.ball.has_method("set_meta"): self.ball.set_meta("is_in_flood_zone", true)
                     elif "is_in_flood_zone" in self.ball: self.ball.is_in_flood_zone = true
@@ -32479,6 +32528,32 @@ func _collect_booster(delta: float):
                     else:
                         if "grave_robber_shovel_active" in self.ball: self.ball.grave_robber_shovel_active = true
                         elif self.ball.has_method("set_meta"): self.ball.set_meta("grave_robber_shovel_active", true)
+
+                    if typeof(b) == TYPE_DICTIONARY: b["active"] = false
+                    else:
+                        if "active" in b: b.active = false
+                        elif b.has_method("set_meta"): b.set_meta("active", false)
+
+                    if self.world != null and "boosters" in self.world and typeof(self.world.boosters) == TYPE_ARRAY:
+                        self.world.boosters.erase(b)
+                    if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena and typeof(self.world.arena.hazards) == TYPE_ARRAY:
+                        self.world.arena.hazards.erase(b)
+
+            elif b_kind == "geyser_boots":
+                var dx = get_bx(b) - my_x
+                var dy = get_by(b) - my_y
+                var b_radius = 15.0
+                if typeof(b) == TYPE_DICTIONARY and b.has("radius"): b_radius = b.radius
+                elif typeof(b) == TYPE_OBJECT and "radius" in b: b_radius = b.radius
+                var dist = sqrt(dx*dx + dy*dy)
+                if dist <= my_radius + b_radius + 5.0:
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["geyser_boots_timer"] = 15.0
+                    else:
+                        if "geyser_boots_timer" in self.ball:
+                            self.ball.geyser_boots_timer = 15.0
+                        elif self.ball.has_method("set_meta"):
+                            self.ball.set_meta("geyser_boots_timer", 15.0)
 
                     if typeof(b) == TYPE_DICTIONARY: b["active"] = false
                     else:
