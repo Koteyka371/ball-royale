@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1803] Dynamic Puddles — *2026-08-14 15:00:44 UTC*
+
+During heavy rain or thunderstorm conditions, temporary puddles form on the arena. Moving through puddles slows balls down, but using an electric skill while standing in a puddle electrifies it, damaging nearby enemies.
+
+---
+
 ## [idea-1832] Payload Overheal Shield Capacity — *2026-08-14 13:57:20 UTC*
 
 When a payload heals a max HP teammate, the temporary shield granted can stack indefinitely up to a set cap, turning defenders into slow but heavily armored tanks the longer they stay close to the payload.
