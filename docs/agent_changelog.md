@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1986] Seasonal Weather Types — *2026-08-14 04:40:18 UTC*
+
+Introduce new seasonal weather types (e.g. Acid Rain, Hail) that are only available during certain ranked seasons.
+
+---
+
 ## [idea-1987] Orbital Strike Event — *2026-08-14 03:27:17 UTC*
 
 A global event where random orbital strikes target the arena. A warning circle appears on the ground, and after a short delay, an orbital laser blasts the area, dealing massive damage to any ball caught inside.
