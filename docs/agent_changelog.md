@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1987] Orbital Strike Event — *2026-08-14 03:27:17 UTC*
+
+A global event where random orbital strikes target the arena. A warning circle appears on the ground, and after a short delay, an orbital laser blasts the area, dealing massive damage to any ball caught inside.
+
+---
+
 ## [idea-1952] Cursed Relic Modifier — *2026-08-14 00:39:10 UTC*
 
 Scattered across the map are cursed relics that, when picked up, provide huge temporary stat buffs (like double damage) but drain the ball's health continually over time. A ball can drop the relic by bumping into another ball, passing the curse along in a deadly game of hot potato.
