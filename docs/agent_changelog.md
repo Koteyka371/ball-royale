@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1952] Cursed Relic Modifier — *2026-08-14 00:39:10 UTC*
+
+Scattered across the map are cursed relics that, when picked up, provide huge temporary stat buffs (like double damage) but drain the ball's health continually over time. A ball can drop the relic by bumping into another ball, passing the curse along in a deadly game of hot potato.
+
+---
+
 ## [idea-1993] Toxic Minion Mutator — *2026-08-13 19:48:15 UTC*
 
 A new mutator or item that infuses minions with toxic sludge. When they decay and explode, instead of instant burst damage, they leave behind a persistent poison cloud that slows enemies and deals damage over time.
