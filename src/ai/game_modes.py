@@ -55499,3 +55499,79 @@ class LaserTagMode(GameMode):
 
 GAME_MODES['laser_tag'] = LaserTagMode()
 GAME_MODES['gold_rush'] = __import__('ai.gold_rush', fromlist=['']).GoldRushMode()
+
+
+class OrbitalStrikeEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Orbital Strike Event"
+        self.description = "Random orbital strikes target the arena. A warning circle appears, followed by a devastating laser blast."
+        self.strikes = []
+        self.spawn_timer = 0.0
+        self.spawn_interval = 10.0
+        self.warning_duration = 3.0
+        self.strike_radius = 80.0
+        self.strike_damage = 500.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.strikes = []
+        self.spawn_timer = 5.0
+
+    def tick(self, world, balls, delta=0.016):
+        import random
+        import math
+        super().tick(world, balls, delta)
+
+        active_strikes = []
+        for strike in self.strikes:
+            strike["timer"] -= delta
+            if strike["state"] == "warning":
+                if strike["timer"] <= 0:
+                    strike["state"] = "firing"
+                    strike["timer"] = 1.0 # Duration of the visual/damage blast
+
+                    if hasattr(world, "add_event"):
+                        world.add_event("orbital_strike_fired", {"x": strike["x"], "y": strike["y"], "radius": self.strike_radius, "message": "Orbital strike fired!"})
+
+                    # Deal damage
+                    for b in balls:
+                        if not getattr(b, "alive", False) or getattr(b, "ball_type", "") == "spectator":
+                            continue
+                        dist = math.hypot(b.x - strike["x"], b.y - strike["y"])
+                        if dist <= self.strike_radius + getattr(b, "radius", 10.0):
+                            if hasattr(b, "take_damage"):
+                                b.take_damage(self.strike_damage, source="orbital_strike")
+                            else:
+                                b.hp -= self.strike_damage
+                                if b.hp <= 0:
+                                    b.hp = 0
+                                    b.alive = False
+                    active_strikes.append(strike)
+                else:
+                    active_strikes.append(strike)
+            elif strike["state"] == "firing":
+                if strike["timer"] > 0:
+                    active_strikes.append(strike)
+
+        self.strikes = active_strikes
+
+        self.spawn_timer -= delta
+        if self.spawn_timer <= 0:
+            self.spawn_timer = self.spawn_interval
+            arena_w = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") else 1000.0
+            arena_h = getattr(world.arena, "height", 1000.0) if hasattr(world, "arena") else 1000.0
+
+            x = random.uniform(self.strike_radius, arena_w - self.strike_radius)
+            y = random.uniform(self.strike_radius, arena_h - self.strike_radius)
+
+            self.strikes.append({
+                "x": x,
+                "y": y,
+                "state": "warning",
+                "timer": self.warning_duration
+            })
+            if hasattr(world, "add_event"):
+                world.add_event("orbital_strike_warning", {"x": x, "y": y, "radius": self.strike_radius, "message": "Orbital strike incoming!"})
+
+GAME_MODES['orbital_strike_event'] = OrbitalStrikeEventMode()

@@ -63006,6 +63006,7 @@ var GAME_MODES = {
 	"personal_doppelganger": PersonalDoppelgangerMode.new(),
 	"dense_region": DenseRegionMode.new(),
 	"solar_radiation_storm": SolarRadiationStormMode.new(),
+    "orbital_strike_event": OrbitalStrikeEventMode.new(),
 }
 
 class PersonalDoppelgangerMode extends GameMode:
@@ -87343,3 +87344,109 @@ GAME_MODES['laser_tag'] = LaserTagMode.new()
 
 const GoldRushMode = preload("res://src/ai/gold_rush.gd")
 GAME_MODES['gold_rush'] = GoldRushMode.new()
+
+
+class OrbitalStrikeEventMode extends GameMode:
+	var strikes = []
+	var spawn_timer = 0.0
+	var spawn_interval = 10.0
+	var warning_duration = 3.0
+	var strike_radius = 80.0
+	var strike_damage = 500.0
+
+	func _init():
+		super._init()
+		name = "Orbital Strike Event"
+		description = "Random orbital strikes target the arena. A warning circle appears, followed by a devastating laser blast."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		strikes = []
+		spawn_timer = 5.0
+
+	func tick(world, balls: Array, delta: float) -> void:
+		super.tick(world, balls, delta)
+
+		var active_strikes = []
+		for strike in strikes:
+			strike["timer"] -= delta
+			if strike["state"] == "warning":
+				if strike["timer"] <= 0.0:
+					strike["state"] = "firing"
+					strike["timer"] = 1.0 # visual duration
+
+					if world != null and world.has_method("add_event"):
+						world.add_event("orbital_strike_fired", {"x": strike["x"], "y": strike["y"], "radius": strike_radius, "message": "Orbital strike fired!"})
+
+					for b in balls:
+						var b_alive = true
+						if typeof(b) == TYPE_DICTIONARY:
+							b_alive = b.get("alive", false)
+							if b.get("ball_type", "") == "spectator": b_alive = false
+						else:
+							b_alive = b.get("alive") if b.get("alive") != null else false
+							if b.get("ball_type") == "spectator": b_alive = false
+
+						if not b_alive: continue
+
+						var b_x = 0.0
+						var b_y = 0.0
+						var b_radius = 10.0
+						if typeof(b) == TYPE_DICTIONARY:
+							b_x = float(b.get("x", 0.0))
+							b_y = float(b.get("y", 0.0))
+							b_radius = float(b.get("radius", 10.0))
+						else:
+							b_x = float(b.get("x"))
+							b_y = float(b.get("y"))
+							b_radius = float(b.get("radius"))
+
+						var dx = b_x - float(strike["x"])
+						var dy = b_y - float(strike["y"])
+						var dist = sqrt(dx*dx + dy*dy)
+
+						if dist <= strike_radius + b_radius:
+							if typeof(b) == TYPE_DICTIONARY:
+								b["hp"] -= strike_damage
+								if float(b["hp"]) <= 0.0:
+									b["hp"] = 0.0
+									b["alive"] = false
+							elif b.has_method("take_damage"):
+								b.take_damage(strike_damage, "orbital_strike")
+							else:
+								b.set("hp", b.get("hp") - strike_damage)
+								if b.get("hp") <= 0.0:
+									b.set("hp", 0.0)
+									b.set("alive", false)
+					active_strikes.append(strike)
+				else:
+					active_strikes.append(strike)
+			elif strike["state"] == "firing":
+				if strike["timer"] > 0.0:
+					active_strikes.append(strike)
+		strikes = active_strikes
+
+		spawn_timer -= delta
+		if spawn_timer <= 0.0:
+			spawn_timer = spawn_interval
+			var arena_w = 1000.0
+			var arena_h = 1000.0
+			if world != null and typeof(world) == TYPE_DICTIONARY and world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY:
+				if world.arena.has("width"): arena_w = float(world.arena.width)
+				if world.arena.has("height"): arena_h = float(world.arena.height)
+			elif world != null and world.get("arena") != null:
+				var arena = world.get("arena")
+				if "width" in arena: arena_w = float(arena.width)
+				if "height" in arena: arena_h = float(arena.height)
+
+			var x = randf_range(strike_radius, arena_w - strike_radius)
+			var y = randf_range(strike_radius, arena_h - strike_radius)
+
+			strikes.append({
+				"x": x,
+				"y": y,
+				"state": "warning",
+				"timer": warning_duration
+			})
+			if world != null and world.has_method("add_event"):
+				world.add_event("orbital_strike_warning", {"x": x, "y": y, "radius": strike_radius, "message": "Orbital strike incoming!"})
