@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1832] Payload Overheal Shield Capacity — *2026-08-14 13:57:20 UTC*
+
+When a payload heals a max HP teammate, the temporary shield granted can stack indefinitely up to a set cap, turning defenders into slow but heavily armored tanks the longer they stay close to the payload.
+
+---
+
 ## [idea-1928] Bounty Trap Modifiers — *2026-08-14 12:00:15 UTC*
 
 Players can upgrade their Bounty Trap with different variants. For example, an 'Explosive Trap' variant that triggers a small area-of-effect blast alongside marking the target, or a 'Stasis Trap' variant that temporarily roots the victim in place while marking them as a bounty target.
