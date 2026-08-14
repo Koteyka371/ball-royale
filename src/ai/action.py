@@ -10034,6 +10034,22 @@ class Action:
                                 self.ball.is_bounty_target = True
                                 self.ball.bounty_target_timer = 20.0 if owner_extension else 10.0
                                 self.ball.bounty_target_owner = getattr(hazard, "owner_id", None)
+
+                                variant = getattr(hazard, "variant", "default")
+                                if variant == "explosive":
+                                    self.world.add_event("explosion", {"x": hazard.x, "y": hazard.y, "radius": 100.0, "damage": 50.0})
+                                    if hasattr(self.world, "balls"):
+                                        import math
+                                        for b in self.world.balls:
+                                            b_dist = math.hypot(b.x - hazard.x, b.y - hazard.y)
+                                            if b_dist <= 100.0:
+                                                if hasattr(b, "take_damage"):
+                                                    b.take_damage(50.0)
+                                                elif hasattr(b, "hp"):
+                                                    b.hp -= 50.0
+                                elif variant == "stasis":
+                                    self.ball.stun_timer = max(getattr(self.ball, "stun_timer", 0.0), 3.0)
+
                                 hazard.duration = 0.0
                                 hazard.active = False
 
@@ -23999,6 +24015,7 @@ class Action:
                     node.team = getattr(self.ball, "team", "")
                     node.duration = 60.0
                     node.active = True
+                    node.variant = getattr(self.ball, "bounty_trap_variant", "default")
                     self.world.arena.hazards.append(node)
                 self.ball.skill_timer = 15.0
 
