@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1990] Interactive HQ Obstacle Course Minigame — *2026-08-14 16:39:49 UTC*
+
+Allow guild members to create custom obstacle courses within their interactive HQ layout using unlocked defenses and traps. Other members can then try to run through the obstacle course as quickly as possible, competing for the best time on a dedicated minigame leaderboard.
+
+---
+
 ## [idea-1997] Trickster Swap Mastery — *2026-08-14 16:07:06 UTC*
 
 Tricksters can manually choose which decoy they want to swap positions with instead of it being random, allowing for extreme jukes and tactical escapes.
