@@ -39106,6 +39106,76 @@ class CursedRelicsMode(GameMode):
                                 hazard.transfer_cooldown = 1.0
                                 break
 
+class WeatherAltarsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Weather Altars"
+        self.description = "Special altars that only appear during specific weather conditions. They offer extremely rare and powerful items, but purchasing them permanently reduces a player's max health or base speed for the rest of the match."
+        self.altars = []
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import random, math
+
+        current_weather = getattr(world.arena, "weather", "clear") if hasattr(world, "arena") else "clear"
+        intense_weathers = ["thunderstorm", "blizzard", "hurricane", "storm", "heatwave", "sandstorm", "heavy_rain"]
+
+        if current_weather in intense_weathers:
+            if not self.altars:
+                # spawn an altar
+                arena_w = getattr(world.arena, "width", 1000) if hasattr(world, "arena") else 1000
+                arena_h = getattr(world.arena, "height", 1000) if hasattr(world, "arena") else 1000
+                self.altars.append({
+                    "x": random.uniform(100, arena_w - 100),
+                    "y": random.uniform(100, arena_h - 100),
+                    "radius": 100.0,
+                    "purchases": {},
+                    "purchased_by": set()
+                })
+        else:
+            self.altars.clear()
+
+        # Process altars
+        for altar in self.altars:
+            for b in balls:
+                if not getattr(b, "alive", False) or getattr(b, "ball_type", "") == "spectator":
+                    continue
+
+                bid = getattr(b, "id", None)
+                if bid is None or bid in altar["purchased_by"]:
+                    continue
+
+                dx = getattr(b, "x", 0) - altar["x"]
+                dy = getattr(b, "y", 0) - altar["y"]
+                dist = math.sqrt(dx*dx + dy*dy)
+
+                if dist < altar["radius"]:
+                    altar["purchases"][bid] = altar["purchases"].get(bid, 0.0) + delta
+                    if altar["purchases"][bid] >= 2.0:
+                        altar["purchased_by"].add(bid)
+
+                        if random.choice([True, False]):
+                            b.max_hp = max(10.0, getattr(b, "max_hp", 100.0) - 30.0)
+                            b.hp = min(getattr(b, "hp", 100.0), b.max_hp)
+                            penalty = "Max HP Reduced"
+                        else:
+                            b.base_speed = max(20.0, getattr(b, "base_speed", 100.0) - 30.0)
+                            if hasattr(b, "speed"):
+                                b.speed = min(b.speed, b.base_speed)
+                            penalty = "Base Speed Reduced"
+
+                        items = ["time_stop_booster", "death_defy_booster", "invulnerability_booster", "quantum_relay_booster", "chronosphere_booster", "overclock_booster"]
+                        chosen_item = random.choice(items)
+                        if not hasattr(b, "inventory"):
+                            b.inventory = []
+                        b.inventory.append(chosen_item)
+
+                        if hasattr(world, "add_event"):
+                            world.add_event("weather_altar_purchase", {"ball_id": bid, "item": chosen_item, "penalty": penalty})
+                else:
+                    if bid in altar["purchases"]:
+                        altar["purchases"][bid] = max(0.0, altar["purchases"][bid] - delta)
+
 GAME_MODES = {
     'cursed_relics': CursedRelicsMode(),
     'irradiation_survival': IrradiationSurvivalMode(),
@@ -54608,6 +54678,7 @@ GAME_MODES['invert_controls_mutator'] = InvertControlsMutator()
 GAME_MODES["bullet_hell_survival"] = BulletHellSurvivalMode()
 
 GAME_MODES["weather_boss"] = WeatherBossMode()
+GAME_MODES["weather_altars"] = WeatherAltarsMode()
 
 class OccasionalMirrorWallsMode(GameMode):
     def __init__(self):
