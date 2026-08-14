@@ -3846,6 +3846,30 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+    var cosmetic_val = ""
+    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("cosmetic"): cosmetic_val = str(self.ball["cosmetic"]).to_lower().replace(" ", "_")
+    elif typeof(self.ball) == TYPE_OBJECT and "cosmetic" in self.ball: cosmetic_val = str(self.ball.cosmetic).to_lower().replace(" ", "_")
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("cosmetic"): cosmetic_val = str(self.ball.get_meta("cosmetic")).to_lower().replace(" ", "_")
+
+    if cosmetic_val == "emp_shield":
+        var e_timer = 0.0
+        if "emp_immunity_timer" in self.ball: e_timer = float(self.ball.emp_immunity_timer)
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("emp_immunity_timer"): e_timer = float(self.ball.get_meta("emp_immunity_timer"))
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("emp_immunity_timer"): e_timer = float(self.ball["emp_immunity_timer"])
+        e_timer = max(e_timer, 0.1)
+        if typeof(self.ball) == TYPE_DICTIONARY: self.ball["emp_immunity_timer"] = e_timer
+        elif "emp_immunity_timer" in self.ball: self.ball.emp_immunity_timer = e_timer
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("emp_immunity_timer", e_timer)
+
+        var gm_timer = 0.0
+        if "gravity_multiplier_timer" in self.ball: gm_timer = float(self.ball.gravity_multiplier_timer)
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("gravity_multiplier_timer"): gm_timer = float(self.ball.get_meta("gravity_multiplier_timer"))
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("gravity_multiplier_timer"): gm_timer = float(self.ball["gravity_multiplier_timer"])
+        gm_timer = max(gm_timer, 0.1)
+        if typeof(self.ball) == TYPE_DICTIONARY: self.ball["gravity_multiplier_timer"] = gm_timer
+        elif "gravity_multiplier_timer" in self.ball: self.ball.gravity_multiplier_timer = gm_timer
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("gravity_multiplier_timer", gm_timer)
+
     var is_banner = false
     if "is_clan_banner" in self.ball and self.ball.is_clan_banner:
         is_banner = true
