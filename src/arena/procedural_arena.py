@@ -71,6 +71,7 @@ class ProceduralArena:
         self.is_foggy = False
         self.is_sandstorming = False
         self.is_acid_raining = False
+        self.is_hailing = False
         self.is_gravity_storm = False
 
         # Shrinking zone
@@ -627,6 +628,7 @@ class ProceduralArena:
                 self.is_foggy = False
                 self.is_sandstorming = False
                 self.is_acid_raining = False
+                self.is_hailing = False
                 self.is_gravity_storm = False
             elif current_tick % 600 == 300:
                 # Randomly change weather
@@ -640,6 +642,7 @@ class ProceduralArena:
                 self.is_foggy = self.weather == "fog"
                 self.is_sandstorming = self.weather == "sandstorm"
                 self.is_acid_raining = self.weather == "acid_rain"
+                self.is_hailing = self.weather == "hail"
                 self.is_gravity_storm = self.weather == "gravity_storm"
 
             import math

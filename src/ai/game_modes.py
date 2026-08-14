@@ -824,19 +824,19 @@ class GameMode:
             import random
             season_index = ((season_num - 1) % 4) + 1
             if season_index == 1:
-                world.arena.weather = random.choice(["clear", "rain"])
+                world.arena.weather = random.choice(["clear", "rain", "acid_rain"])
                 world.arena.seasonal_modifier = "spring"
             elif season_index == 2:
-                world.arena.weather = random.choice(["clear", "heatwave"])
+                world.arena.weather = random.choice(["clear", "heatwave", "acid_rain"])
                 world.arena.seasonal_modifier = "summer"
             elif season_index == 3:
-                world.arena.weather = random.choice(["clear", "wind", "fog"])
+                world.arena.weather = random.choice(["clear", "wind", "fog", "hail"])
                 world.arena.seasonal_modifier = "autumn"
             elif season_index == 4:
                 # Winter season: much more likely to have snow or blizzard
                 world.arena.weather = random.choices(
-                    ["clear", "snow", "blizzard"],
-                    weights=[0.1, 0.45, 0.45]
+                    ["clear", "snow", "blizzard", "hail"],
+                    weights=[0.1, 0.35, 0.35, 0.2]
                 )[0]
                 world.arena.seasonal_modifier = "winter"
 
@@ -3181,10 +3181,46 @@ class BattleRoyaleMode(GameMode):
             world.arena.is_sandstorming = (self.weather == "sandstorm")
             world.arena.is_snowing = (self.weather in ["snow", "blizzard"])
             world.arena.is_heatwave = (self.weather == "heatwave")
+            world.arena.is_hailing = (self.weather == "hail")
+            world.arena.is_acid_raining = (self.weather == "acid_rain")
             world.arena.is_lunar_eclipse = (self.weather == "lunar_eclipse")
             world.arena.is_eclipse = (self.weather == "lunar_eclipse")
             world.arena.wind_dx = getattr(self, "wind_dx", 0.0) if self.weather == "wind" else 0.0
             world.arena.wind_dy = getattr(self, "wind_dy", 0.0) if self.weather == "wind" else 0.0
+
+        # Hail logic
+        if self.weather == "hail":
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
+                    s_val = getattr(b, "shielding", 0.0)
+                    is_shielded = (isinstance(s_val, (int, float)) and s_val > 0) or getattr(b, "kinetic_shield_active", False)
+                    u_val = getattr(b, "umbrella_booster_timer", 0.0)
+                    has_umbrella = (isinstance(u_val, (int, float)) and u_val > 0)
+                    w_val = getattr(b, "weather_immunity_timer", 0.0)
+                    is_immune = (isinstance(w_val, (int, float)) and w_val > 0)
+
+                    if not is_shielded and not has_umbrella and not is_immune:
+                        import random
+                        # Random chance to be hit by hail each tick
+                        if random.random() < 0.05 * delta:
+                            damage = 25.0
+                            if hasattr(b, "take_damage"):
+                                try:
+                                    b.take_damage(damage)
+                                except TypeError:
+                                    b.hp -= damage
+                                    if b.hp <= 0:
+                                        b.hp = 0
+                                        b.alive = False
+                                        if not hasattr(b, "killer") or not b.killer:
+                                            b.killer = "hail"
+                            else:
+                                b.hp -= damage
+                                if b.hp <= 0:
+                                    b.hp = 0
+                                    b.alive = False
+                                    if not hasattr(b, "killer") or not b.killer:
+                                        b.killer = "hail"
 
         # Acid Rain logic
         if not self.is_acid_rain_active:
@@ -4152,6 +4188,8 @@ class BattleRoyaleMode(GameMode):
             world.arena.is_sandstorming = (self.weather == "sandstorm")
             world.arena.is_snowing = (self.weather in ["snow", "blizzard"])
             world.arena.is_heatwave = (self.weather == "heatwave")
+            world.arena.is_hailing = (self.weather == "hail")
+            world.arena.is_acid_raining = (self.weather == "acid_rain")
             world.arena.is_lunar_eclipse = (self.weather == "lunar_eclipse")
             world.arena.is_eclipse = (self.weather == "lunar_eclipse")
 
@@ -9965,6 +10003,8 @@ class WeatherChaosMode(GameMode):
             world.arena.is_sandstorming = (self.weather == "sandstorm")
             world.arena.is_snowing = (self.weather in ["snow", "blizzard"])
             world.arena.is_heatwave = (self.weather == "heatwave")
+            world.arena.is_hailing = (self.weather == "hail")
+            world.arena.is_acid_raining = (self.weather == "acid_rain")
             world.arena.is_lunar_eclipse = (self.weather == "lunar_eclipse")
             world.arena.is_eclipse = (self.weather == "lunar_eclipse")
             world.arena.wind_dx = getattr(self, "wind_dx", 0.0) if self.weather == "wind" else 0.0
@@ -23364,7 +23404,7 @@ class ExtremeWeatherMode(GameMode):
         self.description = "Dynamic arena cycles through extreme weather events every 15 seconds. Collect weather-resistant boosters to survive!"
         self.weather_timer = 0.0
         self.current_weather = "clear"
-        self.weathers = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "violent_quake", "giant_flood", "solar_eclipse", "celestial_alignment", "slight_breeze", "light_rain", "monsoon", "magnetic_storm"]
+        self.weathers = ["blizzard", "heatwave", "acid_rain", "hail", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "violent_quake", "giant_flood", "solar_eclipse", "celestial_alignment", "slight_breeze", "light_rain", "monsoon", "magnetic_storm"]
         self.flood_level = 0.0
         import random
         self.random = random
@@ -23429,6 +23469,7 @@ class ExtremeWeatherMode(GameMode):
                 else: booster_kind = "thermal_booster"
             elif self.current_weather == "heatwave": booster_kind = "cooling_booster"
             elif self.current_weather == "acid_rain": booster_kind = "hazmat_booster"
+            elif self.current_weather == "hail": booster_kind = "umbrella_booster"
             elif self.current_weather == "hurricane": booster_kind = self.random.choice(["heavy_anchor_booster", "lightning_rod_item"])
             elif self.current_weather == "tsunami": booster_kind = "life_jacket_booster"
             elif self.current_weather == "meteor_shower": booster_kind = self.random.choice(["meteor_shield_booster", "lightning_rod_item"])

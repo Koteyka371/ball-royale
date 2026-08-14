@@ -1596,22 +1596,22 @@ class GameMode:
 			var season_index = ((season_num - 1) % 4) + 1
 			if season_index == 1:
 				if world.arena.has_method("set_meta") or typeof(world.arena) == TYPE_OBJECT:
-					world.arena.weather = ["clear", "rain"][randi() % 2]
+					world.arena.weather = ["clear", "rain", "acid_rain"][randi() % 3]
 					if world.arena.has_method("set_meta"):
 						world.arena.set_meta("seasonal_modifier", "spring")
 			elif season_index == 2:
 				if world.arena.has_method("set_meta") or typeof(world.arena) == TYPE_OBJECT:
-					world.arena.weather = ["clear", "heatwave"][randi() % 2]
+					world.arena.weather = ["clear", "heatwave", "acid_rain"][randi() % 3]
 					if world.arena.has_method("set_meta"):
 						world.arena.set_meta("seasonal_modifier", "summer")
 			elif season_index == 3:
 				if world.arena.has_method("set_meta") or typeof(world.arena) == TYPE_OBJECT:
-					world.arena.weather = ["clear", "wind", "fog"][randi() % 3]
+					world.arena.weather = ["clear", "wind", "fog", "hail"][randi() % 4]
 					if world.arena.has_method("set_meta"):
 						world.arena.set_meta("seasonal_modifier", "autumn")
 			elif season_index == 4:
 				if world.arena.has_method("set_meta") or typeof(world.arena) == TYPE_OBJECT:
-					world.arena.weather = ["clear", "snow", "blizzard"][randi() % 3]
+					world.arena.weather = ["clear", "snow", "blizzard", "hail"][randi() % 4]
 					if world.arena.has_method("set_meta"):
 						world.arena.set_meta("seasonal_modifier", "winter")
 
@@ -5834,9 +5834,102 @@ class BattleRoyaleMode extends GameMode:
 			if "is_heatwave" in world.arena: world.arena.is_heatwave = (weather == "heatwave")
 			if "is_lunar_eclipse" in world.arena: world.arena.is_lunar_eclipse = (weather == "lunar_eclipse")
 			if "is_eclipse" in world.arena: world.arena.is_eclipse = (weather == "lunar_eclipse")
+			if "is_hailing" in world.arena: world.arena.is_hailing = (weather == "hail")
+			if "is_acid_raining" in world.arena: world.arena.is_acid_raining = (weather == "acid_rain")
 			if "wind_dx" in world.arena: world.arena.wind_dx = get_meta("wind_dx") if (weather == "wind" and has_meta("wind_dx")) else 0.0
 			if "wind_dy" in world.arena: world.arena.wind_dy = get_meta("wind_dy") if (weather == "wind" and has_meta("wind_dy")) else 0.0
 
+
+		if weather == "hail":
+			for b_raw in balls:
+				var b = b_raw
+				if typeof(b_raw) == TYPE_DICTIONARY:
+					b = b_raw
+				elif typeof(b_raw) == TYPE_OBJECT:
+					b = b_raw
+
+				var is_alive = false
+				var ball_type = ""
+				if typeof(b) == TYPE_DICTIONARY:
+					is_alive = b.get("alive", false)
+					ball_type = b.get("ball_type", "")
+				else:
+					if b.has_method("get"):
+						is_alive = b.get("alive")
+						ball_type = b.get("ball_type")
+					else:
+						if "alive" in b: is_alive = b.alive
+						if "ball_type" in b: ball_type = b.ball_type
+
+				if is_alive and ball_type != "spectator":
+					var is_shielded = false
+					var has_umbrella = false
+					var is_immune = false
+
+					if typeof(b) == TYPE_DICTIONARY:
+						var s_val = b.get("shielding", 0.0)
+						is_shielded = (typeof(s_val) in [TYPE_INT, TYPE_FLOAT] and s_val > 0) or b.get("kinetic_shield_active", false)
+						var u_val = b.get("umbrella_booster_timer", 0.0)
+						has_umbrella = (typeof(u_val) in [TYPE_INT, TYPE_FLOAT] and u_val > 0)
+						var w_val = b.get("weather_immunity_timer", 0.0)
+						is_immune = (typeof(w_val) in [TYPE_INT, TYPE_FLOAT] and w_val > 0)
+					else:
+						var s_val = 0.0
+						var kinetic = false
+						var u_val = 0.0
+						var w_val = 0.0
+						if b.has_method("get"):
+							s_val = b.get("shielding") if b.get("shielding") != null else 0.0
+							kinetic = b.get("kinetic_shield_active") if b.get("kinetic_shield_active") != null else false
+							u_val = b.get("umbrella_booster_timer") if b.get("umbrella_booster_timer") != null else 0.0
+							w_val = b.get("weather_immunity_timer") if b.get("weather_immunity_timer") != null else 0.0
+						else:
+							if "shielding" in b: s_val = b.shielding
+							if "kinetic_shield_active" in b: kinetic = b.kinetic_shield_active
+							if "umbrella_booster_timer" in b: u_val = b.umbrella_booster_timer
+							if "weather_immunity_timer" in b: w_val = b.weather_immunity_timer
+
+						is_shielded = (typeof(s_val) in [TYPE_INT, TYPE_FLOAT] and s_val > 0) or kinetic
+						has_umbrella = (typeof(u_val) in [TYPE_INT, TYPE_FLOAT] and u_val > 0)
+						is_immune = (typeof(w_val) in [TYPE_INT, TYPE_FLOAT] and w_val > 0)
+
+					if not is_shielded and not has_umbrella and not is_immune:
+						if randf() < 0.05 * delta:
+							var damage = 25.0
+							var hp = 0.0
+							if typeof(b) == TYPE_DICTIONARY:
+								hp = b.get("hp", 0.0)
+								hp -= damage
+								b["hp"] = hp
+								if hp <= 0:
+									b["hp"] = 0
+									b["alive"] = false
+									if not b.has("killer") or b.get("killer") == "" or b.get("killer") == null:
+										b["killer"] = "hail"
+							else:
+								if b.has_method("has_method") and b.has_method("take_damage"):
+									b.take_damage(damage)
+								else:
+									if b.has_method("get") and b.has_method("set"):
+										hp = b.get("hp") if b.get("hp") != null else 0.0
+										hp -= damage
+										b.set("hp", hp)
+										if hp <= 0:
+											b.set("hp", 0)
+											b.set("alive", false)
+											if b.get("killer") == null or b.get("killer") == "":
+												b.set("killer", "hail")
+									else:
+										if "hp" in b:
+											b.hp -= damage
+											if b.hp <= 0:
+												b.hp = 0
+												b.alive = false
+												if not "killer" in b or b.killer == null or b.killer == "":
+													if b.has_method("set_meta"):
+														b.set_meta("killer", "hail")
+													else:
+														b.killer = "hail"
 
 		if not is_acid_rain_active:
 			acid_rain_timer += delta
@@ -36934,7 +37027,7 @@ class InvisibleDecoysMode extends GameMode:
 class ExtremeWeatherMode extends GameMode:
 	var weather_timer: float = 0.0
 	var current_weather: String = "clear"
-	var weathers: Array = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "violent_quake", "giant_flood", "solar_eclipse", "celestial_alignment", "slight_breeze", "light_rain", "monsoon", "magnetic_storm"]
+	var weathers: Array = ["blizzard", "heatwave", "acid_rain", "hail", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "violent_quake", "giant_flood", "solar_eclipse", "celestial_alignment", "slight_breeze", "light_rain", "monsoon", "magnetic_storm"]
 	var flood_level: float = 0.0
 
 	func _init():
@@ -37029,6 +37122,7 @@ class ExtremeWeatherMode extends GameMode:
 					booster_kind = "thermal_booster"
 			elif current_weather == "heatwave": booster_kind = "cooling_booster"
 			elif current_weather == "acid_rain": booster_kind = "hazmat_booster"
+			elif current_weather == "hail": booster_kind = "umbrella_booster"
 			elif current_weather == "hurricane":
 				if randf() < 0.5:
 					booster_kind = "heavy_anchor_booster"
