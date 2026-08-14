@@ -63008,6 +63008,89 @@ class CursedRelicsMode extends GameMode:
 								_set_meta(hazard, "transfer_cooldown", 1.0)
 								break
 
+class WeatherAltarsMode extends GameMode:
+	var altars = []
+
+	func _init():
+		super._init()
+		name = "Weather Altars"
+		description = "Special altars that only appear during specific weather conditions. They offer extremely rare and powerful items, but purchasing them permanently reduces a player's max health or base speed for the rest of the match."
+
+	func tick(world: Object, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		var current_weather = "clear"
+		if world.get("arena") != null and world.arena.get("weather") != null:
+			current_weather = world.arena.weather
+
+		var intense_weathers = ["thunderstorm", "blizzard", "hurricane", "storm", "heatwave", "sandstorm", "heavy_rain"]
+
+		if current_weather in intense_weathers:
+			if altars.size() == 0:
+				var arena_w = 1000
+				var arena_h = 1000
+				if world.get("arena") != null:
+					arena_w = world.arena.get("width") if world.arena.get("width") != null else 1000
+					arena_h = world.arena.get("height") if world.arena.get("height") != null else 1000
+
+				var altar = {
+					"x": randf_range(100.0, arena_w - 100.0),
+					"y": randf_range(100.0, arena_h - 100.0),
+					"radius": 100.0,
+					"purchases": {},
+					"purchased_by": []
+				}
+				altars.append(altar)
+		else:
+			altars.clear()
+
+		for altar in altars:
+			for b in balls:
+				if not b.get("alive") or b.get("ball_type") == "spectator":
+					continue
+
+				var bid = b.get("id")
+				if bid == null or bid in altar["purchased_by"]:
+					continue
+
+				var dx = b.get("x") - altar["x"] if b.get("x") != null else -altar["x"]
+				var dy = b.get("y") - altar["y"] if b.get("y") != null else -altar["y"]
+				var dist = sqrt(dx*dx + dy*dy)
+
+				if dist < altar["radius"]:
+					if not altar["purchases"].has(bid):
+						altar["purchases"][bid] = 0.0
+					altar["purchases"][bid] += delta
+
+					if altar["purchases"][bid] >= 2.0:
+						altar["purchased_by"].append(bid)
+
+						var penalty = ""
+						if randf() < 0.5:
+							var cur_max_hp = b.get("max_hp") if b.get("max_hp") != null else 100.0
+							b.set("max_hp", max(10.0, cur_max_hp - 30.0))
+							var cur_hp = b.get("hp") if b.get("hp") != null else 100.0
+							b.set("hp", min(cur_hp, b.get("max_hp")))
+							penalty = "Max HP Reduced"
+						else:
+							var cur_base_speed = b.get("base_speed") if b.get("base_speed") != null else 100.0
+							b.set("base_speed", max(20.0, cur_base_speed - 30.0))
+							if b.get("speed") != null:
+								b.set("speed", min(b.get("speed"), b.get("base_speed")))
+							penalty = "Base Speed Reduced"
+
+						var items = ["time_stop_booster", "death_defy_booster", "invulnerability_booster", "quantum_relay_booster", "chronosphere_booster", "overclock_booster"]
+						var chosen_item = items[randi() % items.size()]
+
+						if b.get("inventory") != null:
+							b.inventory.append(chosen_item)
+
+						if world.has_method("add_event"):
+							world.add_event("weather_altar_purchase", {"ball_id": bid, "item": chosen_item, "penalty": penalty})
+				else:
+					if altar["purchases"].has(bid):
+						altar["purchases"][bid] = max(0.0, altar["purchases"][bid] - delta)
+
 var GAME_MODES = {
     "cursed_relics": CursedRelicsMode.new(),
     "irradiation_survival": IrradiationSurvivalMode.new(),
@@ -85815,6 +85898,7 @@ class InvertControlsMutator extends "res://src/ai/game_modes.gd".GameMode:
 GAME_MODES['invert_controls_mutator'] = InvertControlsMutator.new()
 GAME_MODES["bullet_hell_survival"] = BulletHellSurvivalMode.new()
 GAME_MODES["weather_boss"] = WeatherBossMode.new()
+GAME_MODES["weather_altars"] = WeatherAltarsMode.new()
 
 class OccasionalMirrorWallsMode extends GameMode:
 	var timer: float = 0.0
