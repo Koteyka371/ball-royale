@@ -38867,7 +38867,102 @@ class IrradiationSurvivalMode(GameMode):
                     if getattr(b, 'mutation_level', 0.0) > 5.0:
                         b.mutant = True
 
+
+class CursedRelicsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Cursed Relics"
+        self.description = "Scattered across the map are cursed relics that, when picked up, provide huge temporary stat buffs (like double damage) but drain the ball's health continually over time. A ball can drop the relic by bumping into another ball, passing the curse along in a deadly game of hot potato."
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if not hasattr(world, "arena") or not hasattr(world.arena, "hazards"):
+            return
+
+        arena_w = getattr(world.arena, "width", 2000.0)
+        arena_h = getattr(world.arena, "height", 2000.0)
+
+        import random
+        from arena.procedural_arena import Hazard
+
+        for _ in range(5):
+            x = random.uniform(100.0, arena_w - 100.0)
+            y = random.uniform(100.0, arena_h - 100.0)
+            relic = Hazard(len(world.arena.hazards) + 50000 + random.randint(1, 9999), x, y, 25.0, "cursed_relic", 0.0)
+            setattr(relic, "attached_id", None)
+            setattr(relic, "transfer_cooldown", 0.0)
+            world.arena.hazards.append(relic)
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        for b in balls:
+            if hasattr(b, "base_damage_cursed"):
+                b.damage = b.base_damage_cursed
+                delattr(b, "base_damage_cursed")
+
+        if not hasattr(world, "arena") or not hasattr(world.arena, "hazards"):
+            return
+
+        import math
+
+        for hazard in world.arena.hazards:
+            if getattr(hazard, "kind", "") == "cursed_relic":
+                if hasattr(hazard, "transfer_cooldown"):
+                    hazard.transfer_cooldown -= delta
+                    if hazard.transfer_cooldown < 0.0:
+                        hazard.transfer_cooldown = 0.0
+                else:
+                    hazard.transfer_cooldown = 0.0
+
+                attached_id = getattr(hazard, "attached_id", None)
+                if attached_id is not None:
+                    owner = next((b for b in balls if getattr(b, "id", None) == attached_id), None)
+                    if owner and getattr(owner, "alive", True):
+                        hazard.x = owner.x
+                        hazard.y = owner.y
+
+                        if not hasattr(owner, "base_damage_cursed"):
+                            owner.base_damage_cursed = getattr(owner, "damage", 10.0)
+
+                        owner.damage = owner.base_damage_cursed * 2.0
+
+                        if hasattr(owner, "hp"):
+                            owner.hp -= 15.0 * delta
+
+                        if hazard.transfer_cooldown <= 0.0:
+                            owner_r = getattr(owner, "radius", 20.0)
+                            for other in balls:
+                                if other.id != owner.id and getattr(other, "alive", True):
+                                    dx = other.x - owner.x
+                                    dy = other.y - owner.y
+                                    dist = math.hypot(dx, dy)
+                                    other_r = getattr(other, "radius", 20.0)
+                                    if dist < owner_r + other_r + 2.0:
+                                        hazard.attached_id = other.id
+                                        hazard.transfer_cooldown = 1.0
+
+                                        owner.damage = owner.base_damage_cursed
+                                        delattr(owner, "base_damage_cursed")
+                                        break
+                    else:
+                        hazard.attached_id = None
+                        hazard.transfer_cooldown = 1.0
+                else:
+                    h_r = getattr(hazard, "radius", 25.0)
+                    for b in balls:
+                        if getattr(b, "alive", True):
+                            dx = b.x - hazard.x
+                            dy = b.y - hazard.y
+                            dist = math.hypot(dx, dy)
+                            b_r = getattr(b, "radius", 20.0)
+                            if dist < b_r + h_r:
+                                hazard.attached_id = b.id
+                                hazard.transfer_cooldown = 1.0
+                                break
+
 GAME_MODES = {
+    'cursed_relics': CursedRelicsMode(),
     'irradiation_survival': IrradiationSurvivalMode(),
     "currency_bounty": CurrencyBountyMode(),
     'frostbite': FrostbiteMode(),
