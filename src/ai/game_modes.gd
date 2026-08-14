@@ -62753,7 +62753,166 @@ class IrradiationSurvivalMode extends GameMode:
                         if b["mutation_level"] > 5.0:
                             b["mutant"] = true
 
+
+class CursedRelicsMode extends GameMode:
+	func _init() -> void:
+		name = "Cursed Relics"
+		description = "Scattered across the map are cursed relics that, when picked up, provide huge temporary stat buffs (like double damage) but drain the ball's health continually over time. A ball can drop the relic by bumping into another ball, passing the curse along in a deadly game of hot potato."
+
+	func setup(world: Dictionary, balls: Array) -> void:
+		if not world.has("arena") or not world.arena.has("hazards"):
+			return
+
+		var arena_w = world.arena.get("width", 2000.0)
+		var arena_h = world.arena.get("height", 2000.0)
+
+		var HazardObj = load("res://src/arena/procedural_arena.gd").Hazard
+
+		for i in range(5):
+			var x = randf_range(100.0, arena_w - 100.0)
+			var y = randf_range(100.0, arena_h - 100.0)
+			var relic = HazardObj.new(world.arena.hazards.size() + 50000 + randi() % 10000, x, y, 25.0, "cursed_relic", 0.0)
+
+			if relic.has_method("set_meta"):
+				relic.set_meta("attached_id", -1)
+				relic.set_meta("transfer_cooldown", 0.0)
+			elif typeof(relic) == TYPE_DICTIONARY:
+				relic["attached_id"] = -1
+				relic["transfer_cooldown"] = 0.0
+			else:
+				relic.attached_id = -1
+				relic.transfer_cooldown = 0.0
+
+			world.arena.hazards.append(relic)
+
+	func _get_prop(obj, prop_name, default_val=null):
+		if typeof(obj) == TYPE_DICTIONARY:
+			return obj.get(prop_name, default_val)
+		return obj.get(prop_name) if obj.get(prop_name) != null else default_val
+
+	func _set_prop(obj, prop_name, val):
+		if typeof(obj) == TYPE_DICTIONARY:
+			obj[prop_name] = val
+		else:
+			obj.set(prop_name, val)
+
+	func _has_meta(obj, meta_name):
+		if obj.has_method("has_meta"):
+			return obj.has_meta(meta_name)
+		elif typeof(obj) == TYPE_DICTIONARY:
+			return obj.has(meta_name)
+		else:
+			return obj.get(meta_name) != null
+
+	func _get_meta(obj, meta_name, default_val=null):
+		if obj.has_method("get_meta"):
+			return obj.get_meta(meta_name)
+		elif typeof(obj) == TYPE_DICTIONARY:
+			return obj.get(meta_name, default_val)
+		else:
+			var val = obj.get(meta_name)
+			return val if val != null else default_val
+
+	func _set_meta(obj, meta_name, val):
+		if obj.has_method("set_meta"):
+			obj.set_meta(meta_name, val)
+		elif typeof(obj) == TYPE_DICTIONARY:
+			obj[meta_name] = val
+		else:
+			obj.set(meta_name, val)
+
+	func _remove_meta(obj, meta_name):
+		if obj.has_method("remove_meta"):
+			obj.remove_meta(meta_name)
+		elif typeof(obj) == TYPE_DICTIONARY:
+			obj.erase(meta_name)
+		else:
+			obj.set(meta_name, null)
+
+	func tick(world: Dictionary, balls: Array, delta: float = 0.016) -> void:
+		for b in balls:
+			if _has_meta(b, "base_damage_cursed"):
+				var base_dmg = _get_meta(b, "base_damage_cursed")
+				_set_prop(b, "damage", base_dmg)
+				_remove_meta(b, "base_damage_cursed")
+
+		if not world.has("arena") or not world.arena.has("hazards"):
+			return
+
+		for hazard in world.arena.hazards:
+			if _get_prop(hazard, "kind") == "cursed_relic":
+				var cooldown = _get_meta(hazard, "transfer_cooldown", 0.0)
+				cooldown -= delta
+				if cooldown < 0.0:
+					cooldown = 0.0
+				_set_meta(hazard, "transfer_cooldown", cooldown)
+
+				var attached_id = _get_meta(hazard, "attached_id", -1)
+				if attached_id != -1 and attached_id != null:
+					var owner = null
+					for b in balls:
+						if _get_prop(b, "id") == attached_id:
+							owner = b
+							break
+
+					var owner_alive = _get_prop(owner, "alive", true) if owner != null else false
+
+					if owner != null and owner_alive:
+						_set_prop(hazard, "x", _get_prop(owner, "x"))
+						_set_prop(hazard, "y", _get_prop(owner, "y"))
+
+						var current_damage = _get_prop(owner, "damage", 10.0)
+						if not _has_meta(owner, "base_damage_cursed"):
+							_set_meta(owner, "base_damage_cursed", current_damage)
+
+						_set_prop(owner, "damage", _get_meta(owner, "base_damage_cursed") * 2.0)
+						_set_prop(owner, "hp", _get_prop(owner, "hp", 100.0) - 15.0 * delta)
+
+						if cooldown <= 0.0:
+							var owner_x = _get_prop(owner, "x", 0.0)
+							var owner_y = _get_prop(owner, "y", 0.0)
+							var owner_radius = _get_prop(owner, "radius", 20.0)
+
+							for other in balls:
+								var other_id = _get_prop(other, "id")
+								if other_id != attached_id and _get_prop(other, "alive", true):
+									var other_x = _get_prop(other, "x", 0.0)
+									var other_y = _get_prop(other, "y", 0.0)
+									var other_radius = _get_prop(other, "radius", 20.0)
+
+									var dx = other_x - owner_x
+									var dy = other_y - owner_y
+									var dist = sqrt(dx*dx + dy*dy)
+									if dist < owner_radius + other_radius + 2.0:
+										_set_meta(hazard, "attached_id", other_id)
+										_set_meta(hazard, "transfer_cooldown", 1.0)
+
+										_set_prop(owner, "damage", _get_meta(owner, "base_damage_cursed"))
+										_remove_meta(owner, "base_damage_cursed")
+										break
+					else:
+						_set_meta(hazard, "attached_id", -1)
+						_set_meta(hazard, "transfer_cooldown", 1.0)
+				else:
+					var h_x = _get_prop(hazard, "x", 0.0)
+					var h_y = _get_prop(hazard, "y", 0.0)
+					var h_radius = _get_prop(hazard, "radius", 25.0)
+					for b in balls:
+						if _get_prop(b, "alive", true):
+							var b_x = _get_prop(b, "x", 0.0)
+							var b_y = _get_prop(b, "y", 0.0)
+							var b_radius = _get_prop(b, "radius", 20.0)
+
+							var dx = b_x - h_x
+							var dy = b_y - h_y
+							var dist = sqrt(dx*dx + dy*dy)
+							if dist < b_radius + h_radius:
+								_set_meta(hazard, "attached_id", _get_prop(b, "id"))
+								_set_meta(hazard, "transfer_cooldown", 1.0)
+								break
+
 var GAME_MODES = {
+    "cursed_relics": CursedRelicsMode.new(),
     "irradiation_survival": IrradiationSurvivalMode.new(),
 	"currency_bounty": CurrencyBountyMode.new(),
     "frostbite": _frostbite_mode_inst,
