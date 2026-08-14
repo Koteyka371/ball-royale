@@ -10530,9 +10530,15 @@ class Action:
                             dy = hazard.y - self.ball.y
                             dist_sq = dx * dx + dy * dy
                             if dist_sq < hazard.radius * hazard.radius:
-                                self.ball.is_in_lava = True
-                                # Geyser significantly increases temperature/friction
-                                self.ball.friction_multiplier = 0.5
+                                if getattr(self.ball, "geyser_boots_timer", 0.0) > 0.0:
+                                    self.ball.is_in_lava = False
+                                    self.ball.fly_timer = max(getattr(self.ball, "fly_timer", 0.0), 2.0)
+                                    self.ball.speed_buff_timer = max(getattr(self.ball, "speed_buff_timer", 0.0), 2.0)
+                                else:
+                                    self.ball.is_in_lava = True
+                                    # Geyser significantly increases temperature/friction
+                                    self.ball.friction_multiplier = 0.5
+
                     elif hazard.kind == "flood_zone":
                         self.ball.is_in_flood_zone = True
                     elif hazard.kind == "poison_cloud":
@@ -16694,6 +16700,16 @@ class Action:
                     dist = __import__("math").sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
                     if dist <= getattr(self.ball, "radius", 10.0) + getattr(b, "radius", 15.0) + 5.0:
                         self.ball.grave_robber_shovel_active = True
+                        b.active = False
+                        if hasattr(self.world, "boosters") and b in self.world.boosters:
+                            self.world.boosters.remove(b)
+                        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and b in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(b)
+
+                elif getattr(b, "kind", "") == "geyser_boots":
+                    dist = __import__("math").sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
+                    if dist <= getattr(self.ball, "radius", 10.0) + getattr(b, "radius", 15.0) + 5.0:
+                        self.ball.geyser_boots_timer = 15.0
                         b.active = False
                         if hasattr(self.world, "boosters") and b in self.world.boosters:
                             self.world.boosters.remove(b)
