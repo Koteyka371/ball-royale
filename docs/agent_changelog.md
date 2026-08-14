@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1928] Bounty Trap Modifiers — *2026-08-14 12:00:15 UTC*
+
+Players can upgrade their Bounty Trap with different variants. For example, an 'Explosive Trap' variant that triggers a small area-of-effect blast alongside marking the target, or a 'Stasis Trap' variant that temporarily roots the victim in place while marking them as a bounty target.
+
+---
+
 ## [idea-1986] Seasonal Weather Types — *2026-08-14 04:40:18 UTC*
 
 Introduce new seasonal weather types (e.g. Acid Rain, Hail) that are only available during certain ranked seasons.
