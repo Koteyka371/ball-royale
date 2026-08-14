@@ -19956,8 +19956,15 @@ class Action:
 
                 target = None
                 if decoy_targets:
-                    # Swap with the furthest decoy to escape
-                    target = max(decoy_targets, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                    # Allow manual selection of decoy to swap with
+                    trickster_target_id = getattr(self.ball, "trickster_swap_target_id", None)
+                    manual_target = next((d for d in decoy_targets if getattr(d, "id", None) == trickster_target_id), None)
+
+                    if manual_target:
+                        target = manual_target
+                    else:
+                        # Swap with the furthest decoy to escape
+                        target = max(decoy_targets, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
                 else:
                     valid_targets = [e for e in all_entities if getattr(e, "id", None) != self.ball.id and getattr(e, "alive", True) and getattr(e, "ball_type", "") != "spectator" and not getattr(e, "is_decoy", False)]
                     if valid_targets:
