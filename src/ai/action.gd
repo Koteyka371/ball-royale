@@ -19155,10 +19155,63 @@ func execute(strategy: String, delta: float):
                                 elif self.ball.has_method("set_meta"):
                                     self.ball.set_meta("bounty_target_owner", owner_id)
 
+                            var variant = "default"
+                            if typeof(hazard) == TYPE_DICTIONARY:
+                                variant = hazard.get("variant", "default")
+                            elif hazard.has_method("get_meta") and hazard.has_meta("variant"):
+                                variant = hazard.get_meta("variant")
+                            elif "variant" in hazard:
+                                variant = hazard.variant
+
+                            if variant == "explosive":
+                                if typeof(self.world) == TYPE_OBJECT and self.world.has_method("add_event"):
+                                    self.world.add_event("explosion", {"x": hx, "y": hy, "radius": 100.0, "damage": 50.0})
+                                elif typeof(self.world) == TYPE_DICTIONARY and "events" in self.world:
+                                    self.world.events.append({"type": "explosion", "data": {"x": hx, "y": hy, "radius": 100.0, "damage": 50.0}})
+
+                                if "balls" in self.world:
+                                    for b in self.world.balls:
+                                        var bx_val = 0.0
+                                        var by_val = 0.0
+                                        if typeof(b) == TYPE_DICTIONARY:
+                                            bx_val = float(b.get("x", 0.0))
+                                            by_val = float(b.get("y", 0.0))
+                                        else:
+                                            if "x" in b: bx_val = float(b.x)
+                                            elif b.has_method("get_meta") and b.has_meta("x"): bx_val = float(b.get_meta("x"))
+                                            if "y" in b: by_val = float(b.y)
+                                            elif b.has_method("get_meta") and b.has_meta("y"): by_val = float(b.get_meta("y"))
+
+                                        var b_dist = sqrt(pow(bx_val - hx, 2) + pow(by_val - hy, 2))
+                                        if b_dist <= 100.0:
+                                            if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+                                                b.take_damage(50.0)
+                                            elif typeof(b) == TYPE_DICTIONARY and "hp" in b:
+                                                b["hp"] -= 50.0
+                                            elif typeof(b) == TYPE_OBJECT and "hp" in b:
+                                                b.hp -= 50.0
+                                            elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta") and b.has_meta("hp"):
+                                                b.set_meta("hp", b.get_meta("hp") - 50.0)
+                            elif variant == "stasis":
+                                if typeof(self.ball) == TYPE_DICTIONARY:
+                                    var cur_stun = self.ball.get("stun_timer", 0.0)
+                                    self.ball["stun_timer"] = max(cur_stun, 3.0)
+                                else:
+                                    var cur_stun = 0.0
+                                    if "stun_timer" in self.ball: cur_stun = self.ball.stun_timer
+                                    elif self.ball.has_method("get_meta") and self.ball.has_meta("stun_timer"): cur_stun = self.ball.get_meta("stun_timer")
+                                    var new_stun = max(cur_stun, 3.0)
+                                    if "stun_timer" in self.ball: self.ball.stun_timer = new_stun
+                                    elif self.ball.has_method("set_meta"): self.ball.set_meta("stun_timer", new_stun)
+
                             if typeof(hazard) == TYPE_DICTIONARY:
                                 hazard["duration"] = 0.0
                                 hazard["active"] = false
                             else:
+                                if "duration" in hazard: hazard.duration = 0.0
+                                elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
+                                if "active" in hazard: hazard.active = false
+                                elif hazard.has_method("set_meta"): hazard.set_meta("active", false)
 
                             if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                                 for h_proj in self.world.arena.hazards:
@@ -45606,6 +45659,13 @@ func _use_skill():
                     node["y"] = self.ball.y
                     node["team"] = self.ball.team
                     node["owner_id"] = self.ball.id
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    node["variant"] = self.ball.get("bounty_trap_variant", "default")
+                else:
+                    var v = "default"
+                    if "bounty_trap_variant" in self.ball: v = self.ball.bounty_trap_variant
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("bounty_trap_variant"): v = self.ball.get_meta("bounty_trap_variant")
+                    node["variant"] = v
                 node["radius"] = 20.0
                 node["duration"] = 60.0
                 node["active"] = true
