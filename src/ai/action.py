@@ -20365,9 +20365,17 @@ class Action:
                     self.ball.lightning_tether_target = target
                     self.ball.lightning_tether_timer = 5.0
             elif skill_name == "leech_tether":
-                enemies = self._get_enemies()
-                if enemies:
-                    target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                target = None
+                if getattr(self.ball, "leech_tether_target_id", None):
+                    for b in self.world.balls:
+                        if b.id == self.ball.leech_tether_target_id and getattr(b, "alive", True):
+                            target = b
+                            break
+                if not target:
+                    enemies = self._get_enemies()
+                    if enemies:
+                        target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                if target:
                     self.ball.leech_tether_target = target
                     self.ball.leech_tether_timer = 3.0
             elif skill_name == "quantum_tether":
@@ -27578,12 +27586,11 @@ class Action:
                     drain_amount = 10.0 * delta
                     if hasattr(target, "hp"):
                         target.hp -= drain_amount
-                    self.ball.hp = min(getattr(self.ball, "hp", 100.0) + drain_amount, getattr(self.ball, "max_hp", 100.0))
+                    if hasattr(self.ball, "hp"):
+                        self.ball.hp = min(getattr(self.ball, "hp", 100.0) + drain_amount, getattr(self.ball, "max_hp", 100.0))
 
-                    if hasattr(target, "stun_timer"):
-                        target.stun_timer = max(getattr(target, "stun_timer", 0.0), 0.1) # Micro-stun to act as slow/disrupt
-                    else:
-                        target.stun_timer = 0.1
+                    target.speed_debuff_timer = max(getattr(target, "speed_debuff_timer", 0.0), 0.1)
+                    target.speed_debuff_multiplier = min(getattr(target, "speed_debuff_multiplier", 1.0), 0.5)
                 else:
                     self.ball.leech_tether_timer = 0.0
             self.ball.leech_tether_timer = max(0.0, getattr(self.ball, "leech_tether_timer", 0.0) - delta)
