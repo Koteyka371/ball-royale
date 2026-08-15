@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1964] Mirage Oasis Trap — *2026-08-15 14:10:11 UTC*
+
+During sandstorm or heatwave weather, mirage safe zones occasionally appear that look like healing areas but are actually quicksand traps that drain stamina.
+
+---
+
 ## [idea-2010] Vampiric Drain Ray — *2026-08-15 08:41:39 UTC*
 
 A channelled active ability that tether to an enemy, slowing them down while continuously draining their health and transferring it to the user.
