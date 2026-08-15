@@ -145,16 +145,67 @@ class CrowdSystem:
                         self.excitement_level += 10.0
 
         elif cmd == "!spawnboss" and len(parts) >= 2:
-            boss_type = parts[1].lower()
+            boss_type = " ".join(parts[1:]).lower()
             if hasattr(self.world, "game_mode"):
-                if boss_type == "juggernaut" and hasattr(self.world.game_mode, "_make_juggernaut"):
-                    # Find a random valid ball to become the boss
-                    if alive_balls:
-                        target = random.choice(alive_balls)
+                if alive_balls:
+                    target = random.choice(alive_balls)
+                    if boss_type == "juggernaut" and hasattr(self.world.game_mode, "_make_juggernaut"):
                         self.world.game_mode._make_juggernaut(self.world, target)
-
                         if hasattr(self.world, "add_event"):
                             self.world.add_event("juggernaut_change", {"message": f"Viewer {self._get_user_display(user)} spawned a Juggernaut!"})
+                        self._add_viewer_loyalty(user, 20)
+                        self.excitement_level += 20.0
+                    elif boss_type == "phantom juggernaut" or boss_type == "phantom":
+                        target.team = "Phantom Juggernaut"
+                        if not hasattr(target, "base_max_hp"):
+                            target.base_max_hp = getattr(target, "max_hp", 100.0)
+                        target.max_hp = target.base_max_hp * 8.0
+                        target.hp = target.max_hp
+
+                        if not hasattr(target, "base_damage"):
+                            target.base_damage = getattr(target, "damage", 10.0)
+                        target.damage = target.base_damage * 2.5
+
+                        if not hasattr(target, "base_radius"):
+                            target.base_radius = getattr(target, "radius", 10.0)
+                        target.radius = target.base_radius * 2.0
+
+                        target.base_speed = float(getattr(target, "base_speed", getattr(target, "speed", 100.0))) * 1.1
+                        target.speed = target.base_speed
+
+                        if not hasattr(target, "base_mass"):
+                            target.base_mass = getattr(target, "mass", 1.0)
+                        target.mass = target.base_mass * 3.0
+                        target.is_invisible = True
+                        if hasattr(self.world, "add_event"):
+                            self.world.add_event("juggernaut_change", {"message": f"Viewer {self._get_user_display(user)} spawned a Phantom Juggernaut!"})
+                        self._add_viewer_loyalty(user, 20)
+                        self.excitement_level += 20.0
+                    else:
+                        boss_type = boss_type.replace(" ", "_")
+                        target.ball_type = boss_type
+                        target.team = "Boss"
+                        if not hasattr(target, "base_max_hp"):
+                            target.base_max_hp = getattr(target, "max_hp", 100.0)
+                        target.max_hp = target.base_max_hp * 10.0
+                        target.hp = target.max_hp
+
+                        if not hasattr(target, "base_damage"):
+                            target.base_damage = getattr(target, "damage", 10.0)
+                        target.damage = target.base_damage * 2.0
+
+                        if not hasattr(target, "base_radius"):
+                            target.base_radius = getattr(target, "radius", 10.0)
+                        target.radius = target.base_radius * 3.0
+
+                        target.base_speed = float(getattr(target, "base_speed", getattr(target, "speed", 100.0))) * 0.6
+                        target.speed = target.base_speed
+                        if not hasattr(target, "base_mass"):
+                            target.base_mass = getattr(target, "mass", 1.0)
+                        target.mass = target.base_mass * 5.0
+
+                        if hasattr(self.world, "add_event"):
+                            self.world.add_event("boss_change", {"message": f"Viewer {self._get_user_display(user)} spawned a {boss_type.capitalize()} Boss!"})
                         self._add_viewer_loyalty(user, 20)
                         self.excitement_level += 20.0
 

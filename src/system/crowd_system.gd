@@ -222,7 +222,11 @@ func process_external_command(user: String, command: String, balls: Array):
                         excitement_level += 10.0
 
     elif cmd == "!spawnboss" and parts.size() >= 2:
-        var boss_type = parts[1].to_lower()
+        var boss_parts = []
+        for i in range(1, parts.size()):
+            boss_parts.append(parts[i])
+        var boss_type = " ".join(boss_parts).to_lower()
+
         if world != null:
             var game_mode = null
             if typeof(world) == TYPE_OBJECT and world.has_method("get"):
@@ -230,14 +234,118 @@ func process_external_command(user: String, command: String, balls: Array):
             elif typeof(world) == TYPE_DICTIONARY and world.has("game_mode"):
                 game_mode = world["game_mode"]
 
-            if game_mode != null and typeof(game_mode) == TYPE_OBJECT and boss_type == "juggernaut" and game_mode.has_method("_make_juggernaut"):
-                if alive_balls.size() > 0:
-                    var target = alive_balls[randi() % alive_balls.size()]
-                    game_mode._make_juggernaut(world, target)
+            if game_mode != null and alive_balls.size() > 0:
+                var target = alive_balls[randi() % alive_balls.size()]
 
+                if typeof(game_mode) == TYPE_OBJECT and boss_type == "juggernaut" and game_mode.has_method("_make_juggernaut"):
+                    game_mode._make_juggernaut(world, target)
                     if world.has_method("add_event"):
                         world.add_event("juggernaut_change", {"message": "Viewer " + _get_user_display(user) + " spawned a Juggernaut!"})
+                    _add_viewer_loyalty(user, 20)
+                    excitement_level += 20.0
+                elif boss_type == "phantom juggernaut" or boss_type == "phantom":
+                    if typeof(target) == TYPE_OBJECT:
+                        target.set("team", "Phantom Juggernaut")
+                        if target.get("base_max_hp") == null:
+                            target.set("base_max_hp", target.get("max_hp") if target.get("max_hp") != null else 100.0)
+                        target.set("max_hp", target.get("base_max_hp") * 8.0)
+                        target.set("hp", target.get("max_hp"))
 
+                        if target.get("base_damage") == null:
+                            target.set("base_damage", target.get("damage") if target.get("damage") != null else 10.0)
+                        target.set("damage", target.get("base_damage") * 2.5)
+
+                        if target.get("base_radius") == null:
+                            target.set("base_radius", target.get("radius") if target.get("radius") != null else 10.0)
+                        target.set("radius", target.get("base_radius") * 2.0)
+
+                        var b_speed = target.get("base_speed") if target.get("base_speed") != null else (target.get("speed") if target.get("speed") != null else 100.0)
+                        target.set("base_speed", float(b_speed) * 1.1)
+                        target.set("speed", target.get("base_speed"))
+
+                        if target.get("base_mass") == null:
+                            target.set("base_mass", target.get("mass") if target.get("mass") != null else 1.0)
+                        target.set("mass", target.get("base_mass") * 3.0)
+                        target.set("is_invisible", true)
+                    elif typeof(target) == TYPE_DICTIONARY:
+                        target["team"] = "Phantom Juggernaut"
+                        if not target.has("base_max_hp"):
+                            target["base_max_hp"] = target.get("max_hp", 100.0)
+                        target["max_hp"] = target["base_max_hp"] * 8.0
+                        target["hp"] = target["max_hp"]
+
+                        if not target.has("base_damage"):
+                            target["base_damage"] = target.get("damage", 10.0)
+                        target["damage"] = target["base_damage"] * 2.5
+
+                        if not target.has("base_radius"):
+                            target["base_radius"] = target.get("radius", 10.0)
+                        target["radius"] = target["base_radius"] * 2.0
+
+                        var b_speed = target.get("base_speed", target.get("speed", 100.0))
+                        target["base_speed"] = float(b_speed) * 1.1
+                        target["speed"] = target["base_speed"]
+
+                        if not target.has("base_mass"):
+                            target["base_mass"] = target.get("mass", 1.0)
+                        target["mass"] = target["base_mass"] * 3.0
+                        target["is_invisible"] = true
+
+                    if world.has_method("add_event"):
+                        world.add_event("juggernaut_change", {"message": "Viewer " + _get_user_display(user) + " spawned a Phantom Juggernaut!"})
+                    _add_viewer_loyalty(user, 20)
+                    excitement_level += 20.0
+                else:
+                    var formatted_boss_type = boss_type.replace(" ", "_")
+                    if typeof(target) == TYPE_OBJECT:
+                        target.set("ball_type", formatted_boss_type)
+                        target.set("team", "Boss")
+                        if target.get("base_max_hp") == null:
+                            target.set("base_max_hp", target.get("max_hp") if target.get("max_hp") != null else 100.0)
+                        target.set("max_hp", target.get("base_max_hp") * 10.0)
+                        target.set("hp", target.get("max_hp"))
+
+                        if target.get("base_damage") == null:
+                            target.set("base_damage", target.get("damage") if target.get("damage") != null else 10.0)
+                        target.set("damage", target.get("base_damage") * 2.0)
+
+                        if target.get("base_radius") == null:
+                            target.set("base_radius", target.get("radius") if target.get("radius") != null else 10.0)
+                        target.set("radius", target.get("base_radius") * 3.0)
+
+                        var b_speed = target.get("base_speed") if target.get("base_speed") != null else (target.get("speed") if target.get("speed") != null else 100.0)
+                        target.set("base_speed", float(b_speed) * 0.6)
+                        target.set("speed", target.get("base_speed"))
+
+                        if target.get("base_mass") == null:
+                            target.set("base_mass", target.get("mass") if target.get("mass") != null else 1.0)
+                        target.set("mass", target.get("base_mass") * 5.0)
+                    elif typeof(target) == TYPE_DICTIONARY:
+                        target["ball_type"] = formatted_boss_type
+                        target["team"] = "Boss"
+                        if not target.has("base_max_hp"):
+                            target["base_max_hp"] = target.get("max_hp", 100.0)
+                        target["max_hp"] = target["base_max_hp"] * 10.0
+                        target["hp"] = target["max_hp"]
+
+                        if not target.has("base_damage"):
+                            target["base_damage"] = target.get("damage", 10.0)
+                        target["damage"] = target["base_damage"] * 2.0
+
+                        if not target.has("base_radius"):
+                            target["base_radius"] = target.get("radius", 10.0)
+                        target["radius"] = target["base_radius"] * 3.0
+
+                        var b_speed = target.get("base_speed", target.get("speed", 100.0))
+                        target["base_speed"] = float(b_speed) * 0.6
+                        target["speed"] = target["base_speed"]
+
+                        if not target.has("base_mass"):
+                            target["base_mass"] = target.get("mass", 1.0)
+                        target["mass"] = target["base_mass"] * 5.0
+
+                    if world.has_method("add_event"):
+                        world.add_event("boss_change", {"message": "Viewer " + _get_user_display(user) + " spawned a " + formatted_boss_type.capitalize() + " Boss!"})
                     _add_viewer_loyalty(user, 20)
                     excitement_level += 20.0
 
