@@ -227,9 +227,9 @@
     "agent-28": {
       "name": "Jules Worker 28",
       "area": "tests",
-      "status": "assigned",
+      "status": "working",
       "task_id": "idea-2017",
-      "started_at": "2026-08-15T22:09:47.748216+00:00",
+      "started_at": "2026-08-15T22:17:40.511283+00:00",
       "cycles_today": 0
     },
     "agent-29": {
