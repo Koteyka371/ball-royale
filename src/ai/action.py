@@ -27205,7 +27205,25 @@ class Action:
                             # Fallback if we cannot import it directly
                             Hazard = type("Hazard", (), {})
 
-                        if random.random() < 0.5:
+                        weather = getattr(self.world.arena, "weather", "") if hasattr(self.world, "arena") else ""
+                        if weather in ["sandstorm", "heatwave"]:
+                            if Hazard != type("Hazard", (), {}):
+                                trap = Hazard(id=getattr(self.world, "next_id", 99999) + random.randint(1000, 9999), x=hazard.x, y=hazard.y, radius=80.0, kind="quicksand", damage=0.0)
+                                trap.duration = 15.0
+                            else:
+                                trap = type("Hazard", (), {})()
+                                trap.id = getattr(self.world, "next_id", 99999) + random.randint(1000, 9999)
+                                trap.x = hazard.x
+                                trap.y = hazard.y
+                                trap.radius = 80.0
+                                trap.kind = "quicksand"
+                                trap.damage = 0.0
+                                trap.duration = 15.0
+                            self.world.arena.hazards.append(trap)
+                            # Drain stamina
+                            if hasattr(self.ball, "stamina"):
+                                self.ball.stamina = max(0.0, getattr(self.ball, "stamina", 0.0) - 50.0)
+                        elif random.random() < 0.5:
                             if Hazard != type("Hazard", (), {}):
                                 trap = Hazard(id=getattr(self.world, "next_id", 99999) + random.randint(1000, 9999), x=hazard.x, y=hazard.y, radius=20.0, kind="disguised_trap", damage=0.0)
                                 trap.duration = 10.0
