@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2010] Vampiric Drain Ray — *2026-08-15 08:41:39 UTC*
+
+A channelled active ability that tether to an enemy, slowing them down while continuously draining their health and transferring it to the user.
+
+---
+
 ## [idea-1916] Aura Disruption Grenade — *2026-08-15 07:53:42 UTC*
 
 A new item that when thrown, explodes and creates a temporary zone where aura effects (shielding and explosion) are completely nullified and balls' auras are temporarily suppressed.
