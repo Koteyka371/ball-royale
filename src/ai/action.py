@@ -2120,7 +2120,10 @@ class Action:
                     self.ball.damage_multiplier = getattr(self.ball, "damage_multiplier", 1.5) / 1.5
                     self.ball.aura_well_buff_applied = False
 
+
         self.ball.in_gravity_nullifier_zone = False
+        self.ball.in_aura_nullifier_zone = False
+
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for hazard in self.world.arena.hazards:
                 if getattr(hazard, "kind", "") == "gravity_nullifier_zone" and getattr(hazard, "active", True):
@@ -3107,6 +3110,8 @@ class Action:
             self.ball.lightning_aura_active = True
         elif equipped_aura in ("fire", "ice"):
             aura_radius = 150.0
+        if getattr(self.ball, "in_aura_nullifier_zone", False):
+            aura_radius = 0.0
             enemies_in_aura = [e for e in getattr(self.world, "balls", []) if e != self.ball and getattr(e, "alive", True) and getattr(e, "team", getattr(e, "ball_type", "")) != getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))]
             for e in enemies_in_aura:
                 dist_sq = (self.ball.x - e.x)**2 + (self.ball.y - e.y)**2
@@ -3127,6 +3132,8 @@ class Action:
         # Necromancer aura logic
         if getattr(self.ball, 'ball_type', getattr(self.ball.__class__, 'BALL_TYPE', '')).lower() == 'necromancer':
             necro_aura_radius = 150.0
+        if getattr(self.ball, "in_aura_nullifier_zone", False):
+            aura_radius = 0.0
             necro_aura_damage = 5.0 * delta # 5 damage per second
             enemies_in_aura = [e for e in getattr(self.world, "balls", []) if e != self.ball and getattr(e, "alive", True) and getattr(e, "team", getattr(e, "ball_type", "")) != getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))]
             total_damage_dealt = 0.0
@@ -17353,7 +17360,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'deploy_clan_banner', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'survival_rewind', 'echo_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_dash', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_stabilizer_field', 'deploy_tracker_drone', 'deploy_distract_drone', 'deploy_fake_balls', 'decoy_swarm', 'hire_mercenary', 'hazard_surfing', 'grapple_hook', 'elastic_tether']
+                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'deploy_clan_banner', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_aura_nullifier_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'survival_rewind', 'echo_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_dash', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_stabilizer_field', 'deploy_tracker_drone', 'deploy_distract_drone', 'deploy_fake_balls', 'decoy_swarm', 'hire_mercenary', 'hazard_surfing', 'grapple_hook', 'elastic_tether']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
@@ -22308,6 +22315,50 @@ class Action:
                     self.world.arena.hazards.append(thrown_mine)
                     self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
 
+
+            elif skill_name == "throw_aura_nullifier_grenade":
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    enemies = self._get_enemies()
+                    nx, ny = 1.0, 0.0
+                    if enemies:
+                        import math
+                        closest_enemy = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                        dx = closest_enemy.x - self.ball.x
+                        dy = closest_enemy.y - self.ball.y
+                        dist = math.sqrt(dx*dx + dy*dy)
+                        if dist > 0.0001:
+                            nx, ny = dx/dist, dy/dist
+
+                    try:
+                        from arena.procedural_arena import Hazard
+                    except ImportError:
+                        class Hazard:
+                            def __init__(self, id, x, y, radius, kind, damage, owner_id):
+                                self.id = id
+                                self.x = x
+                                self.y = y
+                                self.radius = radius
+                                self.kind = kind
+                                self.damage = damage
+                                self.active = True
+
+                    import uuid
+                    class TempHazard:
+                        pass
+                    thrown_grenade = TempHazard()
+                    thrown_grenade.id = str(uuid.uuid4())
+                    thrown_grenade.x = self.ball.x + nx * (getattr(self.ball, "radius", 10.0) + 5.0)
+                    thrown_grenade.y = self.ball.y + ny * (getattr(self.ball, "radius", 10.0) + 5.0)
+                    thrown_grenade.radius = 150.0
+                    thrown_grenade.kind = "aura_nullifier_grenade"
+                    thrown_grenade.damage = 0.0
+                    thrown_grenade.owner_id = getattr(self.ball, "id", None)
+                    setattr(thrown_grenade, "duration", 5.0)
+                    setattr(thrown_grenade, "active", True)
+
+                    self.world.arena.hazards.append(thrown_grenade)
+                    self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
+
             elif skill_name == "throw_vortex_grenade":
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     enemies = self._get_enemies()
@@ -24903,7 +24954,7 @@ class Action:
                     c2 = getattr(other, "cosmetic_aura_color", None)
 
                     if c1 and c2 and c1 == c2 and getattr(self.ball, "team", None) == getattr(other, "team", None):
-                        if getattr(self.ball, "_aura_shield_cd", 0.0) <= 0.0 and getattr(other, "_aura_shield_cd", 0.0) <= 0.0:
+                        if getattr(self.ball, "_aura_shield_cd", 0.0) <= 0.0 and getattr(other, "_aura_shield_cd", 0.0) <= 0.0 and not getattr(self.ball, "in_aura_nullifier_zone", False) and not getattr(other, "in_aura_nullifier_zone", False):
                             self.ball._aura_shield_cd = 2.0
                             setattr(other, "_aura_shield_cd", 2.0)
 
@@ -24916,7 +24967,7 @@ class Action:
                             if hasattr(self.world, "add_event"):
                                 self.world.add_event("aura_shield", {"id": getattr(self.ball, "id", None)})
                                 self.world.add_event("aura_shield", {"id": getattr(other, "id", None)})
-                    if c1 and c2 and getattr(self.ball, "_aura_explosion_cd", 0.0) <= 0.0 and getattr(other, "_aura_explosion_cd", 0.0) <= 0.0:
+                    if c1 and c2 and getattr(self.ball, "_aura_explosion_cd", 0.0) <= 0.0 and getattr(other, "_aura_explosion_cd", 0.0) <= 0.0 and not getattr(self.ball, "in_aura_nullifier_zone", False) and not getattr(other, "in_aura_nullifier_zone", False):
                         self.ball._aura_explosion_cd = 1.0
                         setattr(other, "_aura_explosion_cd", 1.0)
 
@@ -25165,6 +25216,8 @@ class Action:
 
         # Determine aura properties
         aura_radius = 150.0
+        if getattr(self.ball, "in_aura_nullifier_zone", False):
+            aura_radius = 0.0
         aura_multiplier = 1.0
         if getattr(self.ball, "aura_booster_timer", 0.0) > 0:
             aura_radius = 500.0
@@ -26244,6 +26297,40 @@ class Action:
                 if getattr(self.ball, "quantum_state_timer", 0.0) > 0.0:
                     continue
 
+
+
+
+                if getattr(hazard, "kind", "") == "aura_nullifier_grenade":
+                    # Only update the hazard if this ball is its owner
+                    if getattr(hazard, "owner_id", None) == self.ball.id:
+                        duration = getattr(hazard, "duration", 0.0)
+                        if duration > 0:
+                            hazard.duration = duration - delta
+                            if hasattr(self.world, "balls"):
+                                import math
+                                for b in list(self.world.balls):
+                                    if getattr(b, "alive", True):
+                                        dx = hazard.x - getattr(b, "x", 0.0)
+                                        dy = hazard.y - getattr(b, "y", 0.0)
+                                        dist_sq = dx*dx + dy*dy
+                                        r = getattr(hazard, "radius", 150.0)
+                                        if dist_sq < r*r:
+                                            # Apply nullification
+                                            b.in_aura_nullifier_zone = True
+                                            if hasattr(b, "reflect_shield_active"): b.reflect_shield_active = False
+                                            if hasattr(b, "half_reflect_shield_active"): b.half_reflect_shield_active = False
+                                            if hasattr(b, "energy_shield_active"): b.energy_shield_active = False
+                                            if hasattr(b, "orbital_shield_active"): b.orbital_shield_active = False
+                                            if hasattr(b, "kinetic_shield_active"): b.kinetic_shield_active = False
+                                            if hasattr(b, "charging_shockwave_shield_active"): b.charging_shockwave_shield_active = False
+                                            if hasattr(b, "shield_booster_active"): b.shield_booster_active = False
+
+                        if hazard.duration <= 0:
+                            hazard.duration = 0.0
+                            hazard.active = False
+                            if hazard in self.world.arena.hazards:
+                                self.world.arena.hazards.remove(hazard)
+                    continue
 
 
                 if getattr(hazard, "kind", "") == "vortex_grenade":
@@ -28219,6 +28306,8 @@ class Action:
                 self.ball.hp = max(0.0, self.ball.hp - drain)
 
                 aura_radius = 150.0
+                if getattr(self.ball, "in_aura_nullifier_zone", False):
+                    aura_radius = 0.0
                 damage_to_enemies = 10.0 * delta
                 heal_fraction = 0.5
                 total_healed = 0.0
