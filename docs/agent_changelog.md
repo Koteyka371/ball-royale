@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2002] Necromancer Bone Wall Skill — *2026-08-15 19:09:42 UTC*
+
+Necromancers can summon a wall of bones that blocks projectiles and enemy movement for a short duration.
+
+---
+
 ## [idea-1964] Mirage Oasis Trap — *2026-08-15 14:10:11 UTC*
 
 During sandstorm or heatwave weather, mirage safe zones occasionally appear that look like healing areas but are actually quicksand traps that drain stamina.
