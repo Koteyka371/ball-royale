@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1950] Twitch integration: Voting on Boss type — *2026-08-15 00:14:36 UTC*
+
+When a !spawnboss vote is initiated by a viewer, chat can vote on which boss they want to spawn: Juggernaut, Phantom Juggernaut, Elementalist, etc.
+
+---
+
 ## [idea-2005] Black Market Altars — *2026-08-14 22:43:44 UTC*
 
 Special altars that only appear during specific weather conditions. They offer extremely rare and powerful items, but purchasing them permanently reduces a player's max health or base speed for the rest of the match.
