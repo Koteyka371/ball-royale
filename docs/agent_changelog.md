@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1916] Aura Disruption Grenade — *2026-08-15 07:53:42 UTC*
+
+A new item that when thrown, explodes and creates a temporary zone where aura effects (shielding and explosion) are completely nullified and balls' auras are temporarily suppressed.
+
+---
+
 ## [idea-1950] Twitch integration: Voting on Boss type — *2026-08-15 00:14:36 UTC*
 
 When a !spawnboss vote is initiated by a viewer, chat can vote on which boss they want to spawn: Juggernaut, Phantom Juggernaut, Elementalist, etc.
