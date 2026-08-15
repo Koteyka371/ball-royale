@@ -55214,7 +55214,30 @@ func _update_skill_timer(delta: float):
 							hazard.duration = 0.0
 							hazard.active = false
 						var HazardObj = load("res://src/arena/procedural_arena.gd").Hazard
-						if randf() < 0.5:
+
+						var weather = ""
+						if world != null and "arena" in world and world.arena != null:
+							if typeof(world.arena) == TYPE_DICTIONARY:
+								weather = world.arena.get("weather", "")
+							else:
+								weather = world.arena.get("weather") if "weather" in world.arena else ""
+
+						if weather == "sandstorm" or weather == "heatwave":
+							var qs = HazardObj.new(9999, hx, hy, 80.0, "quicksand", 0.0)
+							qs.duration = 15.0
+							world.arena.hazards.append(qs)
+
+							var st = 0.0
+							if typeof(self.ball) == TYPE_DICTIONARY:
+								st = float(self.ball.get("stamina", 0.0))
+								self.ball["stamina"] = max(0.0, st - 50.0)
+							elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("stamina"):
+								st = float(self.ball.get_meta("stamina"))
+								self.ball.set_meta("stamina", max(0.0, st - 50.0))
+							elif "stamina" in self.ball:
+								st = float(self.ball.stamina)
+								self.ball.stamina = max(0.0, st - 50.0)
+						elif randf() < 0.5:
 							var new_trap = HazardObj.new(9999, hx, hy, 20.0, "disguised_trap", 0.0)
 							new_trap.duration = 10.0
 							world.arena.hazards.append(new_trap)
