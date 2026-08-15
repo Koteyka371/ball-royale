@@ -654,10 +654,13 @@ class Action:
                             dist_to_line = math.hypot(hx - proj_x, hy - proj_y)
                         if dist_to_line <= hr:
                             if getattr(h, "kind", "") == "bone_wall" and hasattr(h, "hp"):
-                                h.hp -= getattr(attacker, "damage", 10.0)
-                                if h.hp <= 0:
-                                    h.active = False
-                            return
+                                if getattr(attacker, "team", "") == getattr(h, "owner_team", ""):
+                                    pass
+                                else:
+                                    h.hp -= getattr(attacker, "damage", 10.0)
+                                    if h.hp <= 0:
+                                        h.active = False
+                                    return
 
                     elif getattr(h, "kind", "") == "stasis_bubble":
                         hx = h.x
@@ -13052,7 +13055,9 @@ class Action:
                                 nx, ny = dx / dist, dy / dist
                                 overlap = (self.ball.radius + hazard.radius) - dist
                                 is_projectile = getattr(self.ball, "ball_type", "") in ["projectile", "spell"] or getattr(self.ball, "is_projectile", False)
-                                if is_projectile:
+                                if getattr(self.ball, "team", "") == getattr(hazard, "owner_team", ""):
+                                    pass
+                                elif is_projectile:
                                     self.ball.alive = False
                                     self.ball.hp = 0
                                     if hasattr(hazard, "hp"):
@@ -13076,7 +13081,9 @@ class Action:
                                 nx, ny = dx / dist, dy / dist
                                 overlap = (self.ball.radius + hazard.radius) - dist
                                 is_projectile = getattr(self.ball, "ball_type", "") in ["projectile", "spell"] or getattr(self.ball, "is_projectile", False)
-                                if is_projectile:
+                                if getattr(self.ball, "team", "") == getattr(hazard, "owner_team", ""):
+                                    pass
+                                elif is_projectile:
                                     self.ball.alive = False
                                     self.ball.hp = 0
                                     if hasattr(hazard, "hp"):
@@ -20678,6 +20685,7 @@ class Action:
                     wall.hp = 300.0
                     wall.duration = 10.0
                     wall.active = True
+                    wall.owner_team = getattr(self.ball, "team", "")
                     self.world.arena.hazards.append(wall)
                 self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 8.0)
             elif skill_name == "blood_pact":

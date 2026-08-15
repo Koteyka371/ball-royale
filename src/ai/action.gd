@@ -40223,6 +40223,55 @@ func _use_skill():
 
                 if "balls" in self.world:
                     self.world.balls.append(minion)
+        elif skill_name == "bone_wall":
+            if typeof(self.world) == TYPE_OBJECT and "arena" in self.world and "hazards" in self.world.arena:
+                var enemies = _get_enemies()
+                var target_x = self.ball.x
+                var target_y = self.ball.y
+                if enemies.size() > 0:
+                    var nearest = enemies[0]
+                    var min_dist2 = (nearest.x - self.ball.x) * (nearest.x - self.ball.x) + (nearest.y - self.ball.y) * (nearest.y - self.ball.y)
+                    for i in range(1, enemies.size()):
+                        var e = enemies[i]
+                        var dist2 = (e.x - self.ball.x) * (e.x - self.ball.x) + (e.y - self.ball.y) * (e.y - self.ball.y)
+                        if dist2 < min_dist2:
+                            min_dist2 = dist2
+                            nearest = e
+
+                    var dx = nearest.x - self.ball.x
+                    var dy = nearest.y - self.ball.y
+                    var dist = sqrt(dx*dx + dy*dy)
+                    if dist > 0.0001:
+                        target_x += (dx / dist) * 60.0
+                        target_y += (dy / dist) * 60.0
+                else:
+                    target_x += 60.0
+
+                var h_id = 15000 + self.world.arena.hazards.size() + (randi() % 1000)
+                var ProceduralArenaModule = load("res://src/arena/procedural_arena.gd")
+                var wall = ProceduralArenaModule.Hazard.new(h_id, target_x, target_y, 40.0, "bone_wall", 0.0)
+                var owner_team = ""
+                if "team" in self.ball: owner_team = self.ball.team
+
+                if wall.has_method("set_meta"):
+                    wall.set_meta("hp", 300.0)
+                    wall.set_meta("duration", 10.0)
+                    wall.set_meta("active", true)
+                    wall.set_meta("owner_team", owner_team)
+                else:
+                    wall.hp = 300.0
+                    wall.duration = 10.0
+                    wall.active = true
+                    if not "owner_team" in wall:
+                        wall.set_meta("owner_team", owner_team)
+                self.world.arena.hazards.append(wall)
+
+            if "skill_cooldown" in self.ball:
+                self.ball.skill_timer = self.ball.skill_cooldown
+            elif self.ball.has_method("get_meta") and self.ball.has_meta("skill_cooldown"):
+                self.ball.skill_timer = self.ball.get_meta("skill_cooldown")
+            else:
+                self.ball.skill_timer = 8.0
         elif skill_name == "blood_pact":
             var max_hp = 100.0
             if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("max_hp"):
