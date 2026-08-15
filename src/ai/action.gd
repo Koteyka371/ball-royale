@@ -39753,20 +39753,41 @@ func _use_skill():
                     self.ball.lightning_tether_target = target
                     self.ball.lightning_tether_timer = 5.0
         elif skill_name == "leech_tether":
-            var enemies = _get_enemies()
-            if enemies.size() > 0:
-                var target = enemies[0]
-                var min_dist = pow(target.x - self.ball.x, 2) + pow(target.y - self.ball.y, 2)
-                for i in range(1, enemies.size()):
-                    var e = enemies[i]
-                    var dist = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
-                    if dist < min_dist:
-                        min_dist = dist
-                        target = e
-                if self.ball.has_method("set_meta"):
+            var target = null
+            var target_id = null
+            if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("leech_tether_target_id"): target_id = self.ball.get_meta("leech_tether_target_id")
+            elif "leech_tether_target_id" in self.ball: target_id = self.ball.leech_tether_target_id
+
+            if target_id != null:
+                for b in self.world.balls:
+                    var b_id = null
+                    if typeof(b) != TYPE_DICTIONARY and b.has_method("has_meta") and b.has_meta("id"): b_id = b.get_meta("id")
+                    elif "id" in b: b_id = b.id
+                    if b_id == target_id:
+                        var b_alive = true
+                        if typeof(b) != TYPE_DICTIONARY and b.has_method("has_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+                        elif "alive" in b: b_alive = b.alive
+                        if b_alive:
+                            target = b
+                            break
+
+            if target == null:
+                var enemies = _get_enemies()
+                if enemies.size() > 0:
+                    target = enemies[0]
+                    var min_dist = pow(target.x - self.ball.x, 2) + pow(target.y - self.ball.y, 2)
+                    for i in range(1, enemies.size()):
+                        var e = enemies[i]
+                        var dist = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+                        if dist < min_dist:
+                            min_dist = dist
+                            target = e
+
+            if target != null:
+                if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
                     self.ball.set_meta("leech_tether_target", target)
                     self.ball.set_meta("leech_tether_timer", 3.0)
-                elif typeof(self.ball) == TYPE_DICTIONARY:
+                else:
                     self.ball.leech_tether_target = target
                     self.ball.leech_tether_timer = 3.0
         elif skill_name == "quantum_tether":
