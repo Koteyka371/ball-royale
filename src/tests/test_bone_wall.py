@@ -83,5 +83,17 @@ class TestBoneWall(unittest.TestCase):
         self.assertFalse(proj.alive)
         self.assertEqual(wall.hp, 250.0)
 
+        # Test friendly projectile
+        proj2 = MockBall(4, wall.x - 5, wall.y, "team1")
+        proj2.ball_type = "projectile"
+        proj2.damage = 50
+        world.balls.append(proj2)
+        action3 = Action(proj2, world)
+        action3.execute("idle", 0.1)
+
+        # Projectile should be alive, wall HP should be 250 (unchanged)
+        self.assertTrue(proj2.alive)
+        self.assertEqual(wall.hp, 250.0)
+
 if __name__ == '__main__':
     unittest.main()
