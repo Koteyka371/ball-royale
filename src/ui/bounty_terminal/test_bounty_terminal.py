@@ -13,6 +13,9 @@ def test_bounty_terminal_empty():
     assert "No active bounties at this time." in output
 
 def test_bounty_terminal_with_bounties():
+    import os
+    if os.path.exists("test_bounty_terminal2.json"):
+        os.remove("test_bounty_terminal2.json")
     pm = ProfileManager("test_bounty_terminal2.json")
     pm.data["prestige_tokens"] = 100
     pm.data["skill_points"] = 1000
@@ -39,3 +42,15 @@ def test_bounty_terminal_with_bounties():
     assert "TARGET: player_A" in lines[3]
     assert "REWARD: 5 prestige_tokens" in lines[3]
     assert "PLACED BY: local_player" in lines[3]
+
+def test_bounty_terminal_missing_key():
+    import os
+    if os.path.exists("test_bounty_terminal_missing.json"):
+        os.remove("test_bounty_terminal_missing.json")
+    pm = ProfileManager("test_bounty_terminal_missing.json")
+    if "active_bounties" in pm.data:
+        del pm.data["active_bounties"]
+    ui = BountyTerminalUI(pm)
+    output = ui.render_ui()
+    assert "--- Active High-Value Bounties ---" in output
+    assert "No active bounties at this time." in output
