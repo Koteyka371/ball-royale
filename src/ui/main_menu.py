@@ -1,3 +1,4 @@
+from ui.bounty_terminal.bounty_terminal import BountyTerminalUI
 from ui.prestige_shop.prestige_shop import PrestigeShop
 from ui.nemesis_screen.nemesis_screen import NemesisScreen
 from ui.guild_emblem_editor.guild_emblem_editor import GuildEmblemEditor
@@ -29,6 +30,7 @@ class MainMenu:
 
         self.nemesis_screen = NemesisScreen(self.profile_manager, self.background_theme)
         self.guild_emblem_editor = GuildEmblemEditor(self.profile_manager)
+        self.bounty_terminal = BountyTerminalUI(self.profile_manager)
 
         self.weekend_options = ["10x_speed", "invisible_enemies", "lava_floor"]
         self.weekend_votes = {opt: 0 for opt in self.weekend_options}
@@ -85,6 +87,10 @@ class MainMenu:
         self.active_screen = "nemesis"
         return self.nemesis_screen.render_ui()
 
+    def open_bounty_terminal(self):
+        self.active_screen = "bounty_terminal"
+        return self.bounty_terminal.render_ui()
+
 
     def open_guild_emblem_editor(self):
         self.active_screen = "guild_emblem_editor"
@@ -138,6 +144,12 @@ class MainMenu:
                 self.guild_emblem_editor.current_symbol = self.guild_emblem_editor.available_symbols[(idx + 1) % len(self.guild_emblem_editor.available_symbols)]
                 return True
             elif action == "back":
+                self.active_screen = "main"
+                return True
+            return False
+
+        if self.active_screen == "bounty_terminal":
+            if action == "back":
                 self.active_screen = "main"
                 return True
             return False
