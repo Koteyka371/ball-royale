@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2007] Minion Swarm Evolution — *2026-08-16 12:31:39 UTC*
+
+If a minion manages to survive for 60 seconds without decaying, it evolves into a permanent 'Elite Minion' that gains ranged attacks and no longer decays over time.
+
+---
+
 ## [idea-2003] Decoy Trap Zone — *2026-08-16 04:08:59 UTC*
 
 A deployed area that acts like a large brush. Enemies entering the area have their minimap filled with fake player icons and random shooting sounds, disorienting them while they remain inside the zone.
