@@ -55881,3 +55881,75 @@ class GuildObstacleCourseMode(GameMode):
                 world.add_event("obstacle_course_finish", {"ball_id": b.id, "time": completion_time})
 
 GAME_MODES['guild_obstacle_course'] = GuildObstacleCourseMode()
+
+class DisorientationBrushMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Disorientation Brush"
+        self.description = "A deployed area that acts like a large brush. Enemies entering the area have their minimap filled with fake player icons and random shooting sounds, disorienting them while they remain inside the zone."
+
+        class BrushHazard:
+            def __init__(self, h_id, x, y, radius, kind, duration):
+                self.id = h_id
+                self.x = x
+                self.y = y
+                self.radius = radius
+                self.kind = kind
+                self.duration = duration
+
+        self.hazard_class = BrushHazard
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        super().tick(world, balls, delta)
+
+        for hazard in getattr(world.arena, "hazards", []):
+            if hazard.kind == "disorientation_brush":
+                for ball in balls:
+                    if getattr(ball, "hp", 0) <= 0:
+                        continue
+
+                    dx = hazard.x - ball.x
+                    dy = hazard.y - ball.y
+                    dist_sq = dx**2 + dy**2
+
+                    if dist_sq < (hazard.radius + ball.radius)**2:
+                        # Ball is inside the brush area
+                        # Give them fake minimap pings
+                        h_owner_id = getattr(hazard, "owner_id", None)
+                        h_team = getattr(hazard, "owner_team", None)
+                        b_team = getattr(ball, "team", None)
+
+                        # Only affect enemies
+                        if (h_owner_id and ball.id == h_owner_id) or (h_team and b_team and h_team == b_team):
+                            continue
+
+                        if getattr(ball, "disorientation_ping_timer", 0) <= 0:
+                            # Generate a random position around the ball
+                            angle = random.random() * 2 * math.pi
+                            dist = random.random() * 300
+                            fake_x = ball.x + math.cos(angle) * dist
+                            fake_y = ball.y + math.sin(angle) * dist
+
+                            # Add fake ping targeted only at this ball's client
+                            world.add_event("minimap_ping", {
+                                "x": fake_x,
+                                "y": fake_y,
+                                "color": "red",
+                                "duration": 0.5,
+                                "target_id": ball.id
+                            })
+
+                            # Add fake sound targeted only at this ball's client
+                            world.add_event("play_sound", {
+                                "sound": "shoot_random",
+                                "x": fake_x,
+                                "y": fake_y,
+                                "target_id": ball.id
+                            })
+
+                            # Fire rapidly to "fill" the minimap
+                            ball.disorientation_ping_timer = 0.1
+                        else:
+                            ball.disorientation_ping_timer -= delta
+
+GAME_MODES["disorientation_brush"] = DisorientationBrushMode()
