@@ -34596,6 +34596,53 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+        elif kind == "permanent_aura_booster":
+            if typeof(world) == TYPE_DICTIONARY and not world.has("permanent_aura_buffs"):
+                world["permanent_aura_buffs"] = {}
+            elif typeof(world) == TYPE_OBJECT and not "permanent_aura_buffs" in world:
+                world.permanent_aura_buffs = {}
+
+            var p_team = ""
+            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"):
+                p_team = self.ball["team"]
+            elif typeof(self.ball) == TYPE_OBJECT and "team" in self.ball:
+                p_team = self.ball.team
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"):
+                p_team = self.ball["ball_type"]
+            elif typeof(self.ball) == TYPE_OBJECT and "ball_type" in self.ball:
+                p_team = self.ball.ball_type
+
+            if typeof(world) == TYPE_DICTIONARY:
+                if not world["permanent_aura_buffs"].has(p_team):
+                    world["permanent_aura_buffs"][p_team] = 0
+                world["permanent_aura_buffs"][p_team] += 1
+            elif typeof(world) == TYPE_OBJECT:
+                if typeof(world.permanent_aura_buffs) == TYPE_DICTIONARY:
+                    if not world.permanent_aura_buffs.has(p_team):
+                        world.permanent_aura_buffs[p_team] = 0
+                    world.permanent_aura_buffs[p_team] += 1
+
+            if world != null and typeof(world) == TYPE_DICTIONARY and world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+                var idx = world.arena.hazards.find(nearest)
+                if idx != -1:
+                    world.arena.hazards.remove_at(idx)
+            elif world != null and typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+                var idx = world.arena.hazards.find(nearest)
+                if idx != -1:
+                    world.arena.hazards.remove_at(idx)
+            elif world != null and typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null and typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+                var idx = world.arena.hazards.find(nearest)
+                if idx != -1:
+                    world.arena.hazards.remove_at(idx)
+
+            if world != null and typeof(world) == TYPE_DICTIONARY and world.has("boosters"):
+                var idx = world.boosters.find(nearest)
+                if idx != -1:
+                    world.boosters.remove_at(idx)
+            elif world != null and typeof(world) == TYPE_OBJECT and "boosters" in world:
+                var idx = world.boosters.find(nearest)
+                if idx != -1:
+                    world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "invert_booster":
                 if self.world != null and "balls" in self.world:
                     for other in self.world.balls:
@@ -49419,6 +49466,17 @@ func _apply_friendly_aura(delta: float):
     if ab_timer > 0.0:
         aura_radius = 500.0
         aura_multiplier = 2.0
+
+    if typeof(world) == TYPE_DICTIONARY and world.has("permanent_aura_buffs") and world["permanent_aura_buffs"].has(team):
+        var stacks = world["permanent_aura_buffs"][team]
+        if stacks > 0:
+            aura_radius += 100.0 * stacks
+            aura_multiplier += 0.5 * stacks
+    elif typeof(world) == TYPE_OBJECT and "permanent_aura_buffs" in world and typeof(world.permanent_aura_buffs) == TYPE_DICTIONARY and world.permanent_aura_buffs.has(team):
+        var stacks = world.permanent_aura_buffs[team]
+        if stacks > 0:
+            aura_radius += 100.0 * stacks
+            aura_multiplier += 0.5 * stacks
 
 
 
