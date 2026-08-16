@@ -18690,6 +18690,17 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "permanent_aura_booster":
+                    if not hasattr(self.world, "permanent_aura_buffs"):
+                        self.world.permanent_aura_buffs = {}
+                    team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
+                    self.world.permanent_aura_buffs[team] = self.world.permanent_aura_buffs.get(team, 0) + 1
+
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "magnet_booster":
                     self.ball.pull_booster_timer = 5.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -25239,6 +25250,13 @@ class Action:
         if getattr(self.ball, "aura_booster_timer", 0.0) > 0:
             aura_radius = 500.0
             aura_multiplier = 2.0
+
+        # Apply permanent team-wide aura buffs
+        if hasattr(self.world, "permanent_aura_buffs") and isinstance(getattr(self.world, "permanent_aura_buffs", None), dict):
+            stacks = self.world.permanent_aura_buffs.get(team, 0)
+            if isinstance(stacks, (int, float)) and stacks > 0:
+                aura_radius += 100.0 * stacks
+                aura_multiplier += 0.5 * stacks
 
 
         if getattr(self.ball, "aura_amplifier_timer", 0.0) > 0:
