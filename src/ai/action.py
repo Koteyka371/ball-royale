@@ -6693,12 +6693,52 @@ class Action:
                                         hazard.vy = 0
                                         break
 
+
+                        # Check collision with walls
+                        if hasattr(self.world, "arena") and hasattr(self.world.arena, "width") and hasattr(self.world.arena, "height"):
+                            if hazard.x - getattr(hazard, "radius", 15.0) <= 0 or hazard.x + getattr(hazard, "radius", 15.0) >= self.world.arena.width or hazard.y - getattr(hazard, "radius", 15.0) <= 0 or hazard.y + getattr(hazard, "radius", 15.0) >= self.world.arena.height:
+                                hazard.attached_id = -1 # Special ID for wall
+                                hazard.vx = 0
+                                hazard.vy = 0
+
+                                # Snap to wall
+                                if hazard.x - getattr(hazard, "radius", 15.0) <= 0: hazard.x = getattr(hazard, "radius", 15.0)
+                                if hazard.x + getattr(hazard, "radius", 15.0) >= self.world.arena.width: hazard.x = self.world.arena.width - getattr(hazard, "radius", 15.0)
+                                if hazard.y - getattr(hazard, "radius", 15.0) <= 0: hazard.y = getattr(hazard, "radius", 15.0)
+                                if hazard.y + getattr(hazard, "radius", 15.0) >= self.world.arena.height: hazard.y = self.world.arena.height - getattr(hazard, "radius", 15.0)
+
                         if getattr(hazard, "attached_id", None) is None:
                             if getattr(hazard, "duration", 0.0) > 0:
                                 hazard.duration -= delta
                                 if hazard.duration <= 0:
                                     if hazard in self.world.arena.hazards:
                                         self.world.arena.hazards.remove(hazard)
+
+                    elif attached_id == -1:
+                        # Attached to wall
+                        explosion_timer = getattr(hazard, "explosion_timer", 0.0)
+                        if explosion_timer > 0:
+                            hazard.explosion_timer = explosion_timer - delta
+                            if hazard.explosion_timer <= 0:
+                                if hazard in self.world.arena.hazards:
+                                    self.world.arena.hazards.remove(hazard)
+                                explosion_radius = 100.0
+                                explosion_damage = 50.0
+                                if hasattr(self.world, "balls"):
+                                    for b in getattr(self.world, "balls", []):
+                                        if getattr(b, "alive", True):
+                                            dx = hazard.x - b.x
+                                            dy = hazard.y - b.y
+                                            if dx*dx + dy*dy <= explosion_radius**2:
+                                                if hasattr(b, "take_damage"):
+                                                    b.take_damage(explosion_damage)
+                                                elif hasattr(b, "hp"):
+                                                    b.hp -= explosion_damage
+                                                    if b.hp <= 0:
+                                                        b.alive = False
+                                                        b.killer = getattr(hazard, "owner_id", None)
+                                if hasattr(self.world, "events"):
+                                    self.world.events.append({'type': 'explosion', 'data': {'x': hazard.x, 'y': hazard.y, 'radius': explosion_radius}})
                     else:
                         # Attached
                         current_attached = None
