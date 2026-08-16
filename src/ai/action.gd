@@ -16210,7 +16210,7 @@ func execute(strategy: String, delta: float):
             elif self.ball.has_method("has_meta") and self.ball.has_meta("kills"):
                 kills = self.ball.get_meta("kills")
 
-            if survival_time > 30.0 or kills >= 1:
+            if survival_time > 60.0 or kills >= 1:
                 is_elite_minion = true
                 if self.ball.has_method("set_meta"):
                     self.ball.set_meta("is_elite_minion", true)
@@ -16344,10 +16344,11 @@ func execute(strategy: String, delta: float):
             elif "elite_ability_timer" in self.ball:
                 self.ball.elite_ability_timer = elite_ability_timer
 
-        self.ball.hp -= 2.0 * delta
-        if self.ball.hp <= 0:
-            self.ball.hp = 0
-            self.ball.alive = false
+        if not is_elite_minion:
+            self.ball.hp -= 2.0 * delta
+            if self.ball.hp <= 0:
+                self.ball.hp = 0
+                self.ball.alive = false
 
     var is_decoy_beacon = false
     if "is_decoy_beacon" in my_ball:

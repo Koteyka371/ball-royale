@@ -8142,7 +8142,7 @@ class Action:
                 if not hasattr(self.ball, "survival_time"):
                     self.ball.survival_time = 0.0
                 self.ball.survival_time += delta
-                if self.ball.survival_time > 30.0 or getattr(self.ball, "kills", 0) >= 1:
+                if self.ball.survival_time > 60.0 or getattr(self.ball, "kills", 0) >= 1:
                     self.ball.is_elite_minion = True
                     self.ball.max_hp *= 2.0
                     self.ball.hp = self.ball.max_hp
@@ -8201,10 +8201,11 @@ class Action:
                             if hasattr(self.world, "add_event"):
                                 self.world.add_event("minion_poison", {"attacker_id": self.ball.id, "target_id": target.id})
 
-            self.ball.hp -= 2.0 * delta  # Decay 2 HP per second
-            if self.ball.hp <= 0:
-                self.ball.hp = 0
-                self.ball.alive = False
+            if not getattr(self.ball, "is_elite_minion", False):
+                self.ball.hp -= 2.0 * delta  # Decay 2 HP per second
+                if self.ball.hp <= 0:
+                    self.ball.hp = 0
+                    self.ball.alive = False
 
 
         if getattr(self.ball, "is_decoy_beacon", False):
