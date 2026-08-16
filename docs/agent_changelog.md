@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2017] Shrinking Safe Bubbles — *2026-08-16 17:01:25 UTC*
+
+Instead of a single shrinking storm, the map starts completely toxic, and players must find and fight over small safe bubbles that spawn, drift around the map randomly, and eventually pop, forcing constant repositioning.
+
+---
+
 ## [idea-2011] Aura Harmonizer Item — *2026-08-16 14:28:45 UTC*
 
 A rare consumable item that permanently increases the map-wide aura pulse radius and effect duration for the user's team, ensuring that stacked auras synchronize and multiply in intensity the longer a match goes on.
