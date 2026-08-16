@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2011] Aura Harmonizer Item — *2026-08-16 14:28:45 UTC*
+
+A rare consumable item that permanently increases the map-wide aura pulse radius and effect duration for the user's team, ensuring that stacked auras synchronize and multiply in intensity the longer a match goes on.
+
+---
+
 ## [idea-2016] Bounty Hunter Trait — *2026-08-16 12:52:30 UTC*
 
 Players can equip a Bounty Hunter trait that highlights enemies with active bounties on the minimap.
