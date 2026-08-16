@@ -4321,7 +4321,7 @@ class Action:
 
         # REPLACED
         # Bounty Hunter / Bounty Contract target indicator
-        if getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")) == "bounty_hunter" or any(getattr(b, "is_bounty_contract_target", False) and getattr(b, "bounty_contract_hunter_id", None) == getattr(self.ball, "id", None) for b in getattr(self.world, "balls", [])):
+        if (getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")) == "bounty_hunter" or "bounty_hunter" in getattr(self.ball, "traits", [])) or any(getattr(b, "is_bounty_contract_target", False) and getattr(b, "bounty_contract_hunter_id", None) == getattr(self.ball, "id", None) for b in getattr(self.world, "balls", [])):
             if not hasattr(self.ball, "bounty_indicator_timer"):
                 self.ball.bounty_indicator_timer = 2.0
 
@@ -4346,7 +4346,7 @@ class Action:
                     if hasattr(self.world, "balls"):
                         for other in self.world.balls:
                             if getattr(other, "id", -1) != getattr(self.ball, "id", -1) and getattr(other, "alive", True):
-                                is_bounty_hunter = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")) == "bounty_hunter"
+                                is_bounty_hunter = (getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")) == "bounty_hunter" or "bounty_hunter" in getattr(self.ball, "traits", []))
                                 is_contract = getattr(other, "is_bounty_contract_target", False) and getattr(other, "bounty_contract_hunter_id", None) == getattr(self.ball, "id", None)
                                 is_general_bounty = getattr(other, "is_bounty", False) or getattr(other, "is_minor_bounty", False) or getattr(other, "high_threat", False) or getattr(other, "is_bounty_target", False)
                                 if (is_bounty_hunter and is_general_bounty) or is_contract:

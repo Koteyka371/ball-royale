@@ -9542,7 +9542,13 @@ func execute(strategy: String, delta: float):
                     has_bounty_contract = true
                     break
 
-        if b_type_ind == "bounty_hunter" or has_bounty_contract:
+        var has_bh_trait = false
+        if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("traits") and "bounty_hunter" in self.ball["traits"]:
+            has_bh_trait = true
+        elif typeof(self.ball) == TYPE_OBJECT and "traits" in self.ball and "bounty_hunter" in self.ball.traits:
+            has_bh_trait = true
+
+        if b_type_ind == "bounty_hunter" or has_bh_trait or has_bounty_contract:
             var timer_val = 0.0
             if typeof(self.ball) == TYPE_OBJECT:
                 if not "bounty_indicator_timer" in self.ball:
@@ -9590,7 +9596,12 @@ func execute(strategy: String, delta: float):
                                 if other.has("is_bounty_target") and other["is_bounty_target"]: is_general_target = true
                                 if other.has("is_bounty_contract_target") and other["is_bounty_contract_target"] and other.has("bounty_contract_hunter_id") and other["bounty_contract_hunter_id"] == self_id: is_contract_target = true
 
-                            var is_bounty_hunter = (b_type_ind == "bounty_hunter")
+                            var has_bh_trait_inner = false
+                            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("traits") and "bounty_hunter" in self.ball["traits"]:
+                                has_bh_trait_inner = true
+                            elif typeof(self.ball) == TYPE_OBJECT and "traits" in self.ball and "bounty_hunter" in self.ball.traits:
+                                has_bh_trait_inner = true
+                            var is_bounty_hunter = (b_type_ind == "bounty_hunter" or has_bh_trait_inner)
                             if (is_bounty_hunter and is_general_target) or is_contract_target:
                                 var is_target = true
                                 var is_disguised = false
