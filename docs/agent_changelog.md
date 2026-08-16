@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2014] Bounty Contract Board — *2026-08-16 18:13:08 UTC*
+
+A terminal in the lobby where players can view all currently active high-value bounties in the match before they start.
+
+---
+
 ## [idea-2017] Shrinking Safe Bubbles — *2026-08-16 17:01:25 UTC*
 
 Instead of a single shrinking storm, the map starts completely toxic, and players must find and fight over small safe bubbles that spawn, drift around the map randomly, and eventually pop, forcing constant repositioning.
