@@ -7,6 +7,7 @@ var prestige_shop_ui: PrestigeShop
 var nemesis_screen_ui: NemesisScreen
 var guild_emblem_editor_ui: GuildEmblemEditor
 var clan_emissary_ui: ClanEmissary
+var bounty_terminal_ui: BountyTerminalUI
 
 var active_screen: String = "main"
 var weekend_options: Array = ["10x_speed", "invisible_enemies", "lava_floor"]
@@ -48,6 +49,10 @@ func _ready():
     add_child(clan_emissary_ui)
     clan_emissary_ui.visible = false
 
+    bounty_terminal_ui = BountyTerminalUI.new(profile_manager)
+    add_child(bounty_terminal_ui)
+    bounty_terminal_ui.visible = false
+
     var guild_manager = GuildManager.new("user://guilds.json")
     var guild_name = profile_manager.data.get("guild_name", "")
     if guild_name != "":
@@ -71,6 +76,11 @@ func _ready():
     open_nemesis_btn.text = "Open Nemesis Screen"
     open_nemesis_btn.pressed.connect(self._on_open_nemesis_pressed)
     add_child(open_nemesis_btn)
+
+    var open_terminal_btn = Button.new()
+    open_terminal_btn.text = "Open Bounty Terminal"
+    open_terminal_btn.pressed.connect(self._on_open_terminal_pressed)
+    add_child(open_terminal_btn)
 
     var open_vote_btn = Button.new()
     open_vote_btn.text = "Weekend Event Vote"
@@ -144,9 +154,24 @@ func _on_open_emissary_pressed():
         nemesis_screen_ui.visible = false
     if guild_emblem_editor_ui != null:
         guild_emblem_editor_ui.visible = false
+    if bounty_terminal_ui != null:
+        bounty_terminal_ui.visible = false
     if clan_emissary_ui != null:
         clan_emissary_ui.visible = true
         clan_emissary_ui._refresh_ui()
+
+func _on_open_terminal_pressed():
+    active_screen = "bounty_terminal"
+    prestige_shop_ui.visible = false
+    if nemesis_screen_ui != null:
+        nemesis_screen_ui.visible = false
+    if guild_emblem_editor_ui != null:
+        guild_emblem_editor_ui.visible = false
+    if clan_emissary_ui != null:
+        clan_emissary_ui.visible = false
+    if bounty_terminal_ui != null:
+        bounty_terminal_ui.visible = true
+        bounty_terminal_ui._refresh_ui()
 
 func _on_open_emblem_pressed():
     active_screen = "guild_emblem_editor"
@@ -158,6 +183,8 @@ func _on_open_emblem_pressed():
         guild_emblem_editor_ui._refresh_ui()
     if clan_emissary_ui != null:
         clan_emissary_ui.visible = false
+    if bounty_terminal_ui != null:
+        bounty_terminal_ui.visible = false
 
 func _on_open_nemesis_pressed():
     active_screen = "nemesis"
@@ -167,6 +194,8 @@ func _on_open_nemesis_pressed():
         guild_emblem_editor_ui.visible = false
     if clan_emissary_ui != null:
         clan_emissary_ui.visible = false
+    if bounty_terminal_ui != null:
+        bounty_terminal_ui.visible = false
     nemesis_screen_ui._refresh_ui()
 
 func _on_open_vote_pressed():
@@ -178,6 +207,8 @@ func _on_open_vote_pressed():
         guild_emblem_editor_ui.visible = false
     if clan_emissary_ui != null:
         clan_emissary_ui.visible = false
+    if bounty_terminal_ui != null:
+        bounty_terminal_ui.visible = false
 
 func cast_weekend_vote(mode: String) -> bool:
     if weekend_options.has(mode):
@@ -208,6 +239,8 @@ func _on_open_shop_pressed():
         guild_emblem_editor_ui.visible = false
     if clan_emissary_ui != null:
         clan_emissary_ui.visible = false
+    if bounty_terminal_ui != null:
+        bounty_terminal_ui.visible = false
     prestige_shop_ui.visible = true
     prestige_shop_ui._refresh_ui()
 
@@ -220,3 +253,5 @@ func close_shop():
         guild_emblem_editor_ui.visible = false
     if clan_emissary_ui != null:
         clan_emissary_ui.visible = false
+    if bounty_terminal_ui != null:
+        bounty_terminal_ui.visible = false
