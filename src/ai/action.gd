@@ -14677,6 +14677,213 @@ func execute(strategy: String, delta: float):
 							hazard.y += hazard.vy * delta
 							hazard.vx *= (1.0 - 2.0 * delta)
 							hazard.vy *= (1.0 - 2.0 * delta)
+
+			elif hazard.get("kind") == "thrown_sticky_mine" or (typeof(hazard) == TYPE_DICTIONARY and hazard.has("kind") and hazard["kind"] == "thrown_sticky_mine"):
+				var attached_id = null
+				if typeof(hazard) == TYPE_DICTIONARY and hazard.has("attached_id"): attached_id = hazard.attached_id
+				elif typeof(hazard) == TYPE_OBJECT and "attached_id" in hazard: attached_id = hazard.attached_id
+
+				if attached_id == null:
+					# Moving
+					var vx = hazard.vx if typeof(hazard) == TYPE_DICTIONARY and hazard.has("vx") else (hazard.vx if "vx" in hazard else 0.0)
+					var vy = hazard.vy if typeof(hazard) == TYPE_DICTIONARY and hazard.has("vy") else (hazard.vy if "vy" in hazard else 0.0)
+
+					if typeof(hazard) == TYPE_DICTIONARY:
+						hazard["x"] += vx * delta
+						hazard["y"] += vy * delta
+					else:
+						hazard.x += vx * delta
+						hazard.y += vy * delta
+
+					# Check collision
+					if "balls" in world:
+						for b in world.balls:
+							var b_alive = true
+							if "alive" in b: b_alive = b.alive
+							var b_id = b.id if "id" in b else null
+							var h_owner_id = hazard.owner_id if typeof(hazard) == TYPE_DICTIONARY and hazard.has("owner_id") else (hazard.owner_id if "owner_id" in hazard else null)
+
+							if b_alive and b_id != h_owner_id:
+								var bx = b.x if "x" in b else (b.get_meta("x") if b.has_method("has_meta") and b.has_meta("x") else 0.0)
+								var by = b.y if "y" in b else (b.get_meta("y") if b.has_method("has_meta") and b.has_meta("y") else 0.0)
+								var hx = hazard.x if typeof(hazard) == TYPE_DICTIONARY and hazard.has("x") else (hazard.x if "x" in hazard else 0.0)
+								var hy = hazard.y if typeof(hazard) == TYPE_DICTIONARY and hazard.has("y") else (hazard.y if "y" in hazard else 0.0)
+								var dist_sq = pow(hx - bx, 2) + pow(hy - by, 2)
+								var h_rad = hazard.radius if typeof(hazard) == TYPE_DICTIONARY and hazard.has("radius") else (hazard.radius if "radius" in hazard else 15.0)
+								var b_rad = b.radius if "radius" in b else 10.0
+
+								if dist_sq <= pow(h_rad + b_rad, 2):
+									if typeof(hazard) == TYPE_DICTIONARY:
+										hazard["attached_id"] = b_id
+										hazard["vx"] = 0.0
+										hazard["vy"] = 0.0
+									else:
+										hazard.attached_id = b_id
+										hazard.vx = 0.0
+										hazard.vy = 0.0
+									break
+
+
+					# Check collision with walls
+					if "arena" in world and "width" in world.arena and "height" in world.arena:
+						var h_rad = hazard.radius if typeof(hazard) == TYPE_DICTIONARY and hazard.has("radius") else (hazard.radius if "radius" in hazard else 15.0)
+						var aw = world.arena.width
+						var ah = world.arena.height
+						var hx = hazard.x if typeof(hazard) == TYPE_DICTIONARY and hazard.has("x") else (hazard.x if "x" in hazard else 0.0)
+						var hy = hazard.y if typeof(hazard) == TYPE_DICTIONARY and hazard.has("y") else (hazard.y if "y" in hazard else 0.0)
+
+						if hx - h_rad <= 0 or hx + h_rad >= aw or hy - h_rad <= 0 or hy + h_rad >= ah:
+							if typeof(hazard) == TYPE_DICTIONARY:
+								hazard["attached_id"] = -1
+								hazard["vx"] = 0.0
+								hazard["vy"] = 0.0
+								if hx - h_rad <= 0: hazard["x"] = h_rad
+								if hx + h_rad >= aw: hazard["x"] = aw - h_rad
+								if hy - h_rad <= 0: hazard["y"] = h_rad
+								if hy + h_rad >= ah: hazard["y"] = ah - h_rad
+							else:
+								hazard.attached_id = -1
+								hazard.vx = 0.0
+								hazard.vy = 0.0
+								if hx - h_rad <= 0: hazard.x = h_rad
+								if hx + h_rad >= aw: hazard.x = aw - h_rad
+								if hy - h_rad <= 0: hazard.y = h_rad
+								if hy + h_rad >= ah: hazard.y = ah - h_rad
+
+					var new_attached_id = null
+					if typeof(hazard) == TYPE_DICTIONARY and hazard.has("attached_id"): new_attached_id = hazard.attached_id
+					elif typeof(hazard) == TYPE_OBJECT and "attached_id" in hazard: new_attached_id = hazard.attached_id
+
+					if new_attached_id == null:
+						var h_dur = hazard.duration if typeof(hazard) == TYPE_DICTIONARY and hazard.has("duration") else (hazard.duration if "duration" in hazard else 0.0)
+						if h_dur > 0:
+							h_dur -= delta
+							if h_dur <= 0:
+								if "hazards" in world.arena and world.arena.hazards.has(hazard):
+									world.arena.hazards.erase(hazard)
+							else:
+								if typeof(hazard) == TYPE_DICTIONARY: hazard["duration"] = h_dur
+								else: hazard.duration = h_dur
+
+				elif attached_id == -1:
+					# Attached to wall
+					var exp_timer = hazard.explosion_timer if typeof(hazard) == TYPE_DICTIONARY and hazard.has("explosion_timer") else (hazard.explosion_timer if "explosion_timer" in hazard else 0.0)
+					if exp_timer > 0:
+						exp_timer -= delta
+						if typeof(hazard) == TYPE_DICTIONARY: hazard["explosion_timer"] = exp_timer
+						else: hazard.explosion_timer = exp_timer
+
+						if exp_timer <= 0:
+							if "hazards" in world.arena and world.arena.hazards.has(hazard):
+								world.arena.hazards.erase(hazard)
+
+							var explosion_radius = 100.0
+							var explosion_damage = 50.0
+
+							var hx = hazard.x if typeof(hazard) == TYPE_DICTIONARY and hazard.has("x") else (hazard.x if "x" in hazard else 0.0)
+							var hy = hazard.y if typeof(hazard) == TYPE_DICTIONARY and hazard.has("y") else (hazard.y if "y" in hazard else 0.0)
+
+							if "balls" in world:
+								for b in world.balls:
+									var b_alive = true
+									if "alive" in b: b_alive = b.alive
+
+									if b_alive:
+										var bx = b.x if "x" in b else (b.get_meta("x") if b.has_method("has_meta") and b.has_meta("x") else 0.0)
+										var by = b.y if "y" in b else (b.get_meta("y") if b.has_method("has_meta") and b.has_meta("y") else 0.0)
+										var dx = hx - bx
+										var dy = hy - by
+
+										if pow(dx, 2) + pow(dy, 2) <= pow(explosion_radius, 2):
+											if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+												b.take_damage(explosion_damage)
+											elif "hp" in b:
+												if typeof(b) == TYPE_DICTIONARY:
+													b["hp"] -= explosion_damage
+													if b["hp"] <= 0:
+														b["alive"] = false
+														b["killer"] = hazard.owner_id if typeof(hazard) == TYPE_DICTIONARY and hazard.has("owner_id") else (hazard.owner_id if "owner_id" in hazard else null)
+												else:
+													b.hp -= explosion_damage
+													if b.hp <= 0:
+														b.alive = false
+														b.killer = hazard.owner_id if typeof(hazard) == TYPE_DICTIONARY and hazard.has("owner_id") else (hazard.owner_id if "owner_id" in hazard else null)
+
+							if "events" in world:
+								world.events.append({"type": "explosion", "data": {"x": hx, "y": hy, "radius": explosion_radius}})
+
+				else:
+					# Attached
+					var current_attached = null
+					if "balls" in world:
+						for b in world.balls:
+							var b_id = b.id if "id" in b else null
+							if b_id == attached_id:
+								current_attached = b
+								break
+
+					var c_alive = true
+					if current_attached != null and "alive" in current_attached: c_alive = current_attached.alive
+
+					if current_attached != null and c_alive:
+						var cx = current_attached.x if "x" in current_attached else (current_attached.get_meta("x") if current_attached.has_method("has_meta") and current_attached.has_meta("x") else 0.0)
+						var cy = current_attached.y if "y" in current_attached else (current_attached.get_meta("y") if current_attached.has_method("has_meta") and current_attached.has_meta("y") else 0.0)
+
+						if typeof(hazard) == TYPE_DICTIONARY:
+							hazard["x"] = cx
+							hazard["y"] = cy
+						else:
+							hazard.x = cx
+							hazard.y = cy
+					else:
+						if "hazards" in world.arena and world.arena.hazards.has(hazard):
+							world.arena.hazards.erase(hazard)
+
+					var exp_timer = hazard.explosion_timer if typeof(hazard) == TYPE_DICTIONARY and hazard.has("explosion_timer") else (hazard.explosion_timer if "explosion_timer" in hazard else 0.0)
+					if exp_timer > 0:
+						exp_timer -= delta
+						if typeof(hazard) == TYPE_DICTIONARY: hazard["explosion_timer"] = exp_timer
+						else: hazard.explosion_timer = exp_timer
+
+						if exp_timer <= 0:
+							if "hazards" in world.arena and world.arena.hazards.has(hazard):
+								world.arena.hazards.erase(hazard)
+
+							var explosion_radius = 100.0
+							var explosion_damage = 50.0
+
+							var hx = hazard.x if typeof(hazard) == TYPE_DICTIONARY and hazard.has("x") else (hazard.x if "x" in hazard else 0.0)
+							var hy = hazard.y if typeof(hazard) == TYPE_DICTIONARY and hazard.has("y") else (hazard.y if "y" in hazard else 0.0)
+
+							if "balls" in world:
+								for b in world.balls:
+									var b_alive = true
+									if "alive" in b: b_alive = b.alive
+
+									if b_alive:
+										var bx = b.x if "x" in b else (b.get_meta("x") if b.has_method("has_meta") and b.has_meta("x") else 0.0)
+										var by = b.y if "y" in b else (b.get_meta("y") if b.has_method("has_meta") and b.has_meta("y") else 0.0)
+										var dx = hx - bx
+										var dy = hy - by
+
+										if pow(dx, 2) + pow(dy, 2) <= pow(explosion_radius, 2):
+											if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+												b.take_damage(explosion_damage)
+											elif "hp" in b:
+												if typeof(b) == TYPE_DICTIONARY:
+													b["hp"] -= explosion_damage
+													if b["hp"] <= 0:
+														b["alive"] = false
+														b["killer"] = hazard.owner_id if typeof(hazard) == TYPE_DICTIONARY and hazard.has("owner_id") else (hazard.owner_id if "owner_id" in hazard else null)
+												else:
+													b.hp -= explosion_damage
+													if b.hp <= 0:
+														b.alive = false
+														b.killer = hazard.owner_id if typeof(hazard) == TYPE_DICTIONARY and hazard.has("owner_id") else (hazard.owner_id if "owner_id" in hazard else null)
+
+							if "events" in world:
+								world.events.append({"type": "explosion", "data": {"x": hx, "y": hy, "radius": explosion_radius}})
+
 			elif hazard.get("kind") == "vampiric_puddle":
 				var my_rad = 10.0
 				if "radius" in self.ball:
