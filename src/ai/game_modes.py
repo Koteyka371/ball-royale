@@ -43258,6 +43258,123 @@ class CollapsingBubblesMode(GameMode):
         })
 GAME_MODES['collapsing_bubbles'] = CollapsingBubblesMode()
 
+class ToxicBubblesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Toxic Bubbles"
+        self.description = "Instead of a single shrinking storm, the map starts completely toxic, and players must find and fight over small safe bubbles that spawn, drift around the map randomly, and eventually pop, forcing constant repositioning."
+        self.bubbles = []
+        self.bubble_spawn_timer = 0.0
+        self.max_bubbles = 8
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.bubbles = []
+        self.bubble_spawn_timer = 0.0
+        # spawn initial bubbles
+        for _ in range(5):
+            self._spawn_bubble(world)
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        import random
+        super().tick(world, balls, delta)
+
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        self.bubble_spawn_timer -= delta
+        if self.bubble_spawn_timer <= 0:
+            if len(self.bubbles) < self.max_bubbles:
+                self._spawn_bubble(world)
+            self.bubble_spawn_timer = random.uniform(3.0, 6.0)
+
+        active_bubbles = []
+        for b in self.bubbles:
+            b["timer"] -= delta
+            if b["timer"] <= 0 and not b["collapsing"]:
+                b["collapsing"] = True
+                if hasattr(world, "add_event"):
+                    world.add_event("bubble_collapsing", {"x": b["x"], "y": b["y"], "message": "A safe bubble is popping!"})
+
+            if b["collapsing"]:
+                b["radius"] -= 50.0 * delta
+
+            b["x"] += b.get("vx", 0.0) * delta
+            b["y"] += b.get("vy", 0.0) * delta
+
+            # Bounce off walls
+            if hasattr(world, "arena") and world.arena:
+                aw = getattr(world.arena, "width", 1000)
+                ah = getattr(world.arena, "height", 1000)
+                if b["x"] - b["radius"] < 0:
+                    b["x"] = b["radius"]
+                    b["vx"] *= -1
+                elif b["x"] + b["radius"] > aw:
+                    b["x"] = aw - b["radius"]
+                    b["vx"] *= -1
+
+                if b["y"] - b["radius"] < 0:
+                    b["y"] = b["radius"]
+                    b["vy"] *= -1
+                elif b["y"] + b["radius"] > ah:
+                    b["y"] = ah - b["radius"]
+                    b["vy"] *= -1
+
+            if b["radius"] > 0:
+                active_bubbles.append(b)
+
+        self.bubbles = active_bubbles
+
+        for ball in balls:
+            w_timer = getattr(ball, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
+            if not getattr(ball, "alive", False):
+                continue
+            if is_immune:
+                continue
+
+            in_bubble = False
+            for b in self.bubbles:
+                dx = ball.x - b["x"]
+                dy = ball.y - b["y"]
+                if math.sqrt(dx*dx + dy*dy) <= b["radius"]:
+                    in_bubble = True
+                    break
+
+            if not in_bubble:
+                damage = 25.0 * delta
+                if hasattr(ball, "take_damage"):
+                    ball.take_damage(damage)
+                else:
+                    ball.hp -= damage
+                    if ball.hp <= 0:
+                        ball.hp = 0
+                        ball.alive = False
+                        if hasattr(ball, "id") and ball.id not in world.dead_balls:
+                            world.dead_balls.append(ball.id)
+                            if hasattr(world, "add_event"):
+                                world.add_event("ball_died", {"id": ball.id, "reason": "toxic_environment", "killer_id": -1})
+
+    def _spawn_bubble(self, world):
+        import random
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        radius = random.uniform(100.0, 250.0)
+        x = random.uniform(radius, arena_width - radius)
+        y = random.uniform(radius, arena_height - radius)
+        self.bubbles.append({
+            "x": x,
+            "y": y,
+            "vx": random.uniform(-50.0, 50.0),
+            "vy": random.uniform(-50.0, 50.0),
+            "radius": radius,
+            "timer": random.uniform(10.0, 20.0),
+            "collapsing": False
+        })
+
+GAME_MODES['toxic_bubbles'] = ToxicBubblesMode()
+
 class GhostTetherMode(GameMode):
     def __init__(self):
         super().__init__()

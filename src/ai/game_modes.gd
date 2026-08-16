@@ -63091,6 +63091,151 @@ class WeatherAltarsMode extends GameMode:
 					if altar["purchases"].has(bid):
 						altar["purchases"][bid] = max(0.0, altar["purchases"][bid] - delta)
 
+class ToxicBubblesMode extends GameMode:
+	var bubbles = []
+	var bubble_spawn_timer = 0.0
+	var max_bubbles = 8
+
+	func _init():
+		name = "Toxic Bubbles"
+		description = "Instead of a single shrinking storm, the map starts completely toxic, and players must find and fight over small safe bubbles that spawn, drift around the map randomly, and eventually pop, forcing constant repositioning."
+
+	func setup(world, balls: Array):
+		super.setup(world, balls)
+		bubbles.clear()
+		bubble_spawn_timer = 0.0
+		for i in range(5):
+			_spawn_bubble(world)
+
+	func tick(world, balls: Array, delta: float = 0.016):
+		if not ("dead_balls" in world):
+			world["dead_balls"] = []
+
+		bubble_spawn_timer -= delta
+		if bubble_spawn_timer <= 0:
+			if bubbles.size() < max_bubbles:
+				_spawn_bubble(world)
+			bubble_spawn_timer = randf_range(3.0, 6.0)
+
+		var active_bubbles = []
+		for b in bubbles:
+			b["timer"] -= delta
+			if b["timer"] <= 0 and not b["collapsing"]:
+				b["collapsing"] = true
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("bubble_collapsing", {"x": b["x"], "y": b["y"], "message": "A safe bubble is popping!"})
+
+			if b["collapsing"]:
+				b["radius"] -= 50.0 * delta
+
+			var vx = 0.0
+			if b.has("vx"): vx = b["vx"]
+			var vy = 0.0
+			if b.has("vy"): vy = b["vy"]
+
+			b["x"] += vx * delta
+			b["y"] += vy * delta
+
+			var aw = 1000.0
+			var ah = 1000.0
+			if ("arena" in world) and world.arena != null:
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					aw = float(world.arena.get("width", 1000.0))
+					ah = float(world.arena.get("height", 1000.0))
+				elif typeof(world.arena) == TYPE_OBJECT and world.arena.has_method("get"):
+					aw = float(world.arena.get("width"))
+					ah = float(world.arena.get("height"))
+
+			if b["x"] - b["radius"] < 0:
+				b["x"] = b["radius"]
+				if b.has("vx"): b["vx"] *= -1
+			elif b["x"] + b["radius"] > aw:
+				b["x"] = aw - b["radius"]
+				if b.has("vx"): b["vx"] *= -1
+
+			if b["y"] - b["radius"] < 0:
+				b["y"] = b["radius"]
+				if b.has("vy"): b["vy"] *= -1
+			elif b["y"] + b["radius"] > ah:
+				b["y"] = ah - b["radius"]
+				if b.has("vy"): b["vy"] *= -1
+
+			if b["radius"] > 0:
+				active_bubbles.append(b)
+
+		bubbles = active_bubbles
+
+		for ball in balls:
+			var w_timer = 0.0
+			if typeof(ball) == TYPE_DICTIONARY:
+				w_timer = ball.get("weather_immunity_timer", 0.0)
+				if not ball.get("alive", false): continue
+			else:
+				w_timer = ball.get("weather_immunity_timer") if ball.has_method("get") and ball.get("weather_immunity_timer") != null else 0.0
+				if not ball.get("alive"): continue
+
+			var is_immune = w_timer > 0.0
+			if is_immune: continue
+
+			var b_x = ball["x"] if typeof(ball) == TYPE_DICTIONARY else ball.get("x")
+			var b_y = ball["y"] if typeof(ball) == TYPE_DICTIONARY else ball.get("y")
+
+			var in_bubble = false
+			for b in bubbles:
+				var dx = b_x - b["x"]
+				var dy = b_y - b["y"]
+				var dist = sqrt(dx*dx + dy*dy)
+				if dist <= b["radius"]:
+					in_bubble = true
+					break
+
+			if not in_bubble:
+				var damage = 25.0 * delta
+				var hp = ball["hp"] if typeof(ball) == TYPE_DICTIONARY else ball.get("hp")
+				hp -= damage
+				if hp <= 0:
+					hp = 0
+					if typeof(ball) == TYPE_DICTIONARY:
+						ball["alive"] = false
+					else:
+						ball.set("alive", false)
+					var b_id = ball["id"] if typeof(ball) == TYPE_DICTIONARY else ball.get("id")
+					var db = world["dead_balls"] if typeof(world) == TYPE_DICTIONARY else world.get("dead_balls")
+					if db.find(b_id) == -1:
+						db.append(b_id)
+						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+							world.add_event("ball_died", {"id": b_id, "reason": "toxic_environment", "killer_id": -1})
+
+				if typeof(ball) == TYPE_DICTIONARY:
+					ball["hp"] = hp
+				else:
+					ball.set("hp", hp)
+
+	func _spawn_bubble(world):
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if ("arena" in world) and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				arena_width = float(world.arena.get("width", 1000.0))
+				arena_height = float(world.arena.get("height", 1000.0))
+			elif world.arena.has_method("get"):
+				arena_width = float(world.arena.get("width"))
+				arena_height = float(world.arena.get("height"))
+
+		var radius = randf_range(100.0, 250.0)
+		var x = randf_range(radius, arena_width - radius)
+		var y = randf_range(radius, arena_height - radius)
+		bubbles.append({
+			"x": x,
+			"y": y,
+			"vx": randf_range(-50.0, 50.0),
+			"vy": randf_range(-50.0, 50.0),
+			"radius": radius,
+			"timer": randf_range(10.0, 20.0),
+			"collapsing": false
+		})
+
+
 var GAME_MODES = {
     "cursed_relics": CursedRelicsMode.new(),
     "irradiation_survival": IrradiationSurvivalMode.new(),
@@ -63652,6 +63797,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"decreasing_safe_zones": DecreasingSafeZonesMode.new(),
 	"multiple_safe_zones": MultipleSafeZonesMode.new(),
 	"collapsing_bubbles": CollapsingBubblesMode.new(),
+	"toxic_bubbles": ToxicBubblesMode.new(),
 	"ghost_tether": GhostTetherMode.new(),
 	"entangled_arena": EntangledArenaMode.new(),
 	"quantum_thread_mode": QuantumThreadMode.new(),
