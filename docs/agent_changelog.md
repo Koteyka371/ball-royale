@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2003] Decoy Trap Zone — *2026-08-16 04:08:59 UTC*
+
+A deployed area that acts like a large brush. Enemies entering the area have their minimap filled with fake player icons and random shooting sounds, disorienting them while they remain inside the zone.
+
+---
+
 ## [idea-2002] Necromancer Bone Wall Skill — *2026-08-15 19:09:42 UTC*
 
 Necromancers can summon a wall of bones that blocks projectiles and enemy movement for a short duration.
