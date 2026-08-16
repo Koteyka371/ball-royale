@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2016] Bounty Hunter Trait — *2026-08-16 12:52:30 UTC*
+
+Players can equip a Bounty Hunter trait that highlights enemies with active bounties on the minimap.
+
+---
+
 ## [idea-2007] Minion Swarm Evolution — *2026-08-16 12:31:39 UTC*
 
 If a minion manages to survive for 60 seconds without decaying, it evolves into a permanent 'Elite Minion' that gains ranged attacks and no longer decays over time.
