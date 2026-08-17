@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2028] Chrono-Shifter Core — *2026-08-17 21:55:36 UTC*
+
+A booster that allows the ball to record its path for 5 seconds. Upon taking fatal damage, it rewinds time to its initial position and restores HP to the state it was at the beginning of the recording.
+
+---
+
 ## [idea-2024] Payload Anti-Gravity Field — *2026-08-17 21:03:45 UTC*
 
 The payload in Escort Mode periodically projects a low-gravity field around itself, making it harder for attackers to accurately hit it but also allowing defenders to perform long jumps.
