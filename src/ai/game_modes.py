@@ -8087,6 +8087,61 @@ class EscortMode(GameMode):
                             "y": py
                         })
                     self.current_ability = 0
+        # Low gravity field logic
+        if not hasattr(self, "low_gravity_timer"):
+            self.low_gravity_timer = 0.0
+            self.low_gravity_active = False
+
+        if not self.low_gravity_active:
+            self.low_gravity_timer += delta
+            if self.low_gravity_timer >= 15.0:
+                self.low_gravity_active = True
+                self.low_gravity_timer = 0.0
+                if hasattr(world, "events"):
+                    world.events.append({
+                        "type": "payload_ability",
+                        "ability": "low_gravity_field",
+                        "x": getattr(self.payload, "x", 0),
+                        "y": getattr(self.payload, "y", 0)
+                    })
+        else:
+            self.low_gravity_timer += delta
+            if self.low_gravity_timer >= 5.0:
+                self.low_gravity_active = False
+                self.low_gravity_timer = 0.0
+                # Restore original mass for all balls
+                for b in balls:
+                    if getattr(b, "_low_gravity_zone_active", False):
+                        b._low_gravity_zone_active = False
+                        if hasattr(b, "_base_mass_low_grav"):
+                            b.mass = getattr(b, "_base_mass_low_grav", 1.0)
+            else:
+                # Apply low gravity to nearby balls
+                if self.payload:
+                    px = getattr(self.payload, "x", 0)
+                    py = getattr(self.payload, "y", 0)
+                    field_radius = 250.0
+
+                    import math
+                    for b in balls:
+                        if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator" or b == self.payload:
+                            continue
+
+                        dist = math.hypot(getattr(b, "x", 0) - px, getattr(b, "y", 0) - py)
+                        if dist < field_radius:
+                            if not getattr(b, "_low_gravity_zone_active", False):
+                                b._low_gravity_zone_active = True
+                                b._base_mass_low_grav = getattr(b, "mass", 1.0)
+
+                            b.mass = getattr(b, "_base_mass_low_grav", 1.0) * 0.2
+                            if getattr(b, "vy", 0) > 0:
+                                b.vy = max(0.0, b.vy - 1200.0 * delta)
+                        else:
+                            if getattr(b, "_low_gravity_zone_active", False):
+                                b._low_gravity_zone_active = False
+                                if hasattr(b, "_base_mass_low_grav"):
+                                    b.mass = getattr(b, "_base_mass_low_grav", 1.0)
+
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
         if not self.payload:

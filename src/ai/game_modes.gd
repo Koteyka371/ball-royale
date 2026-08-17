@@ -12785,6 +12785,112 @@ class EscortMode extends GameMode:
 							})
 						current_ability = 0
 
+		# Low gravity field logic
+		if not self.has_meta("low_gravity_timer"):
+			self.set_meta("low_gravity_timer", 0.0)
+			self.set_meta("low_gravity_active", false)
+
+		if not self.get_meta("low_gravity_active"):
+			self.set_meta("low_gravity_timer", self.get_meta("low_gravity_timer") + delta)
+			if self.get_meta("low_gravity_timer") >= 15.0:
+				self.set_meta("low_gravity_active", true)
+				self.set_meta("low_gravity_timer", 0.0)
+				if "events" in world:
+					var px = 0.0
+					var py = 0.0
+					if payload != null:
+						if typeof(payload) == TYPE_DICTIONARY:
+							px = payload.get("x", 0.0)
+							py = payload.get("y", 0.0)
+						else:
+							px = payload.get("x") if "x" in payload else 0.0
+							py = payload.get("y") if "y" in payload else 0.0
+					world.events.append({
+						"type": "payload_ability",
+						"ability": "low_gravity_field",
+						"x": px,
+						"y": py
+					})
+		else:
+			self.set_meta("low_gravity_timer", self.get_meta("low_gravity_timer") + delta)
+			if self.get_meta("low_gravity_timer") >= 5.0:
+				self.set_meta("low_gravity_active", false)
+				self.set_meta("low_gravity_timer", 0.0)
+				for b in balls:
+					if typeof(b) == TYPE_OBJECT:
+						if b.has_meta("_low_gravity_zone_active") and b.get_meta("_low_gravity_zone_active"):
+							b.set_meta("_low_gravity_zone_active", false)
+							if b.has_meta("_base_mass_low_grav"):
+								b.set("mass", b.get_meta("_base_mass_low_grav"))
+					elif typeof(b) == TYPE_DICTIONARY:
+						if b.get("_low_gravity_zone_active", false):
+							b["_low_gravity_zone_active"] = false
+							if b.has("_base_mass_low_grav"):
+								b["mass"] = b.get("_base_mass_low_grav", 1.0)
+			else:
+				if payload != null:
+					var px = 0.0
+					var py = 0.0
+					if typeof(payload) == TYPE_DICTIONARY:
+						px = payload.get("x", 0.0)
+						py = payload.get("y", 0.0)
+					else:
+						px = payload.get("x") if "x" in payload else 0.0
+						py = payload.get("y") if "y" in payload else 0.0
+					var field_radius = 250.0
+
+					for b in balls:
+						var b_type = typeof(b)
+						if b_type != TYPE_OBJECT and b_type != TYPE_DICTIONARY:
+							continue
+
+						var is_alive = b.get("alive") if typeof(b) == TYPE_OBJECT else b.get("alive", false)
+						var b_ball_type = b.get("ball_type") if typeof(b) == TYPE_OBJECT else b.get("ball_type", "")
+						if not is_alive or b_ball_type == "spectator":
+							continue
+
+						var b_id = b.get("id") if typeof(b) == TYPE_OBJECT else b.get("id", null)
+						var p_id = payload.get("id") if typeof(payload) == TYPE_DICTIONARY else (payload.get("id") if typeof(payload) == TYPE_OBJECT else null)
+						if b_id != null and p_id != null and b_id == p_id:
+							continue
+
+						var bx = b.get("x") if typeof(b) == TYPE_OBJECT else b.get("x", 0.0)
+						var by = b.get("y") if typeof(b) == TYPE_OBJECT else b.get("y", 0.0)
+						var dist = sqrt((bx - px) * (bx - px) + (by - py) * (by - py))
+
+						if b_type == TYPE_OBJECT:
+							if dist < field_radius:
+								if not b.has_meta("_low_gravity_zone_active") or not b.get_meta("_low_gravity_zone_active"):
+									b.set_meta("_low_gravity_zone_active", true)
+									b.set_meta("_base_mass_low_grav", b.get("mass") if "mass" in b else 1.0)
+
+								var base_mass = b.get_meta("_base_mass_low_grav")
+								if base_mass != null:
+									b.set("mass", base_mass * 0.2)
+
+								var bvy = b.get("vy") if "vy" in b else 0.0
+								if bvy > 0:
+									b.set("vy", max(0.0, bvy - 1200.0 * delta))
+							else:
+								if b.has_meta("_low_gravity_zone_active") and b.get_meta("_low_gravity_zone_active"):
+									b.set_meta("_low_gravity_zone_active", false)
+									if b.has_meta("_base_mass_low_grav"):
+										b.set("mass", b.get_meta("_base_mass_low_grav"))
+						else:
+							if dist < field_radius:
+								if not b.get("_low_gravity_zone_active", false):
+									b["_low_gravity_zone_active"] = true
+									b["_base_mass_low_grav"] = b.get("mass", 1.0)
+
+								b["mass"] = b.get("_base_mass_low_grav", 1.0) * 0.2
+								if b.get("vy", 0.0) > 0:
+									b["vy"] = max(0.0, b.get("vy", 0.0) - 1200.0 * delta)
+							else:
+								if b.get("_low_gravity_zone_active", false):
+									b["_low_gravity_zone_active"] = false
+									if b.has("_base_mass_low_grav"):
+										b["mass"] = b.get("_base_mass_low_grav", 1.0)
+
 	func check_winner(world, balls: Array):
 		if payload == null:
 			return null
