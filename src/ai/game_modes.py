@@ -419,6 +419,55 @@ class GameMode:
                                         if hasattr(world, "add_event") and getattr(self, "random", __import__("random")).random() < 0.1:
                                             world.add_event("electric_spark", {"x": b_x, "y": b_y})
 
+                # Let's add the bomb bounce logic before high_risk_nuke_mine
+                if h_kind in ["bomb", "thrown_bomb"]:
+                    # Bounce off walls like normal balls
+                    if hasattr(world, "arena") and hasattr(world.arena, "clamp_position"):
+                        h_x = hazard.get("x", 0.0) if is_dict else getattr(hazard, "x", 0.0)
+                        h_y = hazard.get("y", 0.0) if is_dict else getattr(hazard, "y", 0.0)
+                        h_r = hazard.get("radius", 20.0) if is_dict else getattr(hazard, "radius", 20.0)
+
+                        # Use clamp_position for wall bouncing
+                        new_x, new_y, bounced = world.arena.clamp_position(h_x, h_y, h_r)
+
+                        if bounced:
+                            if is_dict:
+                                hazard["x"] = new_x
+                                hazard["y"] = new_y
+                                if new_x != h_x:
+                                    hazard["vx"] = -hazard.get("vx", 0.0)
+                                if new_y != h_y:
+                                    hazard["vy"] = -hazard.get("vy", 0.0)
+                            else:
+                                hazard.x = new_x
+                                hazard.y = new_y
+                                if new_x != h_x:
+                                    hazard.vx = -getattr(hazard, "vx", 0.0)
+                                if new_y != h_y:
+                                    hazard.vy = -getattr(hazard, "vy", 0.0)
+
+                    # Detonate on impact with a player
+                    h_x = hazard.get("x", 0.0) if is_dict else getattr(hazard, "x", 0.0)
+                    h_y = hazard.get("y", 0.0) if is_dict else getattr(hazard, "y", 0.0)
+                    h_r = hazard.get("radius", 20.0) if is_dict else getattr(hazard, "radius", 20.0)
+
+                    for b in balls:
+                        if not getattr(b, "alive", False):
+                            continue
+
+                        b_x = getattr(b, "x", 0.0)
+                        b_y = getattr(b, "y", 0.0)
+                        b_r = getattr(b, "radius", 15.0)
+
+                        dist_sq = (b_x - h_x)**2 + (b_y - h_y)**2
+                        if dist_sq < (h_r + b_r)**2:
+                            # Detonate! (set duration to 0 so it explodes this tick)
+                            if is_dict:
+                                hazard["duration"] = 0.0
+                            else:
+                                hazard.duration = 0.0
+                            break
+
                 if getattr(hazard, "kind", "") == "high_risk_nuke_mine":
                     # --- Defusing logic ---
                     defusing_timers = getattr(hazard, "defusing_timers", {})
