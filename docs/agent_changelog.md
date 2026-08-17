@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2004] Kinetic Bounce Shield — *2026-08-17 00:27:21 UTC*
+
+A temporary buff that removes all friction from the player's movement and doubles the knockback applied to enemies upon collision. The player bounces rapidly off walls and hazards but cannot use weapons while active.
+
+---
+
 ## [idea-2014] Bounty Contract Board — *2026-08-16 18:13:08 UTC*
 
 A terminal in the lobby where players can view all currently active high-value bounties in the match before they start.
