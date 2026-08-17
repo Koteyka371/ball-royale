@@ -17418,6 +17418,16 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "pinball_booster":
+                    self.ball.pinball_booster_timer = 10.0
+                    self.ball.is_frictionless = True
+                    self.ball.skill_silenced = True
+                    self.ball.knockback_multiplier_outgoing = 2.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "pinball_projectile_booster":
                     self.ball.pinball_projectile_timer = 5.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -26199,6 +26209,17 @@ class Action:
                     pull_speed = getattr(self.ball, "speed", 100.0) * 3.0 * delta
                     self.ball.x += nx * pull_speed
                     self.ball.y += ny * pull_speed
+
+        if hasattr(self.ball, "pinball_booster_timer") and self.ball.pinball_booster_timer > 0:
+            self.ball.pinball_booster_timer -= delta
+            self.ball.is_frictionless = True
+            self.ball.skill_silenced = True
+            self.ball.knockback_multiplier_outgoing = 2.0
+            if self.ball.pinball_booster_timer <= 0:
+                self.ball.pinball_booster_timer = 0.0
+                self.ball.is_frictionless = False
+                self.ball.skill_silenced = False
+                self.ball.knockback_multiplier_outgoing = 1.0
 
         if hasattr(self.ball, "pinball_projectile_timer") and self.ball.pinball_projectile_timer > 0:
             self.ball.pinball_projectile_timer -= delta

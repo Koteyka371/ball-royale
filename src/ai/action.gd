@@ -34570,6 +34570,26 @@ func _collect_booster(delta: float):
                     if w_hazards35 != null:
                         var idx35 = w_hazards35.find(nearest)
                         if idx35 != -1: w_hazards35.remove_at(idx35)
+            elif "kind" in nearest and nearest.kind == "pinball_booster":
+                if typeof(ball) == TYPE_DICTIONARY:
+                    ball["pinball_booster_timer"] = 10.0
+                    ball["is_frictionless"] = true
+                    ball["skill_silenced"] = true
+                    ball["knockback_multiplier_outgoing"] = 2.0
+                elif typeof(ball) == TYPE_OBJECT:
+                    if "pinball_booster_timer" in ball: ball.pinball_booster_timer = 10.0
+                    elif ball.has_method("set_meta"): ball.set_meta("pinball_booster_timer", 10.0)
+                    if "is_frictionless" in ball: ball.is_frictionless = true
+                    elif ball.has_method("set_meta"): ball.set_meta("is_frictionless", true)
+                    if "skill_silenced" in ball: ball.skill_silenced = true
+                    elif ball.has_method("set_meta"): ball.set_meta("skill_silenced", true)
+                    if "knockback_multiplier_outgoing" in ball: ball.knockback_multiplier_outgoing = 2.0
+                    elif ball.has_method("set_meta"): ball.set_meta("knockback_multiplier_outgoing", 2.0)
+
+                if typeof(world) == TYPE_OBJECT and "arena" in world and typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+                    var idx = world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        world.arena.hazards.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "pinball_projectile_booster":
                 ball.pinball_projectile_timer = 5.0
                 if typeof(world) == TYPE_OBJECT and "arena" in world and typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
@@ -52084,6 +52104,50 @@ func _update_skill_timer(delta: float):
                 pull_speed = pull_speed * 3.0 * delta
                 self.ball.x += nx * pull_speed
                 self.ball.y += ny * pull_speed
+
+    var pinball_booster_timer = 0.0
+    if "pinball_booster_timer" in self.ball:
+        pinball_booster_timer = float(self.ball.pinball_booster_timer)
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("pinball_booster_timer"):
+        pinball_booster_timer = float(self.ball.get_meta("pinball_booster_timer"))
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("pinball_booster_timer"):
+        pinball_booster_timer = float(self.ball["pinball_booster_timer"])
+
+    if pinball_booster_timer > 0.0:
+        pinball_booster_timer -= delta
+
+        # Apply effects
+        if typeof(self.ball) == TYPE_DICTIONARY:
+            self.ball["is_frictionless"] = true
+            self.ball["skill_silenced"] = true
+            self.ball["knockback_multiplier_outgoing"] = 2.0
+        elif typeof(self.ball) == TYPE_OBJECT:
+            if "is_frictionless" in self.ball: self.ball.is_frictionless = true
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("is_frictionless", true)
+            if "skill_silenced" in self.ball: self.ball.skill_silenced = true
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("skill_silenced", true)
+            if "knockback_multiplier_outgoing" in self.ball: self.ball.knockback_multiplier_outgoing = 2.0
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("knockback_multiplier_outgoing", 2.0)
+
+        if pinball_booster_timer <= 0.0:
+            pinball_booster_timer = 0.0
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["is_frictionless"] = false
+                self.ball["skill_silenced"] = false
+                self.ball["knockback_multiplier_outgoing"] = 1.0
+            elif typeof(self.ball) == TYPE_OBJECT:
+                if "is_frictionless" in self.ball: self.ball.is_frictionless = false
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("is_frictionless", false)
+                if "skill_silenced" in self.ball: self.ball.skill_silenced = false
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("skill_silenced", false)
+                if "knockback_multiplier_outgoing" in self.ball: self.ball.knockback_multiplier_outgoing = 1.0
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("knockback_multiplier_outgoing", 1.0)
+
+        if typeof(self.ball) == TYPE_DICTIONARY:
+            self.ball["pinball_booster_timer"] = pinball_booster_timer
+        elif typeof(self.ball) == TYPE_OBJECT:
+            if "pinball_booster_timer" in self.ball: self.ball.pinball_booster_timer = pinball_booster_timer
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("pinball_booster_timer", pinball_booster_timer)
 
     var pinball_timer = 0.0
     if "pinball_projectile_timer" in self.ball:
