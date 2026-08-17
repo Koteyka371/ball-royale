@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2000] Bouncy Walls Modifier — *2026-08-17 22:25:27 UTC*
+
+A new arena modifier where hitting the arena walls applies an elastic bounce that temporarily increases the ball's max speed beyond the normal cap for 2 seconds. This encourages risky play where players intentionally bounce off walls to gain an edge in speed during pursuits or evasions.
+
+---
+
 ## [idea-2028] Chrono-Shifter Core — *2026-08-17 21:55:36 UTC*
 
 A booster that allows the ball to record its path for 5 seconds. Upon taking fatal damage, it rewinds time to its initial position and restores HP to the state it was at the beginning of the recording.
