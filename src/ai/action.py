@@ -3544,6 +3544,53 @@ class Action:
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         self.world.arena.hazards.append(m)
 
+
+        if getattr(self.ball, "ball_type", "") == "frost_minion":
+            import math
+            self._update_skill_timer(delta)
+
+            attack_timer = getattr(self.ball, "attack_timer", 0.0)
+            if attack_timer > 0:
+                self.ball.attack_timer = attack_timer - delta
+
+            enemies = self._get_enemies()
+            if enemies:
+                target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                dx = target.x - self.ball.x
+                dy = target.y - self.ball.y
+                dist = math.hypot(dx, dy)
+
+                spd = getattr(self.ball, "speed", 2.5)
+                if dist > 0.001:
+                    nx = dx / dist
+                    ny = dy / dist
+
+                    if dist < 150.0:
+                        # Move away
+                        self.ball.x -= nx * spd * delta * 60
+                        self.ball.y -= ny * spd * delta * 60
+                    elif dist > 200.0:
+                        # Move closer
+                        self.ball.x += nx * spd * delta * 60
+                        self.ball.y += ny * spd * delta * 60
+
+                if getattr(self.ball, "attack_timer", 0.0) <= 0.0 and dist < 500.0:
+                    self.ball.attack_timer = 2.5
+                    m_id = getattr(self.world, "next_id", 99999)
+                    if hasattr(self.world, "next_id"):
+                        self.world.next_id += 1
+                    try:
+                        from arena.procedural_arena import Hazard
+                        m = Hazard(m_id, self.ball.x, self.ball.y, 8.0, "frost_bolt", 5.0)
+                        m.damage = 10.0
+                        m.owner_id = self.ball.id
+                        m.vx = nx * 300.0
+                        m.vy = ny * 300.0
+                        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                            self.world.arena.hazards.append(m)
+                    except Exception:
+                        pass
+
         if getattr(self.ball, "ball_type", "") == "broodling":
             import math
             self._update_skill_timer(delta)
@@ -20680,12 +20727,24 @@ class Action:
                     minion.x += random.uniform(-15, 15)
                     minion.y += random.uniform(-15, 15)
 
-                    if getattr(self.ball, "ball_type", "") == "necromancer" and random.random() < 0.5:
-                        minion.ball_type = "skeletal_archer"
-                        minion.hp = 15
-                        minion.base_speed = 3.0
-                        minion.attack_timer = 0.0
-                        minion.is_minion = True
+                    if getattr(self.ball, "ball_type", "") == "necromancer":
+                        r = random.random()
+                        if r < 0.33:
+                            minion.ball_type = "skeletal_archer"
+                            minion.hp = 15
+                            minion.base_speed = 3.0
+                            minion.attack_timer = 0.0
+                            minion.is_minion = True
+                        elif r < 0.66:
+                            minion.ball_type = "frost_minion"
+                            minion.hp = 15
+                            minion.base_speed = 3.0
+                            minion.attack_timer = 0.0
+                            minion.is_minion = True
+                        else:
+                            minion.hp = 20
+                            minion.base_speed = 2.0
+                            minion.is_minion = True
                     else:
                         minion.hp = 20
                         minion.base_speed = 2.0

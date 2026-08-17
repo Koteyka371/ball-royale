@@ -7495,6 +7495,112 @@ func execute(strategy: String, delta: float):
                             elif typeof(m) == TYPE_DICTIONARY: m["owner_id"] = self.ball.id if "id" in self.ball else -1
                             self.world.arena.hazards.append(m)
 
+
+    if b_type == "frost_minion":
+        _update_skill_timer(delta)
+        var attack_timer = 0.0
+        if typeof(self.ball) == TYPE_DICTIONARY: attack_timer = self.ball.get("attack_timer", 0.0)
+        elif "attack_timer" in self.ball: attack_timer = self.ball.attack_timer
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("attack_timer"):
+            attack_timer = self.ball.get_meta("attack_timer")
+
+        if attack_timer > 0.0:
+            attack_timer -= delta
+            if typeof(self.ball) == TYPE_DICTIONARY: self.ball["attack_timer"] = attack_timer
+            elif "attack_timer" in self.ball: self.ball.attack_timer = attack_timer
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("attack_timer", attack_timer)
+
+        var enemies = _get_enemies()
+        if enemies.size() > 0:
+            var target = null
+            var min_d = 9999999.0
+            var bx = 0.0
+            var by = 0.0
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                bx = self.ball.get("x", 0.0)
+                by = self.ball.get("y", 0.0)
+            elif "x" in self.ball and "y" in self.ball:
+                bx = self.ball.x
+                by = self.ball.y
+
+            for e in enemies:
+                var ex = 0.0
+                var ey = 0.0
+                if typeof(e) == TYPE_DICTIONARY:
+                    ex = e.get("x", 0.0)
+                    ey = e.get("y", 0.0)
+                elif "x" in e and "y" in e:
+                    ex = e.x
+                    ey = e.y
+                var d = (ex - bx)*(ex - bx) + (ey - by)*(ey - by)
+                if d < min_d:
+                    min_d = d
+                    target = e
+
+            if target != null:
+                var ex = 0.0
+                var ey = 0.0
+                if typeof(target) == TYPE_DICTIONARY:
+                    ex = target.get("x", 0.0)
+                    ey = target.get("y", 0.0)
+                elif "x" in target and "y" in target:
+                    ex = target.x
+                    ey = target.y
+                var dx = ex - bx
+                var dy = ey - by
+                var dist = sqrt(dx*dx + dy*dy)
+
+                var spd = 2.5
+                if typeof(self.ball) == TYPE_DICTIONARY: spd = self.ball.get("speed", 2.5)
+                elif "speed" in self.ball: spd = self.ball.speed
+
+                var nx = 0.0
+                var ny = 0.0
+                if dist > 0.001:
+                    nx = dx / dist
+                    ny = dy / dist
+                    if dist < 150.0:
+                        if typeof(self.ball) == TYPE_DICTIONARY:
+                            self.ball["x"] = bx - nx * spd * delta * 60.0
+                            self.ball["y"] = by - ny * spd * delta * 60.0
+                        elif "x" in self.ball and "y" in self.ball:
+                            self.ball.x = bx - nx * spd * delta * 60.0
+                            self.ball.y = by - ny * spd * delta * 60.0
+                    elif dist > 200.0:
+                        if typeof(self.ball) == TYPE_DICTIONARY:
+                            self.ball["x"] = bx + nx * spd * delta * 60.0
+                            self.ball["y"] = by + ny * spd * delta * 60.0
+                        elif "x" in self.ball and "y" in self.ball:
+                            self.ball.x = bx + nx * spd * delta * 60.0
+                            self.ball.y = by + ny * spd * delta * 60.0
+
+                if attack_timer <= 0.0 and dist < 500.0:
+                    attack_timer = 2.5
+                    if typeof(self.ball) == TYPE_DICTIONARY: self.ball["attack_timer"] = attack_timer
+                    elif "attack_timer" in self.ball: self.ball.attack_timer = attack_timer
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("attack_timer", attack_timer)
+
+                    var m_id = randi() % 90000 + 10000
+                    if "next_id" in self.world:
+                        m_id = self.world.next_id
+                        self.world.next_id += 1
+
+                    if "arena" in self.world and "hazards" in self.world.arena:
+                        var HazardType = load("res://src/arena/procedural_arena.gd").Hazard
+                        if HazardType:
+                            var m = HazardType.new(m_id, bx, by, "frost_bolt", 5.0)
+                            if "radius" in m: m.radius = 8.0
+                            elif typeof(m) == TYPE_DICTIONARY: m["radius"] = 8.0
+                            if "damage" in m: m.damage = 10.0
+                            elif typeof(m) == TYPE_DICTIONARY: m["damage"] = 10.0
+                            if "owner_id" in m: m.owner_id = self.ball.id if "id" in self.ball else -1
+                            elif typeof(m) == TYPE_DICTIONARY: m["owner_id"] = self.ball.id if "id" in self.ball else -1
+                            if "vx" in m: m.vx = nx * 300.0
+                            elif typeof(m) == TYPE_DICTIONARY: m["vx"] = nx * 300.0
+                            if "vy" in m: m.vy = ny * 300.0
+                            elif typeof(m) == TYPE_DICTIONARY: m["vy"] = ny * 300.0
+                            self.world.arena.hazards.append(m)
+
     if b_type == "broodling":
         _update_skill_timer(delta)
 
@@ -40465,20 +40571,43 @@ func _use_skill():
 
                 var summoner_type = ""
                 if "ball_type" in self.ball: summoner_type = self.ball.ball_type
-                if summoner_type == "necromancer" and randf() < 0.5:
-                    minion.ball_type = "skeletal_archer"
-                    minion.hp = 15.0
-                    minion.max_hp = 15.0
-                    if minion.has_method("set_meta"):
-                        minion.set_meta("attack_timer", 0.0)
-                    elif typeof(minion) == TYPE_DICTIONARY:
-                        minion["attack_timer"] = 0.0
+                if summoner_type == "necromancer":
+                    var r_necro = randf()
+                    if r_necro < 0.33:
+                        minion.ball_type = "skeletal_archer"
+                        minion.hp = 15.0
+                        minion.max_hp = 15.0
+                        if minion.has_method("set_meta"):
+                            minion.set_meta("attack_timer", 0.0)
+                        elif typeof(minion) == TYPE_DICTIONARY:
+                            minion["attack_timer"] = 0.0
+                        else:
+                            minion.attack_timer = 0.0
+                        if "base_speed" in self.ball:
+                            minion.base_speed = self.ball.base_speed
+                        else:
+                            minion.base_speed = 3.0
+                    elif r_necro < 0.66:
+                        minion.ball_type = "frost_minion"
+                        minion.hp = 15.0
+                        minion.max_hp = 15.0
+                        if minion.has_method("set_meta"):
+                            minion.set_meta("attack_timer", 0.0)
+                        elif typeof(minion) == TYPE_DICTIONARY:
+                            minion["attack_timer"] = 0.0
+                        else:
+                            minion.attack_timer = 0.0
+                        if "base_speed" in self.ball:
+                            minion.base_speed = self.ball.base_speed
+                        else:
+                            minion.base_speed = 3.0
                     else:
-                        minion.attack_timer = 0.0
-                    if "base_speed" in self.ball:
-                        minion.base_speed = self.ball.base_speed
-                    else:
-                        minion.base_speed = 3.0
+                        minion.hp = 20.0
+                        minion.max_hp = 20.0
+                        if "base_speed" in self.ball:
+                            minion.base_speed = self.ball.base_speed
+                        else:
+                            minion.base_speed = 2.0
                 else:
                     minion.hp = 20.0
                     minion.max_hp = 20.0

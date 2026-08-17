@@ -1978,6 +1978,42 @@ class GameMode:
                                 b.perception_radius = b.base_perception_radius_scrambler
                             delattr(b, "base_perception_radius_scrambler")
 
+
+            frost_bolts = [h for h in world.arena.hazards if getattr(h, "kind", "") == "frost_bolt"]
+            for h in frost_bolts:
+                h.x += getattr(h, "vx", 0) * delta
+                h.y += getattr(h, "vy", 0) * delta
+
+                # Check bounds
+                if h.x < 0 or h.x > getattr(world.arena, "width", 1000) or h.y < 0 or h.y > getattr(world.arena, "height", 1000):
+                    h.duration = 0.0
+                    continue
+
+                for b in balls:
+                    if not getattr(b, "alive", True):
+                        continue
+                    if getattr(b, "id", None) == getattr(h, "owner_id", None):
+                        continue
+
+                    hx, hy, hrad = getattr(h, "x", 0), getattr(h, "y", 0), getattr(h, "radius", 8.0)
+                    bx, by, brad = getattr(b, "x", 0), getattr(b, "y", 0), getattr(b, "radius", 15.0)
+                    dist = (hx - bx)**2 + (hy - by)**2
+                    if dist <= (hrad + brad)**2:
+                        # Impact
+                        dmg = getattr(h, "damage", 10.0)
+                        if hasattr(world, "_deal_damage"):
+                            owner = next((o for o in balls if getattr(o, "id", None) == getattr(h, "owner_id", None)), None)
+                            if owner:
+                                world._deal_damage(owner, b, dmg)
+                            elif hasattr(b, "take_damage"):
+                                b.take_damage(dmg)
+                        elif hasattr(b, "take_damage"):
+                            b.take_damage(dmg)
+
+                        b.slow_timer = max(getattr(b, "slow_timer", 0), 2.0)
+                        h.duration = 0.0
+                        break
+
             missiles = [h for h in world.arena.hazards if getattr(h, "kind", "") == "homing_missile"]
             for m in missiles:
                 is_scrambled_missile = False
