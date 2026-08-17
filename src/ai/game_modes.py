@@ -56291,3 +56291,27 @@ class DisorientationBrushMode(GameMode):
                             ball.disorientation_ping_timer -= delta
 
 GAME_MODES["disorientation_brush"] = DisorientationBrushMode()
+
+class ElasticWallsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Elastic Walls"
+        self.description = "A new arena modifier where hitting the arena walls applies an elastic bounce that temporarily increases the ball's max speed beyond the normal cap for 2 seconds. This encourages risky play where players intentionally bounce off walls to gain an edge in speed during pursuits or evasions."
+
+    def tick(self, world, balls, delta=0.016):
+        for b in balls:
+            timer = getattr(b, "elastic_bounce_timer", 0.0)
+            if timer > 0.0:
+                timer -= delta
+                b.elastic_bounce_timer = timer
+                if timer > 0.0:
+                    b.max_speed = getattr(b, "base_max_speed", 200.0) * 1.5
+                else:
+                    base = getattr(b, "base_max_speed", 200.0)
+                    b.max_speed = base
+            else:
+                if hasattr(b, "max_speed") or hasattr(b, "base_max_speed"):
+                    base = getattr(b, "base_max_speed", 200.0)
+                    b.max_speed = base
+
+GAME_MODES['elastic_walls'] = ElasticWallsMode()

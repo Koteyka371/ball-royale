@@ -88354,3 +88354,48 @@ class DisorientationBrushMode extends GameMode:
 
 GAME_MODES["disorientation_brush"] = DisorientationBrushMode.new()
 GAME_MODES["deep_freeze_mutator"] = DeepFreezeMutatorMode.new()
+class ElasticWallsMode extends GameMode:
+	func _init():
+		name = "Elastic Walls"
+		description = "A new arena modifier where hitting the arena walls applies an elastic bounce that temporarily increases the ball's max speed beyond the normal cap for 2 seconds. This encourages risky play where players intentionally bounce off walls to gain an edge in speed during pursuits or evasions."
+
+	func tick(world: Dictionary, balls: Array, delta: float = 0.016):
+		for b in balls:
+			var timer = 0.0
+			if typeof(b) == TYPE_OBJECT:
+				if "elastic_bounce_timer" in b:
+					timer = b.elastic_bounce_timer
+				elif b.has_method("has_meta") and b.has_meta("elastic_bounce_timer"):
+					timer = b.get_meta("elastic_bounce_timer")
+
+				if timer > 0.0:
+					timer -= delta
+					if "elastic_bounce_timer" in b:
+						b.elastic_bounce_timer = timer
+					elif b.has_method("set_meta"):
+						b.set_meta("elastic_bounce_timer", timer)
+
+					var base = 200.0
+					if "base_max_speed" in b: base = b.base_max_speed
+					elif b.has_method("has_meta") and b.has_meta("base_max_speed"): base = b.get_meta("base_max_speed")
+
+					if "max_speed" in b:
+						b.max_speed = base * 1.5
+					elif b.has_method("set_meta"):
+						b.set_meta("max_speed", base * 1.5)
+				else:
+					var base = 200.0
+					var has_base = false
+					if "base_max_speed" in b:
+						base = b.base_max_speed
+						has_base = true
+					elif b.has_method("has_meta") and b.has_meta("base_max_speed"):
+						base = b.get_meta("base_max_speed")
+						has_base = true
+
+					if "max_speed" in b:
+						b.max_speed = base
+					elif b.has_method("set_meta"):
+						b.set_meta("max_speed", base)
+
+GAME_MODES["elastic_walls"] = ElasticWallsMode.new()
