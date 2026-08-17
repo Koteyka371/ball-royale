@@ -506,6 +506,52 @@ class Action:
             return
 
 
+
+        if is_projectile_or_laser:
+            # Check for projectile teleporter trait/cosmetic
+            has_teleporter = "projectile_teleporter" in getattr(target, "traits", []) or getattr(target, "cosmetic", "").lower().replace(" ", "_") == "teleport_cloak"
+            import random
+            if has_teleporter and random.random() < 0.15:
+                # Find attacker ball
+                owner_id = getattr(attacker, "owner_id", None)
+                attacker_ball = None
+                if owner_id is not None and hasattr(self.world, "balls"):
+                    for b in getattr(self.world, "balls", []):
+                        if getattr(b, "id", None) == owner_id:
+                            attacker_ball = b
+                            break
+
+                if attacker_ball is None:
+                    attacker_ball = attacker
+
+                if attacker_ball:
+                    import math
+                    # Direction from target to attacker
+                    dx = getattr(attacker_ball, "x", 0.0) - getattr(target, "x", 0.0)
+                    dy = getattr(attacker_ball, "y", 0.0) - getattr(target, "y", 0.0)
+                    dist_to_attacker = math.hypot(dx, dy)
+                    if dist_to_attacker > 0.001:
+                        dir_x, dir_y = dx/dist_to_attacker, dy/dist_to_attacker
+                    else:
+                        dir_x, dir_y = -1.0, 0.0
+
+                    distance = getattr(attacker_ball, "radius", 20.0) + getattr(attacker, "radius", 5.0) + 10.0
+                    new_x = attacker_ball.x + dir_x * distance
+                    new_y = attacker_ball.y + dir_y * distance
+
+                    attacker.x = new_x
+                    attacker.y = new_y
+
+                    p_speed = math.hypot(getattr(attacker, "vx", 0.0), getattr(attacker, "vy", 0.0))
+                    if p_speed == 0: p_speed = 300.0
+                    attacker.vx = -dir_x * p_speed
+                    attacker.vy = -dir_y * p_speed
+
+                    attacker.team = getattr(target, "team", getattr(target, "ball_type", ""))
+                    attacker.owner_id = getattr(target, "id", None)
+
+                    return
+
         if getattr(attacker, "phase_booster_timer", 0.0) > 0.0:
             return
 
