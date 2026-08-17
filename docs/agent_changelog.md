@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2006] Skeletal Mage Subtype — *2026-08-17 08:00:04 UTC*
+
+Another minion subtype for the Necromancer that stays in the backline and shoots frost bolts that slow enemies.
+
+---
+
 ## [idea-2004] Kinetic Bounce Shield — *2026-08-17 00:27:21 UTC*
 
 A temporary buff that removes all friction from the player's movement and doubles the knockback applied to enemies upon collision. The player bounces rapidly off walls and hazards but cannot use weapons while active.
