@@ -63318,6 +63318,153 @@ class ToxicBubblesMode extends GameMode:
 		})
 
 
+
+class DeepFreezeMutatorMode extends GameMode:
+    var ice_expansion_rate = 10.0
+    var freeze_damage_rate = 5.0
+    var max_speed_penalty = 0.5
+    var thaw_rate = 5.0
+    var freeze_rate = 15.0
+
+    func _init():
+        super._init()
+        name = "Deep Freeze Mutator"
+        description = "The arena slowly freezes! Ice patches expand continuously. Stay near thermal vents to thaw your movement speed penalty, or take gradual freezing damage."
+
+    func setup(world, balls):
+        super.setup(world, balls)
+
+        # Initialize freeze level for balls
+        for b in balls:
+            if b.has_method("set_meta"):
+                b.set_meta("freeze_level", 0.0)
+            elif typeof(b) == TYPE_DICTIONARY:
+                b["freeze_level"] = 0.0
+            else:
+                b.freeze_level = 0.0
+
+        # Spawn some initial ice patches and thermal vents
+        if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
+            var max_id = 80000
+            for h in world.arena.hazards:
+                var h_id = h.get("id", 0) if typeof(h) == TYPE_DICTIONARY else (h.id if "id" in h else 0)
+                if h_id > max_id:
+                    max_id = h_id
+
+            var HazardObj = load("res://src/arena/procedural_arena.gd").Hazard
+
+            # Add thermal vents
+            for i in range(5):
+                var vent_id = max_id + i + 1
+                var x = randf_range(100, world.arena.width - 100)
+                var y = randf_range(100, world.arena.height - 100)
+                var vent = HazardObj.new(vent_id, x, y, 150.0, "thermal_vent", 0.0)
+                world.arena.hazards.append(vent)
+
+            # Add ice patches
+            for i in range(5):
+                var ice_id = max_id + i + 6
+                var x = randf_range(100, world.arena.width - 100)
+                var y = randf_range(100, world.arena.height - 100)
+                var ice = HazardObj.new(ice_id, x, y, 50.0, "ice_patches", 0.0)
+                world.arena.hazards.append(ice)
+
+    func tick(world, balls, delta):
+        # Expand ice patches
+        if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
+            for h in world.arena.hazards:
+                var kind = h.get("kind", "") if typeof(h) == TYPE_DICTIONARY else (h.kind if "kind" in h else "")
+                if kind == "ice_patches" or kind == "ice_patch":
+                    var current_rad = h.get("radius", 30.0) if typeof(h) == TYPE_DICTIONARY else (h.radius if "radius" in h else 30.0)
+                    var new_rad = current_rad + ice_expansion_rate * delta
+                    if new_rad > 800.0:
+                        new_rad = 800.0
+
+                    if typeof(h) == TYPE_DICTIONARY:
+                        h["radius"] = new_rad
+                    else:
+                        h.radius = new_rad
+
+        for b in balls:
+            var alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else false)
+            if not alive:
+                continue
+
+            var bx = b.get("x", 0) if typeof(b) == TYPE_DICTIONARY else (b.x if "x" in b else 0)
+            var by = b.get("y", 0) if typeof(b) == TYPE_DICTIONARY else (b.y if "y" in b else 0)
+            var brad = b.get("radius", 0) if typeof(b) == TYPE_DICTIONARY else (b.radius if "radius" in b else 0)
+
+            # Check proximity to thermal vents
+            var near_vent = false
+            if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
+                for h in world.arena.hazards:
+                    var kind = h.get("kind", "") if typeof(h) == TYPE_DICTIONARY else (h.kind if "kind" in h else "")
+                    if kind == "thermal_vent":
+                        var hx = h.get("x", 0) if typeof(h) == TYPE_DICTIONARY else (h.x if "x" in h else 0)
+                        var hy = h.get("y", 0) if typeof(h) == TYPE_DICTIONARY else (h.y if "y" in h else 0)
+                        var hrad = h.get("radius", 0) if typeof(h) == TYPE_DICTIONARY else (h.radius if "radius" in h else 0)
+
+                        var dist_sq = (bx - hx) * (bx - hx) + (by - hy) * (by - hy)
+                        if dist_sq <= (hrad + brad) * (hrad + brad):
+                            near_vent = true
+                            break
+
+            var current_freeze = 0.0
+            if b.has_method("get_meta") and b.has_meta("freeze_level"):
+                current_freeze = b.get_meta("freeze_level")
+            elif typeof(b) == TYPE_DICTIONARY:
+                current_freeze = b.get("freeze_level", 0.0)
+            elif "freeze_level" in b:
+                current_freeze = b.freeze_level
+
+            if near_vent:
+                # Thaw
+                current_freeze -= (1.0 / thaw_rate) * delta
+                if current_freeze < 0.0:
+                    current_freeze = 0.0
+            else:
+                # Freeze
+                current_freeze += (1.0 / freeze_rate) * delta
+                if current_freeze > 1.0:
+                    current_freeze = 1.0
+
+            if b.has_method("set_meta"):
+                b.set_meta("freeze_level", current_freeze)
+            elif typeof(b) == TYPE_DICTIONARY:
+                b["freeze_level"] = current_freeze
+            else:
+                b.freeze_level = current_freeze
+
+            # Apply speed penalty and damage
+            if current_freeze > 0:
+                var current_speed = b.get("speed", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.speed if "speed" in b else 0.0)
+                if current_speed > 0:
+                    var base_speed = b.get("base_speed", 100.0) if typeof(b) == TYPE_DICTIONARY else (b.base_speed if "base_speed" in b else 100.0)
+                    var speed_mult = 1.0 - (current_freeze * max_speed_penalty)
+                    if typeof(b) == TYPE_DICTIONARY:
+                        b["speed"] = base_speed * speed_mult
+                    else:
+                        b.speed = base_speed * speed_mult
+
+                if current_freeze >= 1.0:
+                    var hp = b.get("hp", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.hp if "hp" in b else 0.0)
+                    hp -= freeze_damage_rate * delta
+                    if hp <= 0:
+                        hp = 0
+                        if typeof(b) == TYPE_DICTIONARY:
+                            b["alive"] = false
+                        else:
+                            b.alive = false
+                        if world != null and world.has_method("add_event"):
+                            var b_id = b.get("id", null) if typeof(b) == TYPE_DICTIONARY else (b.id if "id" in b else null)
+                            world.add_event("death", {"id": b_id, "reason": "frozen"})
+
+                    if typeof(b) == TYPE_DICTIONARY:
+                        b["hp"] = hp
+                    else:
+                        b.hp = hp
+
+
 var GAME_MODES = {
     "cursed_relics": CursedRelicsMode.new(),
     "irradiation_survival": IrradiationSurvivalMode.new(),
@@ -88100,3 +88247,4 @@ class DisorientationBrushMode extends GameMode:
 										ball.disorientation_ping_timer = ping_timer - delta
 
 GAME_MODES["disorientation_brush"] = DisorientationBrushMode.new()
+GAME_MODES["deep_freeze_mutator"] = DeepFreezeMutatorMode.new()
