@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2020] Glacial Epoch Mutator — *2026-08-17 10:13:19 UTC*
+
+A weekly mutator that slowly freezes the entire arena. Hazard zones like 'Ice Patches' expand continuously, and players must remain near 'Thermal Vents' (new hazard type) to thaw their movement speed penalty. Staying away from vents for too long causes the ball to take gradual freezing damage.
+
+---
+
 ## [idea-2006] Skeletal Mage Subtype — *2026-08-17 08:00:04 UTC*
 
 Another minion subtype for the Necromancer that stays in the backline and shoots frost bolts that slow enemies.
