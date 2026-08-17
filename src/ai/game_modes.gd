@@ -3344,6 +3344,88 @@ class GameMode:
 								b.base_damage = b.get_meta("_original_base_damage")
 								b.damage = b.base_damage
 
+
+			var frost_bolts = []
+			if world != null and typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null and "hazards" in world.arena:
+				for h in world.arena.hazards:
+					var kind = ""
+					if typeof(h) == TYPE_DICTIONARY:
+						kind = h.get("kind", "")
+					elif "kind" in h:
+						kind = h.kind
+					if kind == "frost_bolt":
+						frost_bolts.append(h)
+
+			for h in frost_bolts:
+				var hx = h.x if "x" in h else (h.get("x", 0.0) if typeof(h) == TYPE_DICTIONARY else 0.0)
+				var hy = h.y if "y" in h else (h.get("y", 0.0) if typeof(h) == TYPE_DICTIONARY else 0.0)
+				var vx = h.vx if "vx" in h else (h.get("vx", 0.0) if typeof(h) == TYPE_DICTIONARY else 0.0)
+				var vy = h.vy if "vy" in h else (h.get("vy", 0.0) if typeof(h) == TYPE_DICTIONARY else 0.0)
+				var hrad = h.radius if "radius" in h else (h.get("radius", 8.0) if typeof(h) == TYPE_DICTIONARY else 8.0)
+				var owner_id = h.owner_id if "owner_id" in h else (h.get("owner_id", -1) if typeof(h) == TYPE_DICTIONARY else -1)
+				var h_dmg = h.damage if "damage" in h else (h.get("damage", 10.0) if typeof(h) == TYPE_DICTIONARY else 10.0)
+
+				hx += vx * delta
+				hy += vy * delta
+
+				if typeof(h) == TYPE_DICTIONARY:
+					h["x"] = hx
+					h["y"] = hy
+				elif "x" in h:
+					h.x = hx
+					h.y = hy
+
+				var arena_w = 1000.0
+				var arena_h = 1000.0
+				if world != null and typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					arena_w = world.arena.width if "width" in world.arena else 1000.0
+					arena_h = world.arena.height if "height" in world.arena else 1000.0
+
+				if hx < 0 or hx > arena_w or hy < 0 or hy > arena_h:
+					if typeof(h) == TYPE_DICTIONARY:
+						h["duration"] = 0.0
+					elif "duration" in h:
+						h.duration = 0.0
+					continue
+
+				for b in balls:
+					var b_alive = b.alive if typeof(b) != TYPE_DICTIONARY else b.get("alive", false)
+					if not b_alive: continue
+					var b_id = b.id if "id" in b else (b.get("id", -1) if typeof(b) == TYPE_DICTIONARY else -1)
+					if b_id == owner_id: continue
+
+					var bx = b.x if "x" in b else (b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else 0.0)
+					var by = b.y if "y" in b else (b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else 0.0)
+					var brad = b.radius if "radius" in b else (b.get("radius", 15.0) if typeof(b) == TYPE_DICTIONARY else 15.0)
+
+					var dist = (hx - bx)*(hx - bx) + (hy - by)*(hy - by)
+					if dist <= (hrad + brad)*(hrad + brad):
+						var owner_ball = null
+						for ob in balls:
+							var ob_id = ob.id if "id" in ob else (ob.get("id", -1) if typeof(ob) == TYPE_DICTIONARY else -1)
+							if ob_id == owner_id:
+								owner_ball = ob
+								break
+						if owner_ball != null and world != null and typeof(world) != TYPE_DICTIONARY and world.has_method("_deal_damage"):
+							world._deal_damage(owner_ball, b, h_dmg)
+						elif typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+							b.take_damage(h_dmg)
+
+						var current_slow = b.slow_timer if "slow_timer" in b else (b.get("slow_timer", 0.0) if typeof(b) == TYPE_DICTIONARY else 0.0)
+						var new_slow = max(current_slow, 2.0)
+						if typeof(b) == TYPE_DICTIONARY:
+							b["slow_timer"] = new_slow
+						elif "slow_timer" in b:
+							b.slow_timer = new_slow
+						elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+							b.set_meta("slow_timer", new_slow)
+
+						if typeof(h) == TYPE_DICTIONARY:
+							h["duration"] = 0.0
+						elif "duration" in h:
+							h.duration = 0.0
+						break
+
 			var missiles = []
 			if world != null and typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null and "hazards" in world.arena:
 				for h in world.arena.hazards:
