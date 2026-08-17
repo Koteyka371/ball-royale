@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2013] Quantum Deflector Shield — *2026-08-17 23:15:16 UTC*
+
+A new cosmetic/trait that has a small chance to teleport incoming projectiles behind the attacker instead of taking damage.
+
+---
+
 ## [idea-2000] Bouncy Walls Modifier — *2026-08-17 22:25:27 UTC*
 
 A new arena modifier where hitting the arena walls applies an elastic bounce that temporarily increases the ball's max speed beyond the normal cap for 2 seconds. This encourages risky play where players intentionally bounce off walls to gain an edge in speed during pursuits or evasions.
