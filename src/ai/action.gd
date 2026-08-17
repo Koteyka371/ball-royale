@@ -48448,6 +48448,12 @@ func _clamp_position() -> bool:
         elif typeof(self.world) == TYPE_DICTIONARY and self.world.has("arena") and self.world.arena.has("is_lunar_eclipse") and self.world.arena.is_lunar_eclipse:
             is_lunar_eclipse_bounce = true
 
+        if bounced and "game_mode" in self.world and self.world.game_mode != null and "name" in self.world.game_mode and self.world.game_mode.name == "Elastic Walls":
+            if "elastic_bounce_timer" in self.ball:
+                self.ball.elastic_bounce_timer = 2.0
+            elif self.ball.has_method("set_meta"):
+                self.ball.set_meta("elastic_bounce_timer", 2.0)
+
         if bounced and (("game_mode" in self.world and self.world.game_mode != null and "name" in self.world.game_mode and self.world.game_mode.name in ["Ricochet Arena", "Extreme Bounciness", "Super Bouncy Arena", "Chaotic Pinball Machine", "Jump Pad Boundaries", "Giant Bouncy Royale"]) or is_lunar_eclipse_bounce):
             var mult = 2.0
             if self.world.game_mode.name == "Ricochet Arena":

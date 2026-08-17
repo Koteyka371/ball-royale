@@ -24690,6 +24690,9 @@ class Action:
         if hasattr(self.world, "arena") and getattr(self.world.arena, "is_lunar_eclipse", False):
             is_lunar_eclipse_bounce = True
 
+        if bounced and gm and getattr(gm, "name", "") == "Elastic Walls":
+            self.ball.elastic_bounce_timer = 2.0
+
         if bounced and (gm and getattr(gm, "name", "") in ["Ricochet Arena", "Extreme Bounciness", "Super Bouncy Arena", "Chaotic Pinball Machine", "Jump Pad Boundaries", "Giant Bouncy Royale"] or is_lunar_eclipse_bounce):
             if getattr(gm, "name", "") == "Ricochet Arena":
                 mult = getattr(gm, "velocity_multiplier", 3.0)
