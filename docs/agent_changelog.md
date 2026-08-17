@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2024] Payload Anti-Gravity Field — *2026-08-17 21:03:45 UTC*
+
+The payload in Escort Mode periodically projects a low-gravity field around itself, making it harder for attackers to accurately hit it but also allowing defenders to perform long jumps.
+
+---
+
 ## [idea-2020] Glacial Epoch Mutator — *2026-08-17 10:13:19 UTC*
 
 A weekly mutator that slowly freezes the entire arena. Hazard zones like 'Ice Patches' expand continuously, and players must remain near 'Thermal Vents' (new hazard type) to thaw their movement speed penalty. Staying away from vents for too long causes the ball to take gradual freezing damage.
