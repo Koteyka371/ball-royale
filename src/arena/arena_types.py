@@ -1524,6 +1524,7 @@ class PinballArena(ProceduralArena):
                         setattr(h, "flip_timer", 0.5)
 
 from arena.shrinking_hazards import ShrinkingHazardsArena
+from arena.morphing_arena import MorphingArena
 
 
 class SpringArena(ProceduralArena):
@@ -1611,6 +1612,7 @@ ARENAS = {
     'ice': IceArena,
     'spring': SpringArena,
     'shrinking_hazards': ShrinkingHazardsArena,
+    'morphing': MorphingArena,
 
     "siege": SiegeArena,
     "thunderstorm": ThunderstormArena,

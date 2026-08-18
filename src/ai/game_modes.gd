@@ -88609,3 +88609,13 @@ class ElasticWallsMode extends GameMode:
 						b.set_meta("max_speed", base)
 
 GAME_MODES["elastic_walls"] = ElasticWallsMode.new()
+
+
+class MorphingArenaMode extends GameMode:
+	func setup(world: Object, balls: Array) -> void:
+		super.setup(world, balls)
+		if world != null and "arena" in world:
+			var MorphingArenaScript = load("res://src/arena/morphing_arena.gd")
+			if MorphingArenaScript:
+				world.arena = MorphingArenaScript.new(world.arena.width, 0, null)
+GAME_MODES["morphing_arena"] = MorphingArenaMode.new()

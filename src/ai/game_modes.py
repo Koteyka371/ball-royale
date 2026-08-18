@@ -56455,3 +56455,12 @@ class ElasticWallsMode(GameMode):
                     b.max_speed = base
 
 GAME_MODES['elastic_walls'] = ElasticWallsMode()
+
+
+class MorphingArenaMode(GameMode):
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if hasattr(world, "arena"):
+            from arena.morphing_arena import MorphingArena
+            world.arena = MorphingArena(arena_size=world.arena.width, seed=None)
+GAME_MODES["morphing_arena"] = MorphingArenaMode()
