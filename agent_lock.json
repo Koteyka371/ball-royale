@@ -11,25 +11,25 @@
     "agent-2": {
       "name": "Jules Behaviors",
       "area": "behaviors",
-      "task_id": "idea-1923",
-      "status": "assigned",
-      "started_at": "2026-08-18T16:55:03.030004+00:00",
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
       "cycles_today": 1
     },
     "agent-3": {
       "name": "Jules Tests",
       "area": "tests",
-      "task_id": "idea-1971",
-      "status": "assigned",
-      "started_at": "2026-08-18T16:55:03.030004+00:00",
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
       "cycles_today": 0
     },
     "agent-4": {
       "name": "Jules Content",
       "area": "content",
-      "task_id": "idea-1974",
-      "status": "working",
-      "started_at": "2026-08-18T17:56:13.585485+00:00",
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
       "cycles_today": 0
     },
     "agent-5": {
@@ -59,9 +59,9 @@
     "agent-7": {
       "name": "Jules Worker 7",
       "area": "content",
-      "task_id": "idea-1983",
-      "status": "assigned",
-      "started_at": "2026-08-18T16:55:03.030004+00:00",
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
       "cycles_today": 0
     },
     "agent-8": {
@@ -163,9 +163,9 @@
     "agent-20": {
       "name": "Jules Worker 20",
       "area": "content",
-      "status": "working",
-      "task_id": "idea-2026",
-      "started_at": "2026-08-18T17:20:29.189934+00:00",
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
       "cycles_today": 1
     },
     "agent-21": {
@@ -195,17 +195,17 @@
     "agent-24": {
       "name": "Jules Worker 24",
       "area": "content",
-      "status": "assigned",
-      "task_id": "idea-2034",
-      "started_at": "2026-08-18T16:55:03.030004+00:00",
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
       "cycles_today": 2
     },
     "agent-25": {
       "name": "Jules Worker 25",
       "area": "meta",
-      "status": "assigned",
-      "task_id": "idea-2035",
-      "started_at": "2026-08-18T17:17:48.555092+00:00",
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
       "cycles_today": 0
     },
     "agent-26": {
