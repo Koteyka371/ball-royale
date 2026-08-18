@@ -32879,7 +32879,7 @@ class ExpandingArenaMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "Expanding Arena"
-        self.description = "Every 30 seconds the arena size increases by 10%, revealing new space."
+        self.description = "Every 30 seconds the arena size increases by 10%, giving players more space but making it harder to find resources and forcing ranged encounters."
         self.expand_timer = 0.0
         self.max_size = 2000.0
 

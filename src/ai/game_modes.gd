@@ -53314,7 +53314,7 @@ class ExpandingArenaMode extends GameMode:
 
 	func _init():
 		name = "Expanding Arena"
-		description = "Every 30 seconds the arena size increases by 10%, revealing new space."
+		description = "Every 30 seconds the arena size increases by 10%, giving players more space but making it harder to find resources and forcing ranged encounters."
 		expand_timer = 0.0
 
 	func setup(world, balls):
