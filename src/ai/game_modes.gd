@@ -88959,3 +88959,4 @@ class DarkMatterVoidMode extends GameMode:
 						b["speed"] = base_speed
 
 GAME_MODES["dark_matter_void"] = DarkMatterVoidMode.new()
+GAME_MODES["morphing_arena"] = load("res://src/ai/morphing_arena_mode.gd").new()

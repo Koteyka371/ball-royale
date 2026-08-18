@@ -56642,3 +56642,6 @@ class DarkMatterVoidMode(GameMode):
                         b.speed = getattr(b, "base_speed", 100.0)
 
 GAME_MODES["dark_matter_void"] = DarkMatterVoidMode()
+
+from ai.morphing_arena_mode import MorphingArenaMode
+GAME_MODES["morphing_arena"] = MorphingArenaMode()
