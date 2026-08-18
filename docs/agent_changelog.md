@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2025] Expanding Arena Mode — *2026-08-18 00:10:23 UTC*
+
+Every 30 seconds the arena size increases by 10%, giving players more space but making it harder to find resources and forcing ranged encounters.
+
+---
+
 ## [idea-2013] Quantum Deflector Shield — *2026-08-17 23:15:16 UTC*
 
 A new cosmetic/trait that has a small chance to teleport incoming projectiles behind the attacker instead of taking damage.
