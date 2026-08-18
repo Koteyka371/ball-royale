@@ -2232,7 +2232,7 @@ class GameMode:
 									if "y" in h: h.y = h_y
 									elif h.has_method("set_meta"): h.set_meta("y", h_y)
 
-								if world != null and world.has_method("add_event"):
+								if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 									world.add_event("visual_effect", {"type": "hazard_controlled", "x": h_x, "y": h_y})
 							else:
 								if typeof(h) == TYPE_DICTIONARY:
@@ -4197,7 +4197,7 @@ class GameMode:
 							var mid_x = (h1_x + h2_x) / 2.0
 							var mid_y = (h1_y + h2_y) / 2.0
 
-							if world != null and world.has_method("add_event"):
+							if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 								world.add_event("massive_emote_event", {
 									"x": mid_x,
 									"y": mid_y,
@@ -5859,7 +5859,7 @@ class BattleRoyaleMode extends GameMode:
 
 							if weather != pref:
 								weather = pref
-								if world != null and world.has_method("add_event"):
+								if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 									world.add_event("weather_change", {"weather": weather})
 								if weather == "wind":
 									if has_method("set_meta"):
@@ -5900,7 +5900,7 @@ class BattleRoyaleMode extends GameMode:
 						b.set_meta("forecast_warning_issued", false)
 					else:
 						b.forecast_warning_issued = false
-				if world != null and world.has_method("add_event"):
+				if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("weather_change", {"weather": weather})
 
 			if weather == "wind":
@@ -6019,13 +6019,13 @@ class BattleRoyaleMode extends GameMode:
 				is_acid_rain_active = true
 				acid_rain_timer = 0.0
 				acid_rain_duration = 15.0
-				if world != null and world.has_method("add_event"):
+				if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("acid_rain_start", {"message": "Acid Rain has started! Find a shield or shelter!"})
 		else:
 			acid_rain_duration -= delta
 			if acid_rain_duration <= 0:
 				is_acid_rain_active = false
-				if world != null and world.has_method("add_event"):
+				if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("acid_rain_end", {"message": "Acid Rain has subsided."})
 			else:
 				for b in balls:
@@ -6659,7 +6659,7 @@ class BattleRoyaleMode extends GameMode:
 			if world != null and "balls" in world:
 				world.balls.append(new_boss)
 
-			if world != null and world.has_method("add_event"):
+			if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 				world.add_event("final_boss_spawn", {"message": "A massive " + boss_type.capitalize() + " has emerged in the center of the safe zone!"})
 
 		# Check boss death and evolve
@@ -6767,7 +6767,7 @@ class BattleRoyaleMode extends GameMode:
 									b.set_meta("max_shield", max_sh)
 									b.set_meta("shield", cur_sh)
 
-							if world != null and world.has_method("add_event"):
+							if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 								world.add_event("boss_evolved", {"message": "The boss evolved and gained " + new_mut.replace("_", " ") + "!"})
 
 					if typeof(b) == TYPE_DICTIONARY:
@@ -6920,7 +6920,7 @@ class BattleRoyaleMode extends GameMode:
 					var mut_count = mutations.size()
 					var points = 5000 + mut_count * 2000
 
-					if world != null and world.has_method("add_event"):
+					if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 						world.add_event("boss_defeated", {
 							"killer_id": killer_id,
 							"points": points,
@@ -7105,7 +7105,7 @@ class BattleRoyaleMode extends GameMode:
 				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null and "hazards" in world.arena:
 					world.arena.hazards.append(drop)
 
-			if world != null and world.has_method("add_event"):
+			if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 				world.add_event("high_tier_drop_spawn", {"message": "A high-tier supply drop has appeared! Capture it!"})
 
 		var drops_to_remove = []
@@ -7201,7 +7201,7 @@ class BattleRoyaleMode extends GameMode:
 											if "max_hp" in b: b.max_hp = b.max_hp + 50.0
 											if "hp" in b: b.hp = b.hp + 50.0
 
-							if world != null and world.has_method("add_event"):
+							if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 								world.add_event("high_tier_drop_captured", {"message": "Team " + str(team) + " captured the high-tier supply drop!"})
 					else:
 						drop.capturing_team = team
@@ -7332,7 +7332,7 @@ class BattleRoyaleMode extends GameMode:
 			var old_weather = self.weather
 			if old_weather != pref:
 				self.weather = pref
-				if world != null and world.has_method("add_event"):
+				if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("weather_change", {"weather": self.weather})
 				if self.weather == "wind":
 					if has_method("set_meta"):
@@ -7360,7 +7360,7 @@ class BattleRoyaleMode extends GameMode:
 							b.set_meta("forecast_booster_active", false)
 							b.set_meta("weather_immunity_timer", 15.0)
 							b.set_meta("forecast_warning_issued", false)
-					if world != null and world.has_method("add_event"):
+					if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 						world.add_event("weather_change", {"weather": self.weather})
 				if self.weather == "wind":
 					if has_method("set_meta"):
@@ -7479,7 +7479,7 @@ class BattleRoyaleMode extends GameMode:
 						"radius": 30.0
 					})
 					self.set_meta("active_meteors", am)
-					if world != null and world.has_method("add_event"):
+					if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 						world.add_event("visual_effect", {"type": "meteor_warning", "x": rx, "y": ry, "radius": 30.0})
 
 			if self.has_meta("active_meteors"):
@@ -7974,7 +7974,7 @@ class BattleRoyaleMode extends GameMode:
 			modifier_timer = 0.0
 			var mods = ["double_speed", "zero_gravity", "double_damage", "half_speed"]
 			current_modifier = mods[rng.randi() % mods.size()]
-			if world != null and world.has_method("add_event"):
+			if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 				world.add_event("modifier_applied", {"modifier": current_modifier, "message": "Global modifier applied!"})
 
 		# Loot Goblin Event
@@ -14493,7 +14493,7 @@ class SweepingBlackHoleMode extends GameMode:
 				bh_vx = -40.0
 				bh_vy = 0.0
 
-			if world != null and world.has_method("add_event"):
+			if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 				world.add_event("sweeping_black_hole_spawn", {"message": "A sweeping black hole appeared!"})
 
 		bh_x += bh_vx * delta
@@ -15065,7 +15065,7 @@ class WeatherChaosMode extends GameMode:
 
 							if weather != pref:
 								weather = pref
-								if world != null and world.has_method("add_event"):
+								if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 									world.add_event("weather_change", {"weather": weather})
 								if weather == "wind":
 									if has_method("set_meta"):
@@ -15097,7 +15097,7 @@ class WeatherChaosMode extends GameMode:
 			var old_weather = weather
 			if old_weather != pref:
 				weather = pref
-				if world != null and world.has_method("add_event"):
+				if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("weather_change", {"weather": weather})
 				if weather == "wind":
 					if has_method("set_meta"):
@@ -15122,7 +15122,7 @@ class WeatherChaosMode extends GameMode:
 						b.set_meta("forecast_warning_issued", true)
 					else:
 						b.forecast_warning_issued = true
-					if world != null and world.has_method("add_event"):
+					if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 						world.add_event("weather_warning", {"type": "weather_warning", "message": "Forecast warns: Weather change incoming!"})
 
 			var time_until = 10.0 - weather_timer
@@ -15140,7 +15140,7 @@ class WeatherChaosMode extends GameMode:
 						b.forecast_warning_issued = true
 					var next_w = "unknown"
 					if has_meta("next_weather"): next_w = get_meta("next_weather")
-					if world != null and world.has_method("add_event"):
+					if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 						world.add_event("weather_warning", {"type": "weather_warning", "message": "Forecast warns: " + next_w.to_upper() + " incoming in " + str(int(time_until)) + "s!"})
 
 			if has_meta("weather_warning_issued"):
@@ -15156,7 +15156,7 @@ class WeatherChaosMode extends GameMode:
 					if scanners.size() > 0:
 						var next_w = "unknown"
 						if has_meta("next_weather"): next_w = get_meta("next_weather")
-						if world != null and world.has_method("add_event"):
+						if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 							world.add_event("weather_warning", {"type": "weather_warning", "message": "Scanner warns: " + next_w.to_upper() + " incoming in 3s!"})
 						set_meta("weather_warning_issued", true)
 
@@ -15184,7 +15184,7 @@ class WeatherChaosMode extends GameMode:
 							b.set_meta("forecast_booster_active", false)
 							b.set_meta("weather_immunity_timer", 15.0)
 							b.set_meta("forecast_warning_issued", false)
-					if world != null and world.has_method("add_event"):
+					if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 						world.add_event("weather_change", {"weather": weather})
 				if weather == "wind":
 					if has_method("set_meta"):
@@ -15297,7 +15297,7 @@ class WeatherChaosMode extends GameMode:
 						"radius": 30.0
 					})
 					self.set_meta("active_meteors", am)
-					if world != null and world.has_method("add_event"):
+					if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 						world.add_event("visual_effect", {"type": "meteor_warning", "x": rx, "y": ry, "radius": 30.0})
 
 			if self.has_meta("active_meteors"):
@@ -16957,7 +16957,7 @@ class CustomMatchMode extends GameMode:
 										b.set_meta("_original_team", b.get("team", b.get("ball_type", "solo")))
 									b.team = "Hunters"
 
-							if world != null and world.has_method("add_event"):
+							if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 								world.add_event("boss_mutator", {"message": "A player has become a Juggernaut Boss!"})
 
 					set_meta("boss_mutator_timer", b_timer)
@@ -17227,7 +17227,7 @@ class EcholocationMode extends GameMode:
 				if world != null and "arena" in world and world.arena != null:
 					world.arena.is_night = false
 
-				if world != null and world.has_method("add_event"):
+				if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("weather_warning", {"type": "weather_warning", "message": "Lightning flash reveals the arena!"})
 
 				for b in balls:
@@ -22325,7 +22325,7 @@ class RadiationWindstormMode extends GameMode:
 		if angle_timer <= 0.0:
 			wind_angle = randf() * PI * 2.0
 			angle_timer = 30.0
-			if world != null and world.has_method("add_event"):
+			if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 				world.add_event("wind_shift", {"angle": wind_angle, "message": "The wind direction shifted!"})
 
 		var wind_vx = cos(wind_angle) * wind_speed
@@ -23777,7 +23777,7 @@ class WindstormMode extends GameMode:
 		if push_timer <= 0:
 			if push_duration <= 0:
 				var angle = randf_range(0.0, 2.0 * PI)
-				if world != null and world.has_method("add_event"):
+				if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("weather_warning", {"type": "weather_warning", "message": "Windstorm is pushing!"})
 				push_dir_x = cos(angle)
 				push_dir_y = sin(angle)
@@ -24862,7 +24862,7 @@ class EarthquakeMode extends GameMode:
 				timer = 0.0
 				is_shaking = true
 				shake_timer = randf_range(2.0, 5.0)
-				if world != null and world.has_method("add_event"):
+				if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("earthquake", {"type": "earthquake", "intensity": shake_timer / 2.0})
 
 
@@ -26596,7 +26596,7 @@ class DayNightMode extends GameMode:
 								if "speed" in b: b.speed = base_s * 2.5
 								if "damage" in b: b.damage = base_d * 2.5
 
-							if world != null and world.has_method("add_event"):
+							if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 								var bid = 0
 								if typeof(b) == TYPE_DICTIONARY:
 									bid = b.get("id", 0)
@@ -27029,7 +27029,7 @@ class MagneticCollisionsMode extends GameMode:
 						"radius": 30.0
 					})
 					self.set_meta("active_meteors", am)
-					if world != null and world.has_method("add_event"):
+					if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 						world.add_event("visual_effect", {"type": "meteor_warning", "x": rx, "y": ry, "radius": 30.0})
 
 			if self.has_meta("active_meteors"):
@@ -27200,7 +27200,7 @@ class MagneticCollisionsMode extends GameMode:
 						if b.has_method("set_meta"): b.set_meta("polarity", new_polarity)
 						elif "polarity" in b: b.polarity = new_polarity
 
-			if world != null and world.has_method("add_event"):
+			if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 				world.add_event("polarity_flip", {"message": "Polarities have flipped!"})
 
 		# Apply magnetic forces
@@ -28017,7 +28017,7 @@ class PinballMode extends GameMode:
 						"radius": 30.0
 					})
 					self.set_meta("active_meteors", am)
-					if world != null and world.has_method("add_event"):
+					if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 						world.add_event("visual_effect", {"type": "meteor_warning", "x": rx, "y": ry, "radius": 30.0})
 
 			if self.has_meta("active_meteors"):
@@ -29571,7 +29571,7 @@ class UnstablePortalsEventMode extends GameMode:
 					"charge_timer": 0.0,
 					"sucked_balls": []
 				})
-				if world != null and world.has_method("add_event"):
+				if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("portal_spawn", {"message": "An unstable portal has appeared!"})
 
 		for p in portals:
@@ -29645,7 +29645,7 @@ class UnstablePortalsEventMode extends GameMode:
 
 					if p["charge_timer"] >= 2.0:
 						p["active"] = false
-						if world != null and world.has_method("add_event"):
+						if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 							world.add_event("portal_blast", {"message": "A portal blasted!", "x": p["x"], "y": p["y"]})
 
 						var other_portals = []
@@ -29712,7 +29712,7 @@ class UnstablePortalsEventMode extends GameMode:
 				p["timer"] -= delta
 				if p["timer"] <= 0:
 					p["active"] = false
-					if world != null and world.has_method("add_event"):
+					if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 						world.add_event("portal_collapse", {"message": "A portal collapsed!", "x": p["x"], "y": p["y"]})
 						world.add_event("explosion", {"x": p["x"], "y": p["y"], "radius": 150.0, "damage": 30.0})
 
@@ -30250,7 +30250,7 @@ class MinefieldEventMode extends GameMode:
 						"active": true,
 						"visible": randf() > 0.5
 					})
-				if world != null and world.has_method("add_event"):
+				if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("minefield_event", {"message": "MINEFIELD EVENT! Watch your step!"})
 			else:
 				event_timer = 0.0
@@ -30261,7 +30261,7 @@ class MinefieldEventMode extends GameMode:
 				event_active = false
 				event_timer = 0.0
 				mines = []
-				if world != null and world.has_method("add_event"):
+				if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("minefield_event_ended", {"message": "Minefield cleared!"})
 
 			for b in balls:
@@ -30303,7 +30303,7 @@ class MinefieldEventMode extends GameMode:
 								b.take_damage(m["damage"])
 							elif "hp" in b:
 								b.hp -= m["damage"]
-						if world != null and world.has_method("add_event"):
+						if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 							world.add_event("mine_explosion", {"x": m["x"], "y": m["y"]})
 
 
@@ -30379,7 +30379,7 @@ class MagneticMineZoneMode extends GameMode:
 						elif "hp" in b:
 							b.hp -= m["damage"]
 
-					if world != null and world.has_method("add_event"):
+					if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 						world.add_event("mine_explosion", {"x": m["x"], "y": m["y"]})
 					continue
 
@@ -30998,7 +30998,7 @@ class HazardBilliardsMode extends GameMode:
 									if b.has_method("set_meta"): b.set_meta("reflect_shield_active", true)
 									if "reflect_shield_active" in b: b.reflect_shield_active = true
 
-								if world != null and world.has_method("add_event"):
+								if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 									world.add_event("explosion", {"x": h1x, "y": h1y, "radius": h1r + h2r + 100.0, "damage": damage})
 
 		for b in balls:
@@ -34760,7 +34760,7 @@ class SolarFlareEventMode extends GameMode:
 						original_w = float(world.arena.width if "width" in world.arena else 1000.0)
 						original_h = float(world.arena.height if "height" in world.arena else 1000.0)
 
-					if world != null and world.has_method("add_event"):
+					if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 						world.add_event("solar_flare_warning", {"type": "weather_warning", "message": "A SOLAR FLARE HAS BEGUN!"})
 						world.add_event("visual_effect", {"type": "solar_flare", "duration": 15.0})
 				else:
@@ -34820,7 +34820,7 @@ class SolarFlareEventMode extends GameMode:
 			if event_duration <= 0:
 				event_active = false
 				event_timer = 0.0
-				if world != null and world.has_method("add_event"):
+				if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("solar_flare_end", {"type": "weather_warning", "message": "The Solar Flare has ended."})
 
 class LunarEclipseEventMode extends GameMode:
@@ -34841,7 +34841,7 @@ class LunarEclipseEventMode extends GameMode:
 				event_active = true
 				event_duration = 10.0
 				event_timer = 0.0
-				if world != null and world.has_method("add_event"):
+				if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("lunar_eclipse_warning", {"type": "weather_warning", "message": "A LUNAR ECLIPSE HAS BEGUN!"})
 					world.add_event("visual_effect", {"type": "lunar_eclipse", "duration": 10.0})
 
@@ -34951,7 +34951,7 @@ class LunarEclipseEventMode extends GameMode:
 								continue
 							new_hazards.append(h)
 						world.arena.hazards = new_hazards
-				if world != null and world.has_method("add_event"):
+				if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("lunar_eclipse_end", {"type": "weather_warning", "message": "The lunar eclipse has ended."})
 
 
@@ -36169,7 +36169,7 @@ class SweepingPaddlesMode extends GameMode:
 						"radius": 30.0
 					})
 					self.set_meta("active_meteors", am)
-					if world != null and world.has_method("add_event"):
+					if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 						world.add_event("visual_effect", {"type": "meteor_warning", "x": rx, "y": ry, "radius": 30.0})
 
 			if self.has_meta("active_meteors"):
@@ -37261,7 +37261,7 @@ class ExtremeWeatherMode extends GameMode:
 					b.set_meta("forecast_warning_issued", true)
 				else:
 					b.forecast_warning_issued = true
-				if world != null and world.has_method("add_event"):
+				if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("weather_warning", {"type": "weather_warning", "message": "Forecast warns: Weather change incoming!"})
 
 		if weather_timer >= 15.0:
@@ -37297,7 +37297,7 @@ class ExtremeWeatherMode extends GameMode:
 						b.forecast_booster_active = false
 						b.weather_immunity_timer = 15.0
 						b.forecast_warning_issued = false
-			if world != null and world.has_method("add_event"):
+			if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 				world.add_event("weather_change", {"weather": current_weather})
 
 			var booster_kind = ""
@@ -37927,6 +37927,9 @@ class ExtremeWeatherMode extends GameMode:
 
 
 class JuggernautMode extends GameMode:
+	var weather: String = "clear"
+	var weather_timer: float = 0.0
+	var altars: Array = []
 	func _init() -> void:
 		name = "Juggernaut"
 		description = "Similar to Boss Fight, but when the Juggernaut is killed, the player who dealt the final blow becomes the new Juggernaut."
@@ -38097,6 +38100,17 @@ class JuggernautMode extends GameMode:
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		self.set_meta("juggernaut_swap_timer", 0.0)
+		var arena_w = 1000.0
+		var arena_h = 1000.0
+		if world != null and ("arena" in world) and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				arena_w = world.arena.get("width", 1000.0)
+				arena_h = world.arena.get("height", 1000.0)
+			else:
+				if "width" in world.arena: arena_w = world.arena.width
+				if "height" in world.arena: arena_h = world.arena.height
+		altars = [{"x": arena_w/2.0, "y": arena_h/2.0, "radius": 150.0, "capture_progress": 0.0, "owner": null, "sabotaged_by": null}]
+
 		var rng = RandomNumberGenerator.new()
 		if world != null and "tick_timer" in world:
 			rng.seed = int(world.tick_timer * 1000)
@@ -38187,6 +38201,97 @@ class JuggernautMode extends GameMode:
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
 		super.tick(world, balls, delta)
+		for altar in altars:
+			var teams_present = {}
+			for b in balls:
+				var is_alive = false
+				if typeof(b) == TYPE_DICTIONARY:
+					is_alive = b.get("alive", false)
+				else:
+					is_alive = b.get("alive") if "alive" in b else false
+
+				if is_alive and (b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type") if "ball_type" in b else "") != "spectator":
+					var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x") if "x" in b else 0.0
+					var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y") if "y" in b else 0.0
+					var dist_sq = pow(bx - altar["x"], 2) + pow(by - altar["y"], 2)
+					if dist_sq <= pow(altar["radius"], 2):
+						var team = b.get("team", b.get("ball_type", "")) if typeof(b) == TYPE_DICTIONARY else b.get("team") if "team" in b else b.get("ball_type") if "ball_type" in b else ""
+						if teams_present.has(team):
+							teams_present[team] += 1
+						else:
+							teams_present[team] = 1
+
+						var has_neg = false
+						if typeof(b) == TYPE_DICTIONARY and b.has("inventory") and b["inventory"].has("negative_modifier"):
+							has_neg = true
+							b["inventory"].erase("negative_modifier")
+						elif typeof(b) != TYPE_DICTIONARY and "inventory" in b and typeof(b.inventory) == TYPE_ARRAY and b.inventory.has("negative_modifier"):
+							has_neg = true
+							b.inventory.erase("negative_modifier")
+
+						if has_neg:
+							altar["sabotaged_by"] = team
+							if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+								world.add_event("altar_sabotaged", {"team": team})
+
+						var saboteur = altar.get("sabotaged_by", null)
+						if saboteur != null and saboteur != team:
+							var cur_hp = 100.0
+							if typeof(b) == TYPE_DICTIONARY and b.has("hp"):
+								cur_hp = b.hp
+							elif typeof(b) != TYPE_DICTIONARY and b.has_method("get_meta") and b.has_meta("hp"):
+								cur_hp = b.get_meta("hp")
+							elif "hp" in b:
+								cur_hp = b.hp
+
+							cur_hp = max(0.0, cur_hp - 15.0 * delta)
+
+							if typeof(b) == TYPE_DICTIONARY:
+								b["hp"] = cur_hp
+							elif typeof(b) != TYPE_DICTIONARY and b.has_method("set_meta"):
+								b.set_meta("hp", cur_hp)
+							elif "hp" in b:
+								b.hp = cur_hp
+
+			if teams_present.size() > 0:
+				var max_team = ""
+				var max_val = -1
+				for t in teams_present.keys():
+					if teams_present[t] > max_val:
+						max_val = teams_present[t]
+						max_team = t
+
+				var tie_count = 0
+				for t in teams_present.keys():
+					if teams_present[t] == max_val:
+						tie_count += 1
+
+				if tie_count == 1:
+					if altar["owner"] == max_team:
+						altar["capture_progress"] = min(100.0, altar["capture_progress"] + 20.0 * delta)
+					else:
+						altar["capture_progress"] -= 20.0 * delta
+						if altar["capture_progress"] <= 0:
+							altar["owner"] = max_team
+							altar["capture_progress"] = 0.0
+							var pref = "clear"
+							if max_team in ["elementalist"]: pref = "thunderstorm"
+							elif max_team in ["druid", "healer", "swamp"]: pref = "rain"
+							elif max_team in ["rogue", "assassin", "stealth"]: pref = "fog"
+							elif max_team in ["mage", "conjurer"]: pref = "snow"
+							elif max_team in ["speed", "scout"]: pref = "wind"
+							elif max_team in ["tank", "brawler"]: pref = "heatwave"
+							elif max_team in ["swarm"]: pref = "sandstorm"
+							else: pref = "thunderstorm"
+
+							if weather != pref:
+								weather = pref
+								if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+									world.add_event("weather_change", {"weather": pref})
+			else:
+				altar["capture_progress"] = max(0.0, altar["capture_progress"] - 5.0 * delta)
+				if altar["capture_progress"] == 0:
+					altar["owner"] = null
 
 		var timer = self.get_meta("juggernaut_swap_timer") if self.has_meta("juggernaut_swap_timer") else 0.0
 		timer += delta
@@ -38223,7 +38328,7 @@ class JuggernautMode extends GameMode:
 							if b.has_meta("base_speed") and "speed" in b: b.speed = b.get_meta("base_speed")
 							if b.has_meta("base_mass") and "mass" in b: b.mass = b.get_meta("base_mass")
 				_make_juggernaut(world, new_juggernaut)
-				if world != null and world.has_method("add_event"):
+				if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("juggernaut_change", {"message": "A new Juggernaut has been randomly selected!"})
 		self.set_meta("juggernaut_swap_timer", timer)
 
@@ -38242,7 +38347,7 @@ class JuggernautMode extends GameMode:
 						break
 				if killer != null and killer.alive:
 					_make_juggernaut(world, killer)
-					if world != null and world.has_method("add_event"):
+					if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 						world.add_event("juggernaut_change", {"message": "A new Juggernaut has emerged!"})
 			dead_jug.team = "Dead"
 
@@ -45934,7 +46039,7 @@ class SolarEclipseEventMode extends GameMode:
 				event_duration = 30.0
 				event_timer = 0.0
 				modified_walls = []
-				if world != null and world.has_method("add_event"):
+				if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("solar_eclipse_warning", {"type": "weather_warning", "message": "A SOLAR ECLIPSE HAS BEGUN!"})
 					world.add_event("visual_effect", {"type": "solar_eclipse", "duration": 30.0})
 
@@ -46079,7 +46184,7 @@ class SolarEclipseEventMode extends GameMode:
 							if "hp" in m: m.hp = 0.0
 					self.set_meta("eclipse_monsters", [])
 
-				if world != null and world.has_method("add_event"):
+				if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("solar_eclipse_end", {"type": "weather_warning", "message": "The solar eclipse has ended."})
 
 
@@ -46750,6 +46855,9 @@ class GhostTetherMode extends GameMode:
 				previous_hps[b_id] = b_hp
 
 class WatchtowerMode extends GameMode:
+	var weather: String = "clear"
+	var weather_timer: float = 0.0
+	var altars: Array = []
 	var towers: Array = []
 	var tower_spawn_timer: float = 0.0
 
@@ -46762,9 +46870,111 @@ class WatchtowerMode extends GameMode:
 		super.setup(world, balls)
 		towers.clear()
 		tower_spawn_timer = 5.0
+		var arena_w = 1000.0
+		var arena_h = 1000.0
+		if world != null and ("arena" in world) and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				arena_w = world.arena.get("width", 1000.0)
+				arena_h = world.arena.get("height", 1000.0)
+			else:
+				if "width" in world.arena: arena_w = world.arena.width
+				if "height" in world.arena: arena_h = world.arena.height
+		altars = [{"x": arena_w/2.0, "y": arena_h/2.0, "radius": 150.0, "capture_progress": 0.0, "owner": null, "sabotaged_by": null}]
+
 
 	func tick(world, balls, delta: float = 0.016):
 		super.tick(world, balls, delta)
+		for altar in altars:
+			var teams_present = {}
+			for b in balls:
+				var is_alive = false
+				if typeof(b) == TYPE_DICTIONARY:
+					is_alive = b.get("alive", false)
+				else:
+					is_alive = b.get("alive") if "alive" in b else false
+
+				if is_alive and (b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type") if "ball_type" in b else "") != "spectator":
+					var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x") if "x" in b else 0.0
+					var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y") if "y" in b else 0.0
+					var dist_sq = pow(bx - altar["x"], 2) + pow(by - altar["y"], 2)
+					if dist_sq <= pow(altar["radius"], 2):
+						var team = b.get("team", b.get("ball_type", "")) if typeof(b) == TYPE_DICTIONARY else b.get("team") if "team" in b else b.get("ball_type") if "ball_type" in b else ""
+						if teams_present.has(team):
+							teams_present[team] += 1
+						else:
+							teams_present[team] = 1
+
+						var has_neg = false
+						if typeof(b) == TYPE_DICTIONARY and b.has("inventory") and b["inventory"].has("negative_modifier"):
+							has_neg = true
+							b["inventory"].erase("negative_modifier")
+						elif typeof(b) != TYPE_DICTIONARY and "inventory" in b and typeof(b.inventory) == TYPE_ARRAY and b.inventory.has("negative_modifier"):
+							has_neg = true
+							b.inventory.erase("negative_modifier")
+
+						if has_neg:
+							altar["sabotaged_by"] = team
+							if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+								world.add_event("altar_sabotaged", {"team": team})
+
+						var saboteur = altar.get("sabotaged_by", null)
+						if saboteur != null and saboteur != team:
+							var cur_hp = 100.0
+							if typeof(b) == TYPE_DICTIONARY and b.has("hp"):
+								cur_hp = b.hp
+							elif typeof(b) != TYPE_DICTIONARY and b.has_method("get_meta") and b.has_meta("hp"):
+								cur_hp = b.get_meta("hp")
+							elif "hp" in b:
+								cur_hp = b.hp
+
+							cur_hp = max(0.0, cur_hp - 15.0 * delta)
+
+							if typeof(b) == TYPE_DICTIONARY:
+								b["hp"] = cur_hp
+							elif typeof(b) != TYPE_DICTIONARY and b.has_method("set_meta"):
+								b.set_meta("hp", cur_hp)
+							elif "hp" in b:
+								b.hp = cur_hp
+
+			if teams_present.size() > 0:
+				var max_team = ""
+				var max_val = -1
+				for t in teams_present.keys():
+					if teams_present[t] > max_val:
+						max_val = teams_present[t]
+						max_team = t
+
+				var tie_count = 0
+				for t in teams_present.keys():
+					if teams_present[t] == max_val:
+						tie_count += 1
+
+				if tie_count == 1:
+					if altar["owner"] == max_team:
+						altar["capture_progress"] = min(100.0, altar["capture_progress"] + 20.0 * delta)
+					else:
+						altar["capture_progress"] -= 20.0 * delta
+						if altar["capture_progress"] <= 0:
+							altar["owner"] = max_team
+							altar["capture_progress"] = 0.0
+							var pref = "clear"
+							if max_team in ["elementalist"]: pref = "thunderstorm"
+							elif max_team in ["druid", "healer", "swamp"]: pref = "rain"
+							elif max_team in ["rogue", "assassin", "stealth"]: pref = "fog"
+							elif max_team in ["mage", "conjurer"]: pref = "snow"
+							elif max_team in ["speed", "scout"]: pref = "wind"
+							elif max_team in ["tank", "brawler"]: pref = "heatwave"
+							elif max_team in ["swarm"]: pref = "sandstorm"
+							else: pref = "thunderstorm"
+
+							if weather != pref:
+								weather = pref
+								if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+									world.add_event("weather_change", {"weather": pref})
+			else:
+				altar["capture_progress"] = max(0.0, altar["capture_progress"] - 5.0 * delta)
+				if altar["capture_progress"] == 0:
+					altar["owner"] = null
 
 		tower_spawn_timer -= delta
 		if tower_spawn_timer <= 0:
@@ -47273,13 +47483,13 @@ class ReverseBlackHoleMode extends GameMode:
 						if "height" in world.arena: arena_height = world.arena.height
 				zone_x = rand_range(100.0, arena_width - 100.0)
 				zone_y = rand_range(100.0, arena_height - 100.0)
-				if world != null and world.has_method("add_event"):
+				if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("reverse_black_hole", {"message": "A reverse black hole has appeared, pushing everyone away!"})
 		else:
 			timer -= delta
 			if timer <= 0:
 				active = false
-				if world != null and world.has_method("add_event"):
+				if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("reverse_black_hole_end", {"message": "The reverse black hole has vanished."})
 				return
 
@@ -47356,13 +47566,13 @@ class MassiveBlackHoleEventMode extends GameMode:
 			if randf() < 0.02 * delta:
 				active = true
 				timer = 15.0
-				if world != null and world.has_method("add_event"):
+				if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("massive_black_hole", {"message": "A massive black hole has appeared in the center!"})
 		else:
 			timer -= delta
 			if timer <= 0:
 				active = false
-				if world != null and world.has_method("add_event"):
+				if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("massive_black_hole_end", {"message": "The black hole has vanished."})
 				return
 
@@ -49893,7 +50103,7 @@ class DynamicWindCurrentsMode extends GameMode:
 			wind_dir_x = cos(angle)
 			wind_dir_y = sin(angle)
 			wind_strength = randf_range(50.0, 150.0)
-			if world != null and world.has_method("add_event"):
+			if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 				world.add_event("weather_warning", {"type": "weather_warning", "message": "The wind direction is changing!"})
 
 		var all_entities = []
@@ -53151,7 +53361,7 @@ class CurrencyBurdenMode extends GameMode:
 							b.set("damage", b.get_meta("base_damage"))
 							b.set("radius", b.get_meta("base_radius"))
 
-						if world != null and world.has_method("add_event"):
+						if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 							world.add_event("altar_deposit", {"ball_id": b.get("id", -1), "amount": buff_amount, "upgrade": upgrade_type})
 						break
 
@@ -60679,7 +60889,7 @@ class HealingRainMode extends GameMode:
 				if "events" in world:
 					world.events.append({"type": "healing_rain_start", "message": "A healing rain storm has started! Players are healed but slowed."})
 			else:
-				if world != null and world.has_method("add_event"):
+				if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("healing_rain_start", {"message": "A healing rain storm has started! Players are healed but slowed."})
 		elif storm_active and storm_timer >= storm_duration:
 			storm_active = false
@@ -60688,7 +60898,7 @@ class HealingRainMode extends GameMode:
 				if "events" in world:
 					world.events.append({"type": "healing_rain_end", "message": "The healing rain has stopped."})
 			else:
-				if world != null and world.has_method("add_event"):
+				if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("healing_rain_end", {"message": "The healing rain has stopped."})
 
 		if storm_active:
@@ -61829,7 +62039,7 @@ class WeatherBossMode extends GameMode:
 				if world != null and "balls" in world:
 					world.balls.append(boss)
 
-				if world != null and world.has_method("add_event"):
+				if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("boss_spawn", {"message": "A Storm Elemental has emerged from the extreme weather!"})
 		else:
 			weather_intensity = max(0.0, weather_intensity - delta * 0.2)
@@ -62234,7 +62444,7 @@ class VolcanoBossMode extends GameMode:
 		if world != null and "balls" in world:
 			world.balls.append(boss)
 
-		if world != null and world.has_method("add_event"):
+		if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 			world.add_event("boss_spawn", {"message": "A massive Volcano has emerged! Use water items to cool it down!"})
 
 	func tick(world, balls, delta = 0.016):
@@ -62545,7 +62755,7 @@ class ConveyorBeltArenaMode extends GameMode:
 		if conveyor_timer >= 10.0:
 			conveyor_timer -= 10.0
 			conveyor_direction *= -1.0
-			if world != null and world.has_method("add_event"):
+			if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 				world.add_event("conveyor_reverse", {"direction": conveyor_direction})
 
 		for b in balls:
@@ -63561,7 +63771,7 @@ class DeepFreezeMutatorMode extends GameMode:
                             b["alive"] = false
                         else:
                             b.alive = false
-                        if world != null and world.has_method("add_event"):
+                        if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
                             var b_id = b.get("id", null) if typeof(b) == TYPE_DICTIONARY else (b.id if "id" in b else null)
                             world.add_event("death", {"id": b_id, "reason": "frozen"})
 
@@ -80995,7 +81205,7 @@ class BlindFragmentAuctionMode extends GameMode:
 				auction_duration = 10.0
 				bids = {}
 				current_item = auction_items[randi() % auction_items.size()]
-				if world != null and world.has_method("add_event"):
+				if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("blind_auction_started", {"item": current_item["name"]})
 		else:
 			auction_duration -= delta
@@ -81170,14 +81380,14 @@ class BlindFragmentAuctionMode extends GameMode:
 										if winner.has_method("set"):
 											winner.set("cosmetics", cosmetics)
 
-						if world != null and world.has_method("add_event"):
+						if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 							world.add_event("blind_auction_ended", {
 								"winner_id": winner_id,
 								"winning_bid": highest_bid,
 								"item": current_item["name"]
 							})
 				else:
-					if world != null and world.has_method("add_event"):
+					if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 						world.add_event("blind_auction_ended", {
 							"winner_id": null,
 							"winning_bid": 0,
@@ -85135,13 +85345,13 @@ class OrbitalBlackHoleEventMode extends GameMode:
 			if randf() < 0.02 * delta:
 				active = true
 				timer = 15.0
-				if world != null and world.has_method("add_event"):
+				if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("orbital_black_hole", {"message": "An orbital black hole has appeared!"})
 		else:
 			timer -= delta
 			if timer <= 0:
 				active = false
-				if world != null and world.has_method("add_event"):
+				if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("orbital_black_hole_end", {"message": "The orbital black hole has vanished."})
 				return
 
@@ -88150,7 +88360,7 @@ class OrbitalStrikeEventMode extends GameMode:
 					strike["state"] = "firing"
 					strike["timer"] = 1.0 # visual duration
 
-					if world != null and world.has_method("add_event"):
+					if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 						world.add_event("orbital_strike_fired", {"x": strike["x"], "y": strike["y"], "radius": strike_radius, "message": "Orbital strike fired!"})
 
 					for b in balls:
@@ -88223,7 +88433,7 @@ class OrbitalStrikeEventMode extends GameMode:
 				"state": "warning",
 				"timer": warning_duration
 			})
-			if world != null and world.has_method("add_event"):
+			if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 				world.add_event("orbital_strike_warning", {"x": x, "y": y, "radius": strike_radius, "message": "Orbital strike incoming!"})
 
 class DisorientationBrushMode extends GameMode:
