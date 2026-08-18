@@ -25908,6 +25908,39 @@ class Action:
         if getattr(self.ball, "mirage_cooldown", 0.0) > 0.0:
             self.ball.mirage_cooldown -= delta
 
+
+        if "nanite_swarm" in getattr(self.ball, "traits", []):
+            if getattr(self.ball, "hp", 100) / getattr(self.ball, "max_hp", 100) < 0.3:
+                self.ball.nanite_swarm_active = True
+
+                # Seek nearby debris or destroyed hazards
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    for h in self.world.arena.hazards:
+                        is_debris = getattr(h, "kind", "") == "orbital_debris"
+                        is_destroyed = not getattr(h, "active", True) or getattr(h, "destroyed", False)
+
+                        if is_debris or is_destroyed:
+                            dist_sq = (self.ball.x - h.x)**2 + (self.ball.y - h.y)**2
+                            if dist_sq < 250000: # 500 range
+                                # Consume to heal
+                                if is_debris and hasattr(h, "radius"):
+                                    h.radius -= 10.0 * delta
+                                    if h.radius <= 0:
+                                        self.world.arena.hazards.remove(h)
+                                elif is_destroyed:
+                                    if hasattr(h, "radius"):
+                                        h.radius -= 10.0 * delta
+                                        if h.radius <= 0:
+                                            self.world.arena.hazards.remove(h)
+                                    else:
+                                        self.world.arena.hazards.remove(h)
+
+                                # Heal the ball
+                                self.ball.hp = min(getattr(self.ball, "max_hp", 100), self.ball.hp + 50.0 * delta)
+                                break
+            else:
+                self.ball.nanite_swarm_active = False
+
         if getattr(self.ball, "blood_magic_timer", 0.0) > 0.0:
             current_st = getattr(self.ball, "skill_timer", 0.0)
             prev_st = getattr(self.ball, "_prev_skill_timer", 0.0)

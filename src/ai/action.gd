@@ -50961,6 +50961,72 @@ func _update_skill_timer(delta: float):
         elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("mirage_cooldown", cur_m_cd)
 
     var bm_timer = 0.0
+
+    var has_nanite = false
+    if typeof(self.ball) == TYPE_DICTIONARY and "traits" in self.ball and "nanite_swarm" in self.ball["traits"]:
+        has_nanite = true
+    elif typeof(self.ball) == TYPE_OBJECT and "traits" in self.ball and "nanite_swarm" in self.ball.traits:
+        has_nanite = true
+
+    if has_nanite:
+        var current_hp = 100.0
+        var current_max_hp = 100.0
+        if typeof(self.ball) == TYPE_DICTIONARY:
+            current_hp = self.ball.get("hp", 100.0)
+            current_max_hp = self.ball.get("max_hp", 100.0)
+        else:
+            current_hp = self.ball.hp if "hp" in self.ball else 100.0
+            current_max_hp = self.ball.max_hp if "max_hp" in self.ball else 100.0
+
+        if current_hp / current_max_hp < 0.3:
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["nanite_swarm_active"] = true
+            else:
+                if self.ball.has_method("set_meta"): self.ball.set_meta("nanite_swarm_active", true)
+                elif "nanite_swarm_active" in self.ball: self.ball.nanite_swarm_active = true
+
+            if self.world != null and "arena" in self.world and (typeof(self.world.arena) == TYPE_DICTIONARY or typeof(self.world.arena) == TYPE_OBJECT) and "hazards" in self.world.arena:
+                for h in self.world.arena.hazards:
+                    var h_kind = h.get("kind", "") if typeof(h) == TYPE_DICTIONARY else (h.kind if "kind" in h else "")
+                    var h_active = h.get("active", true) if typeof(h) == TYPE_DICTIONARY else (h.active if "active" in h else true)
+                    var h_destroyed = h.get("destroyed", false) if typeof(h) == TYPE_DICTIONARY else (h.destroyed if "destroyed" in h else false)
+
+                    var is_debris = h_kind == "orbital_debris"
+                    var is_destroyed = not h_active or h_destroyed
+
+                    if is_debris or is_destroyed:
+                        var h_x = h.get("x", 0.0) if typeof(h) == TYPE_DICTIONARY else (h.x if "x" in h else 0.0)
+                        var h_y = h.get("y", 0.0) if typeof(h) == TYPE_DICTIONARY else (h.y if "y" in h else 0.0)
+                        var b_x = self.ball.get("x", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.x if "x" in self.ball else 0.0)
+                        var b_y = self.ball.get("y", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.y if "y" in self.ball else 0.0)
+
+                        var dist_sq = (b_x - h_x)*(b_x - h_x) + (b_y - h_y)*(b_y - h_y)
+                        if dist_sq < 250000.0:
+                            var h_rad = h.get("radius", 0.0) if typeof(h) == TYPE_DICTIONARY else (h.radius if "radius" in h else 0.0)
+                            if h_rad > 0.0:
+                                h_rad -= 10.0 * delta
+                                if typeof(h) == TYPE_DICTIONARY:
+                                    h["radius"] = h_rad
+                                else:
+                                    if "radius" in h: h.radius = h_rad
+
+                                if h_rad <= 0.0:
+                                    self.world.arena.hazards.erase(h)
+                            else:
+                                self.world.arena.hazards.erase(h)
+
+                            var heal_amount = 50.0 * delta
+                            if typeof(self.ball) == TYPE_DICTIONARY:
+                                self.ball["hp"] = min(current_max_hp, current_hp + heal_amount)
+                            else:
+                                if "hp" in self.ball: self.ball.hp = min(current_max_hp, current_hp + heal_amount)
+                            break
+        else:
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["nanite_swarm_active"] = false
+            else:
+                if self.ball.has_method("set_meta"): self.ball.set_meta("nanite_swarm_active", false)
+                elif "nanite_swarm_active" in self.ball: self.ball.nanite_swarm_active = false
     if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("blood_magic_timer"):
         bm_timer = float(self.ball.get_meta("blood_magic_timer"))
     elif "blood_magic_timer" in self.ball:
