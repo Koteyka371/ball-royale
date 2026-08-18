@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2022] Quantum Detonator Mode — *2026-08-18 01:09:30 UTC*
+
+A new game mode where randomly spawned 'Quantum Detonators' explode, leaving behind chaotic zones. These zones randomly teleport players who enter them to another active zone on the map, reversing their current momentum upon exiting.
+
+---
+
 ## [idea-2025] Expanding Arena Mode — *2026-08-18 00:10:23 UTC*
 
 Every 30 seconds the arena size increases by 10%, giving players more space but making it harder to find resources and forcing ranged encounters.
