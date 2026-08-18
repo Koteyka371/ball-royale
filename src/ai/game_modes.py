@@ -13088,7 +13088,7 @@ class ShrinkingDangerZoneMode(GameMode):
                     b.hp -= damage_this_tick
                     if not getattr(b, "invisible_to_minimap", False):
                         ping_timer = getattr(b, "minimap_ping_timer", 0.0)
-                        if ping_timer <= 0:
+                        if ping_timer <= 1e-5:
                             if hasattr(world, "add_event"):
                                 world.add_event("minimap_ping", {"x": b.x, "y": b.y, "color": "red", "duration": 0.5})
                             b.minimap_ping_timer = 1.0
@@ -13766,7 +13766,7 @@ class SafeZoneMode(GameMode):
                     b.hp -= damage_this_tick
                     if not getattr(b, "invisible_to_minimap", False):
                         ping_timer = getattr(b, "minimap_ping_timer", 0.0)
-                        if ping_timer <= 0:
+                        if ping_timer <= 1e-5:
                             if hasattr(world, "add_event"):
                                 world.add_event("minimap_ping", {"x": b.x, "y": b.y, "color": "red", "duration": 0.5})
                             b.minimap_ping_timer = 1.0
@@ -34444,7 +34444,7 @@ class VulnerabilitySafeZoneMode(SafeZoneMode):
 
                     if not getattr(b, "invisible_to_minimap", False):
                         ping_timer = getattr(b, "minimap_ping_timer", 0.0)
-                        if ping_timer <= 0:
+                        if ping_timer <= 1e-5:
                             if hasattr(world, "add_event"):
                                 world.add_event("minimap_ping", {"x": b.x, "y": b.y, "color": "orange", "duration": 0.5})
                             b.minimap_ping_timer = 1.0
@@ -56642,3 +56642,101 @@ class DarkMatterVoidMode(GameMode):
                         b.speed = getattr(b, "base_speed", 100.0)
 
 GAME_MODES["dark_matter_void"] = DarkMatterVoidMode()
+
+
+class DangerBeaconMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Danger Beacon"
+        self.description = "A placed beacon that reveals enemies within its radius on the minimap."
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        super().tick(world, balls, delta)
+
+        if not hasattr(world, "arena") or not hasattr(world.arena, "hazards"):
+            return
+        # Let players pick up danger beacons
+        for b in balls:
+            if getattr(b, "hp", 0) <= 0:
+                continue
+            b_x = getattr(b, "x", 0.0) if not isinstance(b, dict) else b.get("x", 0.0)
+            b_y = getattr(b, "y", 0.0) if not isinstance(b, dict) else b.get("y", 0.0)
+            b_rad = getattr(b, "radius", 20.0) if not isinstance(b, dict) else b.get("radius", 20.0)
+
+            for h in world.arena.hazards:
+                h_kind = getattr(h, "kind", "") if not isinstance(h, dict) else h.get("kind", "")
+                if h_kind == "danger_beacon_pickup":
+                    h_x = getattr(h, "x", 0.0) if not isinstance(h, dict) else h.get("x", 0.0)
+                    h_y = getattr(h, "y", 0.0) if not isinstance(h, dict) else h.get("y", 0.0)
+                    h_rad = getattr(h, "radius", 10.0) if not isinstance(h, dict) else h.get("radius", 10.0)
+
+                    dist_sq = (b_x - h_x)**2 + (b_y - h_y)**2
+                    if dist_sq < (b_rad + h_rad)**2:
+                        # Pickup
+                        if isinstance(b, dict):
+                            b["danger_beacon_count"] = b.get("danger_beacon_count", 0) + 1
+                        else:
+                            b.danger_beacon_count = getattr(b, "danger_beacon_count", 0) + 1
+
+                        if hasattr(world.arena.hazards, "remove"):
+                            world.arena.hazards.remove(h)
+                        break
+
+
+
+        for h in world.arena.hazards:
+            h_kind = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+            if h_kind == "danger_beacon":
+                h_x = h.get("x", 0.0) if isinstance(h, dict) else getattr(h, "x", 0.0)
+                h_y = h.get("y", 0.0) if isinstance(h, dict) else getattr(h, "y", 0.0)
+                h_radius = h.get("radius", 0.0) if isinstance(h, dict) else getattr(h, "radius", 0.0)
+                h_owner_id = h.get("owner_id", None) if isinstance(h, dict) else getattr(h, "owner_id", None)
+                h_team = h.get("owner_team", None) if isinstance(h, dict) else getattr(h, "owner_team", None)
+
+                for b in balls:
+                    b_hp = b.get("hp", 0) if isinstance(b, dict) else getattr(b, "hp", 0)
+                    if b_hp <= 0:
+                        continue
+
+                    # Check if enemy
+                    is_enemy = False
+                    b_team = b.get("team", None) if isinstance(b, dict) else getattr(b, "team", None)
+                    b_id = b.get("id", None) if isinstance(b, dict) else getattr(b, "id", None)
+
+                    if b_team is not None and h_team is not None:
+                        if str(b_team) != str(h_team):
+                            is_enemy = True
+                    else:
+                        if str(b_id) != str(h_owner_id):
+                            is_enemy = True
+
+                    if not is_enemy:
+                        continue
+
+                    b_x = b.get("x", 0.0) if isinstance(b, dict) else getattr(b, "x", 0.0)
+                    b_y = b.get("y", 0.0) if isinstance(b, dict) else getattr(b, "y", 0.0)
+                    b_radius = b.get("radius", 20.0) if isinstance(b, dict) else getattr(b, "radius", 20.0)
+
+                    dx = b_x - h_x
+                    dy = b_y - h_y
+                    dist_sq = dx**2 + dy**2
+
+                    if dist_sq < (h_radius + b_radius)**2:
+                        ping_timer = b.get("minimap_ping_timer", 0.0) if isinstance(b, dict) else getattr(b, "minimap_ping_timer", 0.0)
+                        if ping_timer <= 1e-5:
+                            if hasattr(world, "add_event"):
+                                world.add_event("minimap_ping", {"x": b_x, "y": b_y, "color": "red", "duration": 0.5})
+                            elif hasattr(world, "events"):
+                                world.events.append({'type': 'minimap_ping', 'data': {"x": b_x, "y": b_y, "color": "red", "duration": 0.5}})
+
+                            if isinstance(b, dict):
+                                b["minimap_ping_timer"] = 1.0
+                            else:
+                                b.minimap_ping_timer = 1.0
+                        else:
+                            if isinstance(b, dict):
+                                b["minimap_ping_timer"] = ping_timer - delta
+                            else:
+                                b.minimap_ping_timer = ping_timer - delta
+
+GAME_MODES["danger_beacon"] = DangerBeaconMode()
