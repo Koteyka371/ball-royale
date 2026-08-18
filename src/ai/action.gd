@@ -34755,7 +34755,7 @@ func _collect_booster(delta: float):
 
                 var st = 0.0
                 if typeof(ball) == TYPE_OBJECT and ball.has_method("has_meta") and ball.has_meta("skill_timer"): st = float(ball.get_meta("skill_timer"))
-                elif "skill_timer" in ball: st = float(ball.skill_timer)
+                elif "skill_timer" in self.ball: st = float(ball.skill_timer)
                 if typeof(ball) == TYPE_OBJECT and ball.has_method("set_meta"): ball.set_meta("_prev_skill_timer", st)
                 elif "_prev_skill_timer" in ball or typeof(ball) == TYPE_DICTIONARY: ball._prev_skill_timer = st
 
@@ -52641,7 +52641,7 @@ func _update_skill_timer(delta: float):
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
-                var pullable = ["deployable_proximity_mud_puddle", "overload_zone_item", "deployable_stasis_bubble", "deployable_reversal_trap", "deployable_pull_trap", "deployable_freeze_trap", "deployable_decoy_swap_item", "event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "vision_reduction_trap", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "entanglement_booster", "weather_booster", "portal_gun_item", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "survival_rewind_booster", "snapback_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "anchor_repulsor_booster", "gravity_well_booster", "overclock_booster", "chronosphere_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "pet_item", "wind_tunnel", "cryogenic_booster", "eclipse_booster_item", "eclipse_booster"]
+                var pullable = ["deployable_proximity_mud_puddle", "overload_zone_item", "deployable_stasis_bubble", "deployable_reversal_trap", "deployable_pull_trap", "deployable_freeze_trap", "deployable_shrapnel_trap", "deployable_decoy_swap_item", "event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "vision_reduction_trap", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "entanglement_booster", "weather_booster", "portal_gun_item", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "survival_rewind_booster", "snapback_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "anchor_repulsor_booster", "gravity_well_booster", "overclock_booster", "chronosphere_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "pet_item", "wind_tunnel", "cryogenic_booster", "eclipse_booster_item", "eclipse_booster"]
                 if h_rad < 30.0 or pullable.has(h_kind):
                     var dx = self.ball.x - hazard.x
                     var dy = self.ball.y - hazard.y
@@ -53224,8 +53224,14 @@ func _update_skill_timer(delta: float):
                                         else:
                                             b_x = b.get("x") if b.get("x") != null else 0.0
                                             b_y = b.get("y") if b.get("y") != null else 0.0
-                                        var dx = h_x - b_x
-                                        var dy = h_y - b_y
+                                        var b_x = 0.0
+                        if "x" in self.ball: b_x = self.ball.x
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("x"): b_x = self.ball.get_meta("x")
+                        var dx = h_x - b_x
+                                        var b_y = 0.0
+                        if "y" in self.ball: b_y = self.ball.y
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("y"): b_y = self.ball.get_meta("y")
+                        var dy = h_y - b_y
                                         var dist_sq = dx*dx + dy*dy
                                         if dist_sq < h_rad*h_rad:
                                             if typeof(b) == TYPE_DICTIONARY:
@@ -54493,6 +54499,181 @@ func _update_skill_timer(delta: float):
                             if "duration" in hazard: hazard.duration = 0.0
                                         elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
                                         elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set"): hazard.set("duration", 0.0)
+
+                if h_kind == "shrapnel_projectile":
+                    var hp_vx = 0.0
+                    if "vx" in hazard: hp_vx = hazard.vx
+                    elif hazard.has_method("get_meta") and hazard.has_meta("vx"): hp_vx = hazard.get_meta("vx")
+
+                    var hp_vy = 0.0
+                    if "vy" in hazard: hp_vy = hazard.vy
+                    elif hazard.has_method("get_meta") and hazard.has_meta("vy"): hp_vy = hazard.get_meta("vy")
+
+                    if hp_vx != 0.0 or hp_vy != 0.0:
+                        h_x += hp_vx * delta
+                        h_y += hp_vy * delta
+                        if "x" in hazard: hazard.x = h_x
+                        elif hazard.has_method("set_meta"): hazard.set_meta("x", h_x)
+                        if "y" in hazard: hazard.y = h_y
+                        elif hazard.has_method("set_meta"): hazard.set_meta("y", h_y)
+
+                        var arena_width = 1000.0
+                        var arena_height = 1000.0
+                        if self.world != null and "arena" in self.world:
+                            if "width" in self.world.arena: arena_width = self.world.arena.width
+                            if "height" in self.world.arena: arena_height = self.world.arena.height
+
+                        var h_radius = 10.0
+                        if "radius" in hazard: h_radius = hazard.radius
+                        elif hazard.has_method("get_meta") and hazard.has_meta("radius"): h_radius = hazard.get_meta("radius")
+
+                        if h_x <= h_radius:
+                            h_x = h_radius
+                            hp_vx *= -1.0
+                            if "x" in hazard: hazard.x = h_x
+                            elif hazard.has_method("set_meta"): hazard.set_meta("x", h_x)
+                            if "vx" in hazard: hazard.vx = hp_vx
+                            elif hazard.has_method("set_meta"): hazard.set_meta("vx", hp_vx)
+                        elif h_x >= arena_width - h_radius:
+                            h_x = arena_width - h_radius
+                            hp_vx *= -1.0
+                            if "x" in hazard: hazard.x = h_x
+                            elif hazard.has_method("set_meta"): hazard.set_meta("x", h_x)
+                            if "vx" in hazard: hazard.vx = hp_vx
+                            elif hazard.has_method("set_meta"): hazard.set_meta("vx", hp_vx)
+
+                        if h_y <= h_radius:
+                            h_y = h_radius
+                            hp_vy *= -1.0
+                            if "y" in hazard: hazard.y = h_y
+                            elif hazard.has_method("set_meta"): hazard.set_meta("y", h_y)
+                            if "vy" in hazard: hazard.vy = hp_vy
+                            elif hazard.has_method("set_meta"): hazard.set_meta("vy", hp_vy)
+                        elif h_y >= arena_height - h_radius:
+                            h_y = arena_height - h_radius
+                            hp_vy *= -1.0
+                            if "y" in hazard: hazard.y = h_y
+                            elif hazard.has_method("set_meta"): hazard.set_meta("y", h_y)
+                            if "vy" in hazard: hazard.vy = hp_vy
+                            elif hazard.has_method("set_meta"): hazard.set_meta("vy", hp_vy)
+
+                        # Collision with balls
+                        if self.world != null and "balls" in self.world:
+                            var owner_id = null
+                            if "owner_id" in hazard: owner_id = hazard.owner_id
+                            elif hazard.has_method("get_meta") and hazard.has_meta("owner_id"): owner_id = hazard.get_meta("owner_id")
+
+                            for b in self.world.balls:
+                                var b_alive = true
+                                if "alive" in b: b_alive = b.alive
+                                elif b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+
+                                var target_id = null
+                                if "id" in b: target_id = b.id
+                                elif b.has_method("get_meta") and b.has_meta("id"): target_id = b.get_meta("id")
+
+                                if b_alive and target_id != owner_id:
+                                    var target_x = 0.0
+                                    var target_y = 0.0
+                                    if "x" in b: target_x = b.x
+                                    elif b.has_method("get_meta") and b.has_meta("x"): target_x = b.get_meta("x")
+                                    if "y" in b: target_y = b.y
+                                    elif b.has_method("get_meta") and b.has_meta("y"): target_y = b.get_meta("y")
+
+                                    var dist_sq = (h_x - target_x)*(h_x - target_x) + (h_y - target_y)*(h_y - target_y)
+
+                                    var b_radius = 10.0
+                                    if "radius" in b: b_radius = b.radius
+                                    elif b.has_method("get_meta") and b.has_meta("radius"): b_radius = b.get_meta("radius")
+
+                                    if dist_sq < (h_radius + b_radius) * (h_radius + b_radius):
+                                        if "duration" in hazard: hazard.duration = 0.0
+                                        elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
+
+                                        var dmg = 10.0
+                                        if "damage" in hazard: dmg = hazard.damage
+                                        elif hazard.has_method("get_meta") and hazard.has_meta("damage"): dmg = hazard.get_meta("damage")
+
+                                        if self.world.has_method("_deal_damage"):
+                                            var att = {}
+                                            att["damage"] = dmg
+                                            att["id"] = owner_id
+                                            self.world._deal_damage(att, b)
+                                        elif "hp" in b:
+                                            b.hp -= dmg
+                                        elif b.has_method("set_meta") and b.has_meta("hp"):
+                                            b.set_meta("hp", b.get_meta("hp") - dmg)
+                                        break
+
+
+                if h_kind == "deployable_shrapnel_trap":
+                    var owner_id = null
+                    if "owner_id" in hazard: owner_id = hazard.owner_id
+                    elif hazard.has_method("get_meta") and hazard.has_meta("owner_id"): owner_id = hazard.get_meta("owner_id")
+
+                    var owner_team = null
+                    if "owner_team" in hazard: owner_team = hazard.owner_team
+                    elif hazard.has_method("get_meta") and hazard.has_meta("owner_team"): owner_team = hazard.get_meta("owner_team")
+
+                    if owner_team == null and self.world != null and "balls" in self.world:
+                        for ob in self.world.balls:
+                            var ob_id = null
+                            if "id" in ob: ob_id = ob.id
+                            elif ob.has_method("get_meta") and ob.has_meta("id"): ob_id = ob.get_meta("id")
+                            if ob_id == owner_id:
+                                if "team" in ob: owner_team = ob.team
+                                elif ob.has_method("get_meta") and ob.has_meta("team"): owner_team = ob.get_meta("team")
+                                break
+
+                    var my_team = null
+                    if "team" in self.ball: my_team = self.ball.team
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("team"): my_team = self.ball.get_meta("team")
+
+                    var b_id = null
+                    if "id" in self.ball: b_id = self.ball.id
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): b_id = self.ball.get_meta("id")
+
+                    var is_enemy = (owner_id != b_id) and (owner_team == null or owner_team != my_team)
+                    if is_enemy:
+                        var h_radius = 60.0
+                        if "radius" in hazard: h_radius = hazard.radius
+                        elif hazard.has_method("get_meta") and hazard.has_meta("radius"): h_radius = hazard.get_meta("radius")
+
+                        var b_x = 0.0
+                        if "x" in self.ball: b_x = self.ball.x
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("x"): b_x = self.ball.get_meta("x")
+                        var dx = h_x - b_x
+                        var b_y = 0.0
+                        if "y" in self.ball: b_y = self.ball.y
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("y"): b_y = self.ball.get_meta("y")
+                        var dy = h_y - b_y
+                        var dist_sq = dx*dx + dy*dy
+
+                        if dist_sq < h_radius * h_radius:
+                            if "duration" in hazard: hazard.duration = 0.0
+                            elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
+
+                            if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                                var num_shrapnel = 8
+                                for i in range(num_shrapnel):
+                                    var angle = (2.0 * PI / num_shrapnel) * i
+                                    var proj = {}
+                                    var h_id_val = 0
+                                    if "id" in hazard: h_id_val = hazard.id
+                                    elif hazard.has_method("get_meta") and hazard.has_meta("id"): h_id_val = hazard.get_meta("id")
+
+                                    proj["id"] = str("shrapnel_", h_id_val, "_", i)
+                                    proj["kind"] = "shrapnel_projectile"
+                                    proj["x"] = h_x
+                                    proj["y"] = h_y
+                                    var speed = 600.0
+                                    proj["vx"] = cos(angle) * speed
+                                    proj["vy"] = sin(angle) * speed
+                                    proj["radius"] = 10.0
+                                    proj["duration"] = 5.0
+                                    proj["damage"] = 15.0
+                                    proj["owner_id"] = owner_id
+                                    self.world.arena.hazards.append(proj)
                 if h_kind == "deployable_freeze_trap":
                     var owner_id = null
                     if "owner_id" in hazard: owner_id = hazard.owner_id
@@ -54596,11 +54777,17 @@ func _update_skill_timer(delta: float):
                     elif hazard.has_method("get_meta") and hazard.has_meta("owner_id"): owner_id = hazard.get_meta("owner_id")
 
                     var b_id = null
-                    if "id" in ball: b_id = ball.id
-                    elif ball.has_method("get_meta") and ball.has_meta("id"): b_id = ball.get_meta("id")
+                    if "id" in self.ball: b_id = self.ball.id
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): b_id = self.ball.get_meta("id")
 
                     if owner_id != b_id:
+                        var b_x = 0.0
+                        if "x" in self.ball: b_x = self.ball.x
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("x"): b_x = self.ball.get_meta("x")
                         var dx = h_x - b_x
+                        var b_y = 0.0
+                        if "y" in self.ball: b_y = self.ball.y
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("y"): b_y = self.ball.get_meta("y")
                         var dy = h_y - b_y
                         var dist_sq = dx*dx + dy*dy
 
@@ -54650,11 +54837,17 @@ func _update_skill_timer(delta: float):
                     elif hazard.has_method("get_meta") and hazard.has_meta("owner_id"): owner_id = hazard.get_meta("owner_id")
 
                     var b_id = null
-                    if "id" in ball: b_id = ball.id
-                    elif ball.has_method("get_meta") and ball.has_meta("id"): b_id = ball.get_meta("id")
+                    if "id" in self.ball: b_id = self.ball.id
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): b_id = self.ball.get_meta("id")
 
                     if owner_id != b_id:
+                        var b_x = 0.0
+                        if "x" in self.ball: b_x = self.ball.x
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("x"): b_x = self.ball.get_meta("x")
                         var dx = h_x - b_x
+                        var b_y = 0.0
+                        if "y" in self.ball: b_y = self.ball.y
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("y"): b_y = self.ball.get_meta("y")
                         var dy = h_y - b_y
                         var dist_sq = dx*dx + dy*dy
 

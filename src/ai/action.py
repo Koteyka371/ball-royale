@@ -19178,6 +19178,15 @@ class Action:
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
 
+                elif getattr(nearest, "kind", None) == "deployable_shrapnel_trap":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("deployable_shrapnel_trap")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "deployable_freeze_trap":
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
@@ -19239,6 +19248,15 @@ class Action:
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
 
+                elif getattr(nearest, "kind", None) == "deployable_shrapnel_trap":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("deployable_shrapnel_trap")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "deployable_freeze_trap":
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
@@ -24202,6 +24220,22 @@ class Action:
                     node.pulse_radius = 250.0
                     node.owner_id = self.ball.id
                     self.world.arena.hazards.append(node)
+
+            elif skill_name == "deployable_shrapnel_trap":
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    class ShrapnelTrapNode:
+                        pass
+                    node = ShrapnelTrapNode()
+                    node.id = f"shrapnel_trap_{self.ball.id}_{self.world.tick}"
+                    node.kind = "deployable_shrapnel_trap"
+                    node.x = self.ball.x
+                    node.y = self.ball.y
+                    node.radius = 60.0
+                    node.damage = 0.0
+                    node.duration = 10.0
+                    node.owner_id = self.ball.id
+                    self.world.arena.hazards.append(node)
+                self.ball.skill_timer = 15.0
             elif skill_name == "deployable_reversal_trap":
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     class ReversalTrapNode:
@@ -26462,7 +26496,7 @@ class Action:
             self.ball.pull_booster_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["deployable_directional_shield", "deployable_stasis_bubble", "deployable_reversal_trap", "deployable_pull_trap", "deployable_freeze_trap", "deployable_hologram_trap", "vampiric_aura_booster", "vampiric_puddle", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "vision_reduction_trap", "decoy_item", "silence_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "entanglement_booster", "weather_booster", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "invert_booster", "freeze_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "reverse_gravity_item", "gravity_multiplier_booster", "anchor_booster", "wind_shield_booster", "disruptor_booster", "emp_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "survival_rewind_booster", "snapback_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "anchor_repulsor_booster", "gravity_well_booster", "overclock_booster", "chronosphere_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "insulator_booster", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "pinball_projectile_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "pet_item", "artillery_pet_item", "miniature_black_hole_item", "reverse_gravity_item", "wind_tunnel", "cryogenic_booster", "overload_zone_item", "eclipse_booster_item", "eclipse_booster"]:
+                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["deployable_directional_shield", "deployable_stasis_bubble", "deployable_reversal_trap", "deployable_pull_trap", "deployable_freeze_trap", "deployable_hologram_trap", "deployable_shrapnel_trap", "vampiric_aura_booster", "vampiric_puddle", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "vision_reduction_trap", "decoy_item", "silence_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "entanglement_booster", "weather_booster", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "invert_booster", "freeze_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "reverse_gravity_item", "gravity_multiplier_booster", "anchor_booster", "wind_shield_booster", "disruptor_booster", "emp_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "survival_rewind_booster", "snapback_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "anchor_repulsor_booster", "gravity_well_booster", "overclock_booster", "chronosphere_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "insulator_booster", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "pinball_projectile_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "pet_item", "artillery_pet_item", "miniature_black_hole_item", "reverse_gravity_item", "wind_tunnel", "cryogenic_booster", "overload_zone_item", "eclipse_booster_item", "eclipse_booster"]:
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         if dist_sq < 250000: # 500 range
                             import math
@@ -27194,6 +27228,91 @@ class Action:
                                                                 b.killer = "pull_trap"
                                         hazard.duration = 0.0 # Destroy trap
 
+
+                if getattr(hazard, "kind", "") == "shrapnel_projectile":
+                    if hasattr(hazard, "vx") and hasattr(hazard, "vy"):
+                        hazard.x += hazard.vx * delta
+                        hazard.y += hazard.vy * delta
+
+                        arena_width = getattr(self.world.arena, "width", 1000.0) if hasattr(self.world, "arena") else 1000.0
+                        arena_height = getattr(self.world.arena, "height", 1000.0) if hasattr(self.world, "arena") else 1000.0
+                        h_radius = getattr(hazard, "radius", 10.0)
+
+                        bounced = False
+                        if hazard.x <= h_radius:
+                            hazard.x = h_radius
+                            hazard.vx *= -1.0
+                            bounced = True
+                        elif hazard.x >= arena_width - h_radius:
+                            hazard.x = arena_width - h_radius
+                            hazard.vx *= -1.0
+                            bounced = True
+                        if hazard.y <= h_radius:
+                            hazard.y = h_radius
+                            hazard.vy *= -1.0
+                            bounced = True
+                        elif hazard.y >= arena_height - h_radius:
+                            hazard.y = arena_height - h_radius
+                            hazard.vy *= -1.0
+                            bounced = True
+
+                        # Collision with balls
+                        if hasattr(self.world, "balls"):
+                            for b in self.world.balls:
+                                if getattr(b, "alive", True) and getattr(b, "id", None) != getattr(hazard, "owner_id", None):
+                                    dist_sq = (hazard.x - b.x)**2 + (hazard.y - b.y)**2
+                                    b_radius = getattr(b, "radius", 10.0)
+                                    if dist_sq < (h_radius + b_radius)**2:
+                                        hazard.duration = 0.0
+                                        # Damage
+                                        if hasattr(self.world, "_deal_damage"):
+                                            class DummyAttacker: pass
+                                            att = DummyAttacker()
+                                            att.damage = getattr(hazard, "damage", 10.0)
+                                            att.id = getattr(hazard, "owner_id", None)
+                                            try:
+                                                self.world._deal_damage(att, b, dmg=att.damage)
+                                            except TypeError:
+                                                self.world._deal_damage(att, b)
+                                        elif hasattr(b, "hp"):
+                                            b.hp -= getattr(hazard, "damage", 10.0)
+                                        break
+
+
+                if getattr(hazard, "kind", "") == "deployable_shrapnel_trap":
+                    owner_id = getattr(hazard, "owner_id", None)
+                    owner_team = getattr(hazard, "owner_team", None)
+                    if owner_team is None and hasattr(self.world, "balls"):
+                        for b in self.world.balls:
+                            if getattr(b, "id", None) == owner_id:
+                                owner_team = getattr(b, "team", getattr(b, "ball_type", ""))
+                                break
+                    my_team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
+                    is_enemy = (owner_id != getattr(self.ball, "id", None)) and (owner_team is None or owner_team != my_team)
+                    if is_enemy:
+                        dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
+                        if dist_sq < getattr(hazard, "radius", 60.0)**2: # Triggered
+                            hazard.duration = 0.0 # Destroy trap
+                            import math
+                            # Spawn shrapnel
+                            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                                num_shrapnel = 8
+                                for i in range(num_shrapnel):
+                                    angle = (2 * math.pi / num_shrapnel) * i
+                                    class ShrapnelProjectile: pass
+                                    proj = ShrapnelProjectile()
+                                    proj.id = f"shrapnel_{getattr(hazard, 'id', 0)}_{i}"
+                                    proj.kind = "shrapnel_projectile"
+                                    proj.x = hazard.x
+                                    proj.y = hazard.y
+                                    speed = 600.0
+                                    proj.vx = math.cos(angle) * speed
+                                    proj.vy = math.sin(angle) * speed
+                                    proj.radius = 10.0
+                                    proj.duration = 5.0
+                                    proj.damage = 15.0
+                                    proj.owner_id = owner_id
+                                    self.world.arena.hazards.append(proj)
                 if getattr(hazard, "kind", "") == "deployable_freeze_trap":
                     owner_id = getattr(hazard, "owner_id", None)
                     owner_team = getattr(hazard, "owner_team", None)
