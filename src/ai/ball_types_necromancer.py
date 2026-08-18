@@ -152,6 +152,7 @@ class Necromancer:
         if self.survival_without_damage >= 60.0 and not self.is_lich:
             self.is_lich = True
             self.BALL_TYPE = "lich"
+            self.SKILL = "bone_wall"
             self.hp = self.max_hp  # Optional heal?
 
             # Enrage existing minions and spawn skeletal dragons

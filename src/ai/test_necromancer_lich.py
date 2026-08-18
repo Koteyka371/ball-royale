@@ -25,6 +25,7 @@ def test_necromancer_lich_evolution():
     # Check if evolved
     assert necro.is_lich == True
     assert necro.BALL_TYPE == "lich"
+    assert necro.SKILL == "bone_wall"
 
     # Check if minion enraged
     assert getattr(minion, "is_enraged", False) == True
@@ -63,3 +64,4 @@ def test_necromancer_lich_evolution_interrupted_by_damage():
     # Now it should be a lich
     assert necro.is_lich == True
     assert necro.BALL_TYPE == "lich"
+    assert necro.SKILL == "bone_wall"
