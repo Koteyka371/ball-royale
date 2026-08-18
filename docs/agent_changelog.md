@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2029] Chrono Anchor Booster — *2026-08-18 01:49:57 UTC*
+
+A booster that records your current position, and exactly 5 seconds later snaps you back to it instantly, keeping your current momentum.
+
+---
+
 ## [idea-2022] Quantum Detonator Mode — *2026-08-18 01:09:30 UTC*
 
 A new game mode where randomly spawned 'Quantum Detonators' explode, leaving behind chaotic zones. These zones randomly teleport players who enter them to another active zone on the map, reversing their current momentum upon exiting.
