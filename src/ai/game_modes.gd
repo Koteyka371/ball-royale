@@ -89133,3 +89133,26 @@ class DangerBeaconMode extends GameMode:
 									ball.minimap_ping_timer = ping_timer - delta
 
 GAME_MODES["danger_beacon"] = DangerBeaconMode.new()
+
+
+class MorphingShapeArenaMode extends GameMode:
+	func setup(world, balls):
+		if world != null:
+			var w = 2000.0
+			if typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+				w = world.arena.width
+			elif typeof(world) == TYPE_OBJECT and "arena" in world:
+				w = world.arena.width
+
+			var at = preload("res://src/arena/arena_types.gd")
+			if "MorphingShapeArena" in at:
+				var new_arena = at.MorphingShapeArena.new(w)
+				if typeof(world) == TYPE_DICTIONARY:
+					world["arena"] = new_arena
+				else:
+					world.arena = new_arena
+		super.setup(world, balls)
+
+# at the bottom of the file we should add GAME_MODES["morphing_shape_arena"] = MorphingShapeArenaMode.new()
+
+GAME_MODES["morphing_shape_arena"] = MorphingShapeArenaMode.new()
