@@ -88621,7 +88621,7 @@ class DisorientationBrushMode extends GameMode:
 							elif typeof(ball) == TYPE_OBJECT and "disorientation_ping_timer" in ball:
 								ping_timer = ball.disorientation_ping_timer
 
-							if ping_timer <= 0:
+							if ping_timer <= 0.00001:
 								var angle = randf() * 2.0 * PI
 								var dist = randf() * 300.0
 								var fake_x = b_x + cos(angle) * dist
@@ -88959,3 +88959,177 @@ class DarkMatterVoidMode extends GameMode:
 						b["speed"] = base_speed
 
 GAME_MODES["dark_matter_void"] = DarkMatterVoidMode.new()
+
+
+class DangerBeaconMode extends GameMode:
+	func _init():
+		name = "Danger Beacon"
+		description = "A placed beacon that reveals enemies within its radius on the minimap."
+
+	func tick(world, balls, delta):
+		super.tick(world, balls, delta)
+
+		if world != null and "arena" in world and world.arena != null:
+			var hazards = []
+			if typeof(world.arena) == TYPE_DICTIONARY and "hazards" in world.arena:
+				hazards = world.arena.hazards
+			elif typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+				hazards = world.arena.hazards
+
+		var to_remove = []
+		for hazard in hazards:
+			var h_kind = ""
+			if typeof(hazard) == TYPE_DICTIONARY and hazard.has("kind"): h_kind = hazard.kind
+			elif typeof(hazard) == TYPE_OBJECT and "kind" in hazard: h_kind = hazard.kind
+
+			if h_kind == "danger_beacon_pickup":
+				var h_x = 0.0
+				var h_y = 0.0
+				var h_radius = 10.0
+				if typeof(hazard) == TYPE_DICTIONARY:
+					if hazard.has("x"): h_x = hazard.x
+					if hazard.has("y"): h_y = hazard.y
+					if hazard.has("radius"): h_radius = hazard.radius
+				else:
+					if "x" in hazard: h_x = hazard.x
+					if "y" in hazard: h_y = hazard.y
+					if "radius" in hazard: h_radius = hazard.radius
+
+				for b in balls:
+					var b_hp = 0.0
+					if typeof(b) == TYPE_DICTIONARY and b.has("hp"): b_hp = b.hp
+					elif typeof(b) == TYPE_OBJECT and "hp" in b: b_hp = b.hp
+					if b_hp <= 0:
+						continue
+
+					var b_x = 0.0
+					var b_y = 0.0
+					var b_radius = 20.0
+					if typeof(b) == TYPE_DICTIONARY:
+						if b.has("x"): b_x = b.x
+						if b.has("y"): b_y = b.y
+						if b.has("radius"): b_radius = b.radius
+					else:
+						if "x" in b: b_x = b.x
+						if "y" in b: b_y = b.y
+						if "radius" in b: b_radius = b.radius
+
+					var dist_sq = (b_x - h_x) * (b_x - h_x) + (b_y - h_y) * (b_y - h_y)
+					if dist_sq < (b_radius + h_radius) * (b_radius + h_radius):
+						if typeof(b) == TYPE_DICTIONARY:
+							if b.has("danger_beacon_count"):
+								b.danger_beacon_count += 1
+							else:
+								b.danger_beacon_count = 1
+						else:
+							if "danger_beacon_count" in b:
+								b.danger_beacon_count += 1
+							else:
+								b.danger_beacon_count = 1
+						to_remove.append(hazard)
+						break
+
+		for r in to_remove:
+			if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+				world.arena.hazards.erase(r)
+			elif typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+				world.arena.hazards.erase(r)
+
+
+			for hazard in hazards:
+				var h_kind = ""
+				var h_x = 0.0
+				var h_y = 0.0
+				var h_radius = 0.0
+				var h_owner_id = null
+				var h_team = null
+
+				if typeof(hazard) == TYPE_DICTIONARY:
+					if "kind" in hazard: h_kind = hazard.kind
+					if "x" in hazard: h_x = hazard.x
+					if "y" in hazard: h_y = hazard.y
+					if "radius" in hazard: h_radius = hazard.radius
+					if "owner_id" in hazard: h_owner_id = hazard.owner_id
+					if "owner_team" in hazard: h_team = hazard.owner_team
+				else:
+					if "kind" in hazard: h_kind = hazard.kind
+					if "x" in hazard: h_x = hazard.x
+					if "y" in hazard: h_y = hazard.y
+					if "radius" in hazard: h_radius = hazard.radius
+					if "owner_id" in hazard: h_owner_id = hazard.owner_id
+					if "owner_team" in hazard: h_team = hazard.owner_team
+
+				if h_kind == "danger_beacon":
+					for ball in balls:
+						var b_hp = 0.0
+						if typeof(ball) == TYPE_DICTIONARY and "hp" in ball: b_hp = ball.hp
+						elif typeof(ball) == TYPE_OBJECT and "hp" in ball: b_hp = ball.hp
+
+						if b_hp <= 0:
+							continue
+
+						var b_team = null
+						var b_id = null
+						if typeof(ball) == TYPE_DICTIONARY:
+							if "team" in ball: b_team = ball.team
+							if "id" in ball: b_id = ball.id
+						else:
+							if "team" in ball: b_team = ball.team
+							if "id" in ball: b_id = ball.id
+
+						var is_enemy = false
+						if b_team != null and h_team != null:
+							if str(b_team) != str(h_team):
+								is_enemy = true
+						else:
+							if str(b_id) != str(h_owner_id):
+								is_enemy = true
+
+						if not is_enemy:
+							continue
+
+						var b_x = 0.0
+						var b_y = 0.0
+						var b_radius = 20.0
+
+						if typeof(ball) == TYPE_DICTIONARY:
+							if "x" in ball: b_x = ball.x
+							if "y" in ball: b_y = ball.y
+							if "radius" in ball: b_radius = ball.radius
+						else:
+							if "x" in ball: b_x = ball.x
+							if "y" in ball: b_y = ball.y
+							if "radius" in ball: b_radius = ball.radius
+
+						var dx = b_x - h_x
+						var dy = b_y - h_y
+						var dist_sq = dx*dx + dy*dy
+
+						if dist_sq < (h_radius + b_radius) * (h_radius + b_radius):
+							var ping_timer = 0.0
+							if typeof(ball) == TYPE_DICTIONARY:
+								if "minimap_ping_timer" in ball: ping_timer = ball.minimap_ping_timer
+							else:
+								if "minimap_ping_timer" in ball: ping_timer = ball.minimap_ping_timer
+
+							if ping_timer <= 0.00001:
+								if typeof(world) == TYPE_DICTIONARY:
+									if "events" in world:
+										world.events.append({'type': 'minimap_ping', 'data': {"x": b_x, "y": b_y, "color": "red", "duration": 0.5}})
+								else:
+									if world.has_method("add_event"):
+										world.add_event("minimap_ping", {"x": b_x, "y": b_y, "color": "red", "duration": 0.5})
+									elif "events" in world:
+										world.events.append({'type': 'minimap_ping', 'data': {"x": b_x, "y": b_y, "color": "red", "duration": 0.5}})
+
+								if typeof(ball) == TYPE_DICTIONARY:
+									ball.minimap_ping_timer = 1.0
+								else:
+									ball.minimap_ping_timer = 1.0
+							else:
+								if typeof(ball) == TYPE_DICTIONARY:
+									ball.minimap_ping_timer = ping_timer - delta
+								else:
+									ball.minimap_ping_timer = ping_timer - delta
+
+GAME_MODES["danger_beacon"] = DangerBeaconMode.new()
