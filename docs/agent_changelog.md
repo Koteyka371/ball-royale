@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2026] Arena Shape Shifting Mode — *2026-08-18 23:29:17 UTC*
+
+Every 60 seconds, the arena smoothly morphs between different shapes (e.g., from square to circle to cross), forcing players to constantly adapt their positioning to avoid corners.
+
+---
+
 ## [idea-1907] Shatter Trap — *2026-08-18 14:31:40 UTC*
 
 A deployable trap that, when triggered, shatters into multiple smaller high-velocity shrapnel projectiles that bounce off walls.
