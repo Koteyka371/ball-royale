@@ -56548,3 +56548,56 @@ class QuantumDetonatorsMode(GameMode):
                     break
 
 GAME_MODES["quantum_detonators"] = QuantumDetonatorsMode()
+
+class DarkMatterVoidMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Dark Matter Void"
+        self.description = "Center slowly becomes a dark matter void that eliminates players. Edge grants buffs."
+        self.void_radius = 0.0
+        self.void_growth_rate = 10.0 # pixels per second
+        self.edge_buffer = 150.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.void_radius = 0.0
+
+    def tick(self, world, balls, delta):
+        super().tick(world, balls, delta)
+        self.void_radius += self.void_growth_rate * delta
+
+        import math
+        cx = getattr(world.arena, "width", 1000) / 2.0
+        cy = getattr(world.arena, "height", 1000) / 2.0
+
+        for b in balls:
+            if not getattr(b, "alive", True):
+                continue
+
+            bx = getattr(b, "x", 0.0)
+            by = getattr(b, "y", 0.0)
+
+            if not isinstance(bx, (int, float)): bx = 0.0
+            if not isinstance(by, (int, float)): by = 0.0
+
+            dist = math.hypot(bx - cx, by - cy)
+
+            if dist < self.void_radius:
+                # Instant eliminate
+                if hasattr(b, 'hp'):
+                    b.hp = 0
+                else:
+                    b.alive = False
+            elif dist < self.void_radius + self.edge_buffer:
+                # Edge buffer - speed buff and skill recharge
+                b.speed = getattr(b, "base_speed", 100.0) * 2.5
+                if hasattr(b, 'skill_cooldown'):
+                    b.skill_cooldown = max(0.0, getattr(b, 'skill_cooldown', 0.0) - delta * 5.0)
+            else:
+                # Normal speed
+                if hasattr(b, "base_speed") and hasattr(b, "speed"):
+                    speed_val = getattr(b, 'speed', None)
+                    if isinstance(speed_val, (int, float)) and speed_val != 0.0:
+                        b.speed = getattr(b, "base_speed", 100.0)
+
+GAME_MODES["dark_matter_void"] = DarkMatterVoidMode()
