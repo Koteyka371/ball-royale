@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2031] Weather Predictor Hologram — *2026-08-18 06:15:20 UTC*
+
+An interactive hologram in the arena that visually represents the next weather state, giving observant players an advantage over those ignoring the environment.
+
+---
+
 ## [idea-2033] Dark Matter Mode — *2026-08-18 04:46:35 UTC*
 
 A new game mode where the center of the arena slowly becomes a dark matter void that instantly eliminates players. However, staying near the edge of the void grants massive temporary speed buffs and skill recharge, rewarding high-risk, high-reward positioning.
