@@ -56364,3 +56364,96 @@ class ElasticWallsMode(GameMode):
                     b.max_speed = base
 
 GAME_MODES['elastic_walls'] = ElasticWallsMode()
+
+class QuantumDetonatorsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Quantum Detonators"
+        self.description = "Randomly spawned Quantum Detonators explode into chaotic zones. These zones randomly teleport players who enter them to another active zone on the map, reversing their current momentum."
+
+    def setup(self, world, balls):
+        world.quantum_detonators = getattr(world, 'quantum_detonators', [])
+        world.chaotic_zones = getattr(world, 'chaotic_zones', [])
+        super().setup(world, balls)
+
+    def tick(self, world, balls, delta=0.016):
+        import random as _rnd
+        import math
+
+        if not hasattr(world, 'quantum_detonators'):
+            world.quantum_detonators = []
+        if not hasattr(world, 'chaotic_zones'):
+            world.chaotic_zones = []
+
+        # Spawn logic
+        if _rnd.random() < delta * 0.1:
+            try:
+                arena_width = getattr(world.arena, 'width', 1000)
+                arena_height = getattr(world.arena, 'height', 1000)
+            except Exception:
+                arena_width = 1000
+                arena_height = 1000
+            world.quantum_detonators.append({
+                "x": _rnd.random() * arena_width,
+                "y": _rnd.random() * arena_height,
+                "timer": 3.0,
+                "radius": 30.0
+            })
+
+        # Process detonators
+        active_detonators = []
+        for det in world.quantum_detonators:
+            det["timer"] -= delta
+            if det["timer"] <= 0:
+                world.chaotic_zones.append({
+                    "x": det["x"],
+                    "y": det["y"],
+                    "radius": 60.0,
+                    "duration": 5.0
+                })
+            else:
+                active_detonators.append(det)
+        world.quantum_detonators = active_detonators
+
+        # Process chaotic zones
+        active_zones = []
+        for zone in world.chaotic_zones:
+            zone["duration"] -= delta
+            if zone["duration"] > 0:
+                active_zones.append(zone)
+        world.chaotic_zones = active_zones
+
+        # Teleport logic
+        for b in balls:
+            cooldown = getattr(b, "quantum_teleport_cooldown", 0.0)
+            if cooldown > 0.0:
+                b.quantum_teleport_cooldown = cooldown - delta
+                continue
+
+            bx = getattr(b, "x", 0.0)
+            by = getattr(b, "y", 0.0)
+            brad = getattr(b, "radius", 15.0)
+
+            # Check distance to any zone
+            for current_zone in world.chaotic_zones:
+                zx = current_zone["x"]
+                zy = current_zone["y"]
+                zrad = current_zone["radius"]
+
+                dx = bx - zx
+                dy = by - zy
+                dist_sq = dx * dx + dy * dy
+                if dist_sq < (brad + zrad) ** 2:
+                    # Collided with a zone. Find a different one to teleport to.
+                    other_zones = [z for z in world.chaotic_zones if z != current_zone]
+                    if other_zones:
+                        target_zone = _rnd.choice(other_zones)
+                        b.x = target_zone["x"]
+                        b.y = target_zone["y"]
+                        # Reverse momentum
+                        b.vx = -getattr(b, "vx", 0.0)
+                        b.vy = -getattr(b, "vy", 0.0)
+                        b.quantum_teleport_cooldown = 1.0
+                    break
+
+GAME_MODES["quantum_detonators"] = QuantumDetonatorsMode()
