@@ -1,4 +1,3 @@
-
 class ConstrictingArenaMode extends GameMode:
 	var min_width = 200.0
 	var min_height = 200.0
@@ -88609,3 +88608,167 @@ class ElasticWallsMode extends GameMode:
 						b.set_meta("max_speed", base)
 
 GAME_MODES["elastic_walls"] = ElasticWallsMode.new()
+
+class QuantumDetonatorsMode extends GameMode:
+	func _init():
+		self.name = "Quantum Detonators"
+		self.description = "Randomly spawned Quantum Detonators explode into chaotic zones. These zones randomly teleport players who enter them to another active zone on the map, reversing their current momentum."
+
+	func setup(world: Object, balls: Array) -> void:
+		if typeof(world) == TYPE_OBJECT:
+			if not world.has_meta("quantum_detonators"):
+				world.set_meta("quantum_detonators", [])
+			if not world.has_meta("chaotic_zones"):
+				world.set_meta("chaotic_zones", [])
+		elif typeof(world) == TYPE_DICTIONARY:
+			if not world.has("quantum_detonators"):
+				world["quantum_detonators"] = []
+			if not world.has("chaotic_zones"):
+				world["chaotic_zones"] = []
+		super.setup(world, balls)
+
+	func tick(world: Object, balls: Array, delta: float = 0.016) -> void:
+		if typeof(world) != TYPE_OBJECT and typeof(world) != TYPE_DICTIONARY:
+			return
+
+		var qd = []
+		var cz = []
+		if typeof(world) == TYPE_OBJECT:
+			if world.has_meta("quantum_detonators"):
+				qd = world.get_meta("quantum_detonators")
+			else:
+				world.set_meta("quantum_detonators", qd)
+			if world.has_meta("chaotic_zones"):
+				cz = world.get_meta("chaotic_zones")
+			else:
+				world.set_meta("chaotic_zones", cz)
+		elif typeof(world) == TYPE_DICTIONARY:
+			if world.has("quantum_detonators"):
+				qd = world["quantum_detonators"]
+			else:
+				world["quantum_detonators"] = qd
+			if world.has("chaotic_zones"):
+				cz = world["chaotic_zones"]
+			else:
+				world["chaotic_zones"] = cz
+
+		if randf() < delta * 0.1:
+			var arena_width = 1000.0
+			var arena_height = 1000.0
+			var arena = null
+			if typeof(world) == TYPE_OBJECT:
+				if "arena" in world:
+					arena = world.get("arena")
+			elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+				arena = world["arena"]
+
+			if arena != null:
+				if typeof(arena) == TYPE_OBJECT:
+					if "width" in arena: arena_width = float(arena.get("width"))
+					if "height" in arena: arena_height = float(arena.get("height"))
+				elif typeof(arena) == TYPE_DICTIONARY:
+					if arena.has("width"): arena_width = float(arena["width"])
+					if arena.has("height"): arena_height = float(arena["height"])
+
+			qd.append({
+				"x": randf() * arena_width,
+				"y": randf() * arena_height,
+				"timer": 3.0,
+				"radius": 30.0
+			})
+
+		var active_qd = []
+		for det in qd:
+			det["timer"] -= delta
+			if det["timer"] <= 0.0:
+				cz.append({
+					"x": det["x"],
+					"y": det["y"],
+					"radius": 60.0,
+					"duration": 5.0
+				})
+			else:
+				active_qd.append(det)
+
+		var active_cz = []
+		for zone in cz:
+			zone["duration"] -= delta
+			if zone["duration"] > 0.0:
+				active_cz.append(zone)
+
+		if typeof(world) == TYPE_OBJECT:
+			world.set_meta("quantum_detonators", active_qd)
+			world.set_meta("chaotic_zones", active_cz)
+		elif typeof(world) == TYPE_DICTIONARY:
+			world["quantum_detonators"] = active_qd
+			world["chaotic_zones"] = active_cz
+
+		for b in balls:
+			var cooldown = 0.0
+			if typeof(b) == TYPE_OBJECT:
+				if b.has_meta("quantum_teleport_cooldown"):
+					cooldown = float(b.get_meta("quantum_teleport_cooldown"))
+			elif typeof(b) == TYPE_DICTIONARY and b.has("quantum_teleport_cooldown"):
+				cooldown = float(b["quantum_teleport_cooldown"])
+
+			if cooldown > 0.0:
+				if typeof(b) == TYPE_OBJECT:
+					b.set_meta("quantum_teleport_cooldown", cooldown - delta)
+				elif typeof(b) == TYPE_DICTIONARY:
+					b["quantum_teleport_cooldown"] = cooldown - delta
+				continue
+
+			var bx = 0.0
+			var by = 0.0
+			var brad = 15.0
+			if typeof(b) == TYPE_OBJECT:
+				if "x" in b: bx = float(b.get("x"))
+				if "y" in b: by = float(b.get("y"))
+				if "radius" in b: brad = float(b.get("radius"))
+			elif typeof(b) == TYPE_DICTIONARY:
+				if b.has("x"): bx = float(b["x"])
+				if b.has("y"): by = float(b["y"])
+				if b.has("radius"): brad = float(b["radius"])
+
+			for i in range(active_cz.size()):
+				var current_zone = active_cz[i]
+				var zx = float(current_zone["x"])
+				var zy = float(current_zone["y"])
+				var zrad = float(current_zone["radius"])
+
+				var dx = bx - zx
+				var dy = by - zy
+				var dist_sq = dx * dx + dy * dy
+				if dist_sq < pow(brad + zrad, 2.0):
+					var other_zones = []
+					for j in range(active_cz.size()):
+						if i != j:
+							other_zones.append(active_cz[j])
+					if other_zones.size() > 0:
+						var target_zone = other_zones[randi() % other_zones.size()]
+						var new_x = float(target_zone["x"])
+						var new_y = float(target_zone["y"])
+
+						if typeof(b) == TYPE_OBJECT:
+							b.set("x", new_x)
+							b.set("y", new_y)
+							var vx = 0.0
+							var vy = 0.0
+							if "vx" in b: vx = float(b.get("vx"))
+							if "vy" in b: vy = float(b.get("vy"))
+							b.set("vx", -vx)
+							b.set("vy", -vy)
+							b.set_meta("quantum_teleport_cooldown", 1.0)
+						elif typeof(b) == TYPE_DICTIONARY:
+							b["x"] = new_x
+							b["y"] = new_y
+							var vx = 0.0
+							var vy = 0.0
+							if b.has("vx"): vx = float(b["vx"])
+							if b.has("vy"): vy = float(b["vy"])
+							b["vx"] = -vx
+							b["vy"] = -vy
+							b["quantum_teleport_cooldown"] = 1.0
+					break
+
+GAME_MODES["quantum_detonators"] = QuantumDetonatorsMode.new()
