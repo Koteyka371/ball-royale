@@ -88772,3 +88772,93 @@ class QuantumDetonatorsMode extends GameMode:
 					break
 
 GAME_MODES["quantum_detonators"] = QuantumDetonatorsMode.new()
+
+class DarkMatterVoidMode extends GameMode:
+	var void_radius = 0.0
+	var void_growth_rate = 10.0
+	var edge_buffer = 150.0
+
+	func _init():
+		self.name = "Dark Matter Void"
+		self.description = "Center slowly becomes a dark matter void that eliminates players. Edge grants buffs."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		self.void_radius = 0.0
+
+	func tick(world, balls, delta):
+		super.tick(world, balls, delta)
+		self.void_radius += self.void_growth_rate * delta
+
+		var cx = 500.0
+		var cy = 500.0
+		if world != null and "arena" in world and typeof(world.arena) == TYPE_OBJECT:
+			if "width" in world.arena: cx = float(world.arena.width) / 2.0
+			if "height" in world.arena: cy = float(world.arena.height) / 2.0
+		elif world != null and "arena" in world and typeof(world.arena) == TYPE_DICTIONARY:
+			if world.arena.has("width"): cx = float(world.arena["width"]) / 2.0
+			if world.arena.has("height"): cy = float(world.arena["height"]) / 2.0
+
+		for b in balls:
+			var is_alive = true
+			if typeof(b) == TYPE_OBJECT and "alive" in b: is_alive = b.alive
+			elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): is_alive = b["alive"]
+
+			if not is_alive:
+				continue
+
+			var bx = 0.0
+			var by = 0.0
+
+			if typeof(b) == TYPE_OBJECT:
+				if "x" in b: bx = float(b.x)
+				if "y" in b: by = float(b.y)
+			elif typeof(b) == TYPE_DICTIONARY:
+				if b.has("x"): bx = float(b["x"])
+				if b.has("y"): by = float(b["y"])
+
+			var dx = bx - cx
+			var dy = by - cy
+			var dist = sqrt(dx * dx + dy * dy)
+
+			if dist < self.void_radius:
+				if typeof(b) == TYPE_OBJECT:
+					if "hp" in b:
+						b.hp = 0
+					else:
+						b.alive = false
+				elif typeof(b) == TYPE_DICTIONARY:
+					if b.has("hp"):
+						b["hp"] = 0
+					else:
+						b["alive"] = false
+			elif dist < self.void_radius + self.edge_buffer:
+				if typeof(b) == TYPE_OBJECT:
+					var base_speed = 100.0
+					if "base_speed" in b: base_speed = float(b.base_speed)
+					b.speed = base_speed * 2.5
+					if "skill_cooldown" in b:
+						b.skill_cooldown = max(0.0, float(b.skill_cooldown) - float(delta) * 5.0)
+				elif typeof(b) == TYPE_DICTIONARY:
+					var base_speed = 100.0
+					if b.has("base_speed"): base_speed = float(b["base_speed"])
+					b["speed"] = base_speed * 2.5
+					if b.has("skill_cooldown"):
+						b["skill_cooldown"] = max(0.0, float(b["skill_cooldown"]) - float(delta) * 5.0)
+			else:
+				if typeof(b) == TYPE_OBJECT:
+					var speed = null
+					if "speed" in b: speed = b.speed
+					if speed != null and typeof(speed) in [TYPE_INT, TYPE_FLOAT] and float(speed) != 0.0:
+						var base_speed = 100.0
+						if "base_speed" in b: base_speed = float(b.base_speed)
+						b.speed = base_speed
+				elif typeof(b) == TYPE_DICTIONARY:
+					var speed = null
+					if b.has("speed"): speed = b["speed"]
+					if speed != null and typeof(speed) in [TYPE_INT, TYPE_FLOAT] and float(speed) != 0.0:
+						var base_speed = 100.0
+						if b.has("base_speed"): base_speed = float(b["base_speed"])
+						b["speed"] = base_speed
+
+GAME_MODES["dark_matter_void"] = DarkMatterVoidMode.new()
