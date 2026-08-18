@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2033] Dark Matter Mode — *2026-08-18 04:46:35 UTC*
+
+A new game mode where the center of the arena slowly becomes a dark matter void that instantly eliminates players. However, staying near the edge of the void grants massive temporary speed buffs and skill recharge, rewarding high-risk, high-reward positioning.
+
+---
+
 ## [idea-2029] Chrono Anchor Booster — *2026-08-18 01:49:57 UTC*
 
 A booster that records your current position, and exactly 5 seconds later snaps you back to it instantly, keeping your current momentum.
