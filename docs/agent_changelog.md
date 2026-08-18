@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1994] Danger Beacons — *2026-08-18 13:43:35 UTC*
+
+Players can pick up a new consumable called 'Danger Beacon'. When placed on the ground, it reveals any player within its radius on the minimap as a red flashing dot, acting as an early warning system against stealthy opponents.
+
+---
+
 ## [idea-2001] Bone Wall Hazard Spell — *2026-08-18 10:34:38 UTC*
 
 The Lich variation of the Necromancer can periodically summon a 'Bone Wall' hazard in front of it that blocks projectiles and damages balls that collide with it.
