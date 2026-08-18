@@ -8,10 +8,10 @@
                 "system": "leader"
             },
             "stash": {
-                "alliance_tokens": 100
+                "alliance_tokens": 150
             },
             "quests": [],
-            "points": 2400,
+            "points": 3600,
             "territories": [],
             "perks": [],
             "decorations": [],
@@ -33,10 +33,10 @@
                 "system": "leader"
             },
             "stash": {
-                "alliance_tokens": 100
+                "alliance_tokens": 150
             },
             "quests": [],
-            "points": 2400,
+            "points": 3600,
             "territories": [],
             "perks": [],
             "decorations": [],
