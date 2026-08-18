@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1907] Shatter Trap — *2026-08-18 14:31:40 UTC*
+
+A deployable trap that, when triggered, shatters into multiple smaller high-velocity shrapnel projectiles that bounce off walls.
+
+---
+
 ## [idea-1994] Danger Beacons — *2026-08-18 13:43:35 UTC*
 
 Players can pick up a new consumable called 'Danger Beacon'. When placed on the ground, it reveals any player within its radius on the minimap as a red flashing dot, acting as an early warning system against stealthy opponents.
