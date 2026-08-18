@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2001] Bone Wall Hazard Spell — *2026-08-18 10:34:38 UTC*
+
+The Lich variation of the Necromancer can periodically summon a 'Bone Wall' hazard in front of it that blocks projectiles and damages balls that collide with it.
+
+---
+
 ## [idea-2031] Weather Predictor Hologram — *2026-08-18 06:15:20 UTC*
 
 An interactive hologram in the arena that visually represents the next weather state, giving observant players an advantage over those ignoring the environment.
