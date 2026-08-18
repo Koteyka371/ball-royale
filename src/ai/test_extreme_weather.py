@@ -82,6 +82,7 @@ def test_extreme_weather_boss_spawn_and_drop():
         def randint(self, a, b): return a
         def random(self): return 1.0
     mode.random = MockRandom()
+    mode.next_weather = "blizzard"  # Force next weather for our logic
 
     mode.tick(world, world.balls, 0.1)
 

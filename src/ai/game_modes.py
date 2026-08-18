@@ -23738,6 +23738,26 @@ class ExtremeWeatherMode(GameMode):
         super().setup(world, balls)
         if hasattr(world, "arena") and world.arena is not None:
             world.arena.is_night = True
+
+        if not hasattr(self, "next_weather"):
+            self.next_weather = self.random.choice(self.weathers)
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            arena_w = getattr(world.arena, "width", 1000)
+            arena_h = getattr(world.arena, "height", 1000)
+
+            # Remove old holograms
+            world.arena.hazards = [h for h in world.arena.hazards if (h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")) != "weather_forecast_hologram"]
+
+            world.arena.hazards.append({
+                "kind": "weather_forecast_hologram",
+                "x": arena_w / 2,
+                "y": arena_h / 2,
+                "radius": 40.0,
+                "active": True,
+                "forecast": self.next_weather
+            })
+
         for b in balls:
 
             if not getattr(b, "base_speed", None):
@@ -23765,10 +23785,14 @@ class ExtremeWeatherMode(GameMode):
                     if hasattr(world, "add_event"):
                         world.add_event("weather_warning", {"type": "weather_warning", "message": f"Forecast warns: Weather change incoming in {int(time_until)}s!"})
 
+        if not hasattr(self, "next_weather"):
+            self.next_weather = self.random.choice(self.weathers)
+
         if self.weather_timer >= 15.0:
             self.weather_timer = 0.0
             old_weather = self.current_weather
-            self.current_weather = self.random.choice(self.weathers)
+            self.current_weather = self.next_weather
+            self.next_weather = self.random.choice(self.weathers)
 
             for b in balls:
                 if getattr(b, "forecast_booster_active", False):
@@ -23784,6 +23808,23 @@ class ExtremeWeatherMode(GameMode):
 
             if hasattr(world, "add_event"):
                 world.add_event("weather_change", {"weather": self.current_weather})
+
+            # Spawn weather forecast hologram in the center of the arena
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                arena_w = getattr(world.arena, "width", 1000)
+                arena_h = getattr(world.arena, "height", 1000)
+
+                # Remove old holograms
+                world.arena.hazards = [h for h in world.arena.hazards if (h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")) != "weather_forecast_hologram"]
+
+                world.arena.hazards.append({
+                    "kind": "weather_forecast_hologram",
+                    "x": arena_w / 2,
+                    "y": arena_h / 2,
+                    "radius": 40.0,
+                    "active": True,
+                    "forecast": self.next_weather
+                })
 
             # Spawn the corresponding booster
             booster_kind = None

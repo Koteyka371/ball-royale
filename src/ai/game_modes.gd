@@ -37224,6 +37224,54 @@ class ExtremeWeatherMode extends GameMode:
 
 	func setup(world, balls: Array):
 		super.setup(world, balls)
+
+		if not has_meta("next_weather"):
+			if has_method("set_meta"): set_meta("next_weather", weathers[randi() % weathers.size()])
+
+			if world != null and typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+				var is_arena_dict = typeof(world.arena) == TYPE_DICTIONARY
+				var is_arena_obj = typeof(world.arena) == TYPE_OBJECT
+				var has_hazards = false
+				var hazards = []
+
+				if is_arena_dict and world.arena.has("hazards"):
+					has_hazards = true
+					hazards = world.arena["hazards"]
+				elif is_arena_obj and "hazards" in world.arena:
+					has_hazards = true
+					hazards = world.arena.hazards
+
+				if has_hazards:
+					var arena_w = 1000
+					var arena_h = 1000
+					if is_arena_dict and world.arena.has("width"): arena_w = world.arena["width"]
+					elif is_arena_obj and "width" in world.arena: arena_w = world.arena.width
+					if is_arena_dict and world.arena.has("height"): arena_h = world.arena["height"]
+					elif is_arena_obj and "height" in world.arena: arena_h = world.arena.height
+
+					var new_hazards = []
+					for h in hazards:
+						var hk = ""
+						if typeof(h) == TYPE_DICTIONARY and h.has("kind"): hk = h["kind"]
+						elif typeof(h) == TYPE_OBJECT and "kind" in h: hk = h.kind
+						if hk != "weather_forecast_hologram":
+							new_hazards.append(h)
+
+					var n_weather = ""
+					if has_meta("next_weather"): n_weather = get_meta("next_weather")
+
+					new_hazards.append({
+						"kind": "weather_forecast_hologram",
+						"x": arena_w / 2.0,
+						"y": arena_h / 2.0,
+						"radius": 40.0,
+						"active": true,
+						"forecast": n_weather
+					})
+
+					if is_arena_dict: world.arena["hazards"] = new_hazards
+					else: world.arena.hazards = new_hazards
+
 		for b in balls:
 			if not b.has_meta("base_speed"):
 				var spd = 100.0
@@ -37263,10 +37311,15 @@ class ExtremeWeatherMode extends GameMode:
 				if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("weather_warning", {"type": "weather_warning", "message": "Forecast warns: Weather change incoming!"})
 
+		if not has_meta("next_weather"):
+			if has_method("set_meta"): set_meta("next_weather", weathers[randi() % weathers.size()])
+
 		if weather_timer >= 15.0:
 			weather_timer = 0.0
 			var old_weather = current_weather
-			current_weather = weathers[randi() % weathers.size()]
+			current_weather = get_meta("next_weather") if has_meta("next_weather") else weathers[randi() % weathers.size()]
+			if has_method("set_meta"):
+				set_meta("next_weather", weathers[randi() % weathers.size()])
 
 			for b in balls:
 				if "forecast_booster_active" in b and b.forecast_booster_active:
@@ -37298,6 +37351,50 @@ class ExtremeWeatherMode extends GameMode:
 						b.forecast_warning_issued = false
 			if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 				world.add_event("weather_change", {"weather": current_weather})
+
+			if world != null and typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+				var is_arena_dict = typeof(world.arena) == TYPE_DICTIONARY
+				var is_arena_obj = typeof(world.arena) == TYPE_OBJECT
+				var has_hazards = false
+				var hazards = []
+
+				if is_arena_dict and world.arena.has("hazards"):
+					has_hazards = true
+					hazards = world.arena["hazards"]
+				elif is_arena_obj and "hazards" in world.arena:
+					has_hazards = true
+					hazards = world.arena.hazards
+
+				if has_hazards:
+					var arena_w = 1000
+					var arena_h = 1000
+					if is_arena_dict and world.arena.has("width"): arena_w = world.arena["width"]
+					elif is_arena_obj and "width" in world.arena: arena_w = world.arena.width
+					if is_arena_dict and world.arena.has("height"): arena_h = world.arena["height"]
+					elif is_arena_obj and "height" in world.arena: arena_h = world.arena.height
+
+					var new_hazards = []
+					for h in hazards:
+						var hk = ""
+						if typeof(h) == TYPE_DICTIONARY and h.has("kind"): hk = h["kind"]
+						elif typeof(h) == TYPE_OBJECT and "kind" in h: hk = h.kind
+						if hk != "weather_forecast_hologram":
+							new_hazards.append(h)
+
+					var n_weather = ""
+					if has_meta("next_weather"): n_weather = get_meta("next_weather")
+
+					new_hazards.append({
+						"kind": "weather_forecast_hologram",
+						"x": arena_w / 2.0,
+						"y": arena_h / 2.0,
+						"radius": 40.0,
+						"active": true,
+						"forecast": n_weather
+					})
+
+					if is_arena_dict: world.arena["hazards"] = new_hazards
+					else: world.arena.hazards = new_hazards
 
 			var booster_kind = ""
 			if current_weather == "blizzard":
