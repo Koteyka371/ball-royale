@@ -1132,3 +1132,117 @@ class ShiftingBoundariesArena extends ProceduralArena:
 		return [final_x, final_y, bounced or proc_bounced]
 
 # (Note: In GDScript procedural hazards are created dynamically, usually via ProceduralArena.Hazard.new() in the arena files. A distinct class is sometimes made if necessary. For now, quantum_marker can just be instantiated in procedural_arena.gd or basic_arena.gd.)
+
+
+class MorphingShapeArena extends BasicArena:
+	var shapes: Array = ["square", "circle", "cross"]
+	var current_shape_idx: int = 0
+	var morph_timer: float = 0.0
+	var morph_duration: float = 5.0
+	var interval: float = 60.0
+	var is_morphing: bool = false
+	var cx: float
+	var cy: float
+
+	func _init(_arena_size: float = 2000.0, _seed = null):
+		super._init(_arena_size, _seed)
+		cx = width / 2.0
+		cy = height / 2.0
+
+	func _sdf_square(x: float, y: float) -> float:
+		var side = width * 0.45
+		return max(abs(x - cx) - side, abs(y - cy) - side)
+
+	func _sdf_circle(x: float, y: float) -> float:
+		var r = width * 0.45
+		return sqrt((x - cx)*(x - cx) + (y - cy)*(y - cy)) - r
+
+	func _sdf_cross(x: float, y: float) -> float:
+		var arm_w = width * 0.15
+		var arm_l = width * 0.45
+		var d1 = max(abs(x - cx) - arm_l, abs(y - cy) - arm_w)
+		var d2 = max(abs(x - cx) - arm_w, abs(y - cy) - arm_l)
+		return min(d1, d2)
+
+	func get_sdf(x: float, y: float) -> float:
+		var curr_func = shapes[current_shape_idx]
+		var curr_val = 0.0
+		if curr_func == "square":
+			curr_val = _sdf_square(x, y)
+		elif curr_func == "circle":
+			curr_val = _sdf_circle(x, y)
+		elif curr_func == "cross":
+			curr_val = _sdf_cross(x, y)
+
+		if not is_morphing:
+			return curr_val
+
+		var next_idx = (current_shape_idx + 1) % shapes.size()
+		var next_func = shapes[next_idx]
+		var next_val = 0.0
+		if next_func == "square":
+			next_val = _sdf_square(x, y)
+		elif next_func == "circle":
+			next_val = _sdf_circle(x, y)
+		elif next_func == "cross":
+			next_val = _sdf_cross(x, y)
+
+		var progress = morph_timer / morph_duration
+		var t = max(0.0, min(1.0, progress))
+		var smooth_t = t * t * (3.0 - 2.0 * t)
+
+		return curr_val * (1.0 - smooth_t) + next_val * smooth_t
+
+	func is_point_inside(x: float, y: float, radius: float) -> bool:
+		if get_sdf(x, y) > -radius + 1.0:
+			return false
+		return super.is_point_inside(x, y, radius)
+
+	func clamp_position(x: float, y: float, radius: float) -> Array:
+		var res = super.clamp_position(x, y, radius)
+		var new_x = res[0]
+		var new_y = res[1]
+		var bounced = res[2]
+
+		var dist = get_sdf(new_x, new_y)
+		if dist <= -radius:
+			return [new_x, new_y, bounced]
+
+		var eps = 1.0
+		var dx = get_sdf(new_x + eps, new_y) - get_sdf(new_x - eps, new_y)
+		var dy = get_sdf(new_x, new_y + eps) - get_sdf(new_x, new_y - eps)
+		var length = sqrt(dx*dx + dy*dy)
+
+		var nx = 0.0
+		var ny = 0.0
+		if length > 0.0001:
+			nx = dx / length
+			ny = dy / length
+		else:
+			nx = (new_x - cx)
+			ny = (new_y - cy)
+			var nl = sqrt(nx*nx + ny*ny)
+			if nl > 0.0001:
+				nx /= nl
+				ny /= nl
+			else:
+				nx = 1.0
+				ny = 0.0
+
+		var pen = dist + radius
+		var final_x = new_x - nx * pen
+		var final_y = new_y - ny * pen
+		return [final_x, final_y, true]
+
+	func update_zone(current_tick: int, delta: float) -> void:
+		super.update_zone(current_tick, delta)
+		if current_tick % 3600 == 0 and current_tick > 0:
+			is_morphing = true
+			morph_timer = 0.0
+
+		if is_morphing:
+			morph_timer += delta
+			if morph_timer >= morph_duration:
+				is_morphing = false
+				current_shape_idx = (current_shape_idx + 1) % shapes.size()
+				morph_timer = 0.0

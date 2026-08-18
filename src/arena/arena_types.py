@@ -1,3 +1,5 @@
+import math
+from arena.basic_arena import BasicArena
 from typing import Tuple
 from arena.procedural_arena import Hazard
 
@@ -334,7 +336,6 @@ class UseShieldArena(ProceduralArena):
         self.rooms.append(Room(cx - 400, cy - 400, 800, 800))
 
         # Create a dense ring of hazards around the center
-        import math
         num_hazards = 24
         radius = 250
         for i in range(num_hazards):
@@ -368,7 +369,6 @@ class RetreatToAllyArena(ProceduralArena):
         self.corridors.append(Corridor(cx, h - 250, w - cx - 250, 100))
 
         # Hazards in central zone to encourage retreat
-        import math
         for i in range(8):
             angle = 2 * math.pi * i / 8
             hx = cx + 150 * math.cos(angle)
@@ -482,7 +482,6 @@ class EpicKillsArena(ProceduralArena):
         self.corridors.append(Corridor(cx + 350, cy - 50, 200, 100))
 
         # A huge pit of hazards in the middle (8 hazards forming a circle)
-        import math
         for i in range(8):
             angle = 2 * math.pi * i / 8
             hx = cx + 200 * math.cos(angle)
@@ -521,7 +520,6 @@ class ComebacksArena(ProceduralArena):
         self.corridors.append(Corridor(cx + 200, cy + 200, w - cx - 300, 100))
 
         # 16 hazards forming a ring inside the central room
-        import math
         for i in range(16):
             angle = 2 * math.pi * i / 16
             hx = cx + 200 * math.cos(angle)
@@ -1034,7 +1032,6 @@ class BattleRoyaleShrinkingZoneArena(ProceduralArena):
                 # Black hole spawning and merging when safe zone is very small
                 if self.safe_zone_radius <= 100.0:
                     import random
-                    import math
                     # Spawn new black holes occasionally
                     if current_tick % 60 == 0 and random.random() < 0.5:
                         angle = random.uniform(0, math.pi * 2)
@@ -1490,7 +1487,6 @@ class PinballArena(ProceduralArena):
 
         import random
 
-        import math
 
         # Place Bumpers
         for i in range(12):
@@ -1611,6 +1607,7 @@ ARENAS = {
     'ice': IceArena,
     'spring': SpringArena,
     'shrinking_hazards': ShrinkingHazardsArena,
+
 
     "siege": SiegeArena,
     "thunderstorm": ThunderstormArena,
@@ -2052,3 +2049,98 @@ class QuantumMarkerHazard(Hazard):
     def __init__(self, id: int, x: float, y: float, radius: float):
         super().__init__(id, x, y, radius, 'quantum_marker', 0.0)
         self.pulse_timer = 0.0
+
+
+class MorphingShapeArena(BasicArena):
+    def __init__(self, arena_size: float = 2000.0, seed: int | None = None):
+        super().__init__(arena_size=arena_size, seed=seed)
+        self.shapes = ["square", "circle", "cross"]
+        self.current_shape_idx = 0
+        self.morph_timer = 0.0
+        self.morph_duration = 5.0
+        self.interval = 60.0
+        self.is_morphing = False
+        self.cx = self.width / 2.0
+        self.cy = self.height / 2.0
+
+    def _sdf_square(self, x, y):
+        side = self.width * 0.45
+        return max(abs(x - self.cx) - side, abs(y - self.cy) - side)
+
+    def _sdf_circle(self, x, y):
+        import math
+        r = self.width * 0.45
+        return math.hypot(x - self.cx, y - self.cy) - r
+
+    def _sdf_cross(self, x, y):
+        arm_w = self.width * 0.15
+        arm_l = self.width * 0.45
+        d1 = max(abs(x - self.cx) - arm_l, abs(y - self.cy) - arm_w)
+        d2 = max(abs(x - self.cx) - arm_w, abs(y - self.cy) - arm_l)
+        return min(d1, d2)
+
+    def get_sdf(self, x, y):
+        shape_funcs = [self._sdf_square, self._sdf_circle, self._sdf_cross]
+        curr_func = shape_funcs[self.current_shape_idx]
+
+        if not self.is_morphing:
+            return curr_func(x, y)
+
+        next_idx = (self.current_shape_idx + 1) % len(self.shapes)
+        next_func = shape_funcs[next_idx]
+
+        progress = self.morph_timer / self.morph_duration
+        t = max(0.0, min(1.0, progress))
+        smooth_t = t * t * (3.0 - 2.0 * t)
+
+        return curr_func(x, y) * (1.0 - smooth_t) + next_func(x, y) * smooth_t
+
+    def is_point_inside(self, x: float, y: float, radius: float) -> bool:
+        if self.get_sdf(x, y) > -radius + 1.0:
+            return False
+        return super().is_point_inside(x, y, radius)
+
+    def clamp_position(self, x: float, y: float, radius: float):
+        new_x, new_y, bounced = super().clamp_position(x, y, radius)
+
+        dist = self.get_sdf(new_x, new_y)
+        if dist <= -radius:
+            return new_x, new_y, bounced
+
+        import math
+        eps = 1.0
+        dx = self.get_sdf(new_x + eps, new_y) - self.get_sdf(new_x - eps, new_y)
+        dy = self.get_sdf(new_x, new_y + eps) - self.get_sdf(new_x, new_y - eps)
+        length = math.hypot(dx, dy)
+
+        if length > 0.0001:
+            nx = dx / length
+            ny = dy / length
+        else:
+            nx, ny = (new_x - self.cx), (new_y - self.cy)
+            nl = math.hypot(nx, ny)
+            if nl > 0.0001:
+                nx /= nl
+                ny /= nl
+            else:
+                nx, ny = 1.0, 0.0
+
+        pen = dist + radius
+        final_x = new_x - nx * pen
+        final_y = new_y - ny * pen
+        return final_x, final_y, True
+
+    def update_zone(self, current_tick: int, delta: float):
+        super().update_zone(current_tick, delta)
+        # assuming 60 ticks per second
+        if current_tick % 3600 == 0 and current_tick > 0:
+            self.is_morphing = True
+            self.morph_timer = 0.0
+
+        if self.is_morphing:
+            self.morph_timer += delta
+            if self.morph_timer >= self.morph_duration:
+                self.is_morphing = False
+                self.current_shape_idx = (self.current_shape_idx + 1) % len(self.shapes)
+                self.morph_timer = 0.0
+ARENAS['morphing_shape'] = MorphingShapeArena

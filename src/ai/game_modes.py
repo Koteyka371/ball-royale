@@ -56740,3 +56740,13 @@ class DangerBeaconMode(GameMode):
                                 b.minimap_ping_timer = ping_timer - delta
 
 GAME_MODES["danger_beacon"] = DangerBeaconMode()
+
+
+class MorphingShapeArenaMode(GameMode):
+    def setup(self, world, balls):
+        if hasattr(world, "arena"):
+            w = getattr(world.arena, "width", 2000.0)
+            world.arena = ArenaTypes.MorphingShapeArena(w)
+        super().setup(world, balls)
+
+GAME_MODES["morphing_shape_arena"] = MorphingShapeArenaMode()
