@@ -89,7 +89,7 @@ def test_spiderweb_trap_trigger():
     assert web.y == 50
     assert getattr(web, "duration", 0.0) == 8.0
 
-    assert triggering_ball.speed_multiplier == 0.5
+    assert triggering_ball.speed_multiplier == 0.2
     assert triggering_ball.slow_timer == 3.0
 
     assert getattr(triggering_ball, 'is_dashing', True) is False

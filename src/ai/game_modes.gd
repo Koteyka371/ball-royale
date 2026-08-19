@@ -12107,6 +12107,165 @@ class EscortMode extends GameMode:
 										world.arena.hazards.remove_at(idx)
 									break
 
+		if not self.has_meta("supply_drop_timer"):
+			self.set_meta("supply_drop_timer", 0.0)
+		var sdt = self.get_meta("supply_drop_timer") + delta
+		self.set_meta("supply_drop_timer", sdt)
+		if sdt >= 20.0:
+			self.set_meta("supply_drop_timer", 0.0)
+			if payload != null and typeof(world) == TYPE_OBJECT and "arena" in world:
+				if typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+					var px = payload.get("x") if typeof(payload) == TYPE_DICTIONARY else payload.x
+					var py = payload.get("y") if typeof(payload) == TYPE_DICTIONARY else payload.y
+					var h_id = world.arena.hazards.size() + (randi() % 9000 + 1000)
+					var hx = px + (randf() * 300.0 - 150.0)
+					var hy = py + (randf() * 300.0 - 150.0)
+					var ProceduralArenaModule = load("res://src/arena/procedural_arena.gd")
+					if ProceduralArenaModule and "Hazard" in ProceduralArenaModule:
+						var kind = "supply_drop"
+						if randf() < 0.1:
+							kind = "rare_payload_item"
+						var drop = ProceduralArenaModule.Hazard.new(h_id, hx, hy, 40.0, kind, 0.0)
+						world.arena.hazards.append(drop)
+						if randf() < 0.25:
+							drop.set_meta("is_decoy", true)
+						for b in balls:
+							var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+							if not b_alive: continue
+							var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
+							var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
+							var br = b.get("radius", 15.0) if typeof(b) == TYPE_DICTIONARY else b.get("radius")
+							if br == null: br = 15.0
+							var dist = sqrt(pow(bx - hx, 2) + pow(by - hy, 2))
+							if dist <= 40.0 + br:
+								var bhp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.get("hp")
+								var new_hp = bhp - 30.0
+								if typeof(b) == TYPE_DICTIONARY:
+									b["hp"] = new_hp
+									if new_hp <= 0: b["alive"] = false
+									if dist > 0:
+										b["vx"] = b.get("vx", 0.0) + ((bx - hx) / dist) * 800.0
+										b["vy"] = b.get("vy", 0.0) + ((by - hy) / dist) * 800.0
+								else:
+									b.set("hp", new_hp)
+									if new_hp <= 0: b.set("alive", false)
+									if dist > 0:
+										var cvx = b.get("vx") if b.get("vx") != null else 0.0
+										var cvy = b.get("vy") if b.get("vy") != null else 0.0
+										b.set("vx", cvx + ((bx - hx) / dist) * 800.0)
+										b.set("vy", cvy + ((by - hy) / dist) * 800.0
+						if world.has_method("add_event"):
+							world.add_event("supply_drop_shockwave", {"x": hx, "y": hy, "radius": 40.0})
+							world.add_event("supply_drop_spawned", {"x": hx, "y": hy})
+
+		if typeof(world) == TYPE_OBJECT and "arena" in world:
+			if typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+				var hs = world.arena.hazards.duplicate()
+				for h in hs:
+					var hk = h.get("kind", "")
+					if hk == "supply_drop" or hk == "rare_payload_item":
+						var h_rad = h.get("radius", 40.0)
+						var h_x = h.get("x", 0.0)
+						var h_y = h.get("y", 0.0)
+						for b in balls:
+							var is_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+							if not is_alive: continue
+							var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+							if b_type == "spectator": continue
+							var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
+							var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
+							var b_rad = b.get("radius", 15.0) if typeof(b) == TYPE_DICTIONARY else b.get("radius")
+							if b_rad == null: b_rad = 15.0
+							var dist = sqrt(pow(bx - h_x, 2) + pow(by - h_y, 2))
+							if dist <= h_rad + b_rad:
+								if hk == "rare_payload_item":
+									var team = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else b.get("team")
+									if team == "Attackers":
+										if payload != null:
+											var php = payload.get("hp", 5000.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("hp")
+											if php == null: php = 5000.0
+											var new_php = max(0.0, php - 1500.0)
+											if typeof(payload) == TYPE_DICTIONARY: payload["hp"] = new_php
+											else: payload.set("hp", new_php)
+											if world.has_method("add_event"):
+												world.add_event("payload_damaged_rare", {"x": h_x, "y": h_y, "damage": 1500})
+									elif team == "Defenders":
+										if payload != null:
+											var php = payload.get("hp", 5000.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("hp")
+											var pmaxhp = payload.get("max_hp", 5000.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("max_hp")
+											if php == null: php = 5000.0
+											if pmaxhp == null: pmaxhp = 5000.0
+											var new_php = min(pmaxhp, php + 1500.0)
+											if typeof(payload) == TYPE_DICTIONARY: payload["hp"] = new_php
+											else: payload.set("hp", new_php)
+											var oc = payload.get("overcharge_timer", 0.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("overcharge_timer")
+											if oc == null: oc = 0.0
+											if typeof(payload) == TYPE_DICTIONARY: payload["overcharge_timer"] = max(oc, 5.0)
+											else: payload.set("overcharge_timer", max(oc, 5.0))
+											if world.has_method("add_event"):
+												world.add_event("payload_healed_rare", {"x": h_x, "y": h_y, "heal": 1500})
+									var idx = world.arena.hazards.find(h)
+									if idx != -1: world.arena.hazards.remove_at(idx)
+								else:
+									var is_decoy = false
+									if typeof(h) == TYPE_DICTIONARY and h.has("is_decoy"): is_decoy = h["is_decoy"]
+									elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("is_decoy"): is_decoy = h.get_meta("is_decoy")
+
+									if is_decoy:
+										var expl_rad = 120.0
+										for ob in balls:
+											var ob_alive = ob.get("alive", false) if typeof(ob) == TYPE_DICTIONARY else ob.get("alive")
+											var ob_type = ob.get("ball_type") if typeof(ob) == TYPE_DICTIONARY else ob.get("ball_type")
+											if ob_alive and ob_type != "spectator":
+												var obx = ob.get("x", 0.0) if typeof(ob) == TYPE_DICTIONARY else ob.get("x")
+												var oby = ob.get("y", 0.0) if typeof(ob) == TYPE_DICTIONARY else ob.get("y")
+												var obr = ob.get("radius", 15.0) if typeof(ob) == TYPE_DICTIONARY else ob.get("radius")
+												if obr == null: obr = 15.0
+												if sqrt(pow(obx - h_x, 2) + pow(oby - h_y, 2)) <= expl_rad + obr:
+													var ohp = ob.get("hp", 100.0) if typeof(ob) == TYPE_DICTIONARY else ob.get("hp")
+													var new_ohp = ohp - 50.0
+													var ostun = ob.get("stun_timer", 0.0) if typeof(ob) == TYPE_DICTIONARY else (ob.get("stun_timer") if ob.get("stun_timer") != null else 0.0)
+													if typeof(ob) == TYPE_DICTIONARY:
+														ob["hp"] = new_ohp
+														ob["stun_timer"] = ostun + 2.0
+														if new_ohp <= 0: ob["alive"] = false
+													else:
+														ob.set("hp", new_ohp)
+														ob.set("stun_timer", ostun + 2.0)
+														if new_ohp <= 0: ob.set("alive", false)
+										var idx = world.arena.hazards.find(h)
+										if idx != -1: world.arena.hazards.remove_at(idx)
+										if world.has_method("add_event"):
+											world.add_event("decoy_supply_drop_exploded", {"x": h_x, "y": h_y, "radius": expl_rad})
+									else:
+										var buffs = ["invulnerability", "instant_ultimate", "mega_heal"]
+										var bt = buffs[randi() % buffs.size()]
+										if bt == "invulnerability":
+											var invt = b.get("invulnerable_timer", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get("invulnerable_timer") if b.get("invulnerable_timer") != null else 0.0)
+											if typeof(b) == TYPE_DICTIONARY: b["invulnerable_timer"] = invt + 10.0
+											else: b.set("invulnerable_timer", invt + 10.0)
+										elif bt == "instant_ultimate":
+											var muc = b.get("max_ultimate_charge", 100.0) if typeof(b) == TYPE_DICTIONARY else (b.get("max_ultimate_charge") if b.get("max_ultimate_charge") != null else 100.0)
+											if typeof(b) == TYPE_DICTIONARY: b["ultimate_charge"] = muc
+											else: b.set("ultimate_charge", muc)
+										elif bt == "mega_heal":
+											var mhp = b.get("max_hp", 100.0) if typeof(b) == TYPE_DICTIONARY else (b.get("max_hp") if b.get("max_hp") != null else 100.0)
+											var csh = b.get("shield", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get("shield") if b.get("shield") != null else 0.0)
+											if typeof(b) == TYPE_DICTIONARY:
+												b["hp"] = mhp
+												b["shield"] = csh + 50.0
+											else:
+												b.set("hp", mhp)
+												b.set("shield", csh + 50.0)
+
+										var team = b.get("team", "Unknown") if typeof(b) == TYPE_DICTIONARY else b.get("team")
+										var idx = world.arena.hazards.find(h)
+										if idx != -1: world.arena.hazards.remove_at(idx)
+										if world.has_method("add_event"):
+											world.add_event("supply_drop_collected", {"team": team, "buff": bt})
+								break
+
+
 		if not self.has_meta("random_emp_timer"):
 			self.set_meta("random_emp_timer", 0.0)
 

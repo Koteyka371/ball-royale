@@ -6782,14 +6782,30 @@ class DualPayloadMode(GameMode):
         # Check collisions with supply drops for all balls
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
             for h in world.arena.hazards[:]:
-                if getattr(h, "kind", "") == "supply_drop":
+                h_kind = getattr(h, "kind", "")
+                if h_kind in ["supply_drop", "rare_payload_item"]:
                     for b in balls:
                         if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
                             continue
                         import math
                         dist = math.hypot(getattr(b, "x", 0) - getattr(h, "x", 0), getattr(b, "y", 0) - getattr(h, "y", 0))
                         if dist <= getattr(h, "radius", 40.0) + getattr(b, "radius", 15.0):
-                            if getattr(h, "is_decoy", False):
+                            if h_kind == "rare_payload_item":
+                                if getattr(b, "team", "") == "Attackers":
+                                    if self.payload:
+                                        self.payload.hp = max(0.0, getattr(self.payload, "hp", 5000.0) - 1500.0)
+                                        if hasattr(world, "add_event"):
+                                            world.add_event("payload_damaged_rare", {"x": getattr(h, "x", 0), "y": getattr(h, "y", 0), "damage": 1500})
+                                elif getattr(b, "team", "") == "Defenders":
+                                    if self.payload:
+                                        self.payload.hp = min(getattr(self.payload, "max_hp", 5000.0), getattr(self.payload, "hp", 5000.0) + 1500.0)
+                                        self.payload.overcharge_timer = max(getattr(self.payload, "overcharge_timer", 0.0), 5.0)
+                                        if hasattr(world, "add_event"):
+                                            world.add_event("payload_healed_rare", {"x": getattr(h, "x", 0), "y": getattr(h, "y", 0), "heal": 1500})
+
+                                if h in world.arena.hazards:
+                                    world.arena.hazards.remove(h)
+                            elif getattr(h, "is_decoy", False):
                                 explosion_radius = 120.0
                                 for other_b in balls:
                                     if getattr(other_b, "alive", False) and getattr(other_b, "ball_type", None) != "spectator":
@@ -7593,7 +7609,12 @@ class EscortMode(GameMode):
                     h_id = len(world.arena.hazards) + random.randint(1000, 9999)
                     hx = getattr(self.payload, "x", 0) + random.uniform(-150, 150)
                     hy = getattr(self.payload, "y", 0) + random.uniform(-150, 150)
-                    drop = Hazard(h_id, hx, hy, 40.0, "supply_drop", 0.0)
+
+                    import random
+                    if random.random() < 0.1:  # 10% chance for rare item
+                        drop = Hazard(h_id, hx, hy, 40.0, "rare_payload_item", 0.0)
+                    else:
+                        drop = Hazard(h_id, hx, hy, 40.0, "supply_drop", 0.0)
                     world.arena.hazards.append(drop)
 
                     import random
@@ -7623,14 +7644,30 @@ class EscortMode(GameMode):
         # Check collisions with supply drops for all balls
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
             for h in world.arena.hazards[:]:
-                if getattr(h, "kind", "") == "supply_drop":
+                h_kind = getattr(h, "kind", "")
+                if h_kind in ["supply_drop", "rare_payload_item"]:
                     for b in balls:
                         if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
                             continue
                         import math
                         dist = math.hypot(getattr(b, "x", 0) - getattr(h, "x", 0), getattr(b, "y", 0) - getattr(h, "y", 0))
                         if dist <= getattr(h, "radius", 40.0) + getattr(b, "radius", 15.0):
-                            if getattr(h, "is_decoy", False):
+                            if h_kind == "rare_payload_item":
+                                if getattr(b, "team", "") == "Attackers":
+                                    if self.payload:
+                                        self.payload.hp = max(0.0, getattr(self.payload, "hp", 5000.0) - 1500.0)
+                                        if hasattr(world, "add_event"):
+                                            world.add_event("payload_damaged_rare", {"x": getattr(h, "x", 0), "y": getattr(h, "y", 0), "damage": 1500})
+                                elif getattr(b, "team", "") == "Defenders":
+                                    if self.payload:
+                                        self.payload.hp = min(getattr(self.payload, "max_hp", 5000.0), getattr(self.payload, "hp", 5000.0) + 1500.0)
+                                        self.payload.overcharge_timer = max(getattr(self.payload, "overcharge_timer", 0.0), 5.0)
+                                        if hasattr(world, "add_event"):
+                                            world.add_event("payload_healed_rare", {"x": getattr(h, "x", 0), "y": getattr(h, "y", 0), "heal": 1500})
+
+                                if h in world.arena.hazards:
+                                    world.arena.hazards.remove(h)
+                            elif getattr(h, "is_decoy", False):
                                 explosion_radius = 120.0
                                 for other_b in balls:
                                     if getattr(other_b, "alive", False) and getattr(other_b, "ball_type", None) != "spectator":
