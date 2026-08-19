@@ -158,3 +158,67 @@ def test_escort_mode_decoy_supply_drops():
 
     events = [e for e in world.events if e.get("type") == "decoy_supply_drop_exploded"]
     assert len(events) >= 1, "Should have emitted an explosion event"
+
+def test_escort_massive_chunk_damage_item_attacker():
+    mode = EscortMode()
+    world = MockWorld()
+
+    payload = MockBall(x=100.0, y=500.0, team="Defenders")
+    payload.alive = True
+    payload.hp = 5000.0
+    mode.payload = payload
+
+    balls = [payload]
+
+    class DH:
+        def __init__(self, kind):
+            self.kind = kind
+            self.x = 100
+            self.y = 100
+            self.radius = 40.0
+            self.is_decoy = False
+
+    rare_drop = DH("rare_payload_item")
+    world.arena.hazards.append(rare_drop)
+
+    player = MockBall(x=100.0, y=100.0, team="Attackers")
+    player.hp = 100.0
+    balls.append(player)
+
+    mode.tick(world, balls, delta=1.0)
+
+    assert rare_drop not in world.arena.hazards
+    assert mode.payload.hp <= 3500.0
+
+def test_escort_massive_chunk_damage_item_defender():
+    mode = EscortMode()
+    world = MockWorld()
+
+    payload = MockBall(x=100.0, y=500.0, team="Defenders")
+    payload.alive = True
+    payload.hp = 1000.0
+    payload.max_hp = 5000.0
+    mode.payload = payload
+
+    balls = [payload]
+
+    class DH:
+        def __init__(self, kind):
+            self.kind = kind
+            self.x = 100
+            self.y = 100
+            self.radius = 40.0
+            self.is_decoy = False
+
+    rare_drop = DH("rare_payload_item")
+    world.arena.hazards.append(rare_drop)
+
+    player = MockBall(x=100.0, y=100.0, team="Defenders")
+    player.hp = 100.0
+    balls.append(player)
+
+    mode.tick(world, balls, delta=1.0)
+
+    assert rare_drop not in world.arena.hazards
+    assert mode.payload.hp == 2500.0
+    assert mode.payload.overcharge_timer >= 4.0
