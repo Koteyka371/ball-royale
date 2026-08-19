@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2023] Payload Overcharge Battery — *2026-08-19 22:52:03 UTC*
+
+In Escort mode, a rare item drops that attackers can use to deal massive chunk damage to the payload at once, or defenders can use to instantly heal and speed boost the payload.
+
+---
+
 ## [idea-2034] Weather Altar — *2026-08-19 17:21:33 UTC*
 
 An interactive map structure that appears in ExtremeWeatherMode. If a team can hold the altar for 10 continuous seconds without taking damage, they can trigger an immediate weather reroll, bypassing the standard 15-second timer.
