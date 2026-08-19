@@ -75,9 +75,9 @@
     "agent-9": {
       "name": "Jules Worker 9",
       "area": "behaviors",
-      "task_id": "idea-1988",
-      "status": "assigned",
-      "started_at": "2026-08-19T10:52:00.171443+00:00",
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
       "cycles_today": 0
     },
     "agent-10": {
@@ -131,9 +131,9 @@
     "agent-16": {
       "name": "Jules Worker 16",
       "area": "innovation",
-      "status": "assigned",
-      "task_id": "idea-2019",
-      "started_at": "2026-08-19T10:52:00.171443+00:00",
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
       "cycles_today": 0
     },
     "agent-17": {
@@ -179,17 +179,17 @@
     "agent-22": {
       "name": "Jules Worker 22",
       "area": "behaviors",
-      "status": "working",
-      "task_id": "idea-2034",
-      "started_at": "2026-08-19T11:53:07.226307+00:00",
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
       "cycles_today": 0
     },
     "agent-23": {
       "name": "Jules Worker 23",
       "area": "tests",
-      "status": "assigned",
-      "task_id": "idea-2035",
-      "started_at": "2026-08-19T10:52:00.171443+00:00",
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
       "cycles_today": 0
     },
     "agent-24": {
@@ -203,17 +203,17 @@
     "agent-25": {
       "name": "Jules Worker 25",
       "area": "meta",
-      "status": "assigned",
-      "task_id": "idea-2037",
-      "started_at": "2026-08-19T10:52:00.171443+00:00",
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
       "cycles_today": 0
     },
     "agent-26": {
       "name": "Jules Worker 26",
       "area": "innovation",
-      "status": "assigned",
-      "task_id": "idea-2038",
-      "started_at": "2026-08-19T10:52:00.171443+00:00",
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
       "cycles_today": 0
     },
     "agent-27": {
@@ -235,9 +235,9 @@
     "agent-29": {
       "name": "Jules Worker 29",
       "area": "behaviors",
-      "status": "assigned",
-      "task_id": "idea-2041",
-      "started_at": "2026-08-19T10:52:00.171443+00:00",
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
       "cycles_today": 0
     },
     "agent-30": {
