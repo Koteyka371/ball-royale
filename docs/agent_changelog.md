@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2040] Grapple Pull Force Trait — *2026-08-19 14:10:09 UTC*
+
+A new passive trait for balls that increases the pull force of their grapple by 50%, throwing enemies back harder or pulling themselves faster.
+
+---
+
 ## [idea-1923] Wall-Crawler Ball Type — *2026-08-19 01:06:11 UTC*
 
 A new ball type that can attach to arena boundaries and move along them to avoid the chaos in the center. Its primary attack is to drop web-mines from the walls, trapping enemies that walk over them.
