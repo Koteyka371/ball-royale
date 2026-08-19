@@ -20217,6 +20217,8 @@ class Action:
                         else:
                             # Pull self towards hazard quickly
                             pull_speed = 800.0
+                            if hasattr(self.ball, 'traits') and "heavy_grapple" in getattr(self.ball, 'traits', []):
+                                pull_speed = 1200.0
 
                             nx = dx / dist
                             ny = dy / dist
@@ -23012,6 +23014,8 @@ class Action:
                 arena_width = getattr(self.world.arena, "width", 1000) if hasattr(self.world, "arena") and self.world.arena else getattr(self.world, "width", 1000)
                 arena_height = getattr(self.world.arena, "height", 1000) if hasattr(self.world, "arena") and self.world.arena else getattr(self.world, "height", 1000)
                 pull_dist = 200.0
+                if hasattr(self.ball, 'traits') and "heavy_grapple" in getattr(self.ball, 'traits', []):
+                    pull_dist = 300.0
 
                 # Find all entities (balls, items, hazards) that can be grappled
                 grapple_targets = []
@@ -23167,6 +23171,8 @@ class Action:
                     # Grapple to wall
                     # Bouncy pad effect: propel player in opposite direction of the wall
                     bounce_speed = 800.0  # Speed to propel away from the wall
+                    if hasattr(self.ball, 'traits') and "heavy_grapple" in getattr(self.ball, 'traits', []):
+                        bounce_speed = 1200.0
                     if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
                         if closest_wall == "left":
                             self.ball.vx = bounce_speed

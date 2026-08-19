@@ -39578,6 +39578,8 @@ func _use_skill():
                     var dx = closest_target_x - ball.x
                     var dy = closest_target_y - ball.y
                     var pull_speed = 800.0
+                    if (typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("traits") and "heavy_grapple" in self.ball["traits"]) or (typeof(self.ball) == TYPE_OBJECT and "traits" in self.ball and "heavy_grapple" in self.ball.traits):
+                        pull_speed = 1200.0
                     var nx = dx / dist
                     var ny = dy / dist
 
@@ -44496,6 +44498,8 @@ func _use_skill():
             if "height" in self.world and not ("arena" in self.world and self.world.arena != null):
                 arena_height = float(self.world.height)
             var pull_dist = 200.0
+            if (typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("traits") and "heavy_grapple" in self.ball["traits"]) or (typeof(self.ball) == TYPE_OBJECT and "traits" in self.ball and "heavy_grapple" in self.ball.traits):
+                pull_dist = 300.0
 
             var closest_target = null
             var closest_target_type = ""
@@ -44839,6 +44843,8 @@ func _use_skill():
                     ball_radius = float(self.ball.get_meta("radius"))
                 # Grapple to wall: Bouncy pad effect (propel away from wall)
                 var bounce_speed = 800.0
+                if (typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("traits") and "heavy_grapple" in self.ball["traits"]) or (typeof(self.ball) == TYPE_OBJECT and "traits" in self.ball and "heavy_grapple" in self.ball.traits):
+                    bounce_speed = 1200.0
                 var b_vx = 0.0
                 var b_vy = 0.0
                 if typeof(self.ball) == TYPE_DICTIONARY:
