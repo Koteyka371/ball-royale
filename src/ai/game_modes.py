@@ -6792,14 +6792,14 @@ class DualPayloadMode(GameMode):
                         if dist <= getattr(h, "radius", 40.0) + getattr(b, "radius", 15.0):
                             if h_kind == "rare_payload_item":
                                 if getattr(b, "team", "") == "Attackers":
-                                    if self.payload:
+                                    if getattr(self, "payload", None):
                                         self.payload.hp = max(0.0, getattr(self.payload, "hp", 5000.0) - 1500.0)
                                         if hasattr(world, "add_event"):
                                             world.add_event("payload_damaged_rare", {"x": getattr(h, "x", 0), "y": getattr(h, "y", 0), "damage": 1500})
                                 elif getattr(b, "team", "") == "Defenders":
-                                    if self.payload:
+                                    if getattr(self, "payload", None):
                                         self.payload.hp = min(getattr(self.payload, "max_hp", 5000.0), getattr(self.payload, "hp", 5000.0) + 1500.0)
-                                        self.payload.overcharge_timer = max(getattr(self.payload, "overcharge_timer", 0.0), 5.0)
+                                        self.payload.overcharge_timer = max(getattr(self.payload, "overcharge_timer", 0.0), 5.0) + delta
                                         if hasattr(world, "add_event"):
                                             world.add_event("payload_healed_rare", {"x": getattr(h, "x", 0), "y": getattr(h, "y", 0), "heal": 1500})
 
@@ -7654,14 +7654,14 @@ class EscortMode(GameMode):
                         if dist <= getattr(h, "radius", 40.0) + getattr(b, "radius", 15.0):
                             if h_kind == "rare_payload_item":
                                 if getattr(b, "team", "") == "Attackers":
-                                    if self.payload:
+                                    if getattr(self, "payload", None):
                                         self.payload.hp = max(0.0, getattr(self.payload, "hp", 5000.0) - 1500.0)
                                         if hasattr(world, "add_event"):
                                             world.add_event("payload_damaged_rare", {"x": getattr(h, "x", 0), "y": getattr(h, "y", 0), "damage": 1500})
                                 elif getattr(b, "team", "") == "Defenders":
-                                    if self.payload:
+                                    if getattr(self, "payload", None):
                                         self.payload.hp = min(getattr(self.payload, "max_hp", 5000.0), getattr(self.payload, "hp", 5000.0) + 1500.0)
-                                        self.payload.overcharge_timer = max(getattr(self.payload, "overcharge_timer", 0.0), 5.0)
+                                        self.payload.overcharge_timer = max(getattr(self.payload, "overcharge_timer", 0.0), 5.0) + delta
                                         if hasattr(world, "add_event"):
                                             world.add_event("payload_healed_rare", {"x": getattr(h, "x", 0), "y": getattr(h, "y", 0), "heal": 1500})
 
