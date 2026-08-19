@@ -12200,8 +12200,8 @@ class EscortMode extends GameMode:
 											else: payload.set("hp", new_php)
 											var oc = payload.get("overcharge_timer", 0.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("overcharge_timer")
 											if oc == null: oc = 0.0
-											if typeof(payload) == TYPE_DICTIONARY: payload["overcharge_timer"] = max(oc, 5.0)
-											else: payload.set("overcharge_timer", max(oc, 5.0))
+											if typeof(payload) == TYPE_DICTIONARY: payload["overcharge_timer"] = max(oc, 5.0) + delta
+											else: payload.set("overcharge_timer", max(oc, 5.0) + delta)
 											if world.has_method("add_event"):
 												world.add_event("payload_healed_rare", {"x": h_x, "y": h_y, "heal": 1500})
 									var idx = world.arena.hazards.find(h)
