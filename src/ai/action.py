@@ -7899,7 +7899,7 @@ class Action:
 
             if (wind_dx != 0.0 or wind_dy != 0.0) and getattr(self.ball, "anchor_booster_timer", 0.0) <= 0 and getattr(self.ball, "wind_shield_booster_timer", 0.0) <= 0 and not ignores_wind:
                 ball_type = getattr(self.ball, "BALL_TYPE", getattr(self.ball, "ball_type", None))
-                if ball_type in ["scout", "drone", "swarm", "ninja", "assassin", "phantom", "rogue"]:
+                if ball_type in ["scout", "drone", "swarm", "ninja", "assassin", "phantom", "rogue", "spider"]:
                     if getattr(self.ball, "stamina", 0.0) >= 10.0:
                         is_wind_riding = True
 
@@ -7936,7 +7936,7 @@ class Action:
 
                 # Wind rider logic for lightweight balls (e.g. scout, drone, swarm)
                 ball_type = getattr(self.ball, "BALL_TYPE", getattr(self.ball, "ball_type", None))
-                if ball_type in ["scout", "drone", "swarm", "ninja", "assassin", "phantom", "rogue"]:
+                if ball_type in ["scout", "drone", "swarm", "ninja", "assassin", "phantom", "rogue", "spider"]:
                     stamina = getattr(self.ball, "stamina", 0.0)
                     if stamina >= 10.0:
                         # Extra speed and drain stamina
@@ -13989,14 +13989,18 @@ class Action:
                                 elif hasattr(self.ball, "hp"):
                                     self.ball.hp -= 20.0 * delta
                         elif hazard.kind == "spider_web":
-                            if hasattr(self.ball, "slow_timer"):
-                                self.ball.slow_timer = max(getattr(self.ball, "slow_timer", 0.0), 2.0)
-                            else:
-                                self.ball.slow_timer = 2.0
-                            if hasattr(self.ball, "speed_multiplier"):
-                                self.ball.speed_multiplier = min(getattr(self.ball, "speed_multiplier", 1.0), 0.5)
-                            self.ball.is_dashing = False
-                            self.ball.can_jump = False
+                            if getattr(hazard, "owner_id", None) != self.ball.id:
+                                if hasattr(self.ball, "stun_timer"):
+                                    self.ball.stun_timer = max(getattr(self.ball, "stun_timer", 0.0), 1.0)
+                                    self.ball.is_stunned = True
+                                if hasattr(self.ball, "slow_timer"):
+                                    self.ball.slow_timer = max(getattr(self.ball, "slow_timer", 0.0), 2.0)
+                                else:
+                                    self.ball.slow_timer = 2.0
+                                if hasattr(self.ball, "speed_multiplier"):
+                                    self.ball.speed_multiplier = min(getattr(self.ball, "speed_multiplier", 1.0), 0.2)
+                                self.ball.is_dashing = False
+                                self.ball.can_jump = False
                         elif hazard.kind == "tar_puddle":
                             if hasattr(self.ball, "slow_timer"):
                                 self.ball.slow_timer = max(getattr(self.ball, "slow_timer", 0.0), 3.0)
@@ -14596,6 +14600,8 @@ class Action:
             self._escort(delta)
         elif strategy == "intercept":
             self._intercept(delta)
+        elif strategy == "wall_crawl":
+            self._wall_crawl(delta)
         elif strategy == "hide_behind":
             self._hide_behind(delta)
         elif strategy == "group_attack":
@@ -15658,6 +15664,59 @@ class Action:
 
         return boosters
 
+
+    def _wall_crawl(self, delta: float) -> None:
+        self.ball.current_action = "wall_crawl"
+        if not hasattr(self.world, "arena"): return
+
+        radius = getattr(self.ball, "radius", 10.0)
+        width = getattr(self.world.arena, "width", 800.0)
+        height = getattr(self.world.arena, "height", 600.0)
+
+        # Determine the nearest wall
+        d_left = self.ball.x - radius
+        d_right = width - radius - self.ball.x
+        d_top = self.ball.y - radius
+        d_bot = height - radius - self.ball.y
+
+        min_d = min(d_left, d_right, d_top, d_bot)
+
+        # Speed logic
+        spd = getattr(self.ball, "speed", 100.0) * delta * 60.0
+
+        # Stick to the wall and move along it
+        # Clockwise movement to avoid center, handling corners correctly
+        if min_d == d_top and d_right > 0.01:
+            self.ball.y = radius
+            self.ball.x += spd
+            if self.ball.x >= width - radius: self.ball.x = width - radius
+        elif min_d == d_right and d_bot > 0.01:
+            self.ball.x = width - radius
+            self.ball.y += spd
+            if self.ball.y >= height - radius: self.ball.y = height - radius
+        elif min_d == d_bot and d_left > 0.01:
+            self.ball.y = height - radius
+            self.ball.x -= spd
+            if self.ball.x <= radius: self.ball.x = radius
+        else: # min_d == d_left or in top-left corner
+            self.ball.x = radius
+            self.ball.y -= spd
+            if self.ball.y <= radius: self.ball.y = radius
+
+        # Web dropping logic
+        timer = getattr(self.ball, "web_drop_timer", 0.0)
+        timer -= delta
+        if timer <= 0:
+            timer = 5.0
+            if hasattr(self.world.arena, "hazards"):
+                from arena.procedural_arena import Hazard
+                hazard_id = len(self.world.arena.hazards) + 9000
+                web = Hazard(hazard_id, self.ball.x, self.ball.y, 60.0, "spider_web", 0.0)
+                web.duration = 8.0
+                setattr(web, "owner_id", getattr(self.ball, "id", None))
+                self.world.arena.hazards.append(web)
+        self.ball.web_drop_timer = timer
+
     def _flee(self, delta: float) -> None:
         enemies = self._get_enemies()
         if not enemies:
@@ -16567,7 +16626,7 @@ class Action:
                     if b_type == "ninja":
                         self.ball.damage = original_damage
 
-                    if b_type in ("scout", "assassin", "phantom", "swarm", "rogue", "drone", "ninja"):
+                    if b_type in ("scout", "assassin", "phantom", "swarm", "rogue", "drone", "ninja", "spider"):
                         cooldown = 0.3
                     elif b_type in ("tank", "juggernaut", "guardian"):
                         cooldown = 1.5
@@ -20816,6 +20875,7 @@ class Action:
                 for _ in range(num_minions):
                     try:
                         from ai.ball_types_broodling import Broodling
+                        from ai.ball_types_spider import Spider
                         b_id = getattr(self.world, "next_id", random.randint(10000, 99999))
                         if hasattr(self.world, "next_id"):
                             self.world.next_id += 1

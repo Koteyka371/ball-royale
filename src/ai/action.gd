@@ -15837,7 +15837,7 @@ func execute(strategy: String, delta: float):
             var b_type_f = null
             if "BALL_TYPE" in my_ball: b_type_f = my_ball.BALL_TYPE
             elif "ball_type" in my_ball: b_type_f = my_ball.ball_type
-            if b_type_f in ["scout", "drone", "swarm", "ninja", "assassin", "phantom", "rogue"]:
+            if b_type_f in ["scout", "drone", "swarm", "ninja", "assassin", "phantom", "rogue", "spider"]:
                 var st_f = 0.0
                 if "stamina" in my_ball: st_f = my_ball.stamina
                 if st_f >= 10.0:
@@ -15885,7 +15885,7 @@ func execute(strategy: String, delta: float):
             elif "ball_type" in my_ball:
                 b_type = my_ball.ball_type
 
-            if b_type in ["scout", "drone", "swarm", "ninja", "assassin", "phantom", "rogue"]:
+            if b_type in ["scout", "drone", "swarm", "ninja", "assassin", "phantom", "rogue", "spider"]:
                 var current_stamina = 0.0
                 if "stamina" in my_ball:
                     current_stamina = my_ball.stamina
@@ -30981,6 +30981,90 @@ func _get_boosters() -> Array:
 
     return boosters
 
+
+func _wall_crawl(delta: float) -> void:
+    self.ball.current_action = "wall_crawl"
+    if self.world == null or not "arena" in self.world:
+        return
+
+    var arena = null
+    if self.world.has_method("get_arena"):
+        arena = self.world.get_arena()
+    elif typeof(self.world) == TYPE_DICTIONARY and self.world.has("arena"):
+        arena = self.world.arena
+    elif "arena" in self.world:
+        arena = self.world.arena
+
+    if arena == null: return
+
+    var radius = 10.0
+    if "radius" in self.ball: radius = self.ball.radius
+
+    var width = 800.0
+    var height = 600.0
+    if typeof(arena) == TYPE_OBJECT:
+        if "width" in arena: width = arena.width
+        if "height" in arena: height = arena.height
+    elif typeof(arena) == TYPE_DICTIONARY:
+        if arena.has("width"): width = arena["width"]
+        if arena.has("height"): height = arena["height"]
+
+    var d_left = self.ball.x - radius
+    var d_right = width - radius - self.ball.x
+    var d_top = self.ball.y - radius
+    var d_bot = height - radius - self.ball.y
+
+    var min_d = min(min(d_left, d_right), min(d_top, d_bot))
+
+    var spd = 100.0
+    if "speed" in self.ball: spd = self.ball.speed
+    spd = spd * delta * 60.0
+
+    if min_d == d_top and d_right > 0.01:
+        self.ball.y = radius
+        self.ball.x += spd
+        if self.ball.x >= width - radius: self.ball.x = width - radius
+    elif min_d == d_right and d_bot > 0.01:
+        self.ball.x = width - radius
+        self.ball.y += spd
+        if self.ball.y >= height - radius: self.ball.y = height - radius
+    elif min_d == d_bot and d_left > 0.01:
+        self.ball.y = height - radius
+        self.ball.x -= spd
+        if self.ball.x <= radius: self.ball.x = radius
+    else:
+        self.ball.x = radius
+        self.ball.y -= spd
+        if self.ball.y <= radius: self.ball.y = radius
+
+    var timer = 0.0
+    if "web_drop_timer" in self.ball:
+        timer = self.ball.web_drop_timer
+
+    timer -= delta
+    if timer <= 0:
+        timer = 5.0
+        var hazards_arr = null
+        if typeof(arena) == TYPE_OBJECT and "hazards" in arena: hazards_arr = arena.hazards
+        elif typeof(arena) == TYPE_DICTIONARY and arena.has("hazards"): hazards_arr = arena["hazards"]
+
+        if hazards_arr != null:
+            var hazard_id = hazards_arr.size() + 9000
+            var web = null
+            if ResourceLoader.exists("res://src/arena/procedural_arena.gd"):
+                var arena_script = load("res://src/arena/procedural_arena.gd")
+                if arena_script and arena_script.has_method("Hazard"):
+                    # Workaround for new() needing args, but might fail. Using dict instead for safety
+                    pass
+
+            web = {"id": hazard_id, "x": self.ball.x, "y": self.ball.y, "radius": 60.0, "kind": "spider_web", "damage": 0.0, "active": true, "duration": 8.0}
+            var b_id = null
+            if "id" in self.ball: b_id = self.ball.id
+            web["owner_id"] = b_id
+            hazards_arr.append(web)
+
+    self.ball.web_drop_timer = timer
+
 func _flee(delta: float):
     var enemies = _get_enemies()
     if enemies.size() == 0:
@@ -32434,7 +32518,7 @@ func _attack(delta: float):
                     self.ball.damage = original_damage
 
                 var cooldown = 0.5
-                if b_type in ["scout", "assassin", "phantom", "swarm", "rogue", "drone", "ninja"]:
+                if b_type in ["scout", "assassin", "phantom", "swarm", "rogue", "drone", "ninja", "spider"]:
                     cooldown = 0.3
                 elif b_type in ["tank", "juggernaut", "guardian"]:
                     cooldown = 1.5
