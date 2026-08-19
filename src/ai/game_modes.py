@@ -23783,8 +23783,8 @@ class ExtremeWeatherMode(GameMode):
             arena_w = getattr(world.arena, "width", 1000)
             arena_h = getattr(world.arena, "height", 1000)
 
-            # Remove old holograms
-            world.arena.hazards = [h for h in world.arena.hazards if (h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")) != "weather_forecast_hologram"]
+            # Remove old holograms and altars
+            world.arena.hazards = [h for h in world.arena.hazards if (h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")) not in ("weather_forecast_hologram", "weather_altar")]
 
             world.arena.hazards.append({
                 "kind": "weather_forecast_hologram",
@@ -23793,6 +23793,17 @@ class ExtremeWeatherMode(GameMode):
                 "radius": 40.0,
                 "active": True,
                 "forecast": self.next_weather
+            })
+
+            world.arena.hazards.append({
+                "kind": "weather_altar",
+                "x": arena_w / 2,
+                "y": arena_h / 2 + 100,
+                "radius": 60.0,
+                "active": True,
+                "controlling_team": None,
+                "control_timer": 0.0,
+                "team_hp_memory": {}
             })
 
         for b in balls:
@@ -23821,6 +23832,79 @@ class ExtremeWeatherMode(GameMode):
                     b.forecast_warning_issued = True
                     if hasattr(world, "add_event"):
                         world.add_event("weather_warning", {"type": "weather_warning", "message": f"Forecast warns: Weather change incoming in {int(time_until)}s!"})
+
+        weather_altar = None
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for h in world.arena.hazards:
+                hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                if hk == "weather_altar":
+                    weather_altar = h
+                    break
+
+        if weather_altar:
+            ax = weather_altar.get("x", 0.0) if isinstance(weather_altar, dict) else getattr(weather_altar, "x", 0.0)
+            ay = weather_altar.get("y", 0.0) if isinstance(weather_altar, dict) else getattr(weather_altar, "y", 0.0)
+            ar = weather_altar.get("radius", 60.0) if isinstance(weather_altar, dict) else getattr(weather_altar, "radius", 60.0)
+
+            teams_in_altar = set()
+            balls_in_altar = []
+            for b in balls:
+                if not getattr(b, "alive", True) or getattr(b, "ball_type", None) == "spectator":
+                    continue
+                bx = getattr(b, "x", 0.0)
+                by = getattr(b, "y", 0.0)
+                dist = ((bx - ax)**2 + (by - ay)**2)**0.5
+                if dist <= ar + getattr(b, "radius", 15.0):
+                    teams_in_altar.add(getattr(b, "team", "neutral"))
+                    balls_in_altar.append(b)
+
+            ctrl_team = weather_altar.get("controlling_team") if isinstance(weather_altar, dict) else getattr(weather_altar, "controlling_team", None)
+            ctrl_time = weather_altar.get("control_timer", 0.0) if isinstance(weather_altar, dict) else getattr(weather_altar, "control_timer", 0.0)
+            hp_mem = weather_altar.get("team_hp_memory", {}) if isinstance(weather_altar, dict) else getattr(weather_altar, "team_hp_memory", {})
+
+            took_damage = False
+            for b in balls_in_altar:
+                bid = getattr(b, "id", None)
+                bhp = getattr(b, "hp", 100.0)
+                if bid is not None:
+                    if bid in hp_mem and bhp < hp_mem[bid]:
+                        if getattr(b, "team", "neutral") == ctrl_team:
+                            took_damage = True
+                    hp_mem[bid] = bhp
+
+            if isinstance(weather_altar, dict):
+                weather_altar["team_hp_memory"] = hp_mem
+            else:
+                weather_altar.team_hp_memory = hp_mem
+
+            if len(teams_in_altar) == 1:
+                team_present = list(teams_in_altar)[0]
+                if team_present == ctrl_team:
+                    if took_damage:
+                        ctrl_time = 0.0
+                    else:
+                        ctrl_time += delta
+                else:
+                    ctrl_team = team_present
+                    ctrl_time = delta
+            else:
+                if len(teams_in_altar) == 0:
+                    ctrl_time = max(0.0, ctrl_time - delta)
+                else:
+                    ctrl_time = 0.0
+
+            if ctrl_time >= 10.0:
+                self.weather_timer = 15.0
+                ctrl_time = 0.0
+                if hasattr(world, "add_event"):
+                    world.add_event("altar_activated", {"type": "altar_activated", "message": f"Team {ctrl_team} activated the Weather Altar! Weather rerolling!"})
+
+            if isinstance(weather_altar, dict):
+                weather_altar["controlling_team"] = ctrl_team
+                weather_altar["control_timer"] = ctrl_time
+            else:
+                weather_altar.controlling_team = ctrl_team
+                weather_altar.control_timer = ctrl_time
 
         if not hasattr(self, "next_weather"):
             self.next_weather = self.random.choice(self.weathers)
@@ -23851,8 +23935,8 @@ class ExtremeWeatherMode(GameMode):
                 arena_w = getattr(world.arena, "width", 1000)
                 arena_h = getattr(world.arena, "height", 1000)
 
-                # Remove old holograms
-                world.arena.hazards = [h for h in world.arena.hazards if (h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")) != "weather_forecast_hologram"]
+                # Remove old holograms and altars
+                world.arena.hazards = [h for h in world.arena.hazards if (h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")) not in ("weather_forecast_hologram", "weather_altar")]
 
                 world.arena.hazards.append({
                     "kind": "weather_forecast_hologram",
@@ -23861,6 +23945,17 @@ class ExtremeWeatherMode(GameMode):
                     "radius": 40.0,
                     "active": True,
                     "forecast": self.next_weather
+                })
+
+                world.arena.hazards.append({
+                    "kind": "weather_altar",
+                    "x": arena_w / 2,
+                    "y": arena_h / 2 + 100,
+                    "radius": 60.0,
+                    "active": True,
+                    "controlling_team": None,
+                    "control_timer": 0.0,
+                    "team_hp_memory": {}
                 })
 
             # Spawn the corresponding booster
