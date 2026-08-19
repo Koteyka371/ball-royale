@@ -37413,7 +37413,7 @@ class ExtremeWeatherMode extends GameMode:
 						var hk = ""
 						if typeof(h) == TYPE_DICTIONARY and h.has("kind"): hk = h["kind"]
 						elif typeof(h) == TYPE_OBJECT and "kind" in h: hk = h.kind
-						if hk != "weather_forecast_hologram":
+						if hk != "weather_forecast_hologram" and hk != "weather_altar":
 							new_hazards.append(h)
 
 					var n_weather = ""
@@ -37426,6 +37426,17 @@ class ExtremeWeatherMode extends GameMode:
 						"radius": 40.0,
 						"active": true,
 						"forecast": n_weather
+					})
+
+					new_hazards.append({
+						"kind": "weather_altar",
+						"x": arena_w / 2.0,
+						"y": arena_h / 2.0 + 100.0,
+						"radius": 60.0,
+						"active": true,
+						"controlling_team": null,
+						"control_timer": 0.0,
+						"team_hp_memory": {}
 					})
 
 					if is_arena_dict: world.arena["hazards"] = new_hazards
@@ -37469,6 +37480,125 @@ class ExtremeWeatherMode extends GameMode:
 					b.forecast_warning_issued = true
 				if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("weather_warning", {"type": "weather_warning", "message": "Forecast warns: Weather change incoming!"})
+
+		var weather_altar = null
+		if world != null and typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+			var is_arena_dict = typeof(world.arena) == TYPE_DICTIONARY
+			var is_arena_obj = typeof(world.arena) == TYPE_OBJECT
+			var has_hazards = false
+			var hazards = []
+
+			if is_arena_dict and world.arena.has("hazards"):
+				has_hazards = true
+				hazards = world.arena["hazards"]
+			elif is_arena_obj and "hazards" in world.arena:
+				has_hazards = true
+				hazards = world.arena.hazards
+
+			if has_hazards:
+				for h in hazards:
+					var hk = ""
+					if typeof(h) == TYPE_DICTIONARY and h.has("kind"): hk = h["kind"]
+					elif typeof(h) == TYPE_OBJECT and "kind" in h: hk = h.kind
+					if hk == "weather_altar":
+						weather_altar = h
+						break
+
+		if weather_altar != null:
+			var is_dict = typeof(weather_altar) == TYPE_DICTIONARY
+			var ax = 0.0
+			var ay = 0.0
+			var ar = 60.0
+			if is_dict:
+				if weather_altar.has("x"): ax = weather_altar["x"]
+				if weather_altar.has("y"): ay = weather_altar["y"]
+				if weather_altar.has("radius"): ar = weather_altar["radius"]
+			else:
+				if "x" in weather_altar: ax = weather_altar.x
+				if "y" in weather_altar: ay = weather_altar.y
+				if "radius" in weather_altar: ar = weather_altar.radius
+
+			var teams_in_altar = {}
+			var balls_in_altar = []
+			for b in balls:
+				var alive = true
+				if "alive" in b: alive = b.alive
+				var btype = ""
+				if "ball_type" in b: btype = b.ball_type
+				if not alive or btype == "spectator": continue
+
+				var bx = 0.0
+				var by = 0.0
+				var br = 15.0
+				var bteam = "neutral"
+				if "x" in b: bx = b.x
+				if "y" in b: by = b.y
+				if "radius" in b: br = b.radius
+				if "team" in b: bteam = b.team
+
+				var dist = sqrt(pow(bx - ax, 2) + pow(by - ay, 2))
+				if dist <= ar + br:
+					teams_in_altar[bteam] = true
+					balls_in_altar.append(b)
+
+			var ctrl_team = null
+			var ctrl_time = 0.0
+			var hp_mem = {}
+			if is_dict:
+				if weather_altar.has("controlling_team"): ctrl_team = weather_altar["controlling_team"]
+				if weather_altar.has("control_timer"): ctrl_time = weather_altar["control_timer"]
+				if weather_altar.has("team_hp_memory"): hp_mem = weather_altar["team_hp_memory"]
+			else:
+				if "controlling_team" in weather_altar: ctrl_team = weather_altar.controlling_team
+				if "control_timer" in weather_altar: ctrl_time = weather_altar.control_timer
+				if "team_hp_memory" in weather_altar: hp_mem = weather_altar.team_hp_memory
+
+			var took_damage = false
+			for b in balls_in_altar:
+				var bid = null
+				if "id" in b: bid = str(b.id)
+				var bhp = 100.0
+				if "hp" in b: bhp = b.hp
+				var bteam = "neutral"
+				if "team" in b: bteam = b.team
+
+				if bid != null:
+					if hp_mem.has(bid) and bhp < hp_mem[bid]:
+						if bteam == str(ctrl_team):
+							took_damage = true
+					hp_mem[bid] = bhp
+
+			if is_dict: weather_altar["team_hp_memory"] = hp_mem
+			else: weather_altar.team_hp_memory = hp_mem
+
+			if teams_in_altar.size() == 1:
+				var team_present = teams_in_altar.keys()[0]
+				if str(team_present) == str(ctrl_team):
+					if took_damage:
+						ctrl_time = 0.0
+					else:
+						ctrl_time += delta
+				else:
+					ctrl_team = team_present
+					ctrl_time = delta
+			else:
+				if teams_in_altar.size() == 0:
+					ctrl_time = max(0.0, ctrl_time - delta)
+				else:
+					ctrl_time = 0.0
+
+			if ctrl_time >= 10.0:
+				weather_timer = 15.0
+				ctrl_time = 0.0
+				if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("altar_activated", {"type": "altar_activated", "message": "Team " + str(ctrl_team) + " activated the Weather Altar! Weather rerolling!"})
+
+			if is_dict:
+				weather_altar["controlling_team"] = ctrl_team
+				weather_altar["control_timer"] = ctrl_time
+			else:
+				weather_altar.controlling_team = ctrl_team
+				weather_altar.control_timer = ctrl_time
 
 		if not has_meta("next_weather"):
 			if has_method("set_meta"): set_meta("next_weather", weathers[randi() % weathers.size()])
@@ -37537,7 +37667,7 @@ class ExtremeWeatherMode extends GameMode:
 						var hk = ""
 						if typeof(h) == TYPE_DICTIONARY and h.has("kind"): hk = h["kind"]
 						elif typeof(h) == TYPE_OBJECT and "kind" in h: hk = h.kind
-						if hk != "weather_forecast_hologram":
+						if hk != "weather_forecast_hologram" and hk != "weather_altar":
 							new_hazards.append(h)
 
 					var n_weather = ""
@@ -37550,6 +37680,17 @@ class ExtremeWeatherMode extends GameMode:
 						"radius": 40.0,
 						"active": true,
 						"forecast": n_weather
+					})
+
+					new_hazards.append({
+						"kind": "weather_altar",
+						"x": arena_w / 2.0,
+						"y": arena_h / 2.0 + 100.0,
+						"radius": 60.0,
+						"active": true,
+						"controlling_team": null,
+						"control_timer": 0.0,
+						"team_hp_memory": {}
 					})
 
 					if is_arena_dict: world.arena["hazards"] = new_hazards
