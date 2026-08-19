@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1923] Wall-Crawler Ball Type — *2026-08-19 01:06:11 UTC*
+
+A new ball type that can attach to arena boundaries and move along them to avoid the chaos in the center. Its primary attack is to drop web-mines from the walls, trapping enemies that walk over them.
+
+---
+
 ## [idea-2026] Arena Shape Shifting Mode — *2026-08-18 23:29:17 UTC*
 
 Every 60 seconds, the arena smoothly morphs between different shapes (e.g., from square to circle to cross), forcing players to constantly adapt their positioning to avoid corners.
