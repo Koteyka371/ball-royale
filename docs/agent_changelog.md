@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1998] Trickster Explosion Deco — *2026-08-20 09:48:59 UTC*
+
+When a Trickster's decoy is destroyed or expires, it explodes in a colorful confetti blast that temporarily blinds enemies within a short radius, scrambling their controls.
+
+---
+
 ## [idea-2023] Payload Overcharge Battery — *2026-08-19 22:52:03 UTC*
 
 In Escort mode, a rare item drops that attackers can use to deal massive chunk damage to the payload at once, or defenders can use to instantly heal and speed boost the payload.
