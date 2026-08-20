@@ -6885,9 +6885,51 @@ class Action:
                                     self.world.events.append({'type': 'explosion', 'data': {'x': hazard.x, 'y': hazard.y, 'radius': explosion_radius}})
                 if getattr(hazard, "kind", "") == "thrown_bomb":
                     if getattr(hazard, "duration", 0.0) > 0:
+                        detonate = False
                         hazard.duration -= delta
                         if hazard.duration <= 0:
                             hazard.duration = 0.0
+                            detonate = True
+                        else:
+                            # Move bomb
+                            hazard.x += getattr(hazard, "vx", 0) * delta
+                            hazard.y += getattr(hazard, "vy", 0) * delta
+
+                            # Bounce off walls
+                            rad = getattr(hazard, "radius", 15.0)
+                            if hasattr(self.world, "arena") and hasattr(self.world.arena, "width") and hasattr(self.world.arena, "height"):
+                                if hazard.x < rad:
+                                    hazard.x = rad
+                                    hazard.vx = abs(hazard.vx)
+                                elif hazard.x > self.world.arena.width - rad:
+                                    hazard.x = self.world.arena.width - rad
+                                    hazard.vx = -abs(hazard.vx)
+
+                                if hazard.y < rad:
+                                    hazard.y = rad
+                                    hazard.vy = abs(hazard.vy)
+                                elif hazard.y > self.world.arena.height - rad:
+                                    hazard.y = self.world.arena.height - rad
+                                    hazard.vy = -abs(hazard.vy)
+
+                            # Check impact with players
+                            for b in getattr(self.world, "balls", []):
+                                if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator" and b.id != getattr(hazard, "owner_id", None):
+                                    dx = hazard.x - b.x
+                                    dy = hazard.y - b.y
+                                    dist_sq = dx * dx + dy * dy
+                                    b_rad = getattr(b, "radius", 10.0)
+                                    if dist_sq < (rad + b_rad) ** 2:
+                                        detonate = True
+                                        hazard.duration = 0.0
+                                        break
+
+                            # Friction
+                            if not detonate:
+                                hazard.vx *= (1.0 - 1.5 * delta)
+                                hazard.vy *= (1.0 - 1.5 * delta)
+
+                        if detonate:
                             # Explode
                             if hazard in self.world.arena.hazards:
                                 self.world.arena.hazards.remove(hazard)
@@ -6905,26 +6947,6 @@ class Action:
                                 exp = FallbackHazard(exp_id, hazard.x, hazard.y, 150.0, "explosion", 150.0)
                                 setattr(exp, "duration", 0.5)
                             self.world.arena.hazards.append(exp)
-                        else:
-                            # Pull nearby balls
-                            pull_radius = 200.0
-                            for b in getattr(self.world, "balls", []):
-                                if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator" and b.id != getattr(hazard, "owner_id", None):
-                                    dx = hazard.x - b.x
-                                    dy = hazard.y - b.y
-                                    dist_sq = dx * dx + dy * dy
-                                    if 0 < dist_sq < pull_radius * pull_radius:
-                                        dist = math.sqrt(dist_sq)
-                                        pull_strength = (pull_radius / max(10.0, dist)) * 200.0 * delta
-                                        b.x += (dx / dist) * pull_strength
-                                        b.y += (dy / dist) * pull_strength
-
-                            # Move bomb
-                            hazard.x += getattr(hazard, "vx", 0) * delta
-                            hazard.y += getattr(hazard, "vy", 0) * delta
-                            # Friction
-                            hazard.vx *= (1.0 - 2.0 * delta)
-                            hazard.vy *= (1.0 - 2.0 * delta)
 
                 elif getattr(hazard, "kind", "") == "shrapnel":
                     if not getattr(hazard, "_merged", False):
