@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2037] Geyser Eruptions — *2026-08-20 10:58:24 UTC*
+
+Lava pools erupt after a brief warning period, launching any player caught inside them high into the air and applying a temporary burn debuff.
+
+---
+
 ## [idea-1998] Trickster Explosion Deco — *2026-08-20 09:48:59 UTC*
 
 When a Trickster's decoy is destroyed or expires, it explodes in a colorful confetti blast that temporarily blinds enemies within a short radius, scrambling their controls.
