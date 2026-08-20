@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1971] Bouncy Bomb Mode — *2026-08-20 17:22:47 UTC*
+
+Bombs bounce off walls like normal balls and detonate on impact with a player.
+
+---
+
 ## [idea-2037] Geyser Eruptions — *2026-08-20 10:58:24 UTC*
 
 Lava pools erupt after a brief warning period, launching any player caught inside them high into the air and applying a temporary burn debuff.
