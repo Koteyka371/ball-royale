@@ -1015,7 +1015,10 @@ class GameMode:
                 elif week_mod["type"] == "vampirism":
                     b.lifesteal = getattr(b, "lifesteal", 0.0) + 0.5
                 elif week_mod["type"] == "low_gravity":
-                    b.mass = getattr(b, "mass", 1.0) * 0.5
+                    try:
+                        b.mass = float(getattr(b, "mass", 1.0)) * 0.5
+                    except:
+                        pass
 
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
@@ -20917,7 +20920,10 @@ class DailyMutatorMode(GameMode):
 
             if getattr(b, "ball_type", None) != "spectator":
                 if "low_gravity" in self.mutators:
-                    b.mass = getattr(b, "mass", 1.0) * 0.5
+                    try:
+                        b.mass = float(getattr(b, "mass", 1.0)) * 0.5
+                    except:
+                        pass
                 if "double_damage" in self.mutators:
                     b.base_damage = getattr(b, "base_damage", getattr(b, "damage", 10)) * 2.0
                     b.damage = getattr(b, "damage", 10) * 2.0

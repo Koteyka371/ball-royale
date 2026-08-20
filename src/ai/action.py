@@ -8791,12 +8791,35 @@ class Action:
                                                 other.chain_lightning_timer = getattr(other, "chain_lightning_timer", 0.0) + 4.0
 
                                             if b_type == "trickster" or b_team == "trickster":
-                                                # Trickster decoy specific logic
+                                                # Trickster decoy specific logic: Confetti Blast
                                                 other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 1.5
 
-                                                # Minor visual noise
+                                                # Blindness and confusion
+                                                other.is_blinded = True
+                                                other.blindness_timer = getattr(other, "blindness_timer", 0.0) + 2.0
+                                                other.is_confused = True
+                                                other.confusion_timer = getattr(other, "confusion_timer", 0.0) + 2.0
+
+                                                # Colorful confetti visual effect
                                                 if hasattr(self.world, "events"):
                                                     self.world.events.append({"type": "visual_effect", "data": {"type": "noise", "x": other.x, "y": other.y, "intensity": 0.5}})
+                                                    colors = ["pink", "purple", "yellow", "cyan", "lime"]
+                                                    for _ in range(15):
+                                                        angle = random.uniform(0, 2 * math.pi)
+                                                        tx = b.x + math.cos(angle) * 120.0
+                                                        ty = b.y + math.sin(angle) * 120.0
+                                                        self.world.events.append({
+                                                            "type": "visual_effect",
+                                                            "data": {
+                                                                "type": "confetti",
+                                                                "x": b.x,
+                                                                "y": b.y,
+                                                                "tx": tx,
+                                                                "ty": ty,
+                                                                "bounce": True,
+                                                                "color": random.choice(colors)
+                                                            }
+                                                        })
 
                                                 # Generate fragmentation visuals bouncing off other
                                                 if not getattr(b, "is_confetti_clone", False):
@@ -9087,7 +9110,11 @@ class Action:
 
             ball_type = getattr(self.ball, "ball_type", None)
             if ball_type != "spectator":
-                cx, cy = getattr(self.world.arena, "safe_zone_center", (0, 0))
+                center = getattr(self.world.arena, "safe_zone_center", (0, 0))
+                if isinstance(center, tuple) and len(center) >= 2:
+                    cx, cy = center[0], center[1]
+                else:
+                    cx, cy = 0, 0
                 radius = getattr(self.world.arena, "safe_zone_radius", 999999.0)
                 dist = math.sqrt((self.ball.x - cx)**2 + (self.ball.y - cy)**2)
                 ball_r = getattr(self.ball, "radius", 10.0)
