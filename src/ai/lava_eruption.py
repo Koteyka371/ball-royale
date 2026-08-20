@@ -38,13 +38,23 @@ class LavaEruptionEventMode(GameMode):
             if e["timer"] >= e["warning_duration"]:
                 if hasattr(world, "add_event"):
                     world.add_event("lava_eruption", {"x": e["x"], "y": e["y"], "radius": e["radius"]})
+
+                puddle_radius = e["radius"] * 1.5
                 self.puddles.append({
                     "x": e["x"],
                     "y": e["y"],
-                    "radius": e["radius"] * 1.5,
+                    "radius": puddle_radius,
                     "duration": 10.0,
                     "timer": 0.0
                 })
+
+                for b in balls:
+                    if getattr(b, "alive", True):
+                        dist = math.hypot(b.x - e["x"], b.y - e["y"])
+                        if dist <= puddle_radius:
+                            b.z_velocity = getattr(b, "z_velocity", 0.0) + 800.0
+                            if not getattr(b, "weather_immunity_timer", 0) > 0:
+                                b.burn_timer = getattr(b, "burn_timer", 0.0) + 5.0
             else:
                 new_eruptions.append(e)
                 # Only warn once when it spawns
