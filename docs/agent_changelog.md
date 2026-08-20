@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2042] Payload Booster Drops in Escort Mode — *2026-08-20 21:48:51 UTC*
+
+When the payload in Escort Mode reaches certain checkpoints, it spawns special Booster items that provide temporary buffs to nearby defenders, incentivizing them to stay close and guard the payload.
+
+---
+
 ## [idea-1971] Bouncy Bomb Mode — *2026-08-20 17:22:47 UTC*
 
 Bombs bounce off walls like normal balls and detonate on impact with a player.
