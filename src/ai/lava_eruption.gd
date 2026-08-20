@@ -39,13 +39,51 @@ func apply_dynamic_traits(world, balls, delta):
         if e["timer"] >= e["warning_duration"]:
             if world.has_method("add_event"):
                 world.add_event("lava_eruption", {"x": e["x"], "y": e["y"], "radius": e["radius"]})
+
+            var puddle_radius = e["radius"] * 1.5
             puddles.append({
                 "x": e["x"],
                 "y": e["y"],
-                "radius": e["radius"] * 1.5,
+                "radius": puddle_radius,
                 "duration": 10.0,
                 "timer": 0.0
             })
+
+            for b in balls:
+                var is_alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else true)
+                if is_alive:
+                    var bx = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.x
+                    var by = b.get("y") if typeof(b) == TYPE_DICTIONARY else b.y
+
+                    var dx = bx - e["x"]
+                    var dy = by - e["y"]
+                    var dist = sqrt(dx*dx + dy*dy)
+
+                    if dist <= puddle_radius:
+                        if typeof(b) == TYPE_DICTIONARY:
+                            b["z_velocity"] = b.get("z_velocity", 0.0) + 800.0
+                            if b.get("weather_immunity_timer", 0.0) <= 0.0:
+                                b["burn_timer"] = b.get("burn_timer", 0.0) + 5.0
+                        else:
+                            var zv = b.get_meta("z_velocity") if (b.has_method("has_meta") and b.has_meta("z_velocity")) else (b.z_velocity if "z_velocity" in b else 0.0)
+                            zv += 800.0
+                            if "z_velocity" in b:
+                                b.z_velocity = zv
+                            elif b.has_method("set_meta"):
+                                b.set_meta("z_velocity", zv)
+
+                            var immune = false
+                            if b.has_method("get_meta"):
+                                immune = b.get_meta("weather_immunity_timer", 0.0) > 0.0 if b.has_meta("weather_immunity_timer") else (b.weather_immunity_timer > 0.0 if "weather_immunity_timer" in b else false)
+                            elif "weather_immunity_timer" in b:
+                                immune = b.weather_immunity_timer > 0.0
+
+                            if not immune:
+                                if "burn_timer" in b:
+                                    b.burn_timer += 5.0
+                                elif b.has_method("set_meta"):
+                                    var current_burn = b.get_meta("burn_timer") if b.has_meta("burn_timer") else 0.0
+                                    b.set_meta("burn_timer", current_burn + 5.0)
         else:
             new_eruptions.append(e)
             # Only warn once when it spawns
