@@ -131,10 +131,10 @@
     "agent-16": {
       "name": "Jules Worker 16",
       "area": "innovation",
-      "status": "working",
-      "task_id": "idea-2021",
-      "started_at": "2026-08-20T10:55:00.387522+00:00",
-      "cycles_today": 1
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
+      "cycles_today": 0
     },
     "agent-17": {
       "name": "Jules Worker 17",
