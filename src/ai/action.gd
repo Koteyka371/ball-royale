@@ -14096,22 +14096,34 @@ func execute(strategy: String, delta: float):
 
 						# Bounce off walls
 						var arena = null
-						if self.world != null and self.world.has_method("get_arena"): arena = self.world.call("get_arena")
+						if self.world != null and typeof(self.world) == TYPE_OBJECT and self.world.has_method("get_arena"): arena = self.world.call("get_arena")
 						elif self.world != null and "arena" in self.world: arena = self.world.arena
 
-						if arena != null and "width" in arena and "height" in arena:
+						if arena != null and typeof(arena) == TYPE_OBJECT and arena.has_method("clamp_position"):
+							var clamp_res = arena.clamp_position(hx, hy, h_rad)
+							var new_hx = float(clamp_res[0])
+							var new_hy = float(clamp_res[1])
+							var bounced = bool(clamp_res[2])
+							if bounced:
+								if new_hx != hx:
+									hvx = -hvx
+								if new_hy != hy:
+									hvy = -hvy
+							hx = new_hx
+							hy = new_hy
+						elif arena != null and "width" in arena and "height" in arena:
 							if hx < h_rad:
 								hx = h_rad
 								hvx = abs(hvx)
-							elif hx > arena.width - h_rad:
-								hx = arena.width - h_rad
+							elif hx > float(arena.width) - h_rad:
+								hx = float(arena.width) - h_rad
 								hvx = -abs(hvx)
 
 							if hy < h_rad:
 								hy = h_rad
 								hvy = abs(hvy)
-							elif hy > arena.height - h_rad:
-								hy = arena.height - h_rad
+							elif hy > float(arena.height) - h_rad:
+								hy = float(arena.height) - h_rad
 								hvy = -abs(hvy)
 
 						# Check impact with players

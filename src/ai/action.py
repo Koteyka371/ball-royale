@@ -6897,7 +6897,18 @@ class Action:
 
                             # Bounce off walls
                             rad = getattr(hazard, "radius", 15.0)
-                            if hasattr(self.world, "arena") and hasattr(self.world.arena, "width") and hasattr(self.world.arena, "height"):
+                            if hasattr(self.world, "arena") and hasattr(self.world.arena, "clamp_position"):
+                                new_x, new_y, bounced = self.world.arena.clamp_position(hazard.x, hazard.y, rad)
+                                if bounced:
+                                    # Simple reflection logic: if clamped on x axis, reverse vx. if clamped on y, reverse vy.
+                                    # Since clamp_position doesn't tell us which axis, we infer it.
+                                    if new_x != hazard.x:
+                                        hazard.vx = -hazard.vx
+                                    if new_y != hazard.y:
+                                        hazard.vy = -hazard.vy
+                                hazard.x = new_x
+                                hazard.y = new_y
+                            elif hasattr(self.world, "arena") and hasattr(self.world.arena, "width") and hasattr(self.world.arena, "height"):
                                 if hazard.x < rad:
                                     hazard.x = rad
                                     hazard.vx = abs(hazard.vx)
