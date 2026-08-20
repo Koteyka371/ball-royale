@@ -7992,6 +7992,40 @@ class EscortMode(GameMode):
                 self.current_waypoint_index = wpt_idx + 1
                 target_x, target_y = waypoints[self.current_waypoint_index]
 
+                if hasattr(world, "boosters"):
+                    import random
+                    for _ in range(3):
+                        b_id = len(world.boosters) + random.randint(1000, 9999)
+                        bx = getattr(self.payload, "x", 0) + random.uniform(-100, 100)
+                        by = getattr(self.payload, "y", 0) + random.uniform(-100, 100)
+                        booster_type = random.choice(["speed", "shield", "damage"])
+                        booster = {
+                            "id": b_id,
+                            "x": bx,
+                            "y": by,
+                            "radius": 20.0,
+                            "type": booster_type,
+                            "duration": 15.0,
+                            "team": getattr(self.payload, "team", "Defenders")
+                        }
+                        world.boosters.append(booster)
+
+                if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                    import random
+                    for _ in range(3):
+                        h_id = len(world.arena.hazards) + random.randint(1000, 9999)
+                        hx = getattr(self.payload, "x", 0) + random.uniform(-100, 100)
+                        hy = getattr(self.payload, "y", 0) + random.uniform(-100, 100)
+                        buff_type = random.choice(["speed_zone", "heal_zone", "shield_zone"])
+                        try:
+                            from arena.procedural_arena import Hazard
+                            drop = Hazard(h_id, hx, hy, 40.0, buff_type, 0.0)
+                            setattr(drop, 'duration', 15.0)
+                            setattr(drop, 'team', getattr(self.payload, "team", "Defenders"))
+                            world.arena.hazards.append(drop)
+                        except ImportError:
+                            pass
+
                 # Payload crossed a waypoint: drop a temporary static trap or buff zone
                 if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
                     try:

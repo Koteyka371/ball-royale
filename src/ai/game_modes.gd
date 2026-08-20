@@ -12832,6 +12832,52 @@ class EscortMode extends GameMode:
 					current_waypoint_index += 1
 					target_pos = waypoints[current_waypoint_index]
 
+					if typeof(world) == TYPE_OBJECT and "boosters" in world:
+						for i in range(3):
+							var b_id = world.boosters.size() + (randi() % 9000 + 1000)
+							var bx = payload_x + randf_range(-100.0, 100.0)
+							var by = payload_y + randf_range(-100.0, 100.0)
+							var b_type = ["speed", "shield", "damage"][randi() % 3]
+							var p_team = "Defenders"
+							if typeof(payload) == TYPE_DICTIONARY:
+								p_team = payload.get("team", "Defenders")
+							else:
+								p_team = payload.get("team") if payload.get("team") != null else "Defenders"
+
+							var booster = {
+								"id": b_id,
+								"x": bx,
+								"y": by,
+								"radius": 20.0,
+								"type": b_type,
+								"duration": 15.0,
+								"team": p_team
+							}
+							world.boosters.append(booster)
+					elif typeof(world) == TYPE_OBJECT and "arena" in world and "hazards" in world.arena:
+						for i in range(3):
+							var h_id = world.arena.hazards.size() + (randi() % 9000 + 1000)
+							var bx = payload_x + randf_range(-100.0, 100.0)
+							var by = payload_y + randf_range(-100.0, 100.0)
+							var b_type = ["speed_zone", "heal_zone", "shield_zone"][randi() % 3]
+							var p_team = "Defenders"
+							if typeof(payload) == TYPE_DICTIONARY:
+								p_team = payload.get("team", "Defenders")
+							else:
+								p_team = payload.get("team") if payload.get("team") != null else "Defenders"
+
+							var buff = {
+								"id": h_id,
+								"x": bx,
+								"y": by,
+								"radius": 40.0,
+								"kind": b_type,
+								"damage": 0.0,
+								"duration": 15.0,
+								"team": p_team
+							}
+							world.arena.hazards.append(buff)
+
 					if typeof(world) == TYPE_OBJECT and "arena" in world and "hazards" in world.arena:
 						var h_id = world.arena.hazards.size() + (randi() % 9000 + 1000)
 						var cargo = "energy_barrier"
