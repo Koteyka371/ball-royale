@@ -14073,7 +14073,129 @@ func execute(strategy: String, delta: float):
 
 	if world != null and "arena" in world and "hazards" in world.arena:
 		for hazard in world.arena.hazards:
-			if hazard.get("kind") == "shrapnel":
+			if hazard.get("kind") == "thrown_bomb" or (typeof(hazard) == TYPE_DICTIONARY and hazard.has("kind") and hazard["kind"] == "thrown_bomb"):
+				var h_dur = 0.0
+				if typeof(hazard) == TYPE_DICTIONARY and hazard.has("duration"): h_dur = float(hazard.duration)
+				elif "duration" in hazard: h_dur = float(hazard.duration)
+
+				if h_dur > 0.0:
+					var detonate = false
+					h_dur -= delta
+					if h_dur <= 0.0:
+						h_dur = 0.0
+						detonate = true
+					else:
+						var hx = hazard.x if "x" in hazard else hazard["x"]
+						var hy = hazard.y if "y" in hazard else hazard["y"]
+						var hvx = float(hazard.vx if "vx" in hazard else (hazard["vx"] if hazard.has("vx") else 0.0))
+						var hvy = float(hazard.vy if "vy" in hazard else (hazard["vy"] if hazard.has("vy") else 0.0))
+						var h_rad = float(hazard.radius if "radius" in hazard else (hazard["radius"] if hazard.has("radius") else 15.0))
+
+						hx += hvx * delta
+						hy += hvy * delta
+
+						# Bounce off walls
+						var arena = null
+						if self.world != null and self.world.has_method("get_arena"): arena = self.world.call("get_arena")
+						elif self.world != null and "arena" in self.world: arena = self.world.arena
+
+						if arena != null and "width" in arena and "height" in arena:
+							if hx < h_rad:
+								hx = h_rad
+								hvx = abs(hvx)
+							elif hx > arena.width - h_rad:
+								hx = arena.width - h_rad
+								hvx = -abs(hvx)
+
+							if hy < h_rad:
+								hy = h_rad
+								hvy = abs(hvy)
+							elif hy > arena.height - h_rad:
+								hy = arena.height - h_rad
+								hvy = -abs(hvy)
+
+						# Check impact with players
+						var h_owner = hazard.owner_id if "owner_id" in hazard else (hazard["owner_id"] if hazard.has("owner_id") else null)
+						if "balls" in self.world:
+							for b in self.world.balls:
+								var b_alive = false
+								if "alive" in b: b_alive = b.alive
+								elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+
+								var b_type = null
+								if "ball_type" in b: b_type = b.ball_type
+								elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("ball_type"): b_type = b.get_meta("ball_type")
+
+								var b_id = null
+								if "id" in b: b_id = b.id
+								elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("id"): b_id = b.get_meta("id")
+
+								if b_alive and b_type != "spectator" and b_id != h_owner:
+									var bx = float(b.x if "x" in b else (b.get_meta("x") if typeof(b) == TYPE_OBJECT and b.has_method("get_meta") else 0.0))
+									var by = float(b.y if "y" in b else (b.get_meta("y") if typeof(b) == TYPE_OBJECT and b.has_method("get_meta") else 0.0))
+									var b_rad = float(b.radius if "radius" in b else (b.get_meta("radius") if typeof(b) == TYPE_OBJECT and b.has_method("get_meta") else 10.0))
+
+									var dx = hx - bx
+									var dy = hy - by
+									var dist_sq = dx * dx + dy * dy
+
+									if dist_sq < (h_rad + b_rad) * (h_rad + b_rad):
+										detonate = true
+										h_dur = 0.0
+										break
+
+						if not detonate:
+							hvx *= (1.0 - 1.5 * delta)
+							hvy *= (1.0 - 1.5 * delta)
+
+						if typeof(hazard) == TYPE_DICTIONARY:
+							hazard["x"] = hx
+							hazard["y"] = hy
+							hazard["vx"] = hvx
+							hazard["vy"] = hvy
+						elif typeof(hazard) == TYPE_OBJECT:
+							hazard.x = hx
+							hazard.y = hy
+							hazard.vx = hvx
+							hazard.vy = hvy
+
+					if typeof(hazard) == TYPE_DICTIONARY:
+						hazard["duration"] = h_dur
+					elif typeof(hazard) == TYPE_OBJECT:
+						hazard.duration = h_dur
+
+					if detonate:
+						if typeof(hazard) == TYPE_DICTIONARY:
+							hazard["active"] = false
+						elif typeof(hazard) == TYPE_OBJECT:
+							hazard.active = false
+
+						if "hazards" in world.arena and world.arena.hazards.has(hazard):
+							world.arena.hazards.erase(hazard)
+
+						# Spawn explosion
+						var arena = null
+						if self.world != null and self.world.has_method("get_arena"): arena = self.world.call("get_arena")
+						elif self.world != null and "arena" in self.world: arena = self.world.arena
+
+						if arena != null and "hazards" in arena:
+							var hx = float(hazard.x if "x" in hazard else hazard["x"])
+							var hy = float(hazard.y if "y" in hazard else hazard["y"])
+
+							var exp_id = arena.hazards.size() + 50000 + int(hx)
+							var exp_haz = {
+								"id": exp_id,
+								"x": hx,
+								"y": hy,
+								"radius": 150.0,
+								"kind": "explosion",
+								"damage": 150.0,
+								"duration": 0.5,
+								"active": true
+							}
+							arena.hazards.append(exp_haz)
+
+			elif hazard.get("kind") == "shrapnel":
 				if not hazard.get("_merged", false):
 					for other in world.arena.hazards:
 						if other != hazard and other.get("kind") == "shrapnel" and not other.get("_merged", false):

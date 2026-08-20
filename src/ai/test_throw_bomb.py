@@ -32,7 +32,7 @@ class MockBall:
         self.vy = 0.0
 
 def test_throw_bomb_skill():
-    arena = MockArena([])
+    arena = MockArena([]); arena.width = 1000; arena.height = 1000; arena.width = 1000; arena.height = 1000
     brawler = MockBall(1, 0, 0, "throw_bomb", team="teamA")
     enemy = MockBall(2, 100, 0, "none", team="teamB")
 
@@ -47,16 +47,15 @@ def test_throw_bomb_skill():
     assert bomb.kind == "thrown_bomb"
     assert getattr(bomb, "duration", 0) > 0
 
-    # Move enemy slightly away from bomb to test suction
-    enemy.x = bomb.x + 50
+    # Move enemy slightly away from bomb to test impact
+    enemy.x = bomb.x + 10
     enemy.y = bomb.y
-    old_x = enemy.x
 
-    # Execute a frame to trigger suction
+    # Execute a frame to trigger impact
     action.execute("idle", 0.016)
 
-    # Enemy should be sucked towards bomb
-    assert enemy.x < old_x
+    # Bomb should detonate on impact
+    assert bomb.duration == 0.0
 
     # Advance time to explode
     bomb.duration = 0.001
@@ -69,3 +68,27 @@ def test_throw_bomb_skill():
     assert exp.kind == "explosion"
     assert exp.radius == 150.0
     assert exp.damage == 150.0
+
+def test_bomb_bounce():
+    arena = MockArena([]); arena.width = 1000; arena.height = 1000; arena.width = 1000; arena.height = 1000
+    brawler = MockBall(1, 10, 10, "throw_bomb", team="teamA")
+    world = MockWorld(arena, [brawler])
+    action = Action(brawler, world)
+
+    # Manually spawn bomb near wall
+    bomb = type("Hazard", (), {})()
+    bomb.kind = "thrown_bomb"
+    bomb.x = 5
+    bomb.y = 500
+    bomb.vx = -400
+    bomb.vy = 0
+    bomb.duration = 2.0
+    bomb.owner_id = 1
+    bomb.radius = 15
+    arena.hazards.append(bomb)
+
+    action.execute("idle", 0.1)
+
+    # Should have bounced
+    assert bomb.x >= 15
+    assert bomb.vx > 0
