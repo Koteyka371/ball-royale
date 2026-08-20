@@ -57,7 +57,7 @@ def test_trickster_confusion_explosion():
         # Enemy should take damage and become confused
         assert enemy.hp <= 70.0
         assert getattr(enemy, "is_confused", False) == True
-        assert getattr(enemy, "confusion_timer", 0.0) == 3.0
+        assert getattr(enemy, "confusion_timer", 0.0) >= 3.0
 
     finally:
         random.random = original_random

@@ -17600,8 +17600,40 @@ func execute(strategy: String, delta: float):
                                             elif other.has_method("set_meta"):
                                                 other.set_meta("stutter_timer", 1.5)
 
+                                            # Blindness and confusion
+                                            if "is_blinded" in other:
+                                                other.is_blinded = true
+                                                other.blindness_timer = (other.blindness_timer if "blindness_timer" in other else 0.0) + 2.0
+                                                other.is_confused = true
+                                                other.confusion_timer = (other.confusion_timer if "confusion_timer" in other else 0.0) + 2.0
+                                            elif other.has_method("set_meta"):
+                                                other.set_meta("is_blinded", true)
+                                                other.set_meta("blindness_timer", (other.get_meta("blindness_timer") if other.has_meta("blindness_timer") else 0.0) + 2.0)
+                                                other.set_meta("is_confused", true)
+                                                other.set_meta("confusion_timer", (other.get_meta("confusion_timer") if other.has_meta("confusion_timer") else 0.0) + 2.0)
+
+                                            # Colorful confetti visual effect
                                             if world != null and "events" in world:
                                                 world.events.append({"type": "visual_effect", "data": {"type": "noise", "x": other.x, "y": other.y, "intensity": 0.5}})
+                                                var colors = ["pink", "purple", "yellow", "cyan", "lime"]
+                                                var rng_gd = RandomNumberGenerator.new()
+                                                rng_gd.randomize()
+                                                for i in range(15):
+                                                    var angle = rng_gd.randf_range(0, 2 * PI)
+                                                    var tx = b.x + cos(angle) * 120.0
+                                                    var ty = b.y + sin(angle) * 120.0
+                                                    world.events.append({
+                                                        "type": "visual_effect",
+                                                        "data": {
+                                                            "type": "confetti",
+                                                            "x": b.x,
+                                                            "y": b.y,
+                                                            "tx": tx,
+                                                            "ty": ty,
+                                                            "bounce": true,
+                                                            "color": colors[rng_gd.randi() % colors.size()]
+                                                        }
+                                                    })
 
                                             var is_confetti = false
                                             if "is_confetti_clone" in b: is_confetti = b.is_confetti_clone
