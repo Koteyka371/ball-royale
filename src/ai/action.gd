@@ -1919,6 +1919,11 @@ func _attempt_damage_internal(attacker, target) -> void:
 	elif "freeze_trap_vulnerability_timer" in target and float(target.freeze_trap_vulnerability_timer) > 0.0:
 		original_damage *= 1.25
 
+	if target.has_method("get_meta") and target.has_meta("cursed_currency_vulnerability_timer") and float(target.get_meta("cursed_currency_vulnerability_timer")) > 0.0:
+		original_damage *= 3.0
+	elif "cursed_currency_vulnerability_timer" in target and float(target.get("cursed_currency_vulnerability_timer", 0.0)) > 0.0:
+		original_damage *= 3.0
+
 	# Damage multiplier if attacker is sliding on ice patch
 	if "arena" in world and world.arena != null and "hazards" in world.arena:
 		for h in world.arena.hazards:
@@ -57016,6 +57021,15 @@ func _update_skill_timer(delta: float):
         if typeof(self.ball) == TYPE_DICTIONARY: self.ball["freeze_trap_vulnerability_timer"] = ftv_t
         elif self.ball.has_method("set_meta"): self.ball.set_meta("freeze_trap_vulnerability_timer", ftv_t)
         elif "freeze_trap_vulnerability_timer" in self.ball: self.ball.freeze_trap_vulnerability_timer = ftv_t
+
+	var cursed_vuln_t = 0.0
+	if "cursed_currency_vulnerability_timer" in self.ball: cursed_vuln_t = float(self.ball.get("cursed_currency_vulnerability_timer", 0.0))
+	elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("cursed_currency_vulnerability_timer"): cursed_vuln_t = float(self.ball.get_meta("cursed_currency_vulnerability_timer"))
+	if cursed_vuln_t > 0.0:
+		cursed_vuln_t -= delta
+		if typeof(self.ball) == TYPE_DICTIONARY: self.ball["cursed_currency_vulnerability_timer"] = cursed_vuln_t
+		elif self.ball.has_method("set_meta"): self.ball.set_meta("cursed_currency_vulnerability_timer", cursed_vuln_t)
+		elif "cursed_currency_vulnerability_timer" in self.ball: self.ball.set("cursed_currency_vulnerability_timer", cursed_vuln_t)
 
     var cf_t = 0.0
     if "cooldown_freeze_timer" in self.ball: cf_t = float(self.ball.cooldown_freeze_timer)

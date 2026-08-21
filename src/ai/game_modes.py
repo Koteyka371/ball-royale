@@ -21130,7 +21130,7 @@ class BlackMarketMode(GameMode):
             world.currency_pickups.append({
                 "x": random.uniform(50, arena_width - 50),
                 "y": random.uniform(50, arena_height - 50),
-                "type": "currency"
+                "type": random.choice(["currency", "currency", "currency", "cursed_currency"])
             })
 
         # Spawn Black Markets
@@ -21174,7 +21174,7 @@ class BlackMarketMode(GameMode):
                 world.currency_pickups.append({
                     "x": random.uniform(50, arena_width - 50),
                     "y": random.uniform(50, arena_height - 50),
-                    "type": "currency"
+                    "type": random.choice(["currency", "currency", "currency", "cursed_currency"])
                 })
 
         # Move Black Markets
@@ -21205,7 +21205,11 @@ class BlackMarketMode(GameMode):
                 dy = b.y - c["y"]
                 dist = math.sqrt(dx*dx + dy*dy)
                 if dist <= getattr(b, "radius", 10.0) + 15.0:
-                    b.currency = getattr(b, "currency", 0) + 1
+                    if c.get("type") == "cursed_currency":
+                        b.currency = getattr(b, "currency", 0) + 3
+                        b.cursed_currency_vulnerability_timer = 5.0
+                    else:
+                        b.currency = getattr(b, "currency", 0) + 1
                     pickups_to_remove.append(c)
 
             for c in pickups_to_remove:
@@ -32960,7 +32964,7 @@ class CurrencyBurdenMode(GameMode):
             world.currency_pickups.append({
                 "x": random.uniform(50, arena_width - 50),
                 "y": random.uniform(50, arena_height - 50),
-                "type": "currency"
+                "type": random.choice(["currency", "currency", "currency", "cursed_currency"])
             })
 
         for b in balls:
@@ -32986,7 +32990,7 @@ class CurrencyBurdenMode(GameMode):
                 world.currency_pickups.append({
                     "x": random.uniform(50, arena_width - 50),
                     "y": random.uniform(50, arena_height - 50),
-                    "type": "currency"
+                    "type": random.choice(["currency", "currency", "currency", "cursed_currency"])
                 })
 
         for b in balls:
@@ -33008,7 +33012,11 @@ class CurrencyBurdenMode(GameMode):
                 dy = b.y - c["y"]
                 dist = math.sqrt(dx*dx + dy*dy)
                 if dist <= b.radius + 15.0:
-                    b.currency = getattr(b, "currency", 0) + 1
+                    if c.get("type") == "cursed_currency":
+                        b.currency = getattr(b, "currency", 0) + 3
+                        b.cursed_currency_vulnerability_timer = 5.0
+                    else:
+                        b.currency = getattr(b, "currency", 0) + 1
                     pickups_to_remove.append(c)
 
             for c in pickups_to_remove:
@@ -39290,7 +39298,7 @@ class CurrencyBountyMode(GameMode):
             world.currency_pickups.append({
                 "x": random.uniform(50, arena_width - 50),
                 "y": random.uniform(50, arena_height - 50),
-                "type": "currency"
+                "type": random.choice(["currency", "currency", "currency", "cursed_currency"])
             })
 
         for b in balls:
@@ -39312,7 +39320,7 @@ class CurrencyBountyMode(GameMode):
                 world.currency_pickups.append({
                     "x": random.uniform(50, arena_width - 50),
                     "y": random.uniform(50, arena_height - 50),
-                    "type": "currency"
+                    "type": random.choice(["currency", "currency", "currency", "cursed_currency"])
                 })
 
         bounty_target = None
@@ -39336,7 +39344,11 @@ class CurrencyBountyMode(GameMode):
                 dy = b.y - c["y"]
                 dist = math.sqrt(dx*dx + dy*dy)
                 if dist <= getattr(b, "radius", 15.0) + 15.0:
-                    b.currency = getattr(b, "currency", 0) + 1
+                    if c.get("type") == "cursed_currency":
+                        b.currency = getattr(b, "currency", 0) + 3
+                        b.cursed_currency_vulnerability_timer = 5.0
+                    else:
+                        b.currency = getattr(b, "currency", 0) + 1
                     pickups_to_remove.append(c)
 
             for c in pickups_to_remove:

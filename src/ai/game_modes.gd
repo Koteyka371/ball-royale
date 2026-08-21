@@ -32962,7 +32962,7 @@ class BlackMarketMode extends GameMode:
 			world.currency_pickups.append({
 				"x": randf_range(50.0, arena_width - 50.0),
 				"y": randf_range(50.0, arena_height - 50.0),
-				"type": "currency"
+				"type": "currency" if randf() < 0.75 else "cursed_currency"
 			})
 
 		for i in range(2):
@@ -33010,7 +33010,7 @@ class BlackMarketMode extends GameMode:
 				world.currency_pickups.append({
 					"x": randf_range(50.0, arena_width - 50.0),
 					"y": randf_range(50.0, arena_height - 50.0),
-					"type": "currency"
+					"type": "currency" if randf() < 0.75 else "cursed_currency"
 				})
 
 		if "black_markets" in world:
@@ -33064,7 +33064,16 @@ class BlackMarketMode extends GameMode:
 					var dy = by - float(c["y"])
 					var dist = sqrt(dx*dx + dy*dy)
 					if dist <= bradius + 15.0:
-						bcurrency += 1
+						if c.has("type") and c["type"] == "cursed_currency":
+							bcurrency += 3
+							if typeof(b) == TYPE_DICTIONARY:
+								b["cursed_currency_vulnerability_timer"] = 5.0
+							elif b.has_method("set_meta"):
+								b.set_meta("cursed_currency_vulnerability_timer", 5.0)
+							else:
+								b.set("cursed_currency_vulnerability_timer", 5.0)
+						else:
+							bcurrency += 1
 						pickups_to_remove.append(i)
 
 				pickups_to_remove.sort_custom(func(a, b): return a > b)
@@ -53591,7 +53600,7 @@ class CurrencyBurdenMode extends GameMode:
 			world.currency_pickups.append({
 				"x": randf_range(50.0, arena_width - 50.0),
 				"y": randf_range(50.0, arena_height - 50.0),
-				"type": "currency"
+				"type": "currency" if randf() < 0.75 else "cursed_currency"
 			})
 
 		for b in balls:
@@ -53621,7 +53630,7 @@ class CurrencyBurdenMode extends GameMode:
 				world.currency_pickups.append({
 					"x": randf_range(50.0, arena_width - 50.0),
 					"y": randf_range(50.0, arena_height - 50.0),
-					"type": "currency"
+					"type": "currency" if randf() < 0.75 else "cursed_currency"
 				})
 
 		for b in balls:
@@ -53658,7 +53667,16 @@ class CurrencyBurdenMode extends GameMode:
 					var dy = by - float(c["y"])
 					var dist = sqrt(dx*dx + dy*dy)
 					if dist <= bradius + 15.0:
-						bcurrency += 1
+						if c.has("type") and c["type"] == "cursed_currency":
+							bcurrency += 3
+							if typeof(b) == TYPE_DICTIONARY:
+								b["cursed_currency_vulnerability_timer"] = 5.0
+							elif b.has_method("set_meta"):
+								b.set_meta("cursed_currency_vulnerability_timer", 5.0)
+							else:
+								b.set("cursed_currency_vulnerability_timer", 5.0)
+						else:
+							bcurrency += 1
 						pickups_to_remove.append(i)
 
 				pickups_to_remove.sort_custom(func(a, b): return a > b)
@@ -63533,7 +63551,16 @@ class CurrencyBountyMode extends GameMode:
 					var dy = b_y - cy
 					var dist = sqrt(dx*dx + dy*dy)
 					if dist <= b_radius + 15.0:
-						bcurrency += 1
+						if c.has("type") and c["type"] == "cursed_currency":
+							bcurrency += 3
+							if typeof(b) == TYPE_DICTIONARY:
+								b["cursed_currency_vulnerability_timer"] = 5.0
+							elif b.has_method("set_meta"):
+								b.set_meta("cursed_currency_vulnerability_timer", 5.0)
+							else:
+								b.set("cursed_currency_vulnerability_timer", 5.0)
+						else:
+							bcurrency += 1
 						pickups_to_remove.append(c)
 
 				for c in pickups_to_remove:
