@@ -59382,3 +59382,4 @@ func _handle_phantom_behavior(delta: float):
                 elif nearest.has_method("set_meta") and nearest.has_meta("x"): nearest.set_meta("x", nearest.get_meta("x") + nx * push_force)
                 if "y" in nearest: nearest.y += ny * push_force
                 elif nearest.has_method("set_meta") and nearest.has_meta("y"): nearest.set_meta("y", nearest.get_meta("y") + ny * push_force)
+# trigger update
