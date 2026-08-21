@@ -1437,6 +1437,12 @@ class Action:
                 target.dot_duration = getattr(target, 'dot_duration', 0.0) + 2.0
                 target.dot_damage_per_tick = getattr(target, 'dot_damage_per_tick', 0.0) + 2.0
 
+            if getattr(attacker, "shrink_beam_attachment_timer", 0.0) > 0:
+                if isinstance(target, dict):
+                    target["shrink_beam_debuff_timer"] = 5.0
+                else:
+                    target.shrink_beam_debuff_timer = 5.0
+
             if getattr(attacker, "ice_attachment_timer", 0.0) > 0:
                 target.slow_timer = getattr(target, "slow_timer", 0.0) + 2.0
 
@@ -17833,6 +17839,12 @@ class Action:
                         self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "shrink_beam_attachment":
+                    self.ball.shrink_beam_attachment_timer = 15.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
+                        self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "ice_attachment":
                     self.ball.ice_attachment_timer = 15.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
@@ -28743,6 +28755,22 @@ class Action:
                 if hasattr(self.ball, "original_base_damage"):
                     self.ball.base_damage = self.ball.original_base_damage
 
+        if getattr(self.ball, "shrink_beam_debuff_timer", 0.0) > 0:
+            self.ball.shrink_beam_debuff_timer -= delta
+            if not getattr(self.ball, "is_shrink_beam_shrunk", False):
+                self.ball.is_shrink_beam_shrunk = True
+                self.ball.base_radius_shrink_beam = getattr(self.ball, "base_radius", getattr(self.ball, "radius", 10.0))
+                self.ball.base_speed_shrink_beam = getattr(self.ball, "base_speed", getattr(self.ball, "speed", 100.0))
+
+                self.ball.radius = self.ball.base_radius_shrink_beam * 0.7
+                self.ball.speed = self.ball.base_speed_shrink_beam * 0.7
+            if self.ball.shrink_beam_debuff_timer <= 0:
+                self.ball.shrink_beam_debuff_timer = 0.0
+                if getattr(self.ball, "is_shrink_beam_shrunk", False):
+                    self.ball.is_shrink_beam_shrunk = False
+                    self.ball.radius = getattr(self.ball, "base_radius_shrink_beam", getattr(self.ball, "base_radius", getattr(self.ball, "radius", 10.0)))
+                    self.ball.speed = getattr(self.ball, "base_speed_shrink_beam", getattr(self.ball, "base_speed", getattr(self.ball, "speed", 100.0)))
+
         if hasattr(self.ball, "stutter_timer") and self.ball.stutter_timer > 0:
             self.ball.stutter_timer -= delta
             if self.ball.stutter_timer <= 0:
@@ -28904,6 +28932,8 @@ class Action:
                     self.ball.modified_scope_applied = False
         if getattr(self.ball, "fire_attachment_timer", 0.0) > 0:
             self.ball.fire_attachment_timer -= delta
+        if getattr(self.ball, "shrink_beam_attachment_timer", 0.0) > 0:
+            self.ball.shrink_beam_attachment_timer -= delta
         if getattr(self.ball, "ice_attachment_timer", 0.0) > 0:
             self.ball.ice_attachment_timer -= delta
         if getattr(self.ball, "spread_attachment_timer", 0.0) > 0:

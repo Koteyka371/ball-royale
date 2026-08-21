@@ -2708,6 +2708,14 @@ func _attempt_damage_internal(attacker, target) -> void:
 			if "dot_damage_per_tick" in target: target.dot_damage_per_tick = curr_dot_dmg + 2.0
 			elif typeof(target) == TYPE_OBJECT and target.has_method("set_meta"): target.set_meta("dot_damage_per_tick", curr_dot_dmg + 2.0)
 
+		var shrink_beam_timer = 0.0
+		if "shrink_beam_attachment_timer" in attacker: shrink_beam_timer = attacker.shrink_beam_attachment_timer
+		elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta") and attacker.has_meta("shrink_beam_attachment_timer"): shrink_beam_timer = attacker.get_meta("shrink_beam_attachment_timer")
+		if shrink_beam_timer > 0.0:
+			if typeof(target) == TYPE_DICTIONARY: target["shrink_beam_debuff_timer"] = 5.0
+			elif typeof(target) == TYPE_OBJECT and target.has_method("set_meta"): target.set_meta("shrink_beam_debuff_timer", 5.0)
+			elif "shrink_beam_debuff_timer" in target: target.shrink_beam_debuff_timer = 5.0
+
 		var ice_timer = 0.0
 		if "ice_attachment_timer" in attacker: ice_timer = attacker.ice_attachment_timer
 		elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta") and attacker.has_meta("ice_attachment_timer"): ice_timer = attacker.get_meta("ice_attachment_timer")
@@ -38897,6 +38905,15 @@ func _collect_booster(delta: float):
                 if self.world != null and "boosters" in self.world:
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1: self.world.boosters.erase(b)
+            elif "kind" in nearest and nearest.kind == "shrink_beam_attachment":
+                if self.ball.has_method("set_meta"): self.ball.set_meta("shrink_beam_attachment_timer", 15.0)
+                else: self.ball.shrink_beam_attachment_timer = 15.0
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1: self.world.arena.hazards.erase(nearest)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1: self.world.boosters.erase(nearest)
             elif "kind" in nearest and nearest.kind == "ice_attachment":
                 if self.ball.has_method("set_meta"): self.ball.set_meta("ice_attachment_timer", 15.0)
                 else: self.ball.ice_attachment_timer = 15.0
@@ -57241,6 +57258,14 @@ func _update_skill_timer(delta: float):
         if self.ball.has_method("set_meta"): self.ball.set_meta("fire_attachment_timer", f_timer)
         else: self.ball.fire_attachment_timer = f_timer
 
+    var sb_timer = 0.0
+    if "shrink_beam_attachment_timer" in self.ball: sb_timer = self.ball.shrink_beam_attachment_timer
+    elif self.ball.has_method("has_meta") and self.ball.has_meta("shrink_beam_attachment_timer"): sb_timer = self.ball.get_meta("shrink_beam_attachment_timer")
+    if sb_timer > 0.0:
+        sb_timer -= delta
+        if self.ball.has_method("set_meta"): self.ball.set_meta("shrink_beam_attachment_timer", sb_timer)
+        else: self.ball.shrink_beam_attachment_timer = sb_timer
+
     var i_timer = 0.0
     if "ice_attachment_timer" in self.ball: i_timer = self.ball.ice_attachment_timer
     elif self.ball.has_method("has_meta") and self.ball.has_meta("ice_attachment_timer"): i_timer = self.ball.get_meta("ice_attachment_timer")
@@ -57523,6 +57548,45 @@ func _update_skill_timer(delta: float):
         else:
             if typeof(self.ball) == TYPE_DICTIONARY: self.ball["shrink_ray_timer"] = shrink_timer
             elif typeof(self.ball) == TYPE_OBJECT: self.ball.set("shrink_ray_timer", shrink_timer)
+
+    var sb_debuff_timer = 0.0
+    if typeof(self.ball) == TYPE_DICTIONARY: sb_debuff_timer = self.ball.get("shrink_beam_debuff_timer", 0.0)
+    elif typeof(self.ball) == TYPE_OBJECT: sb_debuff_timer = self.ball.get("shrink_beam_debuff_timer") if "shrink_beam_debuff_timer" in self.ball else 0.0
+    if sb_debuff_timer > 0.0:
+        sb_debuff_timer -= delta
+        var is_sb_shrunk = false
+        if typeof(self.ball) == TYPE_DICTIONARY: is_sb_shrunk = self.ball.get("is_shrink_beam_shrunk", false)
+        elif typeof(self.ball) == TYPE_OBJECT: is_sb_shrunk = self.ball.get("is_shrink_beam_shrunk") if "is_shrink_beam_shrunk" in self.ball else false
+
+        if not is_sb_shrunk:
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["is_shrink_beam_shrunk"] = true
+                if not self.ball.has("base_radius_shrink_beam"): self.ball["base_radius_shrink_beam"] = self.ball.get("base_radius", self.ball.get("radius", 10.0))
+                if not self.ball.has("base_speed_shrink_beam"): self.ball["base_speed_shrink_beam"] = self.ball.get("base_speed", self.ball.get("speed", 100.0))
+                self.ball["radius"] = self.ball["base_radius_shrink_beam"] * 0.7
+                self.ball["speed"] = self.ball["base_speed_shrink_beam"] * 0.7
+            elif typeof(self.ball) == TYPE_OBJECT:
+                self.ball.set("is_shrink_beam_shrunk", true)
+                if not "base_radius_shrink_beam" in self.ball: self.ball.set("base_radius_shrink_beam", self.ball.get("base_radius") if "base_radius" in self.ball else (self.ball.get("radius") if "radius" in self.ball else 10.0))
+                if not "base_speed_shrink_beam" in self.ball: self.ball.set("base_speed_shrink_beam", self.ball.get("base_speed") if "base_speed" in self.ball else (self.ball.get("speed") if "speed" in self.ball else 100.0))
+                self.ball.set("radius", self.ball.get("base_radius_shrink_beam") * 0.7)
+                self.ball.set("speed", self.ball.get("base_speed_shrink_beam") * 0.7)
+
+        if sb_debuff_timer <= 0.0:
+            sb_debuff_timer = 0.0
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["is_shrink_beam_shrunk"] = false
+                self.ball["shrink_beam_debuff_timer"] = 0.0
+                if self.ball.has("base_radius_shrink_beam"): self.ball["radius"] = self.ball["base_radius_shrink_beam"]
+                if self.ball.has("base_speed_shrink_beam"): self.ball["speed"] = self.ball["base_speed_shrink_beam"]
+            elif typeof(self.ball) == TYPE_OBJECT:
+                self.ball.set("is_shrink_beam_shrunk", false)
+                self.ball.set("shrink_beam_debuff_timer", 0.0)
+                if "base_radius_shrink_beam" in self.ball: self.ball.set("radius", self.ball.get("base_radius_shrink_beam"))
+                if "base_speed_shrink_beam" in self.ball: self.ball.set("speed", self.ball.get("base_speed_shrink_beam"))
+        else:
+            if typeof(self.ball) == TYPE_DICTIONARY: self.ball["shrink_beam_debuff_timer"] = sb_debuff_timer
+            elif typeof(self.ball) == TYPE_OBJECT: self.ball.set("shrink_beam_debuff_timer", sb_debuff_timer)
 
     var stutter_timer = 0.0
     if "stutter_timer" in self.ball:

@@ -192,3 +192,38 @@ def test_laser_sight_attachment():
     assert getattr(ball, "laser_sight_timer", 0.0) <= 0.0
     assert getattr(ball, "laser_sight_applied", True) is False
     assert getattr(ball, "attack_range", 0.0) == 150.0
+
+def test_shrink_beam_attachment():
+    from ai.action import Action
+    world = MockWorld()
+    b1 = MockBall(1, 100, 100, 1)
+    b1.shrink_beam_attachment_timer = 15.0
+    b2 = MockBall(2, 120, 100, 2)
+    b2.radius = 10.0
+    b2.speed = 100.0
+    world.balls = [b1, b2]
+
+    action = Action(b1, world)
+
+    # 1. Attacker attacks target
+    action._attempt_damage(b1, b2)
+
+    # Verify debuff timer is applied
+    assert getattr(b2, "shrink_beam_debuff_timer", 0.0) == 5.0
+
+    # 2. Tick target to apply debuff
+    action2 = Action(b2, world)
+    action2.execute("idle", 0.1)
+
+    # Verify stats are reduced by 30% (so multiplied by 0.7)
+    assert b2.is_shrink_beam_shrunk == True
+    assert getattr(b2, "radius") == 7.0
+    assert getattr(b2, "speed") == 70.0
+
+    # 3. Fast forward time to when debuff expires
+    action2.execute("idle", 5.0)
+
+    # Verify stats return to normal
+    assert b2.is_shrink_beam_shrunk == False
+    assert getattr(b2, "radius") == 10.0
+    assert getattr(b2, "speed") == 100.0
