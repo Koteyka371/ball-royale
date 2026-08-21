@@ -6617,6 +6617,81 @@ func execute(strategy: String, delta: float):
                             e["freeze_timer"] = float(e.get("freeze_timer", 0.0)) + delta
 
 
+    # Bone splinters logic (reflect negated damage)
+    var bone_splinters = 0.0
+    if typeof(self.ball) == TYPE_OBJECT:
+        if "bone_splinters_damage" in self.ball: bone_splinters = self.ball.bone_splinters_damage
+        elif self.ball.has_method("has_meta") and self.ball.has_meta("bone_splinters_damage"): bone_splinters = self.ball.get_meta("bone_splinters_damage")
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("bone_splinters_damage"):
+        bone_splinters = self.ball["bone_splinters_damage"]
+
+    if bone_splinters > 0.0:
+        var splinter_radius = 150.0
+        if typeof(world) == TYPE_OBJECT and "balls" in world:
+            var my_team = ""
+            if typeof(self.ball) == TYPE_OBJECT:
+                if "team" in self.ball: my_team = self.ball.team
+                elif "ball_type" in self.ball: my_team = self.ball.ball_type
+            elif typeof(self.ball) == TYPE_DICTIONARY:
+                if self.ball.has("team"): my_team = self.ball.team
+                elif self.ball.has("ball_type"): my_team = self.ball.ball_type
+
+            for e in world.balls:
+                if e != self.ball:
+                    var e_alive = true
+                    if typeof(e) == TYPE_OBJECT and "alive" in e: e_alive = e.alive
+                    elif typeof(e) == TYPE_DICTIONARY and e.has("alive"): e_alive = e.alive
+                    if not e_alive: continue
+
+                    var e_team = ""
+                    if typeof(e) == TYPE_OBJECT:
+                        if "team" in e: e_team = e.team
+                        elif "ball_type" in e: e_team = e.ball_type
+                    elif typeof(e) == TYPE_DICTIONARY:
+                        if e.has("team"): e_team = e.team
+                        elif e.has("ball_type"): e_team = e.ball_type
+
+                    if e_team != my_team:
+                        var ex = 0.0
+                        var ey = 0.0
+                        if typeof(e) == TYPE_OBJECT:
+                            ex = e.x if "x" in e else 0.0
+                            ey = e.y if "y" in e else 0.0
+                        elif typeof(e) == TYPE_DICTIONARY:
+                            ex = e.x if e.has("x") else 0.0
+                            ey = e.y if e.has("y") else 0.0
+
+                        var bx = 0.0
+                        var by = 0.0
+                        if typeof(self.ball) == TYPE_OBJECT:
+                            bx = self.ball.x if "x" in self.ball else 0.0
+                            by = self.ball.y if "y" in self.ball else 0.0
+                        elif typeof(self.ball) == TYPE_DICTIONARY:
+                            bx = self.ball.x if self.ball.has("x") else 0.0
+                            by = self.ball.y if self.ball.has("y") else 0.0
+
+                        var dx = ex - bx
+                        var dy = ey - by
+                        if dx*dx + dy*dy <= splinter_radius * splinter_radius:
+                            if typeof(e) == TYPE_OBJECT and e.has_method("take_damage"):
+                                e.take_damage(bone_splinters)
+                            elif typeof(e) == TYPE_OBJECT and "hp" in e:
+                                e.hp -= bone_splinters
+                                if e.hp <= 0:
+                                    e.hp = 0
+                                    e.alive = false
+                            elif typeof(e) == TYPE_DICTIONARY and e.has("hp"):
+                                e.hp -= bone_splinters
+                                if e.hp <= 0:
+                                    e.hp = 0
+                                    e.alive = false
+
+        if typeof(self.ball) == TYPE_OBJECT:
+            if "bone_splinters_damage" in self.ball: self.ball.bone_splinters_damage = 0.0
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("bone_splinters_damage", 0.0)
+        elif typeof(self.ball) == TYPE_DICTIONARY:
+            self.ball["bone_splinters_damage"] = 0.0
+
     # Necromancer aura logic
     var b_type_aura = ""
     if typeof(self.ball) == TYPE_OBJECT and "ball_type" in self.ball:

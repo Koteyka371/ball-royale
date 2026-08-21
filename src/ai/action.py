@@ -3204,6 +3204,23 @@ class Action:
                     elif equipped_aura == "ice":
                         e.freeze_timer = getattr(e, "freeze_timer", 0.0) + delta
 
+        # Bone splinters logic (reflect negated damage)
+        bone_splinters = getattr(self.ball, 'bone_splinters_damage', 0.0)
+        if bone_splinters > 0.0:
+            splinter_radius = 150.0
+            enemies_in_range = [e for e in getattr(self.world, "balls", []) if e != self.ball and getattr(e, "alive", True) and getattr(e, "team", getattr(e, "ball_type", "")) != getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))]
+            for e in enemies_in_range:
+                dist_sq = (self.ball.x - getattr(e, "x", 0.0))**2 + (self.ball.y - getattr(e, "y", 0.0))**2
+                if dist_sq <= splinter_radius**2:
+                    if hasattr(e, "take_damage"):
+                        e.take_damage(bone_splinters)
+                    elif hasattr(e, "hp"):
+                        e.hp -= bone_splinters
+                        if e.hp <= 0:
+                            e.hp = 0
+                            e.alive = False
+            self.ball.bone_splinters_damage = 0.0
+
         # Necromancer aura logic
         if getattr(self.ball, 'ball_type', getattr(self.ball.__class__, 'BALL_TYPE', '')).lower() == 'necromancer':
             necro_aura_radius = 150.0
