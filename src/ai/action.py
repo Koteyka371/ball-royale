@@ -3366,7 +3366,13 @@ class Action:
                 if self.ball.bounty_target_timer <= 0:
                     self.ball.is_bounty_target = False
 
+
+        if getattr(self.ball, "frozen_timer", 0.0) > 0.0:
+            self.ball.frozen_timer -= delta
+            return  # Skip movement if frozen
+
         if getattr(self.ball, "is_stunned", False):
+
             if getattr(self.ball, "wall_stick_timer", 0.0) > 0.0:
                 return
 

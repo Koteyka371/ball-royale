@@ -27782,6 +27782,17 @@ func execute(strategy: String, delta: float):
             if cur <= 0:
                 self.ball.set_meta("is_emped", false)
 
+
+    var fz_timer = 0.0
+    if "frozen_timer" in self.ball: fz_timer = float(self.ball.frozen_timer)
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("frozen_timer"): fz_timer = float(self.ball.get_meta("frozen_timer"))
+
+    if fz_timer > 0.0:
+        fz_timer -= delta
+        if "frozen_timer" in self.ball: self.ball.frozen_timer = fz_timer
+        elif self.ball.has_method("set_meta"): self.ball.set_meta("frozen_timer", fz_timer)
+        return
+
     var is_stunned = false
     if "is_stunned" in self.ball:
         is_stunned = self.ball.is_stunned
