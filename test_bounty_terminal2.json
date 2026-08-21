@@ -29,17 +29,17 @@
     "scratchcards": 0,
     "active_bounties": {
         "player_A": {
-            "reward": 30,
+            "reward": 35,
             "placer": "local_player",
             "currency": "prestige_tokens"
         },
         "player_B": {
-            "reward": 3000,
+            "reward": 3500,
             "placer": "enemy_X",
             "currency": "skill_points"
         },
         "player_C": {
-            "reward": 60,
+            "reward": 70,
             "placer": "enemy_Y",
             "currency": "prestige_tokens"
         }

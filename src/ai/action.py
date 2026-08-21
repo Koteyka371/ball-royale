@@ -270,6 +270,29 @@ class Action:
         else:
             has_original_damage = hasattr(attacker, "damage")
 
+        # Snowball mini-event
+        if getattr(self.world, "arena", None) and getattr(self.world.arena, "seasonal_modifier", "") == "winter":
+            import random
+            if getattr(self.world, "snowball_event_active", False) or random.random() < 0.1:
+                # low damage, apply stacking slow effect
+                original_damage *= 0.2
+                # We do NOT overwrite attacker.damage permanently, we only reduce the local damage instance variable
+
+                if isinstance(target, dict):
+                    target["slow_timer"] = max(target.get("slow_timer", 0.0), 3.0)
+                    target["snowball_stacks"] = target.get("snowball_stacks", 0) + 1
+                    if target["snowball_stacks"] >= 5:
+                        target["frozen_timer"] = max(target.get("frozen_timer", 0.0), 3.0)
+                        target["snowball_stacks"] = 0
+                        target["slow_timer"] = 0.0
+                else:
+                    target.slow_timer = max(getattr(target, "slow_timer", 0.0), 3.0)
+                    target.snowball_stacks = getattr(target, "snowball_stacks", 0) + 1
+                    if target.snowball_stacks >= 5:
+                        target.frozen_timer = max(getattr(target, "frozen_timer", 0.0), 3.0)
+                        target.snowball_stacks = 0
+                        target.slow_timer = 0.0
+
         if getattr(self.world, "game_mode", None) and getattr(self.world.game_mode, "kind", "") == "color_swap_team":
             a_color = getattr(attacker, "current_color", "none")
             t_color = getattr(target, "current_color", "none")
