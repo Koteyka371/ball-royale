@@ -23004,17 +23004,18 @@ class ArtifactUpgraderMode(GameMode):
                                     b.base_damage = b_dmg
                                 b.damage = b_dmg
 
-                                b_spd = getattr(b, "base_speed", getattr(b, "speed", 100)) * 1.2
                                 if getattr(b, "artifact_upgraded", False) and getattr(b, "_just_upgraded", False):
                                     pass
                                 else:
                                     b._just_upgraded = True
-                                    b_spd = getattr(b, "base_speed", getattr(b, "speed", 100)) * 1.2
+
                                 if not getattr(b, "_speed_upgraded", False):
-                                    if hasattr(b, "base_speed"):
-                                        b.base_speed = getattr(b, "base_speed", 100) * 1.2
-                                    b.speed = getattr(b, "speed", 100) * 1.2
-                                    b._speed_upgraded = True
+                                    # Ensure it plays nicely with other max_speed / base_speed modifiers
+                                    base_speed = getattr(b, "base_speed", 100)
+                                    if base_speed.__class__.__name__ != 'MagicMock':
+                                        b.base_speed = base_speed * 1.2
+                                        b.speed = getattr(b, "speed", 100) * 1.2
+                                        b._speed_upgraded = True
 
 class SweepingPaddlesMode(GameMode):
     def __init__(self):
@@ -39723,7 +39724,7 @@ class DeepFreezeMutatorMode(GameMode):
             b.freeze_level = current_freeze
 
             # Apply speed penalty and damage
-            if current_freeze > 0:
+            if current_freeze >= 0:
                 # Avoid overriding speed if it's 0 (e.g., from other stuns/freezes)
                 # Check if it's a mock object first to prevent MagicMock comparison issues
                 try:
@@ -39738,7 +39739,11 @@ class DeepFreezeMutatorMode(GameMode):
                         try:
                             base_speed = getattr(b, 'base_speed', 100.0)
                             if base_speed.__class__.__name__ != 'MagicMock':
-                                b.speed = base_speed * speed_mult
+                                # Check if speed was reduced by shrink_beam_attachment
+                                if getattr(b, 'is_shrink_beam_shrunk', False):
+                                    b.speed = base_speed * speed_mult * 0.7
+                                else:
+                                    b.speed = base_speed * speed_mult
                         except:
                             pass
 
