@@ -31,6 +31,12 @@ def test_deep_freeze_mutator():
             self.speed = 100.0
             self.base_speed = 100.0
             self.hp = 100.0
+            self.freeze_level = 0.0
+
+        def take_damage(self, amount):
+            self.hp -= amount
+            if self.hp <= 0:
+                self.alive = False
 
     world = MockWorld()
     balls = [MockBall(200, 200)]

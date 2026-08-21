@@ -98,6 +98,8 @@ class Necromancer:
             reduction = min(10.0, amount)
             amount -= reduction
             self.bone_armor_stacks -= 1
+            # Reflect negated damage as bone splinters
+            self.bone_splinters_damage = getattr(self, 'bone_splinters_damage', 0.0) + reduction
 
         if amount > 0 and self.hp - amount <= 0:
             # Fatal damage, check for minions
