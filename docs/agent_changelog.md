@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1982] Corrupted Currency Pickups — *2026-08-21 12:55:17 UTC*
+
+A variant of the standard currency pickup that gives 3x the normal value but heavily increases the ball's vulnerability to all sources of damage for 5 seconds.
+
+---
+
 ## [idea-2039] Chaining Limit Upgrade — *2026-08-21 05:23:42 UTC*
 
 An upgrade item that allows the grapple hook to chain more than once. When collected, the hook can chain to up to 3 targets before breaking.
