@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2039] Chaining Limit Upgrade — *2026-08-21 05:23:42 UTC*
+
+An upgrade item that allows the grapple hook to chain more than once. When collected, the hook can chain to up to 3 targets before breaking.
+
+---
+
 ## [idea-2036] Snowball Fight Mini-Event — *2026-08-21 05:00:37 UTC*
 
 Occasionally in winter maps, a mini-event triggers where normal attacks are replaced with snowballs. Snowballs deal low damage but apply a stacking slow effect. If a player reaches max stacks, they are temporarily frozen in a block of ice.
