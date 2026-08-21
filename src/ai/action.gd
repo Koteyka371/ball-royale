@@ -442,6 +442,60 @@ func _attempt_damage_internal(attacker, target) -> void:
 		elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("set_meta"):
 			attacker.set_meta("damage", new_dmg)
 
+	var w_arena = world.get("arena") if typeof(world) == TYPE_OBJECT else world["arena"] if typeof(world) == TYPE_DICTIONARY and world.has("arena") else null
+	var is_winter = false
+	if w_arena != null:
+		if typeof(w_arena) == TYPE_OBJECT and w_arena.has_method("get_meta") and w_arena.get_meta("seasonal_modifier") == "winter":
+			is_winter = true
+		elif typeof(w_arena) == TYPE_DICTIONARY and w_arena.has("seasonal_modifier") and w_arena["seasonal_modifier"] == "winter":
+			is_winter = true
+		elif "seasonal_modifier" in w_arena and w_arena.seasonal_modifier == "winter":
+			is_winter = true
+
+	if is_winter:
+		var s_event = world.get("snowball_event_active") if typeof(world) == TYPE_OBJECT else world["snowball_event_active"] if typeof(world) == TYPE_DICTIONARY and world.has("snowball_event_active") else false
+		if s_event or randf() < 0.1:
+			original_damage_pre *= 0.2
+			# We do NOT overwrite attacker.damage permanently
+
+			if typeof(target) == TYPE_DICTIONARY:
+				target["slow_timer"] = max(target.get("slow_timer", 0.0), 3.0)
+				target["snowball_stacks"] = target.get("snowball_stacks", 0) + 1
+				if target["snowball_stacks"] >= 5:
+					target["frozen_timer"] = max(target.get("frozen_timer", 0.0), 3.0)
+					target["snowball_stacks"] = 0
+					target["slow_timer"] = 0.0
+			else:
+				var cur_slow = target.slow_timer if "slow_timer" in target else target.get_meta("slow_timer") if typeof(target) == TYPE_OBJECT and target.has_method("get_meta") and target.has_meta("slow_timer") else 0.0
+				if "slow_timer" in target:
+					target.slow_timer = max(cur_slow, 3.0)
+				elif typeof(target) == TYPE_OBJECT and target.has_method("set_meta"):
+					target.set_meta("slow_timer", max(cur_slow, 3.0))
+
+				var cur_st = target.snowball_stacks if "snowball_stacks" in target else target.get_meta("snowball_stacks") if typeof(target) == TYPE_OBJECT and target.has_method("get_meta") and target.has_meta("snowball_stacks") else 0
+				if "snowball_stacks" in target:
+					target.snowball_stacks = cur_st + 1
+				elif typeof(target) == TYPE_OBJECT and target.has_method("set_meta"):
+					target.set_meta("snowball_stacks", cur_st + 1)
+
+				var next_st = cur_st + 1
+				if next_st >= 5:
+					var f_timer = target.frozen_timer if "frozen_timer" in target else target.get_meta("frozen_timer") if typeof(target) == TYPE_OBJECT and target.has_method("get_meta") and target.has_meta("frozen_timer") else 0.0
+					if "frozen_timer" in target:
+						target.frozen_timer = max(f_timer, 3.0)
+					elif typeof(target) == TYPE_OBJECT and target.has_method("set_meta"):
+						target.set_meta("frozen_timer", max(f_timer, 3.0))
+
+					if "snowball_stacks" in target:
+						target.snowball_stacks = 0
+					elif typeof(target) == TYPE_OBJECT and target.has_method("set_meta"):
+						target.set_meta("snowball_stacks", 0)
+
+					if "slow_timer" in target:
+						target.slow_timer = 0.0
+					elif typeof(target) == TYPE_OBJECT and target.has_method("set_meta"):
+						target.set_meta("slow_timer", 0.0)
+
 	var mode_kind = ""
 	if "game_mode" in world and world.game_mode != null and "kind" in world.game_mode:
 		mode_kind = world.game_mode.kind
