@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2049] Temporal Anchor Booster — *2026-08-21 13:04:19 UTC*
+
+A booster that records the player's current HP and position. After 5 seconds, the player is instantly reverted to the recorded HP and position, allowing for risky plays or immediate escape from bad engagements.
+
+---
+
 ## [idea-1982] Corrupted Currency Pickups — *2026-08-21 12:55:17 UTC*
 
 A variant of the standard currency pickup that gives 3x the normal value but heavily increases the ball's vulnerability to all sources of damage for 5 seconds.
