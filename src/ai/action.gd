@@ -44942,85 +44942,108 @@ func _use_skill():
 
                     # CHAINING LOGIC
                     var chain_dist = 250.0
-                    var secondary_target = null
-                    var secondary_target_type = ""
-                    var secondary_dist_sq = 999999.0
+                    var max_chains = 1
+                    var ball_inventory = []
+                    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("inventory"):
+                        ball_inventory = self.ball.inventory
+                    elif typeof(self.ball) != TYPE_DICTIONARY and "inventory" in self.ball:
+                        ball_inventory = self.ball.inventory
 
-                    if "balls" in self.world:
-                        for b in self.world.balls:
-                            if b != self.ball and b != closest_target:
-                                var is_alive = true
-                                if "alive" in b: is_alive = b.alive
-                                elif b.has_method("has_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
-                                if is_alive:
-                                    var d_sq = (b.x - closest_target_old_x) * (b.x - closest_target_old_x) + (b.y - closest_target_old_y) * (b.y - closest_target_old_y)
+                    if "grapple_chain_item" in ball_inventory:
+                        max_chains = 3
+
+                    var current_chain_target = closest_target
+                    var current_old_x = closest_target_old_x
+                    var current_old_y = closest_target_old_y
+                    var chained_targets = [closest_target]
+
+                    for chain_i in range(max_chains):
+                        var secondary_target = null
+                        var secondary_target_type = ""
+                        var secondary_dist_sq = 999999.0
+
+                        if "balls" in self.world:
+                            for b in self.world.balls:
+                                if b != self.ball and not (b in chained_targets):
+                                    var is_alive = true
+                                    if "alive" in b: is_alive = b.alive
+                                    elif b.has_method("has_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
+                                    if is_alive:
+                                        var d_sq = (b.x - current_old_x) * (b.x - current_old_x) + (b.y - current_old_y) * (b.y - current_old_y)
+                                        if d_sq < (chain_dist * chain_dist) and d_sq < secondary_dist_sq:
+                                            secondary_target = b
+                                            secondary_target_type = "ball"
+                                            secondary_dist_sq = d_sq
+
+                        if "items" in self.world:
+                            for i_item in self.world.items:
+                                if not (i_item in chained_targets):
+                                    var d_sq = (i_item.x - current_old_x) * (i_item.x - current_old_x) + (i_item.y - current_old_y) * (i_item.y - current_old_y)
                                     if d_sq < (chain_dist * chain_dist) and d_sq < secondary_dist_sq:
-                                        secondary_target = b
-                                        secondary_target_type = "ball"
+                                        secondary_target = i_item
+                                        secondary_target_type = "item"
                                         secondary_dist_sq = d_sq
 
-                    if "items" in self.world:
-                        for i_item in self.world.items:
-                            if i_item != closest_target:
-                                var d_sq = (i_item.x - closest_target_old_x) * (i_item.x - closest_target_old_x) + (i_item.y - closest_target_old_y) * (i_item.y - closest_target_old_y)
-                                if d_sq < (chain_dist * chain_dist) and d_sq < secondary_dist_sq:
-                                    secondary_target = i_item
-                                    secondary_target_type = "item"
-                                    secondary_dist_sq = d_sq
+                        if "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+                            for h in self.world.arena.hazards:
+                                if not (h in chained_targets):
+                                    var is_disabled_sf = false
+                                    if typeof(h) == TYPE_DICTIONARY:
+                                        is_disabled_sf = h.get("is_disabled_by_flare", false)
+                                    elif typeof(h) == TYPE_OBJECT:
+                                        if h.has_method("get_meta") and h.has_meta("is_disabled_by_flare"):
+                                            is_disabled_sf = h.get_meta("is_disabled_by_flare")
+                                        elif "is_disabled_by_flare" in h:
+                                            is_disabled_sf = h.is_disabled_by_flare
+                                    if is_disabled_sf:
+                                        continue
+                                    var d_sq = (h.x - current_old_x) * (h.x - current_old_x) + (h.y - current_old_y) * (h.y - current_old_y)
+                                    if d_sq < (chain_dist * chain_dist) and d_sq < secondary_dist_sq:
+                                        secondary_target = h
+                                        secondary_target_type = "hazard"
+                                        secondary_dist_sq = d_sq
 
-                    if "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
-                        for h in self.world.arena.hazards:
-                            if h != closest_target:
-                                var is_disabled_sf = false
-                                if typeof(h) == TYPE_DICTIONARY:
-                                    is_disabled_sf = h.get("is_disabled_by_flare", false)
-                                elif typeof(h) == TYPE_OBJECT:
-                                    if h.has_method("get_meta") and h.has_meta("is_disabled_by_flare"):
-                                        is_disabled_sf = h.get_meta("is_disabled_by_flare")
-                                    elif "is_disabled_by_flare" in h:
-                                        is_disabled_sf = h.is_disabled_by_flare
-                                if is_disabled_sf:
-                                    continue
-                                var d_sq = (h.x - closest_target_old_x) * (h.x - closest_target_old_x) + (h.y - closest_target_old_y) * (h.y - closest_target_old_y)
-                                if d_sq < (chain_dist * chain_dist) and d_sq < secondary_dist_sq:
-                                    secondary_target = h
-                                    secondary_target_type = "hazard"
-                                    secondary_dist_sq = d_sq
+                        if secondary_target != null:
+                            var sec_dist = sqrt(secondary_dist_sq)
+                            if sec_dist > 0.0001:
+                                var sec_dx = secondary_target.x - current_old_x
+                                var sec_dy = secondary_target.y - current_old_y
 
-                    if secondary_target != null:
-                        var sec_dist = sqrt(secondary_dist_sq)
-                        if sec_dist > 0.0001:
-                            var sec_dx = secondary_target.x - closest_target_old_x
-                            var sec_dy = secondary_target.y - closest_target_old_y
+                                if secondary_target_type == "ball":
+                                    var sec_team = -1
+                                    if typeof(secondary_target) == TYPE_DICTIONARY and secondary_target.has("team"):
+                                        sec_team = secondary_target["team"]
+                                    elif typeof(secondary_target) != TYPE_DICTIONARY and "team" in secondary_target:
+                                        sec_team = secondary_target.team
+                                    elif secondary_target.has_method("has_meta") and secondary_target.has_meta("team"):
+                                        sec_team = secondary_target.get_meta("team")
 
-                            if secondary_target_type == "ball":
-                                var sec_team = -1
-                                if typeof(secondary_target) == TYPE_DICTIONARY and secondary_target.has("team"):
-                                    sec_team = secondary_target["team"]
-                                elif typeof(secondary_target) != TYPE_DICTIONARY and "team" in secondary_target:
-                                    sec_team = secondary_target.team
-                                elif secondary_target.has_method("has_meta") and secondary_target.has_meta("team"):
-                                    sec_team = secondary_target.get_meta("team")
+                                    var my_team = -2
+                                    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"):
+                                        my_team = self.ball["team"]
+                                    elif typeof(self.ball) != TYPE_DICTIONARY and "team" in self.ball:
+                                        my_team = self.ball.team
+                                    elif self.ball.has_method("has_meta") and self.ball.has_meta("team"):
+                                        my_team = self.ball.get_meta("team")
 
-                                var my_team = -2
-                                if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"):
-                                    my_team = self.ball["team"]
-                                elif typeof(self.ball) != TYPE_DICTIONARY and "team" in self.ball:
-                                    my_team = self.ball.team
-                                elif self.ball.has_method("has_meta") and self.ball.has_meta("team"):
-                                    my_team = self.ball.get_meta("team")
-
-                                if sec_team != my_team:
-                                    secondary_target.x -= (sec_dx / sec_dist) * pull_dist
-                                    secondary_target.y -= (sec_dy / sec_dist) * pull_dist
+                                    if sec_team != my_team:
+                                        secondary_target.x -= (sec_dx / sec_dist) * pull_dist
+                                        secondary_target.y -= (sec_dy / sec_dist) * pull_dist
+                                    else:
+                                        secondary_target.x -= (sec_dx / sec_dist) * pull_dist
+                                        secondary_target.y -= (sec_dy / sec_dist) * pull_dist
+                                elif secondary_target_type == "hazard":
+                                    pass # Don't pull hazards
                                 else:
                                     secondary_target.x -= (sec_dx / sec_dist) * pull_dist
                                     secondary_target.y -= (sec_dy / sec_dist) * pull_dist
-                            elif secondary_target_type == "hazard":
-                                pass # Don't pull hazards
-                            else:
-                                secondary_target.x -= (sec_dx / sec_dist) * pull_dist
-                                secondary_target.y -= (sec_dy / sec_dist) * pull_dist
+
+                            chained_targets.append(secondary_target)
+                            current_chain_target = secondary_target
+                            current_old_x = current_old_x + sec_dx
+                            current_old_y = current_old_y + sec_dy
+                        else:
+                            break
 
                     var is_node = false
                     var is_slingshot = false
@@ -47781,7 +47804,7 @@ func _use_skill():
                     elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
                     elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
 
-                    if not kind in ["event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "breaching_booster", "gravity_multiplier_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_relic", "cursed_booster", "exploding_booster", "debuff_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "survival_rewind_booster", "snapback_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "anchor_repulsor_booster", "gravity_well_booster", "overclock_booster", "chronosphere_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "insulator_booster", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "forecast_booster", "pet_item", "miniature_black_hole_item", "wind_tunnel", "cryogenic_booster", "eclipse_booster_item", "eclipse_booster"]:
+                    if not kind in ["event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "breaching_booster", "gravity_multiplier_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_relic", "cursed_booster", "exploding_booster", "debuff_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "survival_rewind_booster", "snapback_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "anchor_repulsor_booster", "gravity_well_booster", "overclock_booster", "chronosphere_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "grapple_chain_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "insulator_booster", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "forecast_booster", "pet_item", "miniature_black_hole_item", "wind_tunnel", "cryogenic_booster", "eclipse_booster_item", "eclipse_booster"]:
 
                         var hx = 0.0
                         var hy = 0.0
@@ -52939,7 +52962,7 @@ func _update_skill_timer(delta: float):
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
-                var pullable = ["deployable_proximity_mud_puddle", "overload_zone_item", "deployable_stasis_bubble", "deployable_reversal_trap", "deployable_pull_trap", "deployable_freeze_trap", "deployable_shrapnel_trap", "deployable_decoy_swap_item", "event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "vision_reduction_trap", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "entanglement_booster", "weather_booster", "portal_gun_item", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "survival_rewind_booster", "snapback_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "anchor_repulsor_booster", "gravity_well_booster", "overclock_booster", "chronosphere_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "pet_item", "wind_tunnel", "cryogenic_booster", "eclipse_booster_item", "eclipse_booster"]
+                var pullable = ["deployable_proximity_mud_puddle", "overload_zone_item", "deployable_stasis_bubble", "deployable_reversal_trap", "deployable_pull_trap", "deployable_freeze_trap", "deployable_shrapnel_trap", "deployable_decoy_swap_item", "event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "vision_reduction_trap", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "entanglement_booster", "weather_booster", "portal_gun_item", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "survival_rewind_booster", "snapback_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "anchor_repulsor_booster", "gravity_well_booster", "overclock_booster", "chronosphere_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "grapple_chain_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "pet_item", "wind_tunnel", "cryogenic_booster", "eclipse_booster_item", "eclipse_booster"]
                 if h_rad < 30.0 or pullable.has(h_kind):
                     var dx = self.ball.x - hazard.x
                     var dy = self.ball.y - hazard.y
