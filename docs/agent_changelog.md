@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1981] Shrink Ray Weapon — *2026-08-21 17:42:01 UTC*
+
+An equippable weapon that shoots a beam, reducing the target's radius and max speed by 30% for 5 seconds.
+
+---
+
 ## [idea-1974] Necromancer Bone Armor Reflects Damage — *2026-08-21 14:21:32 UTC*
 
 Necromancer's Bone Armor stacks, instead of just reducing flat damage, now reflect a portion of the negated damage back to the attacker as bone splinters, making them dangerous to hit.
