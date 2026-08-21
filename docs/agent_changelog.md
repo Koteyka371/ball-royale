@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1974] Necromancer Bone Armor Reflects Damage — *2026-08-21 14:21:32 UTC*
+
+Necromancer's Bone Armor stacks, instead of just reducing flat damage, now reflect a portion of the negated damage back to the attacker as bone splinters, making them dangerous to hit.
+
+---
+
 ## [idea-2049] Temporal Anchor Booster — *2026-08-21 13:04:19 UTC*
 
 A booster that records the player's current HP and position. After 5 seconds, the player is instantly reverted to the recorded HP and position, allowing for risky plays or immediate escape from bad engagements.
