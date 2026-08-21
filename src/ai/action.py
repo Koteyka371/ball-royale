@@ -663,6 +663,9 @@ class Action:
         if getattr(target, "freeze_trap_vulnerability_timer", 0.0) > 0.0:
             multiplier *= 1.25
 
+        if getattr(target, "cursed_currency_vulnerability_timer", 0.0) > 0.0:
+            multiplier *= 3.0
+
         # Check if blocked by energy barrier for ranged attacks
         import math
         a_x = getattr(attacker, 'x', 0.0)
@@ -28523,6 +28526,9 @@ class Action:
         cooldown_mult = 1.0
         if getattr(self.ball, "freeze_trap_vulnerability_timer", 0.0) > 0.0:
             self.ball.freeze_trap_vulnerability_timer -= delta
+
+        if getattr(self.ball, "cursed_currency_vulnerability_timer", 0.0) > 0.0:
+            self.ball.cursed_currency_vulnerability_timer -= delta
         if getattr(self.ball, "cooldown_freeze_timer", 0.0) > 0.0:
             self.ball.cooldown_freeze_timer -= delta
             cooldown_mult = 0.0
