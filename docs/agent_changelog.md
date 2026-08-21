@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2036] Snowball Fight Mini-Event — *2026-08-21 05:00:37 UTC*
+
+Occasionally in winter maps, a mini-event triggers where normal attacks are replaced with snowballs. Snowballs deal low damage but apply a stacking slow effect. If a player reaches max stacks, they are temporarily frozen in a block of ice.
+
+---
+
 ## [idea-2042] Payload Booster Drops in Escort Mode — *2026-08-20 21:48:51 UTC*
 
 When the payload in Escort Mode reaches certain checkpoints, it spawns special Booster items that provide temporary buffs to nearby defenders, incentivizing them to stay close and guard the payload.
