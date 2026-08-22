@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2059] Enraged Minion Speed Boost — *2026-08-22 18:37:38 UTC*
+
+When minions become enraged (e.g., when the Necromancer dies), they should gain a significant temporary movement speed boost to close the gap before their rapid decay kills them, making their death explosion more of a threat.
+
+---
+
 ## [idea-2038] Avalanche Environmental Hazard — *2026-08-22 18:18:16 UTC*
 
 During Blizzard mode or in snow biomes, periodic avalanches can occur from the edges of the arena, sweeping across parts of the map. Players caught in the avalanche take damage and are forcefully pushed, potentially into other hazards or out of bounds.
