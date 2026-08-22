@@ -11050,11 +11050,18 @@ class Action:
 
 
                     elif hazard.kind == "avalanche":
-                        dx = hazard.x - self.ball.x
-                        dy = hazard.y - self.ball.y
+                        dx = self.ball.x - hazard.x
+                        dy = self.ball.y - hazard.y
                         dist_sq = dx * dx + dy * dy
                         if dist_sq < hazard.radius * hazard.radius:
                             self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.25
+                            self.ball.take_damage(50.0 * self.delta, "avalanche")
+                            # Force push away from avalanche center/direction
+                            push_force = 400.0
+                            if dist_sq > 0:
+                                dist = dist_sq ** 0.5
+                                self.ball.x += (dx / dist) * push_force * self.delta
+                                self.ball.y += (dy / dist) * push_force * self.delta
                     elif hazard.kind == "lava":
                         self.ball.is_in_lava = True
                     elif hazard.kind == "lava_geyser":

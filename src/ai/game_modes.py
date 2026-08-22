@@ -21727,6 +21727,35 @@ class BlizzardMode(GameMode):
                         world.arena.is_foggy = False
 
             self.spawn_timer += delta
+
+            # Spawn avalanches randomly during blizzard
+            if hasattr(world, "arena") and random.random() < 0.005:  # 0.5% chance per tick to spawn an avalanche
+                try:
+                    from arena.procedural_arena import Hazard
+                except ImportError:
+                    class Hazard:
+                        def __init__(self, id, x, y, radius, kind, damage):
+                            self.id = id
+                            self.x = x
+                            self.y = y
+                            self.radius = radius
+                            self.kind = kind
+                            self.damage = damage
+                            self.active = True
+                            self.target_radius = 0.0
+
+                arena_width = getattr(world.arena, "width", 1000)
+                arena_height = getattr(world.arena, "height", 1000)
+
+                h_id = 26000 + len(world.arena.hazards) + random.randint(0, 10000)
+                # Spawns at the top, moves down
+                avalanche = Hazard(id=h_id, x=arena_width/2, y=-600.0, radius=600.0, kind="avalanche", damage=0.0)
+                setattr(avalanche, "duration", 15.0)
+                setattr(avalanche, "vy", 120.0)
+                if hasattr(world, "add_event"):
+                    world.add_event("avalanche_warning", {"type": "weather_warning", "message": "Avalanche approaching!"})
+                world.arena.hazards.append(avalanche)
+
             if self.spawn_timer >= 1.0:
                 self.spawn_timer = 0.0
                 try:
