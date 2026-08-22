@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2051] Enforcer Vengeance Bounty — *2026-08-22 16:04:48 UTC*
+
+If an Enforcer successfully kills an enemy of their Nemesis, they receive a temporary buff or a unique cosmetic aura indicating their loyalty and prowess, which scales up for each consecutive vengeance kill.
+
+---
+
 ## [idea-2057] Sabotage Bounties — *2026-08-22 15:38:13 UTC*
 
 In addition to normal bounties, players can place a 'Sabotage Bounty' on a high-performing player. This doesn't reward the killer with currency, but instantly debuffs the target's stats when placed, making them easier to take down for the entire lobby.
