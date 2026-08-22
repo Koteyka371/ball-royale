@@ -3035,6 +3035,18 @@ func _attempt_damage_internal(attacker, target) -> void:
 	elif "lifesteal_aura_timer" in attacker:
 		attacker_lifesteal_aura_timer = attacker.lifesteal_aura_timer
 
+	var v_timer = 0.0
+	if typeof(attacker) == TYPE_DICTIONARY and attacker.has("vampiric_frenzy_timer"): v_timer = float(attacker["vampiric_frenzy_timer"])
+	elif typeof(attacker) == TYPE_OBJECT and "vampiric_frenzy_timer" in attacker: v_timer = float(attacker.vampiric_frenzy_timer)
+	elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("get_meta") and attacker.has_meta("vampiric_frenzy_timer"): v_timer = float(attacker.get_meta("vampiric_frenzy_timer"))
+	if new_hp < old_hp and v_timer > 0.0:
+		var damage_dealt = old_hp - new_hp
+		var heal_amount = damage_dealt * 2.0
+		if typeof(attacker) == TYPE_DICTIONARY and attacker.has("hp") and attacker.has("max_hp"):
+			attacker["hp"] = min(float(attacker["max_hp"]), float(attacker["hp"]) + heal_amount)
+		elif typeof(attacker) == TYPE_OBJECT and "hp" in attacker and "max_hp" in attacker:
+			attacker.hp = min(float(attacker.max_hp), float(attacker.hp) + heal_amount)
+
 	if new_hp < old_hp and attacker_lifesteal_aura_timer > 0.0:
 		var damage_dealt = old_hp - new_hp
 		var heal_amount = damage_dealt * 0.5
@@ -38652,6 +38664,19 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "vampiric_frenzy_booster":
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("vampiric_frenzy_timer", 15.0)
+                else:
+                    self.ball.vampiric_frenzy_timer = 15.0
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "juggernaut_booster":
                 if self.ball.has_method("set_meta"):
                     self.ball.set_meta("juggernaut_booster_timer", 15.0)
@@ -48093,7 +48118,7 @@ func _use_skill():
                     elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
                     elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
 
-                    if not kind in ["event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "breaching_booster", "gravity_multiplier_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_relic", "cursed_booster", "exploding_booster", "debuff_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "recall_booster", "survival_rewind_booster", "snapback_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "anchor_repulsor_booster", "gravity_well_booster", "overclock_booster", "chronosphere_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "grapple_chain_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "insulator_booster", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "forecast_booster", "pet_item", "miniature_black_hole_item", "wind_tunnel", "cryogenic_booster", "eclipse_booster_item", "eclipse_booster", "echolocation_booster"]:
+                    if not kind in ["event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "breaching_booster", "gravity_multiplier_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_relic", "cursed_booster", "exploding_booster", "debuff_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "recall_booster", "survival_rewind_booster", "snapback_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "vampiric_frenzy_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "anchor_repulsor_booster", "gravity_well_booster", "overclock_booster", "chronosphere_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "grapple_chain_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "insulator_booster", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "forecast_booster", "pet_item", "miniature_black_hole_item", "wind_tunnel", "cryogenic_booster", "eclipse_booster_item", "eclipse_booster", "echolocation_booster"]:
 
                         var hx = 0.0
                         var hy = 0.0
@@ -53162,6 +53187,84 @@ func _update_skill_timer(delta: float):
         elif self.ball.has_method("set_meta"):
             self.ball.set_meta("pinball_projectile_timer", pinball_timer)
 
+    var vampiric_frenzy_timer = 0.0
+    if "vampiric_frenzy_timer" in self.ball:
+        vampiric_frenzy_timer = float(self.ball.vampiric_frenzy_timer)
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("vampiric_frenzy_timer"):
+        vampiric_frenzy_timer = float(self.ball.get_meta("vampiric_frenzy_timer"))
+
+    if vampiric_frenzy_timer > 0.0:
+        vampiric_frenzy_timer -= delta
+        var applied = false
+        if "vampiric_frenzy_applied" in self.ball: applied = self.ball.vampiric_frenzy_applied
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("vampiric_frenzy_applied"): applied = self.ball.get_meta("vampiric_frenzy_applied")
+
+        if not applied:
+            if self.ball.has_method("set_meta"): self.ball.set_meta("vampiric_frenzy_applied", true)
+            else: self.ball.vampiric_frenzy_applied = true
+
+            var b_spd = 2.0
+            if "speed" in self.ball: b_spd = float(self.ball.speed)
+            elif "base_speed" in self.ball: b_spd = float(self.ball.base_speed)
+            elif self.ball.has_method("get_meta") and self.ball.has_meta("base_speed"): b_spd = float(self.ball.get_meta("base_speed"))
+
+            var b_dmg = 10.0
+            if "damage" in self.ball: b_dmg = float(self.ball.damage)
+            elif "base_damage" in self.ball: b_dmg = float(self.ball.base_damage)
+            elif self.ball.has_method("get_meta") and self.ball.has_meta("base_damage"): b_dmg = float(self.ball.get_meta("base_damage"))
+
+            if self.ball.has_method("set_meta"):
+                self.ball.set_meta("base_vamp_speed", b_spd)
+                self.ball.set_meta("base_vamp_damage", b_dmg)
+            else:
+                self.ball.base_vamp_speed = b_spd
+                self.ball.base_vamp_damage = b_dmg
+
+            if "speed" in self.ball: self.ball.speed = b_spd * 3.0
+            if "damage" in self.ball: self.ball.damage = b_dmg * 3.0
+
+        var drain = 5.0 * delta
+        if "hp" in self.ball:
+            self.ball.hp -= drain
+            if self.ball.hp <= 0:
+                if "alive" in self.ball: self.ball.alive = false
+
+        if vampiric_frenzy_timer <= 0:
+            vampiric_frenzy_timer = 0.0
+            if "vampiric_frenzy_applied" in self.ball: self.ball.vampiric_frenzy_applied = false
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("vampiric_frenzy_applied", false)
+
+            var old_spd = 2.0
+            if "base_vamp_speed" in self.ball: old_spd = self.ball.base_vamp_speed
+            elif self.ball.has_method("get_meta") and self.ball.has_meta("base_vamp_speed"): old_spd = self.ball.get_meta("base_vamp_speed")
+            if "speed" in self.ball: self.ball.speed = old_spd
+
+            var old_dmg = 10.0
+            if "base_vamp_damage" in self.ball: old_dmg = self.ball.base_vamp_damage
+            elif self.ball.has_method("get_meta") and self.ball.has_meta("base_vamp_damage"): old_dmg = self.ball.get_meta("base_vamp_damage")
+            if "damage" in self.ball: self.ball.damage = old_dmg
+
+    else:
+        var applied = false
+        if "vampiric_frenzy_applied" in self.ball: applied = self.ball.vampiric_frenzy_applied
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("vampiric_frenzy_applied"): applied = self.ball.get_meta("vampiric_frenzy_applied")
+        if applied:
+            if self.ball.has_method("set_meta"): self.ball.set_meta("vampiric_frenzy_applied", false)
+            else: self.ball.vampiric_frenzy_applied = false
+
+            var old_spd = 2.0
+            if "base_vamp_speed" in self.ball: old_spd = self.ball.base_vamp_speed
+            elif self.ball.has_method("get_meta") and self.ball.has_meta("base_vamp_speed"): old_spd = self.ball.get_meta("base_vamp_speed")
+            if "speed" in self.ball: self.ball.speed = old_spd
+
+            var old_dmg = 10.0
+            if "base_vamp_damage" in self.ball: old_dmg = self.ball.base_vamp_damage
+            elif self.ball.has_method("get_meta") and self.ball.has_meta("base_vamp_damage"): old_dmg = self.ball.get_meta("base_vamp_damage")
+            if "damage" in self.ball: self.ball.damage = old_dmg
+
+    if "vampiric_frenzy_timer" in self.ball: self.ball.vampiric_frenzy_timer = vampiric_frenzy_timer
+    elif self.ball.has_method("set_meta"): self.ball.set_meta("vampiric_frenzy_timer", vampiric_frenzy_timer)
+
     var juggernaut_timer = 0.0
     if "juggernaut_booster_timer" in self.ball:
         juggernaut_timer = self.ball.juggernaut_booster_timer
@@ -53308,7 +53411,7 @@ func _update_skill_timer(delta: float):
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
-                var pullable = ["deployable_proximity_mud_puddle", "overload_zone_item", "deployable_stasis_bubble", "deployable_ice_wall", "ice_wall_shrapnel", "deployable_reversal_trap", "deployable_pull_trap", "deployable_freeze_trap", "deployable_shrapnel_trap", "deployable_decoy_swap_item", "event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "vision_reduction_trap", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "entanglement_booster", "weather_booster", "portal_gun_item", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "recall_booster", "survival_rewind_booster", "snapback_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "anchor_repulsor_booster", "gravity_well_booster", "overclock_booster", "chronosphere_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "grapple_chain_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "pet_item", "wind_tunnel", "cryogenic_booster", "eclipse_booster_item", "eclipse_booster", "echolocation_booster"]
+                var pullable = ["deployable_proximity_mud_puddle", "overload_zone_item", "deployable_stasis_bubble", "deployable_ice_wall", "ice_wall_shrapnel", "deployable_reversal_trap", "deployable_pull_trap", "deployable_freeze_trap", "deployable_shrapnel_trap", "deployable_decoy_swap_item", "event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "vision_reduction_trap", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "entanglement_booster", "weather_booster", "portal_gun_item", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "recall_booster", "survival_rewind_booster", "snapback_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "vampiric_frenzy_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "anchor_repulsor_booster", "gravity_well_booster", "overclock_booster", "chronosphere_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "grapple_chain_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "pet_item", "wind_tunnel", "cryogenic_booster", "eclipse_booster_item", "eclipse_booster", "echolocation_booster"]
                 if h_rad < 30.0 or pullable.has(h_kind):
                     var dx = self.ball.x - hazard.x
                     var dy = self.ball.y - hazard.y
