@@ -33245,6 +33245,41 @@ func _collect_booster(delta: float):
         return
     var boosters = _get_boosters()
     if boosters.size() > 0:
+
+        # Check for blood orb
+        for b in boosters:
+            var bk = ""
+            if typeof(b) == TYPE_DICTIONARY and b.has("kind"): bk = b.kind
+            elif typeof(b) == TYPE_OBJECT and "kind" in b: bk = b.kind
+
+            var b_active = true
+            if typeof(b) == TYPE_DICTIONARY and b.has("active"): b_active = b.active
+            elif typeof(b) == TYPE_OBJECT and "active" in b: b_active = b.active
+
+            if bk == "blood_orb" and b_active:
+                var heal_amount = 20.0
+                var current_hp = 100.0
+                var max_hp = 100.0
+
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    if self.ball.has("hp"): current_hp = self.ball.hp
+                    if self.ball.has("max_hp"): max_hp = self.ball.max_hp
+                    self.ball.hp = min(current_hp + heal_amount, max_hp)
+                elif typeof(self.ball) == TYPE_OBJECT:
+                    if "hp" in self.ball: current_hp = self.ball.hp
+                    if "max_hp" in self.ball: max_hp = self.ball.max_hp
+                    self.ball.hp = min(current_hp + heal_amount, max_hp)
+
+                if typeof(b) == TYPE_DICTIONARY:
+                    b.active = false
+                elif typeof(b) == TYPE_OBJECT:
+                    b.active = false
+
+                if "boosters" in self.world:
+                    var idx = self.world.boosters.find(b)
+                    if idx >= 0:
+                        self.world.boosters.remove(idx)
+
         # Check for phylactery_item
         var b_id = null
         if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): b_id = self.ball.id
