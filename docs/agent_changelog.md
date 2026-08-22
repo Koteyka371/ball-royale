@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2046] Freezing Edge Mode — *2026-08-22 18:02:42 UTC*
+
+Similar to Expanding Lava, but instead of the center expanding outward, the outer edges slowly freeze inward, slowing down players before fully trapping them in ice.
+
+---
+
 ## [idea-2043] Decoy Shield Generation — *2026-08-22 17:35:20 UTC*
 
 The Decoy payload in Escort Mode passively generates a small shield for nearby Defenders, making it partially useful even though it doesn't progress the game objective.
