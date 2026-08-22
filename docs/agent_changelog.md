@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2027] Nanite Repair Swarm — *2026-08-22 13:41:41 UTC*
+
+When below 30% HP, spawns a swarm of nanites that seeks out nearby debris or destroyed hazards, consuming them to regenerate the ball's health rapidly over a short duration.
+
+---
+
 ## [idea-2045] Shrinking Safe Plates Mode — *2026-08-22 11:06:48 UTC*
 
 An arena mode where the battle takes place on floating plates that slowly shrink and occasionally tilt, dropping inactive players into an abyss.
