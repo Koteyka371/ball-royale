@@ -57,13 +57,16 @@ class ReplaySystem:
         self.is_playing = False
 
     def get_next_frame(self) -> Optional[Dict[str, Any]]:
-        if not self.is_playing or self.current_frame_index >= len(self.frames):
+        if not self.is_playing or self.current_frame_index >= len(self.frames) or self.current_frame_index < 0:
             return None
 
         frame = self.frames[self.current_frame_index]
         # In a real game, logic to advance based on delta time and playback speed would be here.
-        # For simplicity, we just advance by 1 frame.
-        self.current_frame_index += 1
+        # For simplicity, we just advance by 1 frame based on the sign of playback_speed.
+        if self.playback_speed < 0:
+            self.current_frame_index -= 1
+        else:
+            self.current_frame_index += 1
         return frame
 
     def set_frame(self, index: int):

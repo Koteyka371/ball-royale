@@ -20,6 +20,22 @@ def test_recording():
     replay.stop_recording()
     assert not replay.is_recording
 
+def test_replay_rewind():
+    replay = ReplaySystem()
+    replay.start_recording()
+    for i in range(5):
+        replay.record_frame(i, [{"id": i}], [])
+    replay.stop_recording()
+
+    replay.start_playback(speed=-1.0)
+    replay.set_frame(4)
+
+    f1 = replay.get_next_frame()
+    assert f1 is not None and f1["tick"] == 4
+
+    f2 = replay.get_next_frame()
+    assert f2 is not None and f2["tick"] == 3
+
 def test_playback():
     replay = ReplaySystem()
     replay.start_recording()

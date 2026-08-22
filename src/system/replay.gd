@@ -62,11 +62,14 @@ func stop_playback() -> void:
     is_playing = false
 
 func get_next_frame():
-    if not is_playing or current_frame_index >= frames.size():
+    if not is_playing or current_frame_index >= frames.size() or current_frame_index < 0:
         return null
 
     var frame = frames[current_frame_index]
-    current_frame_index += 1
+    if playback_speed < 0:
+        current_frame_index -= 1
+    else:
+        current_frame_index += 1
     return frame
 
 func set_frame(index: int) -> void:

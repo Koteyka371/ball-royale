@@ -36,6 +36,9 @@ class MainMenu:
         self.weekend_votes = {opt: 0 for opt in self.weekend_options}
         self.active_weekend_event = None
 
+        self.active_replay = None
+        self.active_replay_id = None
+
     def open_weekend_vote(self):
         self.active_screen = "weekend_vote"
         return True
@@ -68,7 +71,11 @@ class MainMenu:
             player_id = args[0]
             replay = self.leaderboard_manager.get_top_player_replay(player_id)
             if replay:
-                # Mock opening replay
+                from system.replay import ReplaySystem
+                self.active_replay = ReplaySystem()
+                self.active_replay.from_dict(replay)
+                self.active_replay.start_playback()
+                self.active_replay_id = player_id
                 return f"watching {player_id}"
             return "not found"
         elif action == "download" and args:
@@ -78,8 +85,28 @@ class MainMenu:
                 # Mock download
                 return f"downloaded {player_id}"
             return "not found"
+        elif action == "fast_forward" and args:
+            if self.active_replay:
+                speed = float(args[0])
+                self.active_replay.playback_speed = abs(speed)
+                return True
+            return False
+        elif action == "rewind" and args:
+            if self.active_replay:
+                speed = float(args[0])
+                self.active_replay.playback_speed = -abs(speed)
+                return True
+            return False
+        elif action == "set_speed" and args:
+            if self.active_replay:
+                speed = float(args[0])
+                self.active_replay.playback_speed = speed
+                return True
+            return False
         elif action == "back":
             self.active_screen = "main"
+            self.active_replay = None
+            self.active_replay_id = None
             return True
         return False
 
