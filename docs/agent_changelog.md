@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2055] Tether Hook Traps — *2026-08-22 21:26:58 UTC*
+
+A new hazard that throws out multiple tether hooks to passing enemies. Ensnared enemies are pulled towards the center of the trap slowly.
+
+---
+
 ## [idea-2072] Stamina Potion — *2026-08-22 21:24:35 UTC*
 
 Instantly refills stamina to maximum.
