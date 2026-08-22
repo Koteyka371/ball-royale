@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2041] Vampiric Fog Mode — *2026-08-22 16:21:57 UTC*
+
+A new game mode where an arena-wide fog rolls in periodically. While in the fog, players slowly lose HP, which is converted into global blood orbs that randomly spawn. Collecting these orbs heals players for the drained amount, making exploration high-risk but highly rewarding.
+
+---
+
 ## [idea-2051] Enforcer Vengeance Bounty — *2026-08-22 16:04:48 UTC*
 
 If an Enforcer successfully kills an enemy of their Nemesis, they receive a temporary buff or a unique cosmetic aura indicating their loyalty and prowess, which scales up for each consecutive vengeance kill.
