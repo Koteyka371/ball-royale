@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2043] Decoy Shield Generation — *2026-08-22 17:35:20 UTC*
+
+The Decoy payload in Escort Mode passively generates a small shield for nearby Defenders, making it partially useful even though it doesn't progress the game objective.
+
+---
+
 ## [idea-2062] Abyssal Boss Fights — *2026-08-22 16:56:27 UTC*
 
 Spawn a special Abyssal Boss in the center of the arena during the Abyssal season, which pulls players in with whirlpool attacks and drops legendary loot when defeated.
