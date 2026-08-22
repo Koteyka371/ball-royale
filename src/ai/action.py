@@ -7216,6 +7216,60 @@ class Action:
                                                         b.killer = getattr(hazard, "owner_id", None)
                                 if hasattr(self.world, "events"):
                                     self.world.events.append({'type': 'explosion', 'data': {'x': hazard.x, 'y': hazard.y, 'radius': explosion_radius}})
+                if getattr(hazard, "kind", "") == "thrown_sticky_bomb":
+                    if getattr(hazard, "duration", 0.0) > 0:
+                        hazard.duration -= delta
+                        if hazard.duration <= 0:
+                            hazard.duration = 0.0
+                            if hazard in self.world.arena.hazards:
+                                self.world.arena.hazards.remove(hazard)
+                        else:
+                            # Move bomb
+                            hazard.x += getattr(hazard, "vx", 0) * delta
+                            hazard.y += getattr(hazard, "vy", 0) * delta
+
+                            # Bounce/Stick off walls
+                            rad = getattr(hazard, "radius", 15.0)
+                            hit_wall = False
+                            if hasattr(self.world, "arena") and hasattr(self.world.arena, "width") and hasattr(self.world.arena, "height"):
+                                if hazard.x < rad:
+                                    hazard.x = rad
+                                    hit_wall = True
+                                elif hazard.x > self.world.arena.width - rad:
+                                    hazard.x = self.world.arena.width - rad
+                                    hit_wall = True
+
+                                if hazard.y < rad:
+                                    hazard.y = rad
+                                    hit_wall = True
+                                elif hazard.y > self.world.arena.height - rad:
+                                    hazard.y = self.world.arena.height - rad
+                                    hit_wall = True
+
+                            if hit_wall:
+                                hazard.kind = "sticky_bomb"
+                                hazard.vx = 0.0
+                                hazard.vy = 0.0
+                                hazard.duration = 3.0
+                            else:
+                                # Check impact with players
+                                hit_enemy = None
+                                for b in getattr(self.world, "balls", []):
+                                    if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator" and b.id != getattr(hazard, "owner_id", None):
+                                        dx = hazard.x - b.x
+                                        dy = hazard.y - b.y
+                                        dist_sq = dx * dx + dy * dy
+                                        b_rad = getattr(b, "radius", 10.0)
+                                        if dist_sq < (rad + b_rad) ** 2:
+                                            hit_enemy = b
+                                            break
+
+                                if hit_enemy:
+                                    hazard.kind = "sticky_bomb"
+                                    hazard.attached_id = hit_enemy.id
+                                    hazard.vx = 0.0
+                                    hazard.vy = 0.0
+                                    hazard.duration = 3.0
                 if getattr(hazard, "kind", "") == "thrown_bomb":
                     if getattr(hazard, "duration", 0.0) > 0:
                         detonate = False
@@ -23173,6 +23227,41 @@ class Action:
                     self.world.arena.hazards.append(thrown_grenade)
                     self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
 
+            elif skill_name == "fire_sticky_bomb":
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    enemies = self._get_enemies()
+                    nx, ny = 1.0, 0.0
+                    if enemies:
+                        closest_enemy = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                        import math
+                        dx = closest_enemy.x - self.ball.x
+                        dy = closest_enemy.y - self.ball.y
+                        dist = math.sqrt(dx*dx + dy*dy)
+                        if dist > 0.0001:
+                            nx, ny = dx/dist, dy/dist
+
+                    try:
+                        from arena.procedural_arena import Hazard
+                    except ImportError:
+                        class Hazard:
+                            def __init__(self, id, x, y, radius, kind, damage, owner_id):
+                                self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
+
+                    class TempHazard:
+                        pass
+                    thrown_sticky_bomb = TempHazard()
+                    thrown_sticky_bomb.id = 19100 + len(self.world.arena.hazards)
+                    thrown_sticky_bomb.x = self.ball.x + nx * (getattr(self.ball, "radius", 10.0) + 5.0)
+                    thrown_sticky_bomb.y = self.ball.y + ny * (getattr(self.ball, "radius", 10.0) + 5.0)
+                    thrown_sticky_bomb.radius = 15.0
+                    thrown_sticky_bomb.kind = "thrown_sticky_bomb"
+                    thrown_sticky_bomb.damage = 0.0
+                    thrown_sticky_bomb.owner_id = getattr(self.ball, "id", None)
+                    setattr(thrown_sticky_bomb, "vx", nx * 450.0)
+                    setattr(thrown_sticky_bomb, "vy", ny * 450.0)
+                    setattr(thrown_sticky_bomb, "duration", 2.0)
+                    setattr(thrown_sticky_bomb, "owner_id", getattr(self.ball, "id", None))
+                    self.world.arena.hazards.append(thrown_sticky_bomb)
             elif skill_name == "throw_bomb":
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     enemies = self._get_enemies()

@@ -14296,6 +14296,117 @@ func execute(strategy: String, delta: float):
 
 	if world != null and "arena" in world and "hazards" in world.arena:
 		for hazard in world.arena.hazards:
+			elif hazard.get("kind") == "thrown_sticky_bomb" or (typeof(hazard) == TYPE_DICTIONARY and hazard.has("kind") and hazard["kind"] == "thrown_sticky_bomb"):
+				var h_dur = hazard.get("duration", 0.0) if typeof(hazard) == TYPE_DICTIONARY else (hazard.duration if "duration" in hazard else 0.0)
+				if h_dur > 0:
+					h_dur -= delta
+					if h_dur <= 0:
+						if typeof(hazard) == TYPE_DICTIONARY:
+							hazard["duration"] = 0.0
+						else:
+							hazard.duration = 0.0
+						if typeof(world.arena.hazards) == TYPE_ARRAY and hazard in world.arena.hazards:
+							world.arena.hazards.erase(hazard)
+					else:
+						if typeof(hazard) == TYPE_DICTIONARY:
+							hazard["duration"] = h_dur
+						else:
+							hazard.duration = h_dur
+
+						var h_vx = hazard.get("vx", 0.0) if typeof(hazard) == TYPE_DICTIONARY else (hazard.vx if "vx" in hazard else 0.0)
+						var h_vy = hazard.get("vy", 0.0) if typeof(hazard) == TYPE_DICTIONARY else (hazard.vy if "vy" in hazard else 0.0)
+						var h_x = hazard.get("x", 0.0) if typeof(hazard) == TYPE_DICTIONARY else hazard.x
+						var h_y = hazard.get("y", 0.0) if typeof(hazard) == TYPE_DICTIONARY else hazard.y
+
+						h_x += h_vx * delta
+						h_y += h_vy * delta
+
+						var h_rad = hazard.get("radius", 15.0) if typeof(hazard) == TYPE_DICTIONARY else (hazard.radius if "radius" in hazard else 15.0)
+						var hit_wall = false
+
+						if typeof(world.arena) == TYPE_OBJECT and "width" in world.arena and "height" in world.arena:
+							if h_x < h_rad:
+								h_x = h_rad
+								hit_wall = true
+							elif h_x > world.arena.width - h_rad:
+								h_x = world.arena.width - h_rad
+								hit_wall = true
+							if h_y < h_rad:
+								h_y = h_rad
+								hit_wall = true
+							elif h_y > world.arena.height - h_rad:
+								h_y = world.arena.height - h_rad
+								hit_wall = true
+						elif typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("width") and world.arena.has("height"):
+							if h_x < h_rad:
+								h_x = h_rad
+								hit_wall = true
+							elif h_x > world.arena.width - h_rad:
+								h_x = world.arena.width - h_rad
+								hit_wall = true
+							if h_y < h_rad:
+								h_y = h_rad
+								hit_wall = true
+							elif h_y > world.arena.height - h_rad:
+								h_y = world.arena.height - h_rad
+								hit_wall = true
+
+						if typeof(hazard) == TYPE_DICTIONARY:
+							hazard["x"] = h_x
+							hazard["y"] = h_y
+						else:
+							hazard.x = h_x
+							hazard.y = h_y
+
+						if hit_wall:
+							if typeof(hazard) == TYPE_DICTIONARY:
+								hazard["kind"] = "sticky_bomb"
+								hazard["vx"] = 0.0
+								hazard["vy"] = 0.0
+								hazard["duration"] = 3.0
+							else:
+								hazard.kind = "sticky_bomb"
+								hazard.vx = 0.0
+								hazard.vy = 0.0
+								hazard.duration = 3.0
+						else:
+							var hit_enemy = null
+							var h_owner_id = hazard.get("owner_id", null) if typeof(hazard) == TYPE_DICTIONARY else (hazard.owner_id if "owner_id" in hazard else null)
+
+							if typeof(world) == TYPE_OBJECT and "balls" in world:
+								var balls_arr = world.balls
+								for b_idx in range(balls_arr.size()):
+									var b = balls_arr[b_idx]
+									var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else false)
+									var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else (b.ball_type if "ball_type" in b else "")
+									var b_id = b.get("id", null) if typeof(b) == TYPE_DICTIONARY else (b.id if "id" in b else null)
+
+									if b_alive and b_type != "spectator" and b_id != h_owner_id:
+										var b_x = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.x
+										var b_y = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.y
+										var dx = h_x - b_x
+										var dy = h_y - b_y
+										var dist_sq = dx*dx + dy*dy
+										var b_rad = b.get("radius", 10.0) if typeof(b) == TYPE_DICTIONARY else (b.radius if "radius" in b else 10.0)
+
+										if dist_sq < (h_rad + b_rad)*(h_rad + b_rad):
+											hit_enemy = b
+											break
+
+							if hit_enemy != null:
+								var he_id = hit_enemy.get("id", null) if typeof(hit_enemy) == TYPE_DICTIONARY else hit_enemy.id
+								if typeof(hazard) == TYPE_DICTIONARY:
+									hazard["kind"] = "sticky_bomb"
+									hazard["attached_id"] = he_id
+									hazard["vx"] = 0.0
+									hazard["vy"] = 0.0
+									hazard["duration"] = 3.0
+								else:
+									hazard.kind = "sticky_bomb"
+									hazard.attached_id = he_id
+									hazard.vx = 0.0
+									hazard.vy = 0.0
+									hazard.duration = 3.0
 			if hazard.get("kind") == "thrown_bomb" or (typeof(hazard) == TYPE_DICTIONARY and hazard.has("kind") and hazard["kind"] == "thrown_bomb"):
 				var h_dur = 0.0
 				if typeof(hazard) == TYPE_DICTIONARY and hazard.has("duration"): h_dur = float(hazard.duration)
@@ -48058,7 +48169,44 @@ func _use_skill():
                 if "skill_cooldown" in self.ball: cd = self.ball.skill_cooldown
                 self.ball.skill_timer = cd
 
-        elif skill_name == "throw_bomb":
+		elif skill_name == "fire_sticky_bomb":
+			if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+				var enemies = _get_enemies()
+				var nx = 1.0
+				var ny = 0.0
+				if enemies.size() > 0:
+					var closest_enemy = enemies[0]
+					var min_dist = (closest_enemy.x - ball.x)*(closest_enemy.x - ball.x) + (closest_enemy.y - ball.y)*(closest_enemy.y - ball.y)
+					for i in range(1, enemies.size()):
+						var e = enemies[i]
+						var d2 = (e.x - ball.x)*(e.x - ball.x) + (e.y - ball.y)*(e.y - ball.y)
+						if d2 < min_dist:
+							min_dist = d2
+							closest_enemy = e
+					var dx = closest_enemy.x - ball.x
+					var dy = closest_enemy.y - ball.y
+					var dist = sqrt(dx*dx + dy*dy)
+					if dist > 0.0001:
+						nx = dx/dist
+						ny = dy/dist
+
+				var ball_radius = ball.get("radius", 10.0) if typeof(ball) == TYPE_DICTIONARY else (ball.radius if "radius" in ball else 10.0)
+				var ball_id = ball.get("id", null) if typeof(ball) == TYPE_DICTIONARY else (ball.id if "id" in ball else null)
+
+				var thrown_sticky_bomb = {
+					"id": 19100 + world.arena.hazards.size(),
+					"x": ball.x + nx * (ball_radius + 5.0),
+					"y": ball.y + ny * (ball_radius + 5.0),
+					"radius": 15.0,
+					"kind": "thrown_sticky_bomb",
+					"damage": 0.0,
+					"owner_id": ball_id,
+					"vx": nx * 450.0,
+					"vy": ny * 450.0,
+					"duration": 2.0
+				}
+				world.arena.hazards.append(thrown_sticky_bomb)
+		elif skill_name == "throw_bomb":
             if "hazards" in self.world.arena:
                 var hazards = self.world.arena.hazards
                 var enemies = self._get_enemies()
