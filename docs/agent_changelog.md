@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2072] Stamina Potion — *2026-08-22 21:24:35 UTC*
+
+Instantly refills stamina to maximum.
+
+---
+
 ## [idea-2009] Vampiric Overdrive — *2026-08-22 19:26:00 UTC*
 
 A booster that drains the user's HP slowly over time but grants massively increased movement speed and damage, healing for double the damage dealt.
