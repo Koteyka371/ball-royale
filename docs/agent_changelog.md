@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2048] Quantum Displacement Mine — *2026-08-22 01:42:05 UTC*
+
+A deployable hazard that, when triggered by an enemy, swaps the enemy's position with the trap's owner, regardless of distance. It can be used strategically for repositioning or to pull high-priority targets into danger.
+
+---
+
 ## [idea-2030] Storm Chaser Trait — *2026-08-22 01:28:04 UTC*
 
 A new passive trait that grants players a speed boost when moving towards areas affected by extreme weather, encouraging high-risk, high-reward gameplay.
