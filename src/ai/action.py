@@ -28128,15 +28128,8 @@ class Action:
                                     setattr(self.ball, buff, val - drain)
                                     siphoned_timers += drain
 
-                            if siphoned_timers > 0 and trap_owner_id is not None and hasattr(self.world, "balls"):
-                                owner = next((b for b in self.world.balls if getattr(b, "id", None) == trap_owner_id), None)
-                                if owner is None or not getattr(owner, "alive", True):
-                                    owner = next((b for b in self.world.balls if getattr(b, "alive", True) and getattr(b, "team", getattr(b, "ball_type", "")) == trap_owner_team), None)
-
-                                if owner:
-                                    target_buffs = ["aura_booster_timer", "aura_amplifier_timer", "vampiric_aura_timer"]
-                                    buff_to_add = getattr(self, "random", __import__("random")).choice(target_buffs)
-                                    setattr(owner, buff_to_add, getattr(owner, buff_to_add, 0.0) + siphoned_timers)
+                            if siphoned_timers > 0:
+                                hazard.accumulated_auras = getattr(hazard, "accumulated_auras", 0.0) + siphoned_timers
                 if getattr(hazard, "kind", "") == "buff_siphon_trap":
                     import math
                     dist = math.hypot(self.ball.x - hazard.x, self.ball.y - hazard.y)
