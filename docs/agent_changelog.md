@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2057] Sabotage Bounties — *2026-08-22 15:38:13 UTC*
+
+In addition to normal bounties, players can place a 'Sabotage Bounty' on a high-performing player. This doesn't reward the killer with currency, but instantly debuffs the target's stats when placed, making them easier to take down for the entire lobby.
+
+---
+
 ## [idea-1988] Ice Wall Deployable — *2026-08-22 15:19:33 UTC*
 
 A deployable hazard item that constructs a wide, destructible ice wall in front of the ball. The wall blocks enemy movement and most projectiles but will slowly melt over time, eventually shattering into tiny ice shrapnel that slows nearby units.
