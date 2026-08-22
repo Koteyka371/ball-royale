@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2018] Quantum Tangle Hazard — *2026-08-22 22:09:52 UTC*
+
+A hazard zone that tethers two balls together quantumly. When one takes damage, the other takes an equal amount. If they move too far apart, the tether snaps and deals massive damage to both.
+
+---
+
 ## [idea-2055] Tether Hook Traps — *2026-08-22 21:26:58 UTC*
 
 A new hazard that throws out multiple tether hooks to passing enemies. Ensnared enemies are pulled towards the center of the trap slowly.
