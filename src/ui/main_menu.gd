@@ -14,6 +14,9 @@ var weekend_options: Array = ["10x_speed", "invisible_enemies", "lava_floor"]
 var weekend_votes: Dictionary = {"10x_speed": 0, "invisible_enemies": 0, "lava_floor": 0}
 var active_weekend_event: String = ""
 
+var active_replay: ReplaySystem = null
+var active_replay_id: String = ""
+
 
 var background_theme: String = ""
 var background_color: Color = Color(0, 0, 0)
@@ -132,6 +135,10 @@ func process_replay_input(action: String, args: Array = []):
         if leaderboard_manager != null and leaderboard_manager.has_method("get_top_player_replay"):
             var replay = leaderboard_manager.call("get_top_player_replay", player_id)
             if replay != null:
+                active_replay = ReplaySystem.new()
+                active_replay.from_dict(replay)
+                active_replay.start_playback()
+                active_replay_id = player_id
                 return "watching " + player_id
         return "not found"
     elif action == "download" and args.size() > 0:
@@ -141,8 +148,28 @@ func process_replay_input(action: String, args: Array = []):
             if replay != null:
                 return "downloaded " + player_id
         return "not found"
+    elif action == "fast_forward" and args.size() > 0:
+        if active_replay != null:
+            var speed = float(args[0])
+            active_replay.playback_speed = abs(speed)
+            return true
+        return false
+    elif action == "rewind" and args.size() > 0:
+        if active_replay != null:
+            var speed = float(args[0])
+            active_replay.playback_speed = -abs(speed)
+            return true
+        return false
+    elif action == "set_speed" and args.size() > 0:
+        if active_replay != null:
+            var speed = float(args[0])
+            active_replay.playback_speed = speed
+            return true
+        return false
     elif action == "back":
         active_screen = "main"
+        active_replay = null
+        active_replay_id = ""
         return true
     return false
 
