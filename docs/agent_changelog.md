@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1988] Ice Wall Deployable — *2026-08-22 15:19:33 UTC*
+
+A deployable hazard item that constructs a wide, destructible ice wall in front of the ball. The wall blocks enemy movement and most projectiles but will slowly melt over time, eventually shattering into tiny ice shrapnel that slows nearby units.
+
+---
+
 ## [idea-2027] Nanite Repair Swarm — *2026-08-22 13:41:41 UTC*
 
 When below 30% HP, spawns a swarm of nanites that seeks out nearby debris or destroyed hazards, consuming them to regenerate the ball's health rapidly over a short duration.
