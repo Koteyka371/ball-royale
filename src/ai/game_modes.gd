@@ -12000,6 +12000,37 @@ class EscortMode extends GameMode:
 					decoy["x"] += (dx / dist) * decoy["speed"]
 					decoy["y"] += (dy / dist) * decoy["speed"]
 
+				# Passively generate a small shield for nearby Defenders
+				for b in balls:
+					var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.get("id")
+					var d_id = decoy.get("id")
+					if b_id != null and d_id != null and b_id == d_id:
+						continue
+
+					var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+					if not b_alive:
+						continue
+
+					var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+					if b_type == "spectator":
+						continue
+
+					var b_team = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else b.get("team")
+					if b_team == "Defenders":
+						var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
+						var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
+						var dx_b = bx - decoy["x"]
+						var dy_b = by - decoy["y"]
+						var bdist = sqrt(dx_b * dx_b + dy_b * dy_b)
+
+						if bdist <= 150.0:
+							if typeof(b) == TYPE_DICTIONARY:
+								b["shield"] = min(b.get("max_shield", 100.0), b.get("shield", 0.0) + 10.0 * delta)
+							else:
+								var curr_shield = b.get("shield") if b.get("shield") != null else 0.0
+								var max_shield = b.get("max_shield") if b.get("max_shield") != null else 100.0
+								b.set("shield", min(max_shield, curr_shield + 10.0 * delta))
+
 			if not decoy.get("alive", false) and not self.decoy_exploded:
 				self.decoy_exploded = true
 				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):

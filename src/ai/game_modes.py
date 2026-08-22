@@ -7593,6 +7593,15 @@ class EscortMode(GameMode):
                     self.decoy.x += (dx / dist) * self.decoy.speed
                     self.decoy.y += (dy / dist) * self.decoy.speed
 
+                # Passively generate a small shield for nearby Defenders
+                for b in balls:
+                    if b == self.decoy or not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                        continue
+                    if getattr(b, "team", "") == "Defenders":
+                        bdist = math.hypot(getattr(b, "x", 0) - self.decoy.x, getattr(b, "y", 0) - self.decoy.y)
+                        if bdist <= 150.0:
+                            b.shield = min(getattr(b, "max_shield", 100.0), getattr(b, "shield", 0.0) + 10.0 * delta)
+
             # Explosion logic
             if not getattr(self.decoy, "alive", False) and not getattr(self, "decoy_exploded", False):
                 self.decoy_exploded = True
