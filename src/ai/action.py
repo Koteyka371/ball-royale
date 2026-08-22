@@ -26177,12 +26177,24 @@ class Action:
 
 
         if "nanite_swarm" in getattr(self.ball, "traits", []):
-            if getattr(self.ball, "hp", 100) / getattr(self.ball, "max_hp", 100) < 0.3:
+            if getattr(self.ball, "nanite_swarm_cooldown", 0.0) > 0:
+                self.ball.nanite_swarm_cooldown -= delta
+
+            if getattr(self.ball, "hp", 100) / getattr(self.ball, "max_hp", 100) < 0.3 and getattr(self.ball, "nanite_swarm_cooldown", 0.0) <= 0.0 and not getattr(self.ball, "nanite_swarm_timer", 0.0) > 0:
+                self.ball.nanite_swarm_timer = 5.0
                 self.ball.nanite_swarm_active = True
+
+            if getattr(self.ball, "nanite_swarm_timer", 0.0) > 0:
+                self.ball.nanite_swarm_timer -= delta
+                if self.ball.nanite_swarm_timer <= 0:
+                    self.ball.nanite_swarm_active = False
+                    self.ball.nanite_swarm_cooldown = 15.0
+                else:
+                    self.ball.nanite_swarm_active = True
 
                 # Seek nearby debris or destroyed hazards
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
-                    for h in self.world.arena.hazards:
+                    for h in list(self.world.arena.hazards):
                         is_debris = getattr(h, "kind", "") == "orbital_debris"
                         is_destroyed = not getattr(h, "active", True) or getattr(h, "destroyed", False)
 
@@ -26193,14 +26205,17 @@ class Action:
                                 if is_debris and hasattr(h, "radius"):
                                     h.radius -= 10.0 * delta
                                     if h.radius <= 0:
-                                        self.world.arena.hazards.remove(h)
+                                        if h in self.world.arena.hazards:
+                                            self.world.arena.hazards.remove(h)
                                 elif is_destroyed:
                                     if hasattr(h, "radius"):
                                         h.radius -= 10.0 * delta
                                         if h.radius <= 0:
-                                            self.world.arena.hazards.remove(h)
+                                            if h in self.world.arena.hazards:
+                                                self.world.arena.hazards.remove(h)
                                     else:
-                                        self.world.arena.hazards.remove(h)
+                                        if h in self.world.arena.hazards:
+                                            self.world.arena.hazards.remove(h)
 
                                 # Heal the ball
                                 self.ball.hp = min(getattr(self.ball, "max_hp", 100), self.ball.hp + 50.0 * delta)
