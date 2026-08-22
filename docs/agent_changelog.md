@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2030] Storm Chaser Trait — *2026-08-22 01:28:04 UTC*
+
+A new passive trait that grants players a speed boost when moving towards areas affected by extreme weather, encouraging high-risk, high-reward gameplay.
+
+---
+
 ## [idea-1981] Shrink Ray Weapon — *2026-08-21 17:42:01 UTC*
 
 An equippable weapon that shoots a beam, reducing the target's radius and max speed by 30% for 5 seconds.
