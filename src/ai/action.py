@@ -1549,6 +1549,16 @@ class Action:
             heal_amount = damage_dealt_general * 0.5
             attacker.hp = min(getattr(attacker, 'hp', 100.0) + heal_amount, getattr(attacker, 'max_hp', 100.0))
 
+        if old_hp > 0 and new_hp <= 0:
+            pm = getattr(self.world, "profile_manager", None)
+            if pm and hasattr(pm, "get_enforcer_pledge") and hasattr(pm, "is_nemesis") and getattr(attacker, "ball_type", None) and getattr(target, "ball_type", None):
+                attacker_pledge = pm.get_enforcer_pledge(attacker.ball_type)
+                if attacker_pledge and (pm.is_nemesis(attacker_pledge, target.ball_type) or pm.is_nemesis(target.ball_type, attacker_pledge)):
+                    attacker.enforcer_vengeance_stacks = getattr(attacker, "enforcer_vengeance_stacks", 0) + 1
+                    attacker.enforcer_aura_timer = getattr(attacker, "enforcer_aura_timer", 0.0) + 5.0 + (attacker.enforcer_vengeance_stacks * 2.0)
+                    if hasattr(self.world, "events"):
+                        self.world.events.append({'type': 'visual_effect', 'data': {'type': 'enforcer_aura', 'x': attacker.x, 'y': attacker.y, 'stacks': attacker.enforcer_vengeance_stacks}})
+
         if b_type_attacker == 'leech':
             damage_dealt = max(0, old_hp - new_hp)
             if damage_dealt > 0:
