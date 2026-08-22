@@ -1,0 +1,47 @@
+{
+    "skill_points": 500,
+    "inventory": {
+        "materials": {},
+        "crafted_items": {}
+    },
+    "unlocked_balls": [
+        "basic"
+    ],
+    "bonuses": {
+        "bonus_hp": 0,
+        "bonus_speed": 0,
+        "bonus_damage": 0
+    },
+    "loadouts": {},
+    "prestige_level": 0,
+    "prestige_tokens": 85,
+    "prestige_upgrades": {},
+    "quests": [],
+    "cosmetics": [],
+    "titles": [],
+    "status_effects": [],
+    "nemeses": {},
+    "trap_levels": {},
+    "login_streak": 0,
+    "last_login_date": "",
+    "guild_name": "",
+    "clan_name": "",
+    "scratchcards": 0,
+    "active_bounties": {
+        "player_A": {
+            "reward": 5,
+            "placer": "local_player",
+            "currency": "prestige_tokens"
+        },
+        "player_B": {
+            "reward": 500,
+            "placer": "enemy_X",
+            "currency": "skill_points"
+        },
+        "player_C": {
+            "reward": 10,
+            "placer": "enemy_Y",
+            "currency": "prestige_tokens"
+        }
+    }
+}

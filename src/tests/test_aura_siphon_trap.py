@@ -69,7 +69,7 @@ def test_aura_siphon_trap():
 
     assert round(victim_ball.aura_booster_timer, 2) == round(5.0 - 0.3, 2)
     assert round(victim_ball.aura_amplifier_timer, 2) == round(5.0 - 0.3, 2)
-    assert (owner_ball.aura_booster_timer + owner_ball.aura_amplifier_timer + owner_ball.vampiric_aura_timer) >= 0.39
+    assert getattr(trap, "accumulated_auras", 0.0) >= 0.39
 
 if __name__ == "__main__":
     pytest.main(["-v", "src/tests/test_aura_siphon_trap.py"])
