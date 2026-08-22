@@ -4843,14 +4843,14 @@ class GameMode:
 							minion.set("enrage_timer", 5.0)
 							var b_speed = 2.0
 							if "base_speed" in minion: b_speed = minion.base_speed
-							minion.set("base_speed", b_speed * 3.0)
+							minion.set("base_speed", b_speed * 5.0)
 							var b_dmg = 10.0
 							if "base_damage" in minion: b_dmg = minion.base_damage
 							minion.set("base_damage", b_dmg * 2.5)
 
 							var c_speed = b_speed
 							if "speed" in minion: c_speed = minion.speed
-							minion.set("speed", c_speed * 3.0)
+							minion.set("speed", c_speed * 5.0)
 							var c_dmg = b_dmg
 							if "damage" in minion: c_dmg = minion.damage
 							minion.set("damage", c_dmg * 2.5)
