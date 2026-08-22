@@ -54321,6 +54321,152 @@ class ShrinkingArenaMode extends GameMode:
 					world.add_event.call("arena_shrunk", {"width": new_w, "height": new_h})
 
 
+
+class FreezingEdgesRoyaleMode extends GameMode:
+	var zone_x: float = 500.0
+	var zone_y: float = 500.0
+	var safe_radius: float = 2000.0
+	var min_safe_radius: float = 50.0
+	var shrink_rate: float = 15.0
+	var freeze_build_up_rate: float = 1.0
+
+	func _init() -> void:
+		name = "Freezing Edges Royale"
+		description = "The outer edges of the map slowly freeze inward. Players outside the safe zone are slowed and eventually trapped in ice."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if "arena" in world and world.arena:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				if "width" in world.arena: arena_width = float(world.arena.width)
+				if "height" in world.arena: arena_height = float(world.arena.height)
+			else:
+				if "width" in world.arena: arena_width = float(world.arena.width)
+				if "height" in world.arena: arena_height = float(world.arena.height)
+
+		zone_x = arena_width / 2.0
+		zone_y = arena_height / 2.0
+		safe_radius = max(arena_width, arena_height)
+
+		for b in balls:
+			if "ball_type" in b and b.ball_type != "spectator":
+				if typeof(b) == TYPE_DICTIONARY:
+					b["team"] = b.get("team", b.ball_type)
+				else:
+					if "team" in b:
+						b.team = b.team if b.team != null and str(b.team) != "" else b.ball_type
+					else:
+						b.set("team", b.ball_type)
+
+		if typeof(world) == TYPE_DICTIONARY:
+			if not ("dead_balls" in world):
+				world["dead_balls"] = []
+		else:
+			if not ("dead_balls" in world):
+				world.dead_balls = []
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if typeof(world) == TYPE_DICTIONARY:
+			if not ("dead_balls" in world): world["dead_balls"] = []
+		else:
+			if not ("dead_balls" in world): world.dead_balls = []
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.alive
+
+			if not is_alive:
+				if not (b in world.dead_balls):
+					if typeof(b) == TYPE_DICTIONARY: b["time_since_death"] = 0.0
+					else: b.time_since_death = 0.0
+					world.dead_balls.append(b)
+				else:
+					if typeof(b) == TYPE_DICTIONARY: b["time_since_death"] += delta
+					else: b.time_since_death += delta
+
+		if safe_radius > min_safe_radius:
+			safe_radius -= shrink_rate * delta
+			if safe_radius < min_safe_radius:
+				safe_radius = min_safe_radius
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.alive
+
+			var b_type = null
+			if typeof(b) == TYPE_DICTIONARY:
+				b_type = b.get("ball_type", null)
+			else:
+				if "ball_type" in b: b_type = b.ball_type
+
+			if is_alive and str(b_type) != "spectator":
+				var bx = 0.0
+				var by = 0.0
+				if typeof(b) == TYPE_DICTIONARY:
+					bx = float(b.get("x", 0.0))
+					by = float(b.get("y", 0.0))
+				else:
+					bx = float(b.x)
+					by = float(b.y)
+
+				var dx = bx - zone_x
+				var dy = by - zone_y
+				var dist = sqrt(dx*dx + dy*dy)
+
+				if dist > safe_radius:
+					var w_timer = 0.0
+					if typeof(b) == TYPE_DICTIONARY:
+						w_timer = float(b.get("weather_immunity_timer", 0.0))
+					else:
+						if "weather_immunity_timer" in b: w_timer = float(b.weather_immunity_timer)
+						elif b.has_method("has_meta") and b.has_meta("weather_immunity_timer"): w_timer = float(b.get_meta("weather_immunity_timer"))
+
+					if w_timer <= 0.0:
+						var f_timer = 0.0
+						if typeof(b) == TYPE_DICTIONARY:
+							f_timer = float(b.get("freeze_timer", 0.0))
+						else:
+							if "freeze_timer" in b: f_timer = float(b.freeze_timer)
+							elif b.has_method("has_meta") and b.has_meta("freeze_timer"): f_timer = float(b.get_meta("freeze_timer"))
+
+						f_timer += freeze_build_up_rate * delta
+
+						if typeof(b) == TYPE_DICTIONARY:
+							b["freeze_timer"] = f_timer
+						else:
+							if "freeze_timer" in b: b.freeze_timer = f_timer
+							elif b.has_method("set_meta"): b.set_meta("freeze_timer", f_timer)
+
+						if f_timer > 5.0:
+							var cur_hp = 0.0
+							if typeof(b) == TYPE_DICTIONARY: cur_hp = float(b.get("hp", 0.0))
+							else: cur_hp = float(b.hp)
+
+							cur_hp -= 25.0 * delta
+
+							if cur_hp <= 0.0:
+								if typeof(b) == TYPE_DICTIONARY:
+									b["alive"] = false
+									b["hp"] = 0.0
+									b["killer"] = "ice"
+								else:
+									b.alive = false
+									b.hp = 0.0
+									b.set("killer", "ice")
+							else:
+								if typeof(b) == TYPE_DICTIONARY:
+									b["hp"] = cur_hp
+								else:
+									b.hp = cur_hp
+
 class ExpandingLavaRoyaleMode extends GameMode:
 	var zone_x: float = 500.0
 	var zone_y: float = 500.0
@@ -64530,6 +64676,7 @@ var GAME_MODES = {
 	"snake_safe_zone": SnakeSafeZoneMode.new(),
     "lava_eruption_event": LavaEruptionEventMode.new(),
 	"expanding_lava_royale": ExpandingLavaRoyaleMode.new(),
+	"freezing_edges_royale": FreezingEdgesRoyaleMode.new(),
 	"massive_pinball_arena": MassivePinballArenaMode.new(),
 	"aura_pulse_event": AuraPulseEventMode.new(),
 	"waterfalls_mode": WaterfallsMode.new(),

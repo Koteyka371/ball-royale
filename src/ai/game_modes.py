@@ -33399,6 +33399,84 @@ class ShrinkingArenaMode(GameMode):
                     world.add_event("arena_shrunk", {"width": new_w, "height": new_h})
 
 
+
+class FreezingEdgesRoyaleMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Freezing Edges Royale"
+        self.description = "The outer edges of the map slowly freeze inward. Players outside the safe zone are slowed and eventually trapped in ice."
+        self.zone_x = 500.0
+        self.zone_y = 500.0
+        self.safe_radius = 2000.0
+        self.min_safe_radius = 50.0
+        self.shrink_rate = 15.0
+        self.freeze_build_up_rate = 1.0 # freeze timer added per second
+        self.max_danger_radius = 2000.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.world = world
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        self.zone_x = arena_width / 2.0
+        self.zone_y = arena_height / 2.0
+        # Start safe radius large enough to cover the whole map
+        self.safe_radius = max(arena_width, arena_height)
+        self.max_danger_radius = self.safe_radius
+
+        valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        for i, b in enumerate(valid_balls):
+            if i >= 20:
+                b.ball_type = "spectator"
+                b.alive = False
+            else:
+                b.team = getattr(b, "team", b.ball_type)
+
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death = getattr(b, "time_since_death", 0.0) + delta
+
+        if self.safe_radius > self.min_safe_radius:
+            self.safe_radius -= self.shrink_rate * delta
+            if self.safe_radius < self.min_safe_radius:
+                self.safe_radius = self.min_safe_radius
+
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                bx = getattr(b, "x", 0.0)
+                by = getattr(b, "y", 0.0)
+                dx = bx - self.zone_x
+                dy = by - self.zone_y
+                dist = math.sqrt(dx*dx + dy*dy)
+
+                if dist > self.safe_radius:
+                    if not getattr(b, "weather_immunity_timer", 0) > 0:
+                        b.freeze_timer = getattr(b, "freeze_timer", 0.0) + self.freeze_build_up_rate * delta
+
+                        # Once highly frozen, start taking damage to ensure they are eliminated eventually
+                        if b.freeze_timer > 5.0:
+                            b.hp -= 25.0 * delta
+                            if b.hp <= 0:
+                                b.alive = False
+                                b.hp = 0
+                                b.killer = "ice"
+
 class ExpandingLavaRoyaleMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -40110,6 +40188,7 @@ GAME_MODES = {
     'lava_eruption_event': LavaEruptionEventMode(),
     "aura_siphon": AuraSiphonMode(),
     'expanding_lava_royale': ExpandingLavaRoyaleMode(),
+    'freezing_edges_royale': FreezingEdgesRoyaleMode(),
     'massive_pinball_arena': MassivePinballArenaMode(),
     "aura_pulse_event": AuraPulseEventMode(),
     'trickster_event': TricksterEventMode(),
