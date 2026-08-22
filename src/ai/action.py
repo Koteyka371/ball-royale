@@ -2114,6 +2114,153 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+
+        if hasattr(self.ball, "inventory") and "deployable_ice_wall" in self.ball.inventory:
+            enemies = self._get_enemies()
+            if enemies:
+                nearest = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                dist = __import__("math").hypot(self.ball.x - nearest.x, self.ball.y - nearest.y)
+                if dist < 400:
+                    self.ball.inventory.remove("deployable_ice_wall")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        try:
+                            from arena.procedural_arena import Hazard
+                        except ImportError:
+                            Hazard = type("Hazard", (object,), {})
+
+                        dx = nearest.x - self.ball.x
+                        dy = nearest.y - self.ball.y
+                        mag = __import__("math").hypot(dx, dy)
+                        if mag > 0:
+                            dx, dy = dx / mag, dy / mag
+                        else:
+                            dx, dy = 1.0, 0.0
+
+                        wall_id = f"{len(self.world.arena.hazards)}_{getattr(self.world, 'tick', 0)}_ice_wall"
+                        wall_x = self.ball.x + dx * 60.0
+                        wall_y = self.ball.y + dy * 60.0
+
+                        try:
+                            wall = Hazard(wall_id, wall_x, wall_y, 40.0, "ice_wall", 0.0)
+                        except TypeError:
+                            wall = type("MockHazard", (object,), {})()
+                            wall.id = wall_id
+                            wall.x = wall_x
+                            wall.y = wall_y
+                            wall.radius = 40.0
+                            wall.kind = "ice_wall"
+                            wall.damage = 0.0
+
+                        wall.duration = 10.0
+                        wall.hp = 100.0
+                        wall.max_hp = 100.0
+                        setattr(wall, 'owner_id', getattr(self.ball, 'id', None))
+                        setattr(wall, 'is_ice_wall', True)
+                        setattr(wall, 'wall_dx', dy)  # Perpendicular vector for width
+                        setattr(wall, 'wall_dy', -dx)
+                        setattr(wall, 'wall_width', 100.0)
+                        self.world.arena.hazards.append(wall)
+
+        # --- Ice Wall Logic Starts Here ---
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            try:
+                from arena.procedural_arena import Hazard
+            except ImportError:
+                Hazard = type("Hazard", (object,), {})
+
+            new_shrapnel = []
+            for h in list(self.world.arena.hazards):
+                if getattr(h, "kind", "") == "ice_wall":
+                    # Manage duration and health
+                    duration = getattr(h, "duration", 0.0)
+                    duration -= delta
+                    setattr(h, "duration", duration)
+                    hp = getattr(h, "hp", 100.0)
+
+                    # Slowly melt over time
+                    hp -= 10.0 * delta
+                    setattr(h, "hp", hp)
+
+                    # Push enemies away and block them
+                    wall_width = getattr(h, "wall_width", 100.0)
+                    wall_dx = getattr(h, "wall_dx", 1.0)
+                    wall_dy = getattr(h, "wall_dy", 0.0)
+                    normal_x = -wall_dy
+                    normal_y = wall_dx
+
+                    # Push away this ball if it's an enemy
+                    if getattr(h, "owner_id", None) != getattr(self.ball, "id", None):
+                        dx = self.ball.x - h.x
+                        dy = self.ball.y - h.y
+
+                        proj_normal = dx * normal_x + dy * normal_y
+                        dist_to_plane = abs(proj_normal)
+                        dist_along_wall = abs(dx * wall_dx + dy * wall_dy)
+
+                        ball_r = getattr(self.ball, "radius", 10.0)
+
+                        if dist_to_plane < ball_r + 5.0 and dist_along_wall < wall_width / 2.0 + ball_r:
+                            pen_depth = (ball_r + 5.0) - dist_to_plane + 1.0 # Add SDF tolerance
+                            if proj_normal > 0:
+                                self.ball.x += normal_x * pen_depth
+                                self.ball.y += normal_y * pen_depth
+                            else:
+                                self.ball.x -= normal_x * pen_depth
+                                self.ball.y -= normal_y * pen_depth
+
+                            # Wall takes damage when rammed
+                            hp -= 20.0 * delta
+                            setattr(h, "hp", hp)
+
+                    if hp <= 0 or duration <= 0:
+                        if h in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(h)
+                        # Shatter into tiny ice shrapnel
+                        for i in range(8):
+                            import math
+                            angle = i * (math.pi / 4.0)
+                            sx = h.x + math.cos(angle) * 15.0
+                            sy = h.y + math.sin(angle) * 15.0
+
+                            shrap_id = f"{len(self.world.arena.hazards) + len(new_shrapnel)}_{getattr(self.world, 'tick', 0)}_shrapnel_{i}"
+                            try:
+                                shrap = Hazard(shrap_id, sx, sy, 15.0, "ice_wall_shrapnel", 0.0)
+                            except TypeError:
+                                shrap = type("MockHazard", (object,), {})()
+                                shrap.id = shrap_id
+                                shrap.x = sx
+                                shrap.y = sy
+                                shrap.radius = 15.0
+                                shrap.kind = "ice_wall_shrapnel"
+                                shrap.damage = 0.0
+
+                            shrap.duration = 4.0
+                            setattr(shrap, "owner_id", getattr(h, "owner_id", None))
+                            new_shrapnel.append(shrap)
+
+                elif getattr(h, "kind", "") == "ice_wall_shrapnel":
+                    duration = getattr(h, "duration", 0.0)
+                    duration -= delta
+                    setattr(h, "duration", duration)
+                    if duration <= 0:
+                        if h in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(h)
+
+                    # Apply slow
+                    if getattr(h, "owner_id", None) != getattr(self.ball, "id", None):
+                        dist_sq = (self.ball.x - h.x)**2 + (self.ball.y - h.y)**2
+                        if dist_sq < 2500.0:  # 50 range
+                            # Apply slow
+                            if hasattr(self.ball, "speed_multiplier"):
+                                self.ball.speed_multiplier = min(self.ball.speed_multiplier, 0.5)
+                            else:
+                                self.ball.speed_multiplier = 0.5
+                            self.ball.has_status_effect = True
+
+            if new_shrapnel:
+                self.world.arena.hazards.extend(new_shrapnel)
+        # --- Ice Wall Logic Ends Here ---
+
         if getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") == "emp_shield":
             self.ball.emp_immunity_timer = max(getattr(self.ball, "emp_immunity_timer", 0.0), 0.1)
             self.ball.gravity_multiplier_timer = max(getattr(self.ball, "gravity_multiplier_timer", 0.0), 0.1)
@@ -2226,7 +2373,7 @@ class Action:
         if is_snowball and hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             on_ice = False
             for hazard in self.world.arena.hazards:
-                if getattr(hazard, "kind", "") in ["ice_patch", "ice_patches"] and getattr(hazard, "active", True) and not getattr(hazard, "is_disabled_by_flare", False):
+                if getattr(hazard, "kind", "") in ["deployable_ice_wall", "ice_wall_shrapnel", "ice_patch", "ice_patches"] and getattr(hazard, "active", True) and not getattr(hazard, "is_disabled_by_flare", False):
                     dist_sq = (self.ball.x - getattr(hazard, "x", 0.0))**2 + (self.ball.y - getattr(hazard, "y", 0.0))**2
                     hr = getattr(hazard, "radius", 50.0)
                     if dist_sq < (hr + getattr(self.ball, "radius", 10.0))**2:
@@ -2274,7 +2421,7 @@ class Action:
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 surfing = False
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "kind", "") in ["lava", "acid", "fire", "poison", "ice_patch", "slime_puddle"]:
+                    if getattr(hazard, "kind", "") in ["deployable_ice_wall", "ice_wall_shrapnel", "lava", "acid", "fire", "poison", "ice_patch", "slime_puddle"]:
                         dist_sq = (self.ball.x - getattr(hazard, "x", 0.0))**2 + (self.ball.y - getattr(hazard, "y", 0.0))**2
                         hr = getattr(hazard, "radius", 50.0)
                         if dist_sq < (hr + getattr(self.ball, "radius", 10.0))**2:
@@ -2771,7 +2918,7 @@ class Action:
             closest_bumper = None
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "kind", "") in ["bumper", "electric_bumper", "magnetic_bumper", "link_bumper", "chain_reaction_bumper", "time_dilation_bumper", "pinball_bumper", "stationary_bumper"]:
+                    if getattr(hazard, "kind", "") in ["deployable_ice_wall", "ice_wall_shrapnel", "bumper", "electric_bumper", "magnetic_bumper", "link_bumper", "chain_reaction_bumper", "time_dilation_bumper", "pinball_bumper", "stationary_bumper"]:
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
                         dist_sq = dx*dx + dy*dy
@@ -3005,7 +3152,7 @@ class Action:
             self.ball.trap_disarm_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in list(self.world.arena.hazards):
-                    if getattr(hazard, "kind", "") in ["trap", "sticky_bomb_trap"]:
+                    if getattr(hazard, "kind", "") in ["deployable_ice_wall", "ice_wall_shrapnel", "trap", "sticky_bomb_trap"]:
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         # 300 radius reveal = 90000 dist sq
                         if dist_sq < 90000:
@@ -3870,7 +4017,7 @@ class Action:
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 disabled_any = False
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "kind", "") in ["bumper", "electric_bumper", "breakable_wall"]:
+                    if getattr(hazard, "kind", "") in ["deployable_ice_wall", "ice_wall_shrapnel", "bumper", "electric_bumper", "breakable_wall"]:
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
                         dist = math.hypot(dx, dy)
@@ -4214,7 +4361,7 @@ class Action:
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     hazards_to_destroy = []
                     for h in self.world.arena.hazards:
-                        if getattr(h, "kind", "") not in ["healing_spring", "defensive_shield", "personal_safe_zone"]:
+                        if getattr(h, "kind", "") not in ["deployable_ice_wall", "ice_wall_shrapnel", "healing_spring", "defensive_shield", "personal_safe_zone"]:
                             hx = getattr(h, "x", 0.0)
                             hy = getattr(h, "y", 0.0)
                             dx = hx - self.ball.x
@@ -5453,6 +5600,52 @@ class Action:
                     import math
                     self.ball.directional_shield_angle = math.atan2(nearest.y - self.ball.y, nearest.x - self.ball.x)
 
+        if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "deployable_ice_wall" in self.ball.inventory:
+            enemies = self._get_enemies()
+            if enemies:
+                nearest = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                dist = __import__("math").hypot(self.ball.x - nearest.x, self.ball.y - nearest.y)
+                if dist < 400:
+                    self.ball.inventory.remove("deployable_ice_wall")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        try:
+                            from arena.procedural_arena import Hazard
+                        except ImportError:
+                            Hazard = type("Hazard", (object,), {})
+
+                        dx = nearest.x - self.ball.x
+                        dy = nearest.y - self.ball.y
+                        mag = __import__("math").hypot(dx, dy)
+                        if mag > 0:
+                            dx, dy = dx / mag, dy / mag
+                        else:
+                            dx, dy = 1.0, 0.0
+
+                        wall_id = f"{len(self.world.arena.hazards)}_{getattr(self.world, 'tick', 0)}_ice_wall"
+                        wall_x = self.ball.x + dx * 60.0
+                        wall_y = self.ball.y + dy * 60.0
+
+                        try:
+                            wall = Hazard(wall_id, wall_x, wall_y, 40.0, "ice_wall", 0.0)
+                        except TypeError:
+                            wall = type("MockHazard", (object,), {})()
+                            wall.id = wall_id
+                            wall.x = wall_x
+                            wall.y = wall_y
+                            wall.radius = 40.0
+                            wall.kind = "ice_wall"
+                            wall.damage = 0.0
+
+                        wall.duration = 10.0
+                        wall.hp = 100.0
+                        wall.max_hp = 100.0
+                        setattr(wall, 'owner_id', getattr(self.ball, 'id', None))
+                        setattr(wall, 'is_ice_wall', True)
+                        setattr(wall, 'wall_dx', dy)  # Perpendicular vector for width
+                        setattr(wall, 'wall_dy', -dx)
+                        setattr(wall, 'wall_width', 100.0)
+                        self.world.arena.hazards.append(wall)
+
         if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "deployable_stasis_bubble" in self.ball.inventory:
             enemies = self._get_enemies()
             nearest = None
@@ -5461,7 +5654,7 @@ class Action:
             if nearest:
                 dist = math.hypot(self.ball.x - nearest.x, self.ball.y - nearest.y)
                 if dist < 300:
-                    self.ball.inventory.remove("deployable_stasis_bubble")
+                    self.ball.inventory.remove("deployable_stasis_bubble", "deployable_ice_wall", "ice_wall_shrapnel")
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         try:
                             from arena.procedural_arena import Hazard
@@ -5550,6 +5743,52 @@ class Action:
 
 
 
+        if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "deployable_ice_wall" in self.ball.inventory:
+            enemies = self._get_enemies()
+            if enemies:
+                nearest = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                dist = __import__("math").hypot(self.ball.x - nearest.x, self.ball.y - nearest.y)
+                if dist < 400:
+                    self.ball.inventory.remove("deployable_ice_wall")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        try:
+                            from arena.procedural_arena import Hazard
+                        except ImportError:
+                            Hazard = type("Hazard", (object,), {})
+
+                        dx = nearest.x - self.ball.x
+                        dy = nearest.y - self.ball.y
+                        mag = __import__("math").hypot(dx, dy)
+                        if mag > 0:
+                            dx, dy = dx / mag, dy / mag
+                        else:
+                            dx, dy = 1.0, 0.0
+
+                        wall_id = f"{len(self.world.arena.hazards)}_{getattr(self.world, 'tick', 0)}_ice_wall"
+                        wall_x = self.ball.x + dx * 60.0
+                        wall_y = self.ball.y + dy * 60.0
+
+                        try:
+                            wall = Hazard(wall_id, wall_x, wall_y, 40.0, "ice_wall", 0.0)
+                        except TypeError:
+                            wall = type("MockHazard", (object,), {})()
+                            wall.id = wall_id
+                            wall.x = wall_x
+                            wall.y = wall_y
+                            wall.radius = 40.0
+                            wall.kind = "ice_wall"
+                            wall.damage = 0.0
+
+                        wall.duration = 10.0
+                        wall.hp = 100.0
+                        wall.max_hp = 100.0
+                        setattr(wall, 'owner_id', getattr(self.ball, 'id', None))
+                        setattr(wall, 'is_ice_wall', True)
+                        setattr(wall, 'wall_dx', dy)  # Perpendicular vector for width
+                        setattr(wall, 'wall_dy', -dx)
+                        setattr(wall, 'wall_width', 100.0)
+                        self.world.arena.hazards.append(wall)
+
         if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "deployable_stasis_bubble" in self.ball.inventory:
             enemies = self._get_enemies()
             nearest = None
@@ -5558,7 +5797,7 @@ class Action:
             if nearest:
                 dist = math.hypot(self.ball.x - nearest.x, self.ball.y - nearest.y)
                 if dist < 300:
-                    self.ball.inventory.remove("deployable_stasis_bubble")
+                    self.ball.inventory.remove("deployable_stasis_bubble", "deployable_ice_wall", "ice_wall_shrapnel")
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         try:
                             from arena.procedural_arena import Hazard
@@ -6485,7 +6724,7 @@ class Action:
                             self.world.arena.hazards.append(bh)
 
 
-                if getattr(hazard, "kind", "") in ["sticky_bomb", "sticky_bomb_trap"]:
+                if getattr(hazard, "kind", "") in ["deployable_ice_wall", "ice_wall_shrapnel", "sticky_bomb", "sticky_bomb_trap"]:
                     attached_id = getattr(hazard, "attached_id", None)
                     if attached_id is None:
                         if hasattr(self.world, "balls"):
@@ -13748,7 +13987,7 @@ class Action:
                                     # Reflect ball
                                     nx = dx / dist
                                     ny = dy / dist
-                                    bounce_strength = 3600.0 * delta if getattr(hazard, "kind", "") in ["pinball_bumper", "stationary_bumper"] else 1200.0 * delta
+                                    bounce_strength = 3600.0 * delta if getattr(hazard, "kind", "") in ["deployable_ice_wall", "ice_wall_shrapnel", "pinball_bumper", "stationary_bumper"] else 1200.0 * delta
                                     if getattr(self.ball, "kinetic_shield_active", False):
                                         bounce_strength *= 0.5
                                         if getattr(self.ball, "bumper_synergy_active", False):
@@ -13762,7 +14001,7 @@ class Action:
                                     self.ball.x += nx * bounce_strength
                                     self.ball.y += ny * bounce_strength
 
-                                    speed_mult = 8000.0 if getattr(hazard, "kind", "") in ["pinball_bumper", "stationary_bumper"] else 4000.0
+                                    speed_mult = 8000.0 if getattr(hazard, "kind", "") in ["deployable_ice_wall", "ice_wall_shrapnel", "pinball_bumper", "stationary_bumper"] else 4000.0
                                     self.ball.vx = nx * speed_mult
                                     self.ball.vy = ny * speed_mult
                                     if getattr(self.ball, "kinetic_shield_active", False):
@@ -14788,7 +15027,7 @@ class Action:
 
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for hazard in getattr(self.world.arena, "hazards", []):
-                if getattr(hazard, "kind", "") in ["tall_grass_seed", "healing_fruit_seed"]:
+                if getattr(hazard, "kind", "") in ["deployable_ice_wall", "ice_wall_shrapnel", "tall_grass_seed", "healing_fruit_seed"]:
                     if hasattr(hazard, "growth_timer"):
                         hazard.growth_timer -= delta
                         if hazard.growth_timer <= 0:
@@ -19408,10 +19647,19 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "deployable_ice_wall":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("deployable_ice_wall")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "deployable_stasis_bubble":
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
-                    self.ball.inventory.append("deployable_stasis_bubble")
+                    self.ball.inventory.append("deployable_stasis_bubble", "deployable_ice_wall", "ice_wall_shrapnel")
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
@@ -19478,10 +19726,19 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "deployable_ice_wall":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("deployable_ice_wall")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "deployable_stasis_bubble":
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
-                    self.ball.inventory.append("deployable_stasis_bubble")
+                    self.ball.inventory.append("deployable_stasis_bubble", "deployable_ice_wall", "ice_wall_shrapnel")
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
@@ -22913,7 +23170,7 @@ class Action:
                     target_hazard = None
                     min_dist_sq = 22500.0  # Range 150
                     for h in hazards:
-                        if getattr(h, "kind", "") not in ["deployable_proximity_mud_puddle", "overload_zone_item", "deployable_directional_shield", "deployable_stasis_bubble", "deployable_decoy_swap_item", "deployable_reversal_trap", "deployable_pull_trap", "deployable_freeze_trap", "deployable_hologram_trap", "event_horizon_trap", "repulsion_zone", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "freeze_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "reverse_gravity_item", "gravity_multiplier_booster", "anchor_booster", "wind_shield_booster", "disruptor_booster", "emp_booster", "cursed_relic", "cursed_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "recall_booster", "survival_rewind_booster", "snapback_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "anchor_repulsor_booster", "gravity_well_booster", "overclock_booster", "chronosphere_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "grapple_chain_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "insulator_booster", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "pinball_projectile_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "forecast_booster", "pet_item", "artillery_pet_item", "miniature_black_hole_item", "reverse_gravity_item", "wind_tunnel", "cryogenic_booster", "overload_zone_item", "eclipse_booster_item", "eclipse_booster", "echolocation_booster"]:
+                        if getattr(h, "kind", "") not in ["deployable_ice_wall", "ice_wall_shrapnel", "deployable_proximity_mud_puddle", "overload_zone_item", "deployable_directional_shield", "deployable_stasis_bubble", "deployable_ice_wall", "ice_wall_shrapnel", "deployable_decoy_swap_item", "deployable_reversal_trap", "deployable_pull_trap", "deployable_freeze_trap", "deployable_hologram_trap", "event_horizon_trap", "repulsion_zone", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "freeze_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "reverse_gravity_item", "gravity_multiplier_booster", "anchor_booster", "wind_shield_booster", "disruptor_booster", "emp_booster", "cursed_relic", "cursed_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "recall_booster", "survival_rewind_booster", "snapback_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "anchor_repulsor_booster", "gravity_well_booster", "overclock_booster", "chronosphere_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "grapple_chain_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "insulator_booster", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "pinball_projectile_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "forecast_booster", "pet_item", "artillery_pet_item", "miniature_black_hole_item", "reverse_gravity_item", "wind_tunnel", "cryogenic_booster", "overload_zone_item", "eclipse_booster_item", "eclipse_booster", "echolocation_booster"]:
                             dx = h.x - self.ball.x
                             dy = h.y - self.ball.y
                             dist_sq = dx*dx + dy*dy
@@ -22963,7 +23220,7 @@ class Action:
                     target_hazard = None
                     min_dist_sq = 40000.0  # Range 200
                     for h in hazards:
-                        if getattr(h, "kind", "") not in ["event_horizon_trap", "repulsion_zone", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "forecast_booster", "blink_booster", "wind_tunnel", "cryogenic_booster"]:
+                        if getattr(h, "kind", "") not in ["deployable_ice_wall", "ice_wall_shrapnel", "event_horizon_trap", "repulsion_zone", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "forecast_booster", "blink_booster", "wind_tunnel", "cryogenic_booster"]:
                             dx = h.x - self.ball.x
                             dy = h.y - self.ball.y
                             dist_sq = dx*dx + dy*dy
@@ -26781,7 +27038,7 @@ class Action:
             self.ball.pull_booster_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["deployable_directional_shield", "deployable_stasis_bubble", "deployable_reversal_trap", "deployable_pull_trap", "deployable_freeze_trap", "deployable_hologram_trap", "deployable_shrapnel_trap", "vampiric_aura_booster", "vampiric_puddle", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "vision_reduction_trap", "decoy_item", "silence_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "entanglement_booster", "weather_booster", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "invert_booster", "freeze_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "reverse_gravity_item", "gravity_multiplier_booster", "anchor_booster", "wind_shield_booster", "disruptor_booster", "emp_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "recall_booster", "survival_rewind_booster", "snapback_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "anchor_repulsor_booster", "gravity_well_booster", "overclock_booster", "chronosphere_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "grapple_chain_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "insulator_booster", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "pinball_projectile_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "pet_item", "artillery_pet_item", "miniature_black_hole_item", "reverse_gravity_item", "wind_tunnel", "cryogenic_booster", "overload_zone_item", "eclipse_booster_item", "eclipse_booster", "echolocation_booster"]:
+                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["deployable_ice_wall", "ice_wall_shrapnel", "deployable_directional_shield", "deployable_stasis_bubble", "deployable_ice_wall", "ice_wall_shrapnel", "deployable_reversal_trap", "deployable_pull_trap", "deployable_freeze_trap", "deployable_hologram_trap", "deployable_shrapnel_trap", "vampiric_aura_booster", "vampiric_puddle", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "vision_reduction_trap", "decoy_item", "silence_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "entanglement_booster", "weather_booster", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "invert_booster", "freeze_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "reverse_gravity_item", "gravity_multiplier_booster", "anchor_booster", "wind_shield_booster", "disruptor_booster", "emp_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "recall_booster", "survival_rewind_booster", "snapback_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "anchor_repulsor_booster", "gravity_well_booster", "overclock_booster", "chronosphere_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "grapple_chain_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "insulator_booster", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "pinball_projectile_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "pet_item", "artillery_pet_item", "miniature_black_hole_item", "reverse_gravity_item", "wind_tunnel", "cryogenic_booster", "overload_zone_item", "eclipse_booster_item", "eclipse_booster", "echolocation_booster"]:
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         if dist_sq < 250000: # 500 range
                             import math
@@ -26799,7 +27056,7 @@ class Action:
                 for hazard in self.world.arena.hazards:
                     if getattr(hazard, "emp_disabled_timer", 0.0) > 0:
                         continue
-                    if getattr(hazard, "kind", "") in ["booster", "repulsor_booster", "anchor_repulsor_booster", "anchor_repulsor_booster", "healing_spring", "personal_safe_zone", "defensive_shield", "event_horizon_trap", "repulsion_zone", "forecast_booster", "pet_item", "artillery_pet_item", "miniature_black_hole_item", "reverse_gravity_item", "wind_tunnel", "cryogenic_booster", "overload_zone_item", "eclipse_booster_item", "eclipse_booster", "echolocation_booster"]:
+                    if getattr(hazard, "kind", "") in ["deployable_ice_wall", "ice_wall_shrapnel", "booster", "repulsor_booster", "anchor_repulsor_booster", "anchor_repulsor_booster", "healing_spring", "personal_safe_zone", "defensive_shield", "event_horizon_trap", "repulsion_zone", "forecast_booster", "pet_item", "artillery_pet_item", "miniature_black_hole_item", "reverse_gravity_item", "wind_tunnel", "cryogenic_booster", "overload_zone_item", "eclipse_booster_item", "eclipse_booster", "echolocation_booster"]:
                         continue
 
                     dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
@@ -26836,7 +27093,7 @@ class Action:
                     if getattr(hazard, "emp_disabled_timer", 0.0) > 0:
                         continue
                     # Ignore harmless items/boosters and the repulsor zone itself if we don't want to break it
-                    if getattr(hazard, "kind", "") in ["booster", "repulsor_booster", "anchor_repulsor_booster", "healing_spring", "personal_safe_zone", "defensive_shield", "event_horizon_trap", "repulsion_zone", "forecast_booster", "pet_item", "artillery_pet_item", "miniature_black_hole_item", "reverse_gravity_item", "wind_tunnel", "cryogenic_booster", "overload_zone_item", "eclipse_booster_item", "eclipse_booster", "echolocation_booster"]:
+                    if getattr(hazard, "kind", "") in ["deployable_ice_wall", "ice_wall_shrapnel", "booster", "repulsor_booster", "anchor_repulsor_booster", "healing_spring", "personal_safe_zone", "defensive_shield", "event_horizon_trap", "repulsion_zone", "forecast_booster", "pet_item", "artillery_pet_item", "miniature_black_hole_item", "reverse_gravity_item", "wind_tunnel", "cryogenic_booster", "overload_zone_item", "eclipse_booster_item", "eclipse_booster", "echolocation_booster"]:
                         continue
 
                     dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
