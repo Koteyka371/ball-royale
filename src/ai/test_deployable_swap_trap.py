@@ -71,7 +71,7 @@ def test_deployable_swap_trap_activates_and_swaps():
     action.execute("none", 1.0)
     assert trap.activation_timer == 1.0
     assert not getattr(trap, "trap_triggered", False)
-    assert ally.x == 200 and ally.y == 200
+    assert my_ball.x == 100 and my_ball.y == 100
     assert enemy.x == 300 and enemy.y == 300
 
     world.tick += 1
@@ -80,7 +80,8 @@ def test_deployable_swap_trap_activates_and_swaps():
     assert getattr(trap, "trap_triggered", True)
     assert trap.duration == 0.0 # Destroyed
 
-    # Swap check
-    assert ally.x == 300 and ally.y == 300
-    assert enemy.x == 200 and enemy.y == 200
+    # Swap check - should swap owner and enemy
+    assert my_ball.x == 300 and my_ball.y == 300
+    assert enemy.x == 100 and enemy.y == 100
+    assert ally.x == 200 and ally.y == 200     # Unaffected
     assert enemy2.x == 500 and enemy2.y == 500 # Unaffected
