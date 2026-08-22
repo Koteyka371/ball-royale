@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1983] Echo Location Mechanic — *2026-08-22 10:45:20 UTC*
+
+A new ball type or item that grants a passive ability where the ball constantly pulses out 'echolocation' waves. Enemies caught in the waves are briefly highlighted, even if outside the ball's base vision radius, creating a powerful tracking advantage.
+
+---
+
 ## [idea-2008] Aura Black Hole Trap — *2026-08-22 10:29:52 UTC*
 
 A late-game trap that actively sucks away all active aura buffs from nearby enemies. If an Aura Pulse Event triggers while enemies are caught in the black hole, the trap detonates, spreading the accumulated auras to all friendly units.
