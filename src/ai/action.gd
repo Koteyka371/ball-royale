@@ -8392,45 +8392,16 @@ func execute(strategy: String, delta: float):
 									elif typeof(self.ball) == TYPE_OBJECT: self.ball.set(buff, val - drain)
 									siphoned_timers += drain
 
-							if siphoned_timers > 0 and trap_owner_id != null:
-								var owner = null
-								for ob in arena_ref.balls:
-									var ob_id = null
-									if typeof(ob) == TYPE_DICTIONARY and ob.has("id"): ob_id = ob["id"]
-									elif typeof(ob) == TYPE_OBJECT and "id" in ob: ob_id = ob.id
-									if ob_id == trap_owner_id:
-										owner = ob
-										break
-
-								var owner_alive = true
-								if owner != null:
-									if typeof(owner) == TYPE_DICTIONARY and owner.has("alive"): owner_alive = owner["alive"]
-									elif typeof(owner) == TYPE_OBJECT and "alive" in owner: owner_alive = owner.alive
-
-								if owner == null or not owner_alive:
-									for ob in arena_ref.balls:
-										var ob_alive = true
-										if typeof(ob) == TYPE_DICTIONARY and ob.has("alive"): ob_alive = ob["alive"]
-										elif typeof(ob) == TYPE_OBJECT and "alive" in ob: ob_alive = ob.alive
-										var ob_team = null
-										if typeof(ob) == TYPE_DICTIONARY and ob.has("team"): ob_team = ob["team"]
-										elif typeof(ob) == TYPE_OBJECT and "team" in ob: ob_team = ob.team
-										elif typeof(ob) == TYPE_DICTIONARY and ob.has("ball_type"): ob_team = ob["ball_type"]
-										elif typeof(ob) == TYPE_OBJECT and "ball_type" in ob: ob_team = ob.ball_type
-
-										if ob_alive and ob_team == trap_owner_team:
-											owner = ob
-											break
-
-								if owner != null:
-									var buffs_tgt = ["aura_booster_timer", "aura_amplifier_timer", "vampiric_aura_timer"]
-									var target_buff = buffs_tgt[randi() % buffs_tgt.size()]
-									var c_val = 0.0
-									if typeof(owner) == TYPE_DICTIONARY and owner.has(target_buff): c_val = owner[target_buff]
-									elif typeof(owner) == TYPE_OBJECT and target_buff in owner: c_val = owner.get(target_buff)
-
-									if typeof(owner) == TYPE_DICTIONARY: owner[target_buff] = c_val + siphoned_timers
-									elif typeof(owner) == TYPE_OBJECT: owner.set(target_buff, c_val + siphoned_timers)
+							if siphoned_timers > 0:
+								if typeof(hazard) == TYPE_DICTIONARY:
+									if hazard.has("accumulated_auras"): hazard["accumulated_auras"] += siphoned_timers
+									else: hazard["accumulated_auras"] = siphoned_timers
+								elif typeof(hazard) == TYPE_OBJECT:
+									if "accumulated_auras" in hazard: hazard.accumulated_auras += siphoned_timers
+									elif hazard.has_method("set_meta"):
+										var current = 0.0
+										if hazard.has_meta("accumulated_auras"): current = hazard.get_meta("accumulated_auras")
+										hazard.set_meta("accumulated_auras", current + siphoned_timers)
 				if kind == "buff_siphon_trap":
 					var hx = 0.0
 					if typeof(hazard) == TYPE_DICTIONARY and hazard.has("x"): hx = hazard["x"]

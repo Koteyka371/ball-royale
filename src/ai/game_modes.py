@@ -33194,6 +33194,36 @@ class AuraPulseEventMode(GameMode):
 
             aura_buff_keys = ["vampiric_aura_timer", "decoy_aura_timer", "cosmetic_aura_scale"]
 
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                for trap in world.arena.hazards:
+                    if getattr(trap, "kind", "") == "aura_siphon_trap":
+                        accum = getattr(trap, "accumulated_auras", 0.0)
+                        if accum > 0:
+                            # Check if any enemy is caught in a black hole
+                            enemy_in_black_hole = False
+                            for hazard in world.arena.hazards:
+                                if getattr(hazard, "kind", "") == "black_hole":
+                                    for b in balls:
+                                        if not getattr(b, "alive", True): continue
+                                        if getattr(b, "team", getattr(b, "ball_type", "")) == getattr(trap, "owner_team", None): continue
+                                        import math
+                                        dist = math.hypot(b.x - hazard.x, b.y - hazard.y)
+                                        if dist <= getattr(hazard, "radius", 50.0) + getattr(b, "radius", 10.0):
+                                            enemy_in_black_hole = True
+                                            break
+                                if enemy_in_black_hole: break
+
+                            if enemy_in_black_hole:
+                                # Detonate and spread to all friendly units
+                                friendlies = [f for f in balls if getattr(f, "alive", True) and getattr(f, "team", getattr(f, "ball_type", "")) == getattr(trap, "owner_team", None)]
+                                for f in friendlies:
+                                    f.aura_booster_timer = getattr(f, "aura_booster_timer", 0.0) + accum
+                                    f.vampiric_aura_timer = getattr(f, "vampiric_aura_timer", 0.0) + accum
+                                trap.duration = 0.0
+                                trap.active = False
+                                if hasattr(world, "events"):
+                                    world.events.append({'type': 'visual_effect', 'data': {'type': 'explosion', 'x': trap.x, 'y': trap.y, 'radius': 150.0, 'color': 'purple'}})
+
             for b in balls:
                 if not getattr(b, "alive", True) or getattr(b, "is_decoy", False):
                     continue

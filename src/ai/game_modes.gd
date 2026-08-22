@@ -53904,6 +53904,112 @@ class AuraPulseEventMode extends GameMode:
 			pulse_timer = 0.0
 			var aura_buff_keys = ["vampiric_aura_timer", "decoy_aura_timer", "cosmetic_aura_scale"]
 
+			if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
+				for trap in world.arena.hazards:
+					var kind = ""
+					if typeof(trap) == TYPE_DICTIONARY and trap.has("kind"): kind = trap["kind"]
+					elif typeof(trap) == TYPE_OBJECT and "kind" in trap: kind = trap.kind
+
+					if kind == "aura_siphon_trap":
+						var accum = 0.0
+						if typeof(trap) == TYPE_DICTIONARY and trap.has("accumulated_auras"): accum = float(trap["accumulated_auras"])
+						elif typeof(trap) == TYPE_OBJECT and "accumulated_auras" in trap: accum = float(trap.accumulated_auras)
+						elif typeof(trap) == TYPE_OBJECT and trap.has_method("has_meta") and trap.has_meta("accumulated_auras"): accum = float(trap.get_meta("accumulated_auras"))
+
+						if accum > 0:
+							var owner_team = null
+							if typeof(trap) == TYPE_DICTIONARY and trap.has("owner_team"): owner_team = trap["owner_team"]
+							elif typeof(trap) == TYPE_OBJECT and "owner_team" in trap: owner_team = trap.owner_team
+
+							var enemy_in_black_hole = false
+							for hazard in world.arena.hazards:
+								var h_kind = ""
+								if typeof(hazard) == TYPE_DICTIONARY and hazard.has("kind"): h_kind = hazard["kind"]
+								elif typeof(hazard) == TYPE_OBJECT and "kind" in hazard: h_kind = hazard.kind
+
+								if h_kind == "black_hole":
+									var hx = 0.0
+									if typeof(hazard) == TYPE_DICTIONARY and hazard.has("x"): hx = hazard["x"]
+									elif typeof(hazard) == TYPE_OBJECT and "x" in hazard: hx = hazard.x
+									var hy = 0.0
+									if typeof(hazard) == TYPE_DICTIONARY and hazard.has("y"): hy = hazard["y"]
+									elif typeof(hazard) == TYPE_OBJECT and "y" in hazard: hy = hazard.y
+									var h_rad = 50.0
+									if typeof(hazard) == TYPE_DICTIONARY and hazard.has("radius"): h_rad = hazard["radius"]
+									elif typeof(hazard) == TYPE_OBJECT and "radius" in hazard: h_rad = hazard.radius
+
+									for b in balls:
+										if not b.alive: continue
+										var b_team = ""
+										if typeof(b) == TYPE_DICTIONARY and b.has("team"): b_team = b["team"]
+										elif typeof(b) == TYPE_OBJECT and "team" in b: b_team = b.team
+										elif typeof(b) == TYPE_DICTIONARY and b.has("ball_type"): b_team = b["ball_type"]
+										elif typeof(b) == TYPE_OBJECT and "ball_type" in b: b_team = b.ball_type
+
+										if b_team == owner_team: continue
+
+										var bx = 0.0
+										if typeof(b) == TYPE_DICTIONARY and b.has("x"): bx = b["x"]
+										elif typeof(b) == TYPE_OBJECT and "x" in b: bx = b.x
+										var by = 0.0
+										if typeof(b) == TYPE_DICTIONARY and b.has("y"): by = b["y"]
+										elif typeof(b) == TYPE_OBJECT and "y" in b: by = b.y
+										var b_rad = 10.0
+										if typeof(b) == TYPE_DICTIONARY and b.has("radius"): b_rad = b["radius"]
+										elif typeof(b) == TYPE_OBJECT and "radius" in b: b_rad = b.radius
+
+										var dist = sqrt(pow(hx - bx, 2) + pow(hy - by, 2))
+										if dist <= h_rad + b_rad:
+											enemy_in_black_hole = true
+											break
+								if enemy_in_black_hole: break
+
+							if enemy_in_black_hole:
+								for f in balls:
+									if not f.alive: continue
+									var f_team = ""
+									if typeof(f) == TYPE_DICTIONARY and f.has("team"): f_team = f["team"]
+									elif typeof(f) == TYPE_OBJECT and "team" in f: f_team = f.team
+									elif typeof(f) == TYPE_DICTIONARY and f.has("ball_type"): f_team = f["ball_type"]
+									elif typeof(f) == TYPE_OBJECT and "ball_type" in f: f_team = f.ball_type
+
+									if f_team == owner_team:
+										if typeof(f) == TYPE_DICTIONARY:
+											if f.has("aura_booster_timer"): f["aura_booster_timer"] += accum
+											else: f["aura_booster_timer"] = accum
+											if f.has("vampiric_aura_timer"): f["vampiric_aura_timer"] += accum
+											else: f["vampiric_aura_timer"] = accum
+										elif typeof(f) == TYPE_OBJECT:
+											if "aura_booster_timer" in f: f.aura_booster_timer += accum
+											elif f.has_method("set_meta"):
+												var current = 0.0
+												if f.has_meta("aura_booster_timer"): current = f.get_meta("aura_booster_timer")
+												f.set_meta("aura_booster_timer", current + accum)
+											if "vampiric_aura_timer" in f: f.vampiric_aura_timer += accum
+											elif f.has_method("set_meta"):
+												var current = 0.0
+												if f.has_meta("vampiric_aura_timer"): current = f.get_meta("vampiric_aura_timer")
+												f.set_meta("vampiric_aura_timer", current + accum)
+
+								if typeof(trap) == TYPE_DICTIONARY:
+									if trap.has("duration"): trap["duration"] = 0.0
+									if trap.has("active"): trap["active"] = false
+								elif typeof(trap) == TYPE_OBJECT:
+									if "duration" in trap: trap.duration = 0.0
+									if "active" in trap: trap.active = false
+									elif trap.has_method("set_meta"):
+										trap.set_meta("duration", 0.0)
+										trap.set_meta("active", false)
+
+								if world != null and "events" in world and typeof(world.events) == TYPE_ARRAY:
+									var tx = 0.0
+									if typeof(trap) == TYPE_DICTIONARY and trap.has("x"): tx = trap["x"]
+									elif typeof(trap) == TYPE_OBJECT and "x" in trap: tx = trap.x
+									var ty = 0.0
+									if typeof(trap) == TYPE_DICTIONARY and trap.has("y"): ty = trap["y"]
+									elif typeof(trap) == TYPE_OBJECT and "y" in trap: ty = trap.y
+									world.events.append({"type": "visual_effect", "data": {"type": "explosion", "x": tx, "y": ty, "radius": 150.0, "color": "purple"}})
+
 			for b in balls:
 				if not b.alive or b.get("is_decoy", false):
 					continue
