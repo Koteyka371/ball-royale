@@ -17262,6 +17262,16 @@ class Action:
             def get_by(b_obj):
                 return b_obj.get("y", 0) if isinstance(b_obj, dict) else getattr(b_obj, "y", 0)
 
+
+            # Check for blood orb
+            for b in boosters:
+                if getattr(b, 'kind', '') == 'blood_orb' and getattr(b, 'active', True):
+                    heal_amount = 20.0
+                    self.ball.hp = min(getattr(self.ball, 'hp', 100.0) + heal_amount, getattr(self.ball, 'max_hp', 100.0))
+                    b.active = False
+                    if b in self.world.boosters:
+                        self.world.boosters.remove(b)
+
             # Check for phylactery_item and chameleon_item
             for b in boosters:
                 if getattr(b, 'kind', '') == 'anti_radiation_booster' and getattr(b, 'active', True):

@@ -38386,6 +38386,79 @@ class NullificationZoneMode(GameMode):
                     b.silence_timer = max(getattr(b, "silence_timer", 0.0), 0.5)
 
 
+
+class BloodFogMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Blood Fog"
+        self.description = "A dense fog rolls in periodically. While in the fog, players slowly lose HP which spawns global blood orbs that heal when collected."
+        self.fog_timer = 15.0
+        self.fog_active = False
+
+    def setup(self, world, balls):
+        if hasattr(super(), 'setup'):
+            super().setup(world, balls)
+        self.fog_timer = 15.0
+        self.fog_active = False
+        self.drain_accumulator = 0.0
+
+    def tick(self, world, balls, delta=0.016):
+        if hasattr(super(), 'tick'):
+            super().tick(world, balls, delta)
+
+        self.fog_timer -= delta
+        if self.fog_timer <= 0:
+            self.fog_active = not self.fog_active
+            self.fog_timer = 15.0 if self.fog_active else 10.0
+
+            if hasattr(world, "add_event"):
+                if self.fog_active:
+                    world.add_event("visual_effect", {"type": "blood_fog_start", "message": "The Blood Fog rolls in! Health is draining."})
+                else:
+                    world.add_event("visual_effect", {"type": "blood_fog_end", "message": "The Blood Fog dissipates."})
+
+        if self.fog_active:
+            if hasattr(world, "arena"):
+                world.arena.is_foggy = True
+
+            drain_rate = 5.0
+            total_drain_this_tick = 0.0
+
+            for b in balls:
+                if getattr(b, "alive", True) and not getattr(b, "is_hologram", False) and getattr(b, "team", "") != "Fog":
+                    drain = drain_rate * delta
+                    b.hp = getattr(b, "hp", 100.0) - drain
+                    if b.hp <= 0:
+                        b.hp = 0
+                        if hasattr(b, "alive"):
+                            b.alive = False
+                    total_drain_this_tick += drain
+
+            self.drain_accumulator += total_drain_this_tick
+
+            # Spawn a blood orb for every 20 HP drained globally
+            while self.drain_accumulator >= 20.0:
+                self.drain_accumulator -= 20.0
+
+                class BloodOrb:
+                    def __init__(self, id, x, y):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.kind = "blood_orb"
+                        self.radius = 15.0
+                        self.active = True
+
+                if hasattr(world, "boosters") and hasattr(world, "arena"):
+                    import random
+                    orb_id = 90000 + random.randint(0, 9999)
+                    bx = random.uniform(50, getattr(world.arena, "width", 2000) - 50)
+                    by = random.uniform(50, getattr(world.arena, "height", 2000) - 50)
+                    world.boosters.append(BloodOrb(orb_id, bx, by))
+        else:
+            if hasattr(world, "arena"):
+                world.arena.is_foggy = False
+
 class CrimsonFogEventMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -39927,6 +40000,7 @@ GAME_MODES = {
     "aura_link_royale": AuraLinkRoyaleMode(),
     "crimson_fog_event": CrimsonFogEventMode(),
     "nullification_zone": NullificationZoneMode(),
+    "blood_fog": BloodFogMode(),
     'crumbling_arena': CrumblingArenaMode(),
     'cursed_altar': CursedAltarMode(),
     'healing_rain': HealingRainMode(),
