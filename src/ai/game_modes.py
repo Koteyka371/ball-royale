@@ -3971,8 +3971,16 @@ class BattleRoyaleMode(GameMode):
                 season_num = world.profile_manager.leaderboard_manager.data.get("current_season", 1)
             season_index = ((season_num - 1) % 4) + 1
 
+            theme = ""
+            if hasattr(world, "leaderboard_manager") and hasattr(world.leaderboard_manager, "get_theme"):
+                theme = world.leaderboard_manager.get_theme(season_num)
+            elif hasattr(world, "profile_manager") and hasattr(world.profile_manager, "leaderboard_manager") and hasattr(world.profile_manager.leaderboard_manager, "get_theme"):
+                theme = world.profile_manager.leaderboard_manager.get_theme(season_num)
+
             boss_type = "juggernaut"
-            if season_index == 4 or self.weather in ["snow", "blizzard"]:
+            if theme == "Abyssal":
+                boss_type = "abyssal_boss"
+            elif season_index == 4 or self.weather in ["snow", "blizzard"]:
                 boss_type = "yeti"
             elif season_index == 2 or self.weather in ["heatwave", "sandstorm"]:
                 boss_type = "sandworm"
@@ -3994,6 +4002,13 @@ class BattleRoyaleMode(GameMode):
                     self.base_speed = 120.0
                     self.damage = 40.0
                     self.base_damage = 40.0
+                    if b_type == "abyssal_boss":
+                        self.hp = 8000.0
+                        self.max_hp = 8000.0
+                        self.speed = 100.0
+                        self.base_speed = 100.0
+                        self.damage = 60.0
+                        self.base_damage = 60.0
                     self.perception_radius = 500.0
                     self.base_perception_radius = 500.0
                     self.is_final_boss = True
@@ -4016,6 +4031,19 @@ class BattleRoyaleMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if getattr(b, "is_final_boss", False):
                 if getattr(b, "alive", False):
+                    if getattr(b, "ball_type", "") == "abyssal_boss":
+                        import math
+                        for p in balls:
+                            if p is not b and getattr(p, "alive", False) and not getattr(p, "is_final_boss", False) and getattr(p, "ball_type", None) != "spectator":
+                                dx = b.x - p.x
+                                dy = b.y - p.y
+                                dist = math.hypot(dx, dy)
+                                if dist > 0 and dist < 400.0:
+                                    p.x += (dx / dist) * 200.0 * delta
+                                    p.y += (dy / dist) * 200.0 * delta
+                                if dist < b.radius + getattr(p, "radius", 20.0):
+                                    p.hp -= 50.0 * delta
+
                     # Check for evolution based on safe zone shrinks. We'll use a timer or check zone size
                     if not hasattr(b, "last_zone_radius"):
                         b.last_zone_radius = self.zone_radius
@@ -4105,6 +4133,23 @@ class BattleRoyaleMode(GameMode):
                             "message": f"The final boss was defeated! It dropped {mut_count + 1} prestige tokens!",
                             "prestige_tokens_dropped": mut_count + 1
                         })
+                    if getattr(b, "ball_type", "") == "abyssal_boss":
+                        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                            for i in range(3):
+                                drop_x = b.x + getattr(self, "random", __import__("random")).uniform(-50, 50)
+                                drop_y = b.y + getattr(self, "random", __import__("random")).uniform(-50, 50)
+                                h_id = len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(10000, 99999)
+                                class AbyssalFallbackHazard:
+                                    def __init__(self, id, x, y, radius, kind, damage):
+                                        self.id = id
+                                        self.x = x
+                                        self.y = y
+                                        self.radius = radius
+                                        self.kind = kind
+                                        self.damage = damage
+                                        self.duration = 20.0
+                                item = AbyssalFallbackHazard(h_id, drop_x, drop_y, 25.0, "legendary_item", 0.0)
+                                world.arena.hazards.append(item)
 
 
         # Handle decoy movement mimicking
