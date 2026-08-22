@@ -3145,6 +3145,46 @@ func _attempt_damage_internal(attacker, target) -> void:
 					elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("set_meta"):
 						attacker.set_meta("hp", a_hp)
 
+	if old_hp > 0 and new_hp <= 0:
+		var pm_local = self.world.profile_manager if typeof(self.world) == TYPE_OBJECT and "profile_manager" in self.world else null
+		if pm_local != null and typeof(pm_local) == TYPE_OBJECT and pm_local.has_method("get_enforcer_pledge") and pm_local.has_method("is_nemesis"):
+			var a_type2 = ""
+			if typeof(attacker) == TYPE_DICTIONARY and attacker.has("ball_type"): a_type2 = attacker.ball_type
+			elif typeof(attacker) == TYPE_OBJECT and "ball_type" in attacker: a_type2 = attacker.ball_type
+
+			var t_type2 = ""
+			if typeof(target) == TYPE_DICTIONARY and target.has("ball_type"): t_type2 = target.ball_type
+			elif typeof(target) == TYPE_OBJECT and "ball_type" in target: t_type2 = target.ball_type
+
+			if a_type2 != "" and t_type2 != "":
+				var pledge = pm_local.get_enforcer_pledge(a_type2)
+				if pledge != "" and (pm_local.is_nemesis(pledge, t_type2) or pm_local.is_nemesis(t_type2, pledge)):
+					var stacks = 0
+					if typeof(attacker) == TYPE_OBJECT and "enforcer_vengeance_stacks" in attacker:
+						stacks = attacker.enforcer_vengeance_stacks
+					elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("enforcer_vengeance_stacks"):
+						stacks = attacker.enforcer_vengeance_stacks
+					stacks += 1
+
+					var current_t = 0.0
+					if typeof(attacker) == TYPE_OBJECT and "enforcer_aura_timer" in attacker: current_t = attacker.enforcer_aura_timer
+					elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("enforcer_aura_timer"): current_t = attacker.enforcer_aura_timer
+					var t = current_t + 5.0 + (stacks * 2.0)
+
+					if typeof(attacker) == TYPE_OBJECT:
+						if "enforcer_vengeance_stacks" in attacker: attacker.enforcer_vengeance_stacks = stacks
+						else: attacker.set_meta("enforcer_vengeance_stacks", stacks)
+						if "enforcer_aura_timer" in attacker: attacker.enforcer_aura_timer = t
+						else: attacker.set_meta("enforcer_aura_timer", t)
+					elif typeof(attacker) == TYPE_DICTIONARY:
+						attacker["enforcer_vengeance_stacks"] = stacks
+						attacker["enforcer_aura_timer"] = t
+
+					if typeof(self.world) == TYPE_OBJECT and "events" in self.world:
+						var ax = attacker.get("x", 0.0) if typeof(attacker) == TYPE_DICTIONARY else (attacker.x if "x" in attacker else 0.0)
+						var ay = attacker.get("y", 0.0) if typeof(attacker) == TYPE_DICTIONARY else (attacker.y if "y" in attacker else 0.0)
+						self.world.events.append({"type": "visual_effect", "data": {"type": "enforcer_aura", "x": ax, "y": ay, "stacks": stacks}})
+
 	if new_hp < old_hp:
 		self._award_xp(attacker, 10.0, self.world)
 		if new_hp <= 0 and old_hp > 0:
