@@ -47508,6 +47508,10 @@ class FactionWarMode(GameMode):
 
         if pm and self.winning_faction != "Tie":
             player_faction = pm.get_faction() if hasattr(pm, "get_faction") else None
+
+            gm = getattr(world, "guild_manager", None)
+            active_guild = getattr(world, "active_guild_name", None)
+
             if player_faction == self.winning_faction:
                 ball_to_unlock = f"{self.winning_faction.lower()}_champion"
                 if "unlocked_balls" not in pm.data:
@@ -47515,6 +47519,12 @@ class FactionWarMode(GameMode):
                 if ball_to_unlock not in pm.data["unlocked_balls"]:
                     pm.data["unlocked_balls"].append(ball_to_unlock)
                     pm.save()
+
+                if gm and active_guild:
+                    if hasattr(gm, "data") and "guilds" in gm.data and active_guild in gm.data["guilds"]:
+                        gm.data["guilds"][active_guild]["resources"] = gm.data["guilds"][active_guild].get("resources", 0) + 1000
+                        if hasattr(gm, "save"):
+                            gm.save()
 
 class ChainReactionMode(GameMode):
     def __init__(self):
