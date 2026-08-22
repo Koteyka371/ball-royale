@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2009] Vampiric Overdrive — *2026-08-22 19:26:00 UTC*
+
+A booster that drains the user's HP slowly over time but grants massively increased movement speed and damage, healing for double the damage dealt.
+
+---
+
 ## [idea-2050] Nemesis Faction War Event — *2026-08-22 18:54:57 UTC*
 
 Periodically, the game triggers a faction war where players who have pledged to the same Nemesis form an impromptu alliance. They must defend each other or the Nemesis against a horde of enemies or a rival Enforcer group, earning exclusive rewards for their guild.
