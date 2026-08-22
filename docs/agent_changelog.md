@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2045] Shrinking Safe Plates Mode — *2026-08-22 11:06:48 UTC*
+
+An arena mode where the battle takes place on floating plates that slowly shrink and occasionally tilt, dropping inactive players into an abyss.
+
+---
+
 ## [idea-1983] Echo Location Mechanic — *2026-08-22 10:45:20 UTC*
 
 A new ball type or item that grants a passive ability where the ball constantly pulses out 'echolocation' waves. Enemies caught in the waves are briefly highlighted, even if outside the ball's base vision radius, creating a powerful tracking advantage.
