@@ -73208,6 +73208,28 @@ class FactionWarMode extends GameMode:
 					pm.data["unlocked_balls"].append(ball_to_unlock)
 					if pm.has_method("save_profile"):
 						pm.save_profile()
+
+				var gm = null
+				var active_guild = null
+				if typeof(world) == TYPE_OBJECT and "guild_manager" in world:
+					gm = world.guild_manager
+				elif typeof(world) == TYPE_DICTIONARY and world.has("guild_manager"):
+					gm = world["guild_manager"]
+
+				if typeof(world) == TYPE_OBJECT and "active_guild_name" in world:
+					active_guild = world.active_guild_name
+				elif typeof(world) == TYPE_DICTIONARY and world.has("active_guild_name"):
+					active_guild = world["active_guild_name"]
+
+				if gm != null and active_guild != null:
+					if typeof(gm) == TYPE_OBJECT and "data" in gm and typeof(gm.data) == TYPE_DICTIONARY and gm.data.has("guilds") and typeof(gm.data["guilds"]) == TYPE_DICTIONARY and gm.data["guilds"].has(active_guild):
+						if typeof(gm.data["guilds"][active_guild]) == TYPE_DICTIONARY:
+							var cur_res = 0
+							if gm.data["guilds"][active_guild].has("resources"):
+								cur_res = gm.data["guilds"][active_guild]["resources"]
+							gm.data["guilds"][active_guild]["resources"] = cur_res + 1000
+							if gm.has_method("save"):
+								gm.save()
 const WeatherStationsMode = preload("res://src/ai/stations.gd")
 GAME_MODES['weather_stations'] = WeatherStationsMode.new()
 
