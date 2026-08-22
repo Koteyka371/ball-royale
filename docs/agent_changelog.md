@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2008] Aura Black Hole Trap — *2026-08-22 10:29:52 UTC*
+
+A late-game trap that actively sucks away all active aura buffs from nearby enemies. If an Aura Pulse Event triggers while enemies are caught in the black hole, the trap detonates, spreading the accumulated auras to all friendly units.
+
+---
+
 ## [idea-2048] Quantum Displacement Mine — *2026-08-22 01:42:05 UTC*
 
 A deployable hazard that, when triggered by an enemy, swaps the enemy's position with the trap's owner, regardless of distance. It can be used strategically for repositioning or to pull high-priority targets into danger.
