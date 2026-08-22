@@ -11,9 +11,9 @@
     "agent-2": {
       "name": "Jules Behaviors",
       "area": "behaviors",
-      "task_id": null,
-      "status": "idle",
-      "started_at": null,
+      "task_id": "idea-1983",
+      "status": "assigned",
+      "started_at": "2026-08-22T08:04:12.215477+00:00",
       "cycles_today": 0
     },
     "agent-3": {
@@ -67,9 +67,9 @@
     "agent-8": {
       "name": "Jules Worker 8",
       "area": "tests",
-      "task_id": null,
-      "status": "idle",
-      "started_at": null,
+      "task_id": "idea-2012",
+      "status": "assigned",
+      "started_at": "2026-08-22T08:04:12.215477+00:00",
       "cycles_today": 0
     },
     "agent-9": {
@@ -147,17 +147,17 @@
     "agent-18": {
       "name": "Jules Worker 18",
       "area": "behaviors",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-2043",
+      "started_at": "2026-08-22T08:04:12.215477+00:00",
       "cycles_today": 0
     },
     "agent-19": {
       "name": "Jules Worker 19",
       "area": "tests",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-2044",
+      "started_at": "2026-08-22T08:04:12.215477+00:00",
       "cycles_today": 0
     },
     "agent-20": {
@@ -179,9 +179,9 @@
     "agent-22": {
       "name": "Jules Worker 22",
       "area": "behaviors",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-2047",
+      "started_at": "2026-08-22T08:04:12.215477+00:00",
       "cycles_today": 0
     },
     "agent-23": {
@@ -219,9 +219,9 @@
     "agent-27": {
       "name": "Jules Worker 27",
       "area": "content",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-2054",
+      "started_at": "2026-08-22T08:04:12.215477+00:00",
       "cycles_today": 0
     },
     "agent-28": {
@@ -235,9 +235,9 @@
     "agent-29": {
       "name": "Jules Worker 29",
       "area": "behaviors",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-2056",
+      "started_at": "2026-08-22T08:04:12.215477+00:00",
       "cycles_today": 0
     },
     "agent-30": {
