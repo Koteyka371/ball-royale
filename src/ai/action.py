@@ -1191,6 +1191,9 @@ class Action:
                 attacker.damage = original_damage * 1.2
 
             b_type_attacker = getattr(attacker, 'ball_type', getattr(attacker.__class__, 'BALL_TYPE', '')).lower()
+
+            if getattr(target, 'is_sabotage_bounty', False):
+                original_damage *= 1.5
             if b_type_attacker == 'bounty_hunter' and (getattr(target, 'is_bounty', False) or getattr(target, 'high_threat', False) or getattr(target, 'is_bounty_target', False)):
                 attacker.damage = original_damage * 2.0
 
@@ -2773,6 +2776,14 @@ class Action:
                         self.ball.hp = state["hp"]
                     if hasattr(self.world, "events"):
                         self.world.events.append({"type": "visual_effect", "data": {"type": "teleport", "x": self.ball.x, "y": self.ball.y}})
+        if getattr(self.ball, "is_sabotage_bounty", False):
+            if hasattr(self.ball, "sabotage_bounty_timer"):
+                self.ball.sabotage_bounty_timer -= delta
+                if self.ball.sabotage_bounty_timer <= 0:
+                    self.ball.is_sabotage_bounty = False
+                    self.ball.defense_multiplier = getattr(self.ball, 'defense_multiplier', 0.5) * 2.0
+                    self.ball.speed = getattr(self.ball, 'speed', 0.8) / 0.8
+
         if getattr(self.ball, "is_bounty_contract_target", False):
             if hasattr(self.ball, "bounty_contract_timer"):
                 self.ball.bounty_contract_timer -= delta
@@ -17952,7 +17963,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'deploy_clan_banner', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_aura_nullifier_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'survival_rewind', 'echo_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_dash', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_stabilizer_field', 'deploy_tracker_drone', 'deploy_distract_drone', 'deploy_fake_balls', 'decoy_swarm', 'hire_mercenary', 'hazard_surfing', 'grapple_hook', 'elastic_tether']
+                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'deploy_clan_banner', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_aura_nullifier_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'survival_rewind', 'echo_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_dash', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'sabotage_bounty', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_stabilizer_field', 'deploy_tracker_drone', 'deploy_distract_drone', 'deploy_fake_balls', 'decoy_swarm', 'hire_mercenary', 'hazard_surfing', 'grapple_hook', 'elastic_tether']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
@@ -24692,6 +24703,26 @@ class Action:
                     node.max_charge = 50.0
                     node.owner_id = self.ball.id
                     self.world.arena.hazards.append(node)
+            elif skill_name == "sabotage_bounty":
+                enemies = self._get_enemies()
+                if enemies:
+                    # Pick highest threat target (based on level/kills/hp)
+                    best_target = None
+                    max_score = -1.0
+                    for e in enemies:
+                        score = getattr(e, 'kill_count', 0) * 10.0 + getattr(e, 'level', 1) * 5.0
+                        if score > max_score:
+                            max_score = score
+                            best_target = e
+                    if best_target:
+                        best_target.is_sabotage_bounty = True
+                        best_target.sabotage_bounty_timer = 30.0
+                        best_target.defense_multiplier = getattr(best_target, 'defense_multiplier', 1.0) * 0.5
+                        best_target.speed = getattr(best_target, 'speed', 1.0) * 0.8
+                        if hasattr(self.world, 'add_event'):
+                            self.world.add_event("sabotage_bounty_placed", {"target_id": best_target.id})
+                self.ball.skill_timer = 20.0
+
             elif skill_name == "deploy_lightning_rod":
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     class LightningRodNode:
