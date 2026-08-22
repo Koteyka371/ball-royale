@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2070] Match Replay Fast Forward and Rewind — *2026-08-22 22:26:01 UTC*
+
+Add UI controls in the replay screen to fast forward or rewind the match at various speeds (e.g., 0.5x, 1x, 2x, 4x).
+
+---
+
 ## [idea-2018] Quantum Tangle Hazard — *2026-08-22 22:09:52 UTC*
 
 A hazard zone that tethers two balls together quantumly. When one takes damage, the other takes an equal amount. If they move too far apart, the tether snaps and deals massive damage to both.
