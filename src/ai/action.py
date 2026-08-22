@@ -27986,6 +27986,34 @@ class Action:
 
                             hazard.duration = 0.0 # Destroy trap
 
+
+                if getattr(hazard, "kind", "") == "tether_trap":
+                    if getattr(hazard, "owner_id", None) != getattr(self.ball, "id", None):
+                        dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
+                        if dist_sq < getattr(hazard, "radius", 60.0)**2: # Inside pull radius
+                            import math
+                            dist = math.sqrt(dist_sq)
+                            if dist > 0.0001:
+                                nx, ny = (hazard.x - self.ball.x) / dist, (hazard.y - self.ball.y) / dist
+                                pull_strength = 20.0 * delta # Slow pull
+                                if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
+                                    c = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+                                    mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else 1.0)
+                                    self.ball.x += nx * pull_strength * mod
+                                    self.ball.y += ny * pull_strength * mod
+
+                                # Visual effect for tether
+                                if hasattr(self.world, "events"):
+                                    self.world.events.append({
+                                        'type': 'visual_effect',
+                                        'effect': 'tether_link',
+                                        'x': self.ball.x,
+                                        'y': self.ball.y,
+                                        'target_x': hazard.x,
+                                        'target_y': hazard.y,
+                                        'color': 'blue'
+                                    })
+
                 if getattr(hazard, "kind", "") == "deployable_pull_trap":
                     if getattr(hazard, "owner_id", None) != getattr(self.ball, "id", None):
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
