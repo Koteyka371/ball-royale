@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2062] Abyssal Boss Fights — *2026-08-22 16:56:27 UTC*
+
+Spawn a special Abyssal Boss in the center of the arena during the Abyssal season, which pulls players in with whirlpool attacks and drops legendary loot when defeated.
+
+---
+
 ## [idea-2041] Vampiric Fog Mode — *2026-08-22 16:21:57 UTC*
 
 A new game mode where an arena-wide fog rolls in periodically. While in the fog, players slowly lose HP, which is converted into global blood orbs that randomly spawn. Collecting these orbs heals players for the drained amount, making exploration high-risk but highly rewarding.
