@@ -39803,7 +39803,85 @@ class DeepFreezeMutatorMode(GameMode):
                                 world.add_event('death', {'id': getattr(b, 'id', None), 'reason': 'frozen'})
 
 
+
+class FloatingPlatesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Floating Plates"
+        self.description = "The battle takes place on floating plates that slowly shrink and occasionally tilt, dropping inactive players into an abyss."
+        self.plates = []
+        self.abyss_damage = 50.0
+        self.shrink_timer = 0.0
+        self.shrink_interval = 10.0
+        self.tilt_timer = 0.0
+        self.tilt_interval = 15.0
+        import random
+        self.random = random
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        arena_width = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+        arena_height = getattr(world.arena, "height", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+
+        # Create a few large plates initially
+        self.plates = [
+            {"x": arena_width * 0.25, "y": arena_height * 0.25, "radius": 200.0, "tilt_x": 0.0, "tilt_y": 0.0},
+            {"x": arena_width * 0.75, "y": arena_height * 0.25, "radius": 200.0, "tilt_x": 0.0, "tilt_y": 0.0},
+            {"x": arena_width * 0.25, "y": arena_height * 0.75, "radius": 200.0, "tilt_x": 0.0, "tilt_y": 0.0},
+            {"x": arena_width * 0.75, "y": arena_height * 0.75, "radius": 200.0, "tilt_x": 0.0, "tilt_y": 0.0},
+            {"x": arena_width * 0.5, "y": arena_height * 0.5, "radius": 250.0, "tilt_x": 0.0, "tilt_y": 0.0}
+        ]
+
+    def tick(self, world, balls, delta):
+        super().tick(world, balls, delta)
+        self.shrink_timer += delta
+        self.tilt_timer += delta
+
+        # Plates shrink slowly over time
+        if self.shrink_timer >= self.shrink_interval:
+            self.shrink_timer = 0.0
+            for p in self.plates:
+                p["radius"] = max(50.0, p["radius"] * 0.9)
+
+        # Occasional tilt
+        if self.tilt_timer >= self.tilt_interval:
+            self.tilt_timer = 0.0
+            for p in self.plates:
+                if self.random.random() < 0.5:
+                    p["tilt_x"] = self.random.uniform(-100.0, 100.0)
+                    p["tilt_y"] = self.random.uniform(-100.0, 100.0)
+                else:
+                    p["tilt_x"] = 0.0
+                    p["tilt_y"] = 0.0
+
+        for ball in balls:
+            if not getattr(ball, "is_alive", True):
+                continue
+
+            # Check if ball is on any plate
+            on_plate = False
+            for p in self.plates:
+                dist_sq = (ball.x - p["x"])**2 + (ball.y - p["y"])**2
+                if dist_sq <= p["radius"]**2:
+                    on_plate = True
+                    # Apply tilt force
+                    if p["tilt_x"] != 0.0 or p["tilt_y"] != 0.0:
+                        ball.x += p["tilt_x"] * delta
+                        ball.y += p["tilt_y"] * delta
+                    break
+
+            if not on_plate:
+                # Falling into abyss
+                if hasattr(ball, "take_damage"):
+                    ball.take_damage(self.abyss_damage * delta)
+                else:
+                    ball.hp -= self.abyss_damage * delta
+                    if ball.hp <= 0:
+                        ball.is_alive = False
+
 GAME_MODES = {
+    'floating_plates': FloatingPlatesMode(),
+
     'cursed_relics': CursedRelicsMode(),
     'irradiation_survival': IrradiationSurvivalMode(),
     "currency_bounty": CurrencyBountyMode(),
