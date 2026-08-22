@@ -2257,6 +2257,15 @@ func _attempt_damage_internal(attacker, target) -> void:
 			b_type_attacker = str(attacker.get_meta("ball_type")).to_lower()
 
 		var target_is_bounty = false
+		var target_is_sabotage_bounty = false
+		if typeof(target) == TYPE_DICTIONARY:
+			if target.has("is_sabotage_bounty"): target_is_sabotage_bounty = bool(target.get("is_sabotage_bounty", false))
+		elif typeof(target) == TYPE_OBJECT:
+			if "is_sabotage_bounty" in target: target_is_sabotage_bounty = bool(target.is_sabotage_bounty)
+			elif target.has_method("get_meta") and target.has_meta("is_sabotage_bounty"): target_is_sabotage_bounty = bool(target.get_meta("is_sabotage_bounty"))
+
+		if target_is_sabotage_bounty:
+			damage_multiplier *= 1.5
 		if "is_bounty" in target and target.is_bounty:
 			target_is_bounty = true
 		elif target.has_method("get_meta") and target.has_meta("is_bounty") and target.get_meta("is_bounty"):
