@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2050] Nemesis Faction War Event — *2026-08-22 18:54:57 UTC*
+
+Periodically, the game triggers a faction war where players who have pledged to the same Nemesis form an impromptu alliance. They must defend each other or the Nemesis against a horde of enemies or a rival Enforcer group, earning exclusive rewards for their guild.
+
+---
+
 ## [idea-2059] Enraged Minion Speed Boost — *2026-08-22 18:37:38 UTC*
 
 When minions become enraged (e.g., when the Necromancer dies), they should gain a significant temporary movement speed boost to close the gap before their rapid decay kills them, making their death explosion more of a threat.
