@@ -21036,14 +21036,21 @@ func execute(strategy: String, delta: float):
                             if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
                                 world.add_event("soul_fragment_collected", {"ball_id": b_id})
                 elif hazard.kind == "avalanche":
-                    var dx = hazard.x - self.ball.x
-                    var dy = hazard.y - self.ball.y
+                    var dx = self.ball.x - hazard.x
+                    var dy = self.ball.y - hazard.y
                     var dist_sq = dx * dx + dy * dy
                     if dist_sq < hazard.radius * hazard.radius:
                         var base_s = 100.0
                         if "base_speed" in self.ball:
                             base_s = self.ball.base_speed
                         self.ball.speed = base_s * 0.25
+                        if self.ball.has_method("take_damage"):
+                            self.ball.take_damage(50.0 * delta, "avalanche")
+                        var push_force = 400.0
+                        if dist_sq > 0:
+                            var dist = sqrt(dist_sq)
+                            self.ball.x += (dx / dist) * push_force * delta
+                            self.ball.y += (dy / dist) * push_force * delta
                 elif hazard.kind == "lava":
                     if self.ball.has_method("set_meta"): self.ball.set_meta("is_in_lava", true)
                     elif "is_in_lava" in self.ball: self.ball.is_in_lava = true
