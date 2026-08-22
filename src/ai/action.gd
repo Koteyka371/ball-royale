@@ -51490,22 +51490,74 @@ func _update_skill_timer(delta: float):
     if has_nanite:
         var current_hp = 100.0
         var current_max_hp = 100.0
+        var nanite_swarm_cooldown = 0.0
+        var nanite_swarm_timer = 0.0
         if typeof(self.ball) == TYPE_DICTIONARY:
             current_hp = self.ball.get("hp", 100.0)
             current_max_hp = self.ball.get("max_hp", 100.0)
+            nanite_swarm_cooldown = self.ball.get("nanite_swarm_cooldown", 0.0)
+            nanite_swarm_timer = self.ball.get("nanite_swarm_timer", 0.0)
         else:
             current_hp = self.ball.hp if "hp" in self.ball else 100.0
             current_max_hp = self.ball.max_hp if "max_hp" in self.ball else 100.0
+            if self.ball.has_method("has_meta") and self.ball.has_meta("nanite_swarm_cooldown"):
+                nanite_swarm_cooldown = float(self.ball.get_meta("nanite_swarm_cooldown"))
+            elif "nanite_swarm_cooldown" in self.ball:
+                nanite_swarm_cooldown = float(self.ball.nanite_swarm_cooldown)
 
-        if current_hp / current_max_hp < 0.3:
+            if self.ball.has_method("has_meta") and self.ball.has_meta("nanite_swarm_timer"):
+                nanite_swarm_timer = float(self.ball.get_meta("nanite_swarm_timer"))
+            elif "nanite_swarm_timer" in self.ball:
+                nanite_swarm_timer = float(self.ball.nanite_swarm_timer)
+
+        if nanite_swarm_cooldown > 0.0:
+            nanite_swarm_cooldown -= delta
             if typeof(self.ball) == TYPE_DICTIONARY:
-                self.ball["nanite_swarm_active"] = true
+                self.ball["nanite_swarm_cooldown"] = nanite_swarm_cooldown
             else:
-                if self.ball.has_method("set_meta"): self.ball.set_meta("nanite_swarm_active", true)
-                elif "nanite_swarm_active" in self.ball: self.ball.nanite_swarm_active = true
+                if self.ball.has_method("set_meta"): self.ball.set_meta("nanite_swarm_cooldown", nanite_swarm_cooldown)
+                elif "nanite_swarm_cooldown" in self.ball: self.ball.nanite_swarm_cooldown = nanite_swarm_cooldown
+
+        if current_hp / current_max_hp < 0.3 and nanite_swarm_cooldown <= 0.0 and nanite_swarm_timer <= 0.0:
+            nanite_swarm_timer = 5.0
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["nanite_swarm_timer"] = nanite_swarm_timer
+            else:
+                if self.ball.has_method("set_meta"): self.ball.set_meta("nanite_swarm_timer", nanite_swarm_timer)
+                elif "nanite_swarm_timer" in self.ball: self.ball.nanite_swarm_timer = nanite_swarm_timer
+
+        if nanite_swarm_timer > 0.0:
+            nanite_swarm_timer -= delta
+            var is_active = true
+            if nanite_swarm_timer <= 0.0:
+                is_active = false
+                nanite_swarm_cooldown = 15.0
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["nanite_swarm_cooldown"] = nanite_swarm_cooldown
+                else:
+                    if self.ball.has_method("set_meta"): self.ball.set_meta("nanite_swarm_cooldown", nanite_swarm_cooldown)
+                    elif "nanite_swarm_cooldown" in self.ball: self.ball.nanite_swarm_cooldown = nanite_swarm_cooldown
+
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["nanite_swarm_timer"] = nanite_swarm_timer
+                self.ball["nanite_swarm_active"] = is_active
+            else:
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("nanite_swarm_timer", nanite_swarm_timer)
+                    self.ball.set_meta("nanite_swarm_active", is_active)
+                else:
+                    if "nanite_swarm_timer" in self.ball: self.ball.nanite_swarm_timer = nanite_swarm_timer
+                    if "nanite_swarm_active" in self.ball: self.ball.nanite_swarm_active = is_active
 
             if self.world != null and "arena" in self.world and (typeof(self.world.arena) == TYPE_DICTIONARY or typeof(self.world.arena) == TYPE_OBJECT) and "hazards" in self.world.arena:
+                var hazards_copy = []
                 for h in self.world.arena.hazards:
+                    hazards_copy.append(h)
+
+                for h in hazards_copy:
+                    if not self.world.arena.hazards.has(h):
+                        continue
+
                     var h_kind = h.get("kind", "") if typeof(h) == TYPE_DICTIONARY else (h.kind if "kind" in h else "")
                     var h_active = h.get("active", true) if typeof(h) == TYPE_DICTIONARY else (h.active if "active" in h else true)
                     var h_destroyed = h.get("destroyed", false) if typeof(h) == TYPE_DICTIONARY else (h.destroyed if "destroyed" in h else false)
@@ -51530,15 +51582,20 @@ func _update_skill_timer(delta: float):
                                     if "radius" in h: h.radius = h_rad
 
                                 if h_rad <= 0.0:
-                                    self.world.arena.hazards.erase(h)
+                                    if self.world.arena.hazards.has(h):
+                                        self.world.arena.hazards.erase(h)
                             else:
-                                self.world.arena.hazards.erase(h)
+                                if self.world.arena.hazards.has(h):
+                                    self.world.arena.hazards.erase(h)
 
                             var heal_amount = 50.0 * delta
                             if typeof(self.ball) == TYPE_DICTIONARY:
                                 self.ball["hp"] = min(current_max_hp, current_hp + heal_amount)
+                                current_hp = self.ball["hp"]
                             else:
-                                if "hp" in self.ball: self.ball.hp = min(current_max_hp, current_hp + heal_amount)
+                                if "hp" in self.ball:
+                                    self.ball.hp = min(current_max_hp, current_hp + heal_amount)
+                                    current_hp = self.ball.hp
                             break
         else:
             if typeof(self.ball) == TYPE_DICTIONARY:
