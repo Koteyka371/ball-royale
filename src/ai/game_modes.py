@@ -44350,6 +44350,122 @@ class ToxicBubblesMode(GameMode):
 
 GAME_MODES['toxic_bubbles'] = ToxicBubblesMode()
 
+class QuantumTetherZoneMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Quantum Tether Zone"
+        self.description = "A hazard zone that tethers two balls together quantumly. When one takes damage, the other takes an equal amount. If they move too far apart, the tether snaps and deals massive damage to both."
+        self.zones = []
+        self.tethers = {}
+        self.prev_hp = {}
+        self.zone_radius = 200.0
+        self.snap_distance = 400.0
+        self.snap_damage = 50.0
+        self.setup_done = False
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.zones = []
+        self.tethers = {}
+        self.prev_hp = {}
+        self.setup_done = False
+
+        arena_w = getattr(world.arena, "width", 800) if hasattr(world, "arena") and world.arena else 800
+        arena_h = getattr(world.arena, "height", 600) if hasattr(world, "arena") and world.arena else 600
+
+        import random
+        # Spawn one zone
+        class Hazard:
+            def __init__(self, x, y, kind, radius):
+                self.x = x
+                self.y = y
+                self.kind = kind
+                self.radius = radius
+
+        zone_x = random.uniform(self.zone_radius, arena_w - self.zone_radius)
+        zone_y = random.uniform(self.zone_radius, arena_h - self.zone_radius)
+        self.zones.append({"x": zone_x, "y": zone_y, "radius": self.zone_radius})
+
+        if hasattr(world, "arena") and world.arena:
+            if not hasattr(world.arena, "hazards"):
+                world.arena.hazards = []
+            world.arena.hazards.append(Hazard(zone_x, zone_y, "quantum_tether_zone", self.zone_radius))
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        import random
+
+        unpaired_balls = []
+        for b in balls:
+            if getattr(b, "ball_type", None) == "spectator": continue
+            if getattr(b, "hp", 100) <= 0: continue
+
+            in_zone = False
+            for z in self.zones:
+                dist = math.hypot(b.x - z["x"], b.y - z["y"])
+                if dist < z["radius"]:
+                    in_zone = True
+                    break
+
+            if in_zone and b.id not in self.tethers:
+                unpaired_balls.append(b)
+
+        random.shuffle(unpaired_balls)
+        while len(unpaired_balls) >= 2:
+            b1 = unpaired_balls.pop()
+            b2 = unpaired_balls.pop()
+            self.tethers[b1.id] = b2
+            self.tethers[b2.id] = b1
+            b1.quantum_tether_target = b2
+            b2.quantum_tether_target = b1
+            self.prev_hp[b1.id] = getattr(b1, "hp", 100.0)
+            self.prev_hp[b2.id] = getattr(b2, "hp", 100.0)
+
+        for b in balls:
+            if b.id in self.tethers:
+                target = self.tethers[b.id]
+
+                # Check if target died or missing
+                if not hasattr(target, "hp") or target.hp <= 0 or target not in balls:
+                    del self.tethers[b.id]
+                    if hasattr(b, "quantum_tether_target"):
+                        del b.quantum_tether_target
+                    if b.id in self.prev_hp:
+                        del self.prev_hp[b.id]
+                    continue
+
+                dist = math.hypot(b.x - target.x, b.y - target.y)
+                if dist > self.snap_distance:
+                    # snap
+                    b.hp = getattr(b, "hp", 100) - self.snap_damage
+                    target.hp = getattr(target, "hp", 100) - self.snap_damage
+                    if hasattr(world, "add_event"):
+                        world.add_event("quantum_tether_snap", {"b1": b.id, "b2": target.id, "damage": self.snap_damage})
+
+                    del self.tethers[b.id]
+                    if target.id in self.tethers:
+                        del self.tethers[target.id]
+                    if hasattr(b, "quantum_tether_target"):
+                        del b.quantum_tether_target
+                    if hasattr(target, "quantum_tether_target"):
+                        del target.quantum_tether_target
+                    if b.id in self.prev_hp:
+                        del self.prev_hp[b.id]
+                    if target.id in self.prev_hp:
+                        del self.prev_hp[target.id]
+                else:
+                    if b.id in self.prev_hp:
+                        damage_taken = self.prev_hp[b.id] - getattr(b, "hp", 100.0)
+                        if damage_taken > 0:
+                            target.hp = getattr(target, "hp", 100.0) - damage_taken
+                            self.prev_hp[target.id] = getattr(target, "hp", 100.0)
+
+        for b in balls:
+            if getattr(b, "ball_type", None) != "spectator" and b.id in self.tethers:
+                self.prev_hp[b.id] = getattr(b, "hp", 100.0)
+
+
+
 class GhostTetherMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -44473,6 +44589,7 @@ class GhostTetherMode(GameMode):
 
 
 GAME_MODES['ghost_tether'] = GhostTetherMode()
+GAME_MODES['quantum_tether_zone'] = QuantumTetherZoneMode()
 
 class WatchtowerMode(GameMode, WeatherAltarMixin):
     def __init__(self):

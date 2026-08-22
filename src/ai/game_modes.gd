@@ -47116,6 +47116,205 @@ class SacrificeAltarMode extends GameMode:
 
 
 
+class QuantumTetherZoneMode extends GameMode:
+	var zones = []
+	var tethers = {}
+	var prev_hp = {}
+	var zone_radius = 200.0
+	var snap_distance = 400.0
+	var snap_damage = 50.0
+
+	func _init():
+		super._init()
+		name = "Quantum Tether Zone"
+		description = "A hazard zone that tethers two balls together quantumly. When one takes damage, the other takes an equal amount. If they move too far apart, the tether snaps and deals massive damage to both."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		zones = []
+		tethers = {}
+		prev_hp = {}
+
+		var arena_w = 800.0
+		var arena_h = 600.0
+		if typeof(world) == TYPE_OBJECT and 'arena' in world and world.arena != null:
+			arena_w = world.arena.width
+			arena_h = world.arena.height
+		elif typeof(world) == TYPE_DICTIONARY and world.has('arena') and world.arena != null:
+			arena_w = world.arena.width
+			arena_h = world.arena.height
+
+		var zone_x = randf_range(zone_radius, arena_w - zone_radius)
+		var zone_y = randf_range(zone_radius, arena_h - zone_radius)
+		zones.append({"x": zone_x, "y": zone_y, "radius": zone_radius})
+
+		if typeof(world) == TYPE_OBJECT and 'arena' in world and world.arena != null:
+			if not "hazards" in world.arena:
+				world.arena.hazards = []
+			var hazard = Hazard.new()
+			hazard.x = zone_x
+			hazard.y = zone_y
+			hazard.kind = "quantum_tether_zone"
+			hazard.radius = zone_radius
+			world.arena.hazards.append(hazard)
+		elif typeof(world) == TYPE_DICTIONARY and world.has('arena') and world.arena != null:
+			if not world.arena.has("hazards"):
+				world.arena["hazards"] = []
+			var hazard = Hazard.new()
+			hazard.x = zone_x
+			hazard.y = zone_y
+			hazard.kind = "quantum_tether_zone"
+			hazard.radius = zone_radius
+			world.arena["hazards"].append(hazard)
+
+	func tick(world, balls, delta = 0.016):
+		var unpaired_balls = []
+		for b in balls:
+			var b_type = null
+			if typeof(b) == TYPE_OBJECT and "ball_type" in b:
+				b_type = b.ball_type
+			elif typeof(b) == TYPE_DICTIONARY and b.has("ball_type"):
+				b_type = b.ball_type
+
+			if b_type == "spectator":
+				continue
+
+			var b_hp = 100.0
+			if typeof(b) == TYPE_OBJECT and "hp" in b:
+				b_hp = b.hp
+			elif typeof(b) == TYPE_DICTIONARY and b.has("hp"):
+				b_hp = b["hp"]
+
+			if b_hp <= 0:
+				continue
+
+			var b_x = b.x if typeof(b) == TYPE_OBJECT else b["x"]
+			var b_y = b.y if typeof(b) == TYPE_OBJECT else b["y"]
+			var b_id = b.id if typeof(b) == TYPE_OBJECT else b["id"]
+
+			var in_zone = false
+			for z in zones:
+				var dist = sqrt(pow(b_x - z["x"], 2) + pow(b_y - z["y"], 2))
+				if dist < z["radius"]:
+					in_zone = true
+					break
+
+			if in_zone and not tethers.has(b_id):
+				unpaired_balls.append(b)
+
+		unpaired_balls.shuffle()
+		while unpaired_balls.size() >= 2:
+			var b1 = unpaired_balls.pop_back()
+			var b2 = unpaired_balls.pop_back()
+			var id1 = b1.id if typeof(b1) == TYPE_OBJECT else b1["id"]
+			var id2 = b2.id if typeof(b2) == TYPE_OBJECT else b2["id"]
+
+			tethers[id1] = b2
+			tethers[id2] = b1
+
+			if typeof(b1) == TYPE_OBJECT:
+				b1.set_meta("quantum_tether_target", b2)
+			else:
+				b1["quantum_tether_target"] = b2
+
+			if typeof(b2) == TYPE_OBJECT:
+				b2.set_meta("quantum_tether_target", b1)
+			else:
+				b2["quantum_tether_target"] = b1
+
+			prev_hp[id1] = b1.hp if typeof(b1) == TYPE_OBJECT else b1["hp"]
+			prev_hp[id2] = b2.hp if typeof(b2) == TYPE_OBJECT else b2["hp"]
+
+		for b in balls:
+			var b_id = b.id if typeof(b) == TYPE_OBJECT else b["id"]
+			if tethers.has(b_id):
+				var target = tethers[b_id]
+
+				var target_hp = 0.0
+				if typeof(target) == TYPE_OBJECT and "hp" in target:
+					target_hp = target.hp
+				elif typeof(target) == TYPE_DICTIONARY and target.has("hp"):
+					target_hp = target["hp"]
+
+				if target_hp <= 0 or not balls.has(target):
+					tethers.erase(b_id)
+					if typeof(b) == TYPE_OBJECT and b.has_meta("quantum_tether_target"):
+						b.set_meta("quantum_tether_target", null)
+					elif typeof(b) == TYPE_DICTIONARY and b.has("quantum_tether_target"):
+						b.erase("quantum_tether_target")
+					if prev_hp.has(b_id):
+						prev_hp.erase(b_id)
+					continue
+
+				var b_x = b.x if typeof(b) == TYPE_OBJECT else b["x"]
+				var b_y = b.y if typeof(b) == TYPE_OBJECT else b["y"]
+				var target_x = target.x if typeof(target) == TYPE_OBJECT else target["x"]
+				var target_y = target.y if typeof(target) == TYPE_OBJECT else target["y"]
+				var target_id = target.id if typeof(target) == TYPE_OBJECT else target["id"]
+
+				var dist = sqrt(pow(b_x - target_x, 2) + pow(b_y - target_y, 2))
+				if dist > snap_distance:
+					# snap
+					var current_b_hp = b.hp if typeof(b) == TYPE_OBJECT else b["hp"]
+					var current_target_hp = target.hp if typeof(target) == TYPE_OBJECT else target["hp"]
+
+					if typeof(b) == TYPE_OBJECT:
+						b.hp = current_b_hp - snap_damage
+					else:
+						b["hp"] = current_b_hp - snap_damage
+
+					if typeof(target) == TYPE_OBJECT:
+						target.hp = current_target_hp - snap_damage
+					else:
+						target["hp"] = current_target_hp - snap_damage
+
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						world.add_event("quantum_tether_snap", {"b1": b_id, "b2": target_id, "damage": snap_damage})
+					elif typeof(world) == TYPE_DICTIONARY and world.has("events"):
+						world.events.append({"type": "quantum_tether_snap", "b1": b_id, "b2": target_id, "damage": snap_damage})
+
+					tethers.erase(b_id)
+					if tethers.has(target_id):
+						tethers.erase(target_id)
+
+					if typeof(b) == TYPE_OBJECT and b.has_meta("quantum_tether_target"):
+						b.set_meta("quantum_tether_target", null)
+					elif typeof(b) == TYPE_DICTIONARY and b.has("quantum_tether_target"):
+						b.erase("quantum_tether_target")
+
+					if typeof(target) == TYPE_OBJECT and target.has_meta("quantum_tether_target"):
+						target.set_meta("quantum_tether_target", null)
+					elif typeof(target) == TYPE_DICTIONARY and target.has("quantum_tether_target"):
+						target.erase("quantum_tether_target")
+
+					if prev_hp.has(b_id):
+						prev_hp.erase(b_id)
+					if prev_hp.has(target_id):
+						prev_hp.erase(target_id)
+				else:
+					if prev_hp.has(b_id):
+						var current_b_hp = b.hp if typeof(b) == TYPE_OBJECT else b["hp"]
+						var damage_taken = prev_hp[b_id] - current_b_hp
+						if damage_taken > 0:
+							var current_target_hp = target.hp if typeof(target) == TYPE_OBJECT else target["hp"]
+							if typeof(target) == TYPE_OBJECT:
+								target.hp = current_target_hp - damage_taken
+							else:
+								target["hp"] = current_target_hp - damage_taken
+							prev_hp[target_id] = target.hp if typeof(target) == TYPE_OBJECT else target["hp"]
+
+		for b in balls:
+			var b_type = null
+			if typeof(b) == TYPE_OBJECT and "ball_type" in b:
+				b_type = b.ball_type
+			elif typeof(b) == TYPE_DICTIONARY and b.has("ball_type"):
+				b_type = b["ball_type"]
+
+			var b_id = b.id if typeof(b) == TYPE_OBJECT else b["id"]
+			if b_type != "spectator" and tethers.has(b_id):
+				prev_hp[b_id] = b.hp if typeof(b) == TYPE_OBJECT else b["hp"]
+
+
 class GhostTetherMode extends GameMode:
 	var ghosts: Dictionary = {}
 	var previous_hps: Dictionary = {}
@@ -65163,6 +65362,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"collapsing_bubbles": CollapsingBubblesMode.new(),
 	"toxic_bubbles": ToxicBubblesMode.new(),
 	"ghost_tether": GhostTetherMode.new(),
+	"quantum_tether_zone": QuantumTetherZoneMode.new(),
 	"entangled_arena": EntangledArenaMode.new(),
 	"quantum_thread_mode": QuantumThreadMode.new(),
 	"entangled_swap_hazard": EntangledSwapHazardMode.new(),
