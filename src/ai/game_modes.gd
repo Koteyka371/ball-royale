@@ -1120,6 +1120,72 @@ class GameMode:
 						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
 						if "speed" in b: b.speed = bs * 1.15
 
+
+			# Trait: Storm Chaser
+			var is_storm_chaser = traits.has("storm_chaser")
+			if is_storm_chaser:
+				var extreme_weathers_sc = ["hurricane", "blizzard", "sandstorm", "heatwave", "storm", "heavy_rain"]
+				var weather_targets = []
+				var hazards = []
+				if typeof(world) == TYPE_DICTIONARY and world.has("arena") and typeof(world["arena"]) == TYPE_DICTIONARY and world["arena"].has("hazards"):
+					hazards = world["arena"]["hazards"]
+				elif typeof(world) == TYPE_OBJECT and "arena" in world and typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+					hazards = world.arena.hazards
+				elif typeof(world) == TYPE_OBJECT and "arena" in world and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+					hazards = world.arena["hazards"]
+
+				for hz in hazards:
+					var hz_weather = ""
+					var hz_kind = ""
+					var hz_x = 0.0
+					var hz_y = 0.0
+					if typeof(hz) == TYPE_DICTIONARY:
+						hz_weather = hz.get("weather", "")
+						hz_kind = hz.get("kind", "")
+						hz_x = hz.get("x", 0.0)
+						hz_y = hz.get("y", 0.0)
+					else:
+						hz_weather = hz.get("weather") if "weather" in hz else (hz.get_meta("weather") if hz.has_method("get_meta") and hz.has_meta("weather") else "")
+						hz_kind = hz.get("kind") if "kind" in hz else (hz.get_meta("kind") if hz.has_method("get_meta") and hz.has_meta("kind") else "")
+						hz_x = hz.get("x") if "x" in hz else 0.0
+						hz_y = hz.get("y") if "y" in hz else 0.0
+					if hz_weather != null and typeof(hz_weather) != TYPE_STRING:
+						hz_weather = ""
+					if hz_kind != null and typeof(hz_kind) != TYPE_STRING:
+						hz_kind = ""
+
+					if extreme_weathers_sc.has(hz_weather) or ["tornado", "storm_cloud", "blizzard_zone"].has(hz_kind):
+						weather_targets.append({"x": hz_x, "y": hz_y})
+
+				var b_x = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get("x") if "x" in b else 0.0)
+				var b_y = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get("y") if "y" in b else 0.0)
+				var b_vx = b.get("vx", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get("vx") if "vx" in b else 0.0)
+				var b_vy = b.get("vy", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get("vy") if "vy" in b else 0.0)
+
+				if weather_targets.size() > 0 and (b_vx != 0 or b_vy != 0):
+					var v_mag = sqrt(b_vx * b_vx + b_vy * b_vy)
+					if v_mag > 0.001:
+						var v_nx = b_vx / v_mag
+						var v_ny = b_vy / v_mag
+						var moving_towards = false
+						for target in weather_targets:
+							var dx = target["x"] - b_x
+							var dy = target["y"] - b_y
+							var dist = sqrt(dx * dx + dy * dy)
+							if dist > 0.001:
+								var dot_prod = (dx / dist) * v_nx + (dy / dist) * v_ny
+								if dot_prod > 0.5:
+									moving_towards = true
+									break
+
+						if moving_towards:
+							if typeof(b) == TYPE_DICTIONARY:
+								var base_s = b.get("base_speed", b.get("speed", 100.0))
+								b["speed"] = base_s * 1.5
+							else:
+								var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+								if "speed" in b: b.speed = bs * 1.5
+
 			# Trait: Weather Mastery
 			var is_weather_mastery = traits.has("weather_mastery")
 			if is_weather_mastery:

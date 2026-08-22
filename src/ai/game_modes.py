@@ -729,6 +729,51 @@ class GameMode:
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
                     b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
 
+
+            # Trait: Storm Chaser
+            is_storm_chaser = "storm_chaser" in traits
+            if is_storm_chaser:
+                extreme_weathers = ["hurricane", "blizzard", "sandstorm", "heatwave", "storm", "heavy_rain"]
+                weather_targets = []
+                if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                    for hz in world.arena.hazards:
+                        hz_weather = hz.get("weather", "") if isinstance(hz, dict) else getattr(hz, "weather", "")
+                        hz_kind = hz.get("kind", "") if isinstance(hz, dict) else getattr(hz, "kind", "")
+                        if hz_weather in extreme_weathers or hz_kind in ["tornado", "storm_cloud", "blizzard_zone"]:
+                            hz_x = hz.get("x", 0.0) if isinstance(hz, dict) else getattr(hz, "x", 0.0)
+                            hz_y = hz.get("y", 0.0) if isinstance(hz, dict) else getattr(hz, "y", 0.0)
+                            weather_targets.append((hz_x, hz_y))
+
+                b_x = b.get("x", 0.0) if isinstance(b, dict) else getattr(b, "x", 0.0)
+                b_y = b.get("y", 0.0) if isinstance(b, dict) else getattr(b, "y", 0.0)
+                b_vx = b.get("vx", 0.0) if isinstance(b, dict) else getattr(b, "vx", 0.0)
+                b_vy = b.get("vy", 0.0) if isinstance(b, dict) else getattr(b, "vy", 0.0)
+
+                if weather_targets and (b_vx != 0 or b_vy != 0):
+                    import math
+                    v_mag = math.hypot(b_vx, b_vy)
+                    if v_mag > 0.001:
+                        v_nx = b_vx / v_mag
+                        v_ny = b_vy / v_mag
+                        moving_towards = False
+                        for tx, ty in weather_targets:
+                            dx = tx - b_x
+                            dy = ty - b_y
+                            dist = math.hypot(dx, dy)
+                            if dist > 0.001:
+                                dot = (dx/dist) * v_nx + (dy/dist) * v_ny
+                                if dot > 0.5:
+                                    moving_towards = True
+                                    break
+
+                        if moving_towards:
+                            if isinstance(b, dict):
+                                base_s = b.get("base_speed", b.get("speed", 100.0))
+                                b["speed"] = base_s * 1.5
+                            else:
+                                base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                                b.speed = base_s * 1.5
+
             # Trait: Weather Mastery
             is_weather_mastery = "weather_mastery" in traits
             if is_weather_mastery:

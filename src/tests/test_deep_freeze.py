@@ -55,7 +55,11 @@ def test_deep_freeze_mutator():
     vents[0].x = 800
     vents[0].y = 800
     b.x = 100
+    b.vx = 0
+    b.vy = 0
     b.y = 100
+    b.vx = 0
+    b.vy = 0
 
     # Tick loop to simulate freeze
     for _ in range(30): # 15 seconds needed to freeze, tick is delta
