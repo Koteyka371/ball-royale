@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2038] Avalanche Environmental Hazard — *2026-08-22 18:18:16 UTC*
+
+During Blizzard mode or in snow biomes, periodic avalanches can occur from the edges of the arena, sweeping across parts of the map. Players caught in the avalanche take damage and are forcefully pushed, potentially into other hazards or out of bounds.
+
+---
+
 ## [idea-2046] Freezing Edge Mode — *2026-08-22 18:02:42 UTC*
 
 Similar to Expanding Lava, but instead of the center expanding outward, the outer edges slowly freeze inward, slowing down players before fully trapping them in ice.
