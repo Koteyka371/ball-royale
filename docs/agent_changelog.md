@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2076] Eclipse Event — *2026-08-23 21:42:12 UTC*
+
+Add a rare eclipse event to the Day/Night mode where both Light and Shadow buffs are active simultaneously for all units, and all sunlight beams and moonlight shadows disappear, creating a chaotic arena for a short duration.
+
+---
+
 ## [idea-2084] Voice Assistant Commentator — *2026-08-23 19:27:00 UTC*
 
 Integrate an AI-based voice assistant that generates context-aware conversational commentary throughout a match, analyzing strategies, reacting to surprising clutch plays in real-time, and personalizing the experience by addressing the player's specific build or class.
