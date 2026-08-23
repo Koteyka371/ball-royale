@@ -126,3 +126,28 @@ def test_generate_highlight_reel():
     assert reel.frames[0]["tick"] == 35
     assert reel.frames[-1]["tick"] == 105
     assert "Welcome to the highlight reel!" in reel.commentary
+
+def test_take_control():
+    replay = ReplaySystem()
+    replay.start_recording()
+    replay.record_frame(1, [{"id": 1, "hp": 100}, {"id": 2, "hp": 100}], [{"type": "move"}])
+    replay.record_frame(2, [{"id": 1, "hp": 50}, {"id": 2, "hp": 100}], [{"type": "hit"}])
+    replay.stop_recording()
+
+    replay.start_playback()
+    replay.set_frame(1)
+
+    assert replay.is_playing
+
+    state = replay.take_control()
+
+    assert not replay.is_playing
+    assert state is not None
+    assert state["tick"] == 2
+    assert len(state["entities"]) == 2
+    assert state["entities"][0]["hp"] == 50
+    assert state["events"][0]["type"] == "hit"
+
+    # Verify that it's a copy
+    state["entities"][0]["hp"] = 10
+    assert replay.frames[1]["entities"][0]["hp"] == 50

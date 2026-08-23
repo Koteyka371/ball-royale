@@ -100,6 +100,14 @@ def test_main_menu_replay_controls(mock_files, monkeypatch):
     assert res is True
     assert menu.active_replay.playback_speed == 0.5
 
+    # Take control
+    res = menu.process_input("take_control")
+    assert isinstance(res, dict)
+    assert res["action"] == "resume_from_state"
+    assert "state" in res
+    assert res["state"]["tick"] == 1
+    assert not menu.active_replay.is_playing
+
     # Back
     res = menu.process_input("back")
     assert res is True

@@ -56,6 +56,28 @@ class ReplaySystem:
     def stop_playback(self):
         self.is_playing = False
 
+    def take_control(self) -> Optional[Dict[str, Any]]:
+        """
+        Stops playback and returns the current frame state,
+        allowing a player to resume gameplay from this exact moment.
+        """
+        if not self.is_playing or self.current_frame_index >= len(self.frames) or self.current_frame_index < 0:
+            return None
+
+        self.stop_playback()
+
+        # Return a copy of the current frame to resume from
+        import copy
+        frame = self.frames[self.current_frame_index]
+        try:
+            return copy.deepcopy(frame)
+        except Exception:
+            return {
+                "tick": frame["tick"],
+                "entities": [dict(e) if isinstance(e, dict) else e for e in frame.get("entities", [])],
+                "events": [dict(e) if isinstance(e, dict) else e for e in frame.get("events", [])]
+            }
+
     def get_next_frame(self) -> Optional[Dict[str, Any]]:
         if not self.is_playing or self.current_frame_index >= len(self.frames) or self.current_frame_index < 0:
             return None
