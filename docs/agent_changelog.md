@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2082] Crowd Directed Meteors — *2026-08-23 17:56:22 UTC*
+
+Instead of randomly spawning hazards, highly favored spectators with enough loyalty points can directly control the trajectory of a meteor strike via chat commands, causing a delayed massive area damage explosion where they aim.
+
+---
+
 ## [idea-2085] Shareable Interactive Highlights — *2026-08-23 15:36:15 UTC*
 
 A feature to export highlight clips not just as videos, but as lightweight interactive 'moments' where other players can take control at the critical juncture (the clutch or epic kill) to see if they could perform the same feat or do even better.
