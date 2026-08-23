@@ -64891,7 +64891,208 @@ class DeepFreezeMutatorMode extends GameMode:
                         b.hp = hp
 
 
+
+class RandomTeleportEventMode extends GameMode:
+    var active_swap = null
+    var trigger_timer = 15.0
+
+    func _init():
+        name = "Random Teleport Event"
+        description = "A random event that selects two random alive balls from different teams, displays a visual indicator, and swaps their positions after a short delay."
+
+    func setup(world, balls):
+        super.setup(world, balls)
+        trigger_timer = 15.0
+        active_swap = null
+
+    func tick(world, balls, delta=0.016):
+        super.tick(world, balls, delta)
+
+        if active_swap != null:
+            active_swap['timer'] -= delta
+            if active_swap['timer'] <= 0:
+                var b1 = active_swap['b1']
+                var b2 = active_swap['b2']
+
+                var b1_alive = false
+                if typeof(b1) == TYPE_OBJECT and b1.has_method("get"):
+                    b1_alive = b1.get("alive")
+                elif typeof(b1) == TYPE_DICTIONARY and b1.has("alive"):
+                    b1_alive = b1["alive"]
+                else:
+                    b1_alive = b1.alive if "alive" in b1 else false
+
+                var b2_alive = false
+                if typeof(b2) == TYPE_OBJECT and b2.has_method("get"):
+                    b2_alive = b2.get("alive")
+                elif typeof(b2) == TYPE_DICTIONARY and b2.has("alive"):
+                    b2_alive = b2["alive"]
+                else:
+                    b2_alive = b2.alive if "alive" in b2 else false
+
+                if b1_alive and b2_alive:
+                    var temp_x = 0.0
+                    var temp_y = 0.0
+
+                    if typeof(b1) == TYPE_OBJECT and b1.has_method("get"):
+                        temp_x = b1.get("x")
+                        temp_y = b1.get("y")
+                    elif typeof(b1) == TYPE_DICTIONARY and b1.has("x"):
+                        temp_x = b1["x"]
+                        temp_y = b1["y"]
+                    else:
+                        temp_x = b1.x
+                        temp_y = b1.y
+
+                    var b2_x = 0.0
+                    var b2_y = 0.0
+                    if typeof(b2) == TYPE_OBJECT and b2.has_method("get"):
+                        b2_x = b2.get("x")
+                        b2_y = b2.get("y")
+                    elif typeof(b2) == TYPE_DICTIONARY and b2.has("x"):
+                        b2_x = b2["x"]
+                        b2_y = b2["y"]
+                    else:
+                        b2_x = b2.x
+                        b2_y = b2.y
+
+                    if typeof(b1) == TYPE_OBJECT and b1.has_method("set"):
+                        b1.set("x", b2_x)
+                        b1.set("y", b2_y)
+                    elif typeof(b1) == TYPE_DICTIONARY:
+                        b1["x"] = b2_x
+                        b1["y"] = b2_y
+                    else:
+                        b1.x = b2_x
+                        b1.y = b2_y
+
+                    if typeof(b2) == TYPE_OBJECT and b2.has_method("set"):
+                        b2.set("x", temp_x)
+                        b2.set("y", temp_y)
+                    elif typeof(b2) == TYPE_DICTIONARY:
+                        b2["x"] = temp_x
+                        b2["y"] = temp_y
+                    else:
+                        b2.x = temp_x
+                        b2.y = temp_y
+
+                    if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+                        var b1_id = "unknown"
+                        if typeof(b1) == TYPE_OBJECT and b1.has_method("get"):
+                            b1_id = b1.get("id")
+                        elif typeof(b1) == TYPE_DICTIONARY and b1.has("id"):
+                            b1_id = b1["id"]
+
+                        var b2_id = "unknown"
+                        if typeof(b2) == TYPE_OBJECT and b2.has_method("get"):
+                            b2_id = b2.get("id")
+                        elif typeof(b2) == TYPE_DICTIONARY and b2.has("id"):
+                            b2_id = b2["id"]
+
+                        world.add_event("teleport_swap_complete", {
+                            "b1_id": b1_id,
+                            "b2_id": b2_id,
+                            "message": "Players swapped positions!"
+                        })
+                active_swap = null
+            return
+
+        trigger_timer -= delta
+        if trigger_timer <= 0:
+            trigger_timer = randf_range(20.0, 40.0)
+
+            var alive_balls = []
+            for b in balls:
+                var alive = false
+                var btype = ""
+
+                if typeof(b) == TYPE_OBJECT and b.has_method("get"):
+                    alive = b.get("alive")
+                    btype = b.get("ball_type")
+                elif typeof(b) == TYPE_DICTIONARY:
+                    alive = b.get("alive", false)
+                    btype = b.get("ball_type", "")
+                else:
+                    alive = b.alive if "alive" in b else false
+                    btype = b.ball_type if "ball_type" in b else ""
+
+                if alive and btype != "spectator":
+                    alive_balls.append(b)
+
+            if alive_balls.size() >= 2:
+                var teams = []
+                for b in alive_balls:
+                    var t = "none"
+                    if typeof(b) == TYPE_OBJECT and b.has_method("get"):
+                        t = b.get("team")
+                    elif typeof(b) == TYPE_DICTIONARY:
+                        t = b.get("team", "none")
+                    else:
+                        t = b.team if "team" in b else "none"
+                    if not t in teams:
+                        teams.append(t)
+
+                var b1 = null
+                var b2 = null
+
+                if teams.size() >= 2:
+                    var team_idx1 = randi() % teams.size()
+                    var team1 = teams[team_idx1]
+                    teams.remove_at(team_idx1)
+                    var team2 = teams[randi() % teams.size()]
+
+                    var team1_balls = []
+                    var team2_balls = []
+                    for b in alive_balls:
+                        var t = "none"
+                        if typeof(b) == TYPE_OBJECT and b.has_method("get"):
+                            t = b.get("team")
+                        elif typeof(b) == TYPE_DICTIONARY:
+                            t = b.get("team", "none")
+                        else:
+                            t = b.team if "team" in b else "none"
+
+                        if t == team1:
+                            team1_balls.append(b)
+                        elif t == team2:
+                            team2_balls.append(b)
+
+                    b1 = team1_balls[randi() % team1_balls.size()]
+                    b2 = team2_balls[randi() % team2_balls.size()]
+                else:
+                    var idx1 = randi() % alive_balls.size()
+                    b1 = alive_balls[idx1]
+                    alive_balls.remove_at(idx1)
+                    b2 = alive_balls[randi() % alive_balls.size()]
+
+                active_swap = {
+                    "timer": 3.0,
+                    "b1": b1,
+                    "b2": b2
+                }
+
+                if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+                    var b1_id = "unknown"
+                    if typeof(b1) == TYPE_OBJECT and b1.has_method("get"):
+                        b1_id = b1.get("id")
+                    elif typeof(b1) == TYPE_DICTIONARY and b1.has("id"):
+                        b1_id = b1["id"]
+
+                    var b2_id = "unknown"
+                    if typeof(b2) == TYPE_OBJECT and b2.has_method("get"):
+                        b2_id = b2.get("id")
+                    elif typeof(b2) == TYPE_DICTIONARY and b2.has("id"):
+                        b2_id = b2["id"]
+
+                    world.add_event("teleport_swap_warning", {
+                        "b1_id": b1_id,
+                        "b2_id": b2_id,
+                        "duration": 3.0,
+                        "message": "Two players are about to swap positions!"
+                    })
+
 var GAME_MODES = {
+    'random_teleport_event': RandomTeleportEventMode.new(),
     "cursed_relics": CursedRelicsMode.new(),
     "irradiation_survival": IrradiationSurvivalMode.new(),
 	"currency_bounty": CurrencyBountyMode.new(),
