@@ -26265,6 +26265,10 @@ class DayNightMode extends GameMode:
 								if "invisible" in h: h.invisible = true
 								elif h.has_method("set_meta"): h.set_meta("invisible", true)
 
+					# Clear active sunlight beams and moonlight shadows during eclipse
+					active_sunlight_beams.clear()
+					active_moonlight_shadows.clear()
+
 			var is_night = false
 			if "is_night" in world.arena:
 				is_night = world.arena.is_night

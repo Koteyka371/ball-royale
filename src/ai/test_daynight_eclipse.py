@@ -50,3 +50,21 @@ def test_day_night_eclipse():
 
     finally:
         random.random = original_random
+
+def test_day_night_eclipse_clears_beams():
+    mode = DayNightMode()
+    world = MockWorld()
+    mode.setup(world, [])
+
+    # We want to clear beams and shadows when eclipse triggers
+    mode.active_sunlight_beams = [{'x': 0, 'y': 0, 'radius': 10, 'duration': 10}]
+    mode.active_moonlight_shadows = [{'x': 0, 'y': 0, 'radius': 10, 'duration': 10}]
+
+    mode.eclipse_timer = 5.0
+    mode.is_eclipse_active = True
+
+    # First test that when eclipse active, beams/shadows are cleared.
+    mode.tick(world, [], delta=0.2)
+
+    assert len(mode.active_sunlight_beams) == 0
+    assert len(mode.active_moonlight_shadows) == 0
