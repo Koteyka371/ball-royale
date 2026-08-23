@@ -90853,3 +90853,195 @@ class LocalizedStormTrapMode extends GameMode:
 			storms.erase(t)
 
 GAME_MODES['localized_storm_trap'] = LocalizedStormTrapMode.new()
+
+
+class PhantomGraveyardMode extends GameMode:
+	var recent_death_locations = []
+	var dead_ids = {}
+
+	func _init():
+		name = "Phantom Graveyard"
+		description = "A deployable hazard that teleports any ball entering it to the most recent death location of another ball, dealing minor damage upon arrival."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		recent_death_locations = []
+		dead_ids = {}
+
+		if not "arena" in world:
+			return
+
+		var arena = world.arena if typeof(world) == TYPE_OBJECT else world.get("arena")
+		if arena == null:
+			return
+
+		if typeof(arena) == TYPE_DICTIONARY and not "hazards" in arena:
+			arena["hazards"] = []
+		elif typeof(arena) == TYPE_OBJECT and not "hazards" in arena:
+			arena.hazards = []
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if typeof(arena) == TYPE_DICTIONARY:
+			arena_width = float(arena.get("width", 1000.0))
+			arena_height = float(arena.get("height", 1000.0))
+		elif typeof(arena) == TYPE_OBJECT:
+			arena_width = float(arena.get("width")) if "width" in arena else 1000.0
+			arena_height = float(arena.get("height")) if "height" in arena else 1000.0
+
+		var tx = arena_width / 2.0
+		var ty = arena_height / 2.0
+
+		var h_id = "phantom_graveyard_zone_" + str(randi() % 9000 + 1000)
+		var hazard = null
+
+		# Try to use ProceduralArena Hazard if available, else dict
+		if Engine.has_singleton("ProceduralArena"):
+			pass # Usually loaded via script
+
+		var ProceduralArenaClass = load("res://src/arena/procedural_arena.gd") if ResourceLoader.exists("res://src/arena/procedural_arena.gd") else null
+		if ProceduralArenaClass != null and "Hazard" in ProceduralArenaClass:
+			hazard = ProceduralArenaClass.Hazard.new(h_id, tx, ty, 150.0, "phantom_graveyard_zone", 0.0)
+
+		if hazard == null:
+			hazard = {
+				"id": h_id,
+				"x": tx,
+				"y": ty,
+				"radius": 150.0,
+				"kind": "phantom_graveyard_zone",
+				"damage": 0.0
+			}
+
+		if typeof(arena) == TYPE_DICTIONARY and "hazards" in arena:
+			arena["hazards"].append(hazard)
+		elif typeof(arena) == TYPE_OBJECT and "hazards" in arena:
+			arena.hazards.append(hazard)
+
+	func tick(world, balls, delta=0.016):
+		super.tick(world, balls, delta)
+
+		# Death tracking
+		for b in balls:
+			var is_alive = true
+			var hp = 100.0
+			var b_id = null
+			var bx = 0.0
+			var by = 0.0
+
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", true)
+				hp = float(b.get("hp", 100.0))
+				b_id = b.get("id")
+				bx = float(b.get("x", 0.0))
+				by = float(b.get("y", 0.0))
+			elif typeof(b) == TYPE_OBJECT:
+				if "alive" in b: is_alive = b.alive
+				if "hp" in b: hp = float(b.hp)
+				if "id" in b: b_id = b.id
+				if "x" in b: bx = float(b.x)
+				if "y" in b: by = float(b.y)
+
+			var is_dead = not is_alive or hp <= 0
+			if is_dead and b_id != null and not dead_ids.has(b_id):
+				dead_ids[b_id] = true
+				recent_death_locations.append([bx, by])
+				if recent_death_locations.size() > 10:
+					recent_death_locations.pop_front()
+
+		# Cooldowns and Hazard Collision
+		if not "arena" in world:
+			return
+
+		var arena = world.arena if typeof(world) == TYPE_OBJECT else world.get("arena")
+		if arena == null:
+			return
+
+		var hazards = []
+		if typeof(arena) == TYPE_DICTIONARY and "hazards" in arena:
+			hazards = arena.hazards
+		elif typeof(arena) == TYPE_OBJECT and "hazards" in arena:
+			hazards = arena.hazards
+
+		for b in balls:
+			var cd = 0.0
+			if typeof(b) == TYPE_DICTIONARY:
+				cd = float(b.get("graveyard_teleport_cd", 0.0))
+				if cd > 0:
+					b["graveyard_teleport_cd"] = max(0.0, cd - delta)
+			elif typeof(b) == TYPE_OBJECT:
+				cd = float(b.get("graveyard_teleport_cd")) if "graveyard_teleport_cd" in b else (b.get_meta("graveyard_teleport_cd") if b.has_method("has_meta") and b.has_meta("graveyard_teleport_cd") else 0.0)
+				if cd > 0:
+					if "graveyard_teleport_cd" in b:
+						b.graveyard_teleport_cd = max(0.0, cd - delta)
+					elif b.has_method("set_meta"):
+						b.set_meta("graveyard_teleport_cd", max(0.0, cd - delta))
+
+		for hazard in hazards:
+			var h_kind = ""
+			var hx = 0.0
+			var hy = 0.0
+			var hradius = 150.0
+
+			if typeof(hazard) == TYPE_DICTIONARY:
+				h_kind = hazard.get("kind", "")
+				hx = float(hazard.get("x", 0.0))
+				hy = float(hazard.get("y", 0.0))
+				hradius = float(hazard.get("radius", 150.0))
+			elif typeof(hazard) == TYPE_OBJECT:
+				h_kind = hazard.get("kind") if "kind" in hazard else ""
+				hx = float(hazard.get("x")) if "x" in hazard else 0.0
+				hy = float(hazard.get("y")) if "y" in hazard else 0.0
+				hradius = float(hazard.get("radius")) if "radius" in hazard else 150.0
+
+			if h_kind == "phantom_graveyard_zone":
+				for b in balls:
+					var is_alive = true
+					var hp = 100.0
+					var ball_type = ""
+					var bx = 0.0
+					var by = 0.0
+					var bradius = 15.0
+					var cd = 0.0
+
+					if typeof(b) == TYPE_DICTIONARY:
+						is_alive = b.get("alive", true)
+						hp = float(b.get("hp", 100.0))
+						ball_type = b.get("ball_type", "")
+						bx = float(b.get("x", 0.0))
+						by = float(b.get("y", 0.0))
+						bradius = float(b.get("radius", 15.0))
+						cd = float(b.get("graveyard_teleport_cd", 0.0))
+					elif typeof(b) == TYPE_OBJECT:
+						is_alive = b.get("alive") if "alive" in b else true
+						hp = float(b.get("hp")) if "hp" in b else 100.0
+						ball_type = b.get("ball_type") if "ball_type" in b else ""
+						bx = float(b.get("x")) if "x" in b else 0.0
+						by = float(b.get("y")) if "y" in b else 0.0
+						bradius = float(b.get("radius")) if "radius" in b else 15.0
+						cd = float(b.get("graveyard_teleport_cd")) if "graveyard_teleport_cd" in b else (b.get_meta("graveyard_teleport_cd") if b.has_method("has_meta") and b.has_meta("graveyard_teleport_cd") else 0.0)
+
+					if is_alive and hp > 0 and ball_type != "spectator":
+						var dist_sq = pow(bx - hx, 2) + pow(by - hy, 2)
+						if dist_sq <= pow(hradius + bradius, 2):
+							if cd <= 0 and recent_death_locations.size() > 0:
+								var last_death = recent_death_locations[-1]
+								if typeof(b) == TYPE_DICTIONARY:
+									b["x"] = last_death[0]
+									b["y"] = last_death[1]
+									b["hp"] = max(0.0, hp - 10.0)
+									b["graveyard_teleport_cd"] = 2.0
+									if b["hp"] <= 0:
+										b["alive"] = false
+								elif typeof(b) == TYPE_OBJECT:
+									if "x" in b: b.x = last_death[0]
+									if "y" in b: b.y = last_death[1]
+									if "hp" in b: b.hp = max(0.0, hp - 10.0)
+									if "graveyard_teleport_cd" in b:
+										b.graveyard_teleport_cd = 2.0
+									elif b.has_method("set_meta"):
+										b.set_meta("graveyard_teleport_cd", 2.0)
+									if float(b.get("hp")) <= 0 and "alive" in b:
+										b.alive = false
+
+GAME_MODES["phantom_graveyard"] = PhantomGraveyardMode.new()
