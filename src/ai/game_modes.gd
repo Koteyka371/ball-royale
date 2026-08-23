@@ -6014,7 +6014,24 @@ class BattleRoyaleMode extends GameMode:
 
 		if weather_timer > 10.0:
 			weather_timer = 0.0
-			var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm", "meteor_shower"]
+			var season_num = 1
+			if world != null and world.get("leaderboard_manager") != null and typeof(world.leaderboard_manager) == TYPE_OBJECT and "data" in world.leaderboard_manager and world.leaderboard_manager.data != null:
+				season_num = world.leaderboard_manager.data.get("current_season", 1)
+			elif world != null and world.get("profile_manager") != null and typeof(world.profile_manager) == TYPE_OBJECT and world.profile_manager.get("leaderboard_manager") != null and "data" in world.profile_manager.leaderboard_manager and world.profile_manager.leaderboard_manager.data != null:
+				season_num = world.profile_manager.leaderboard_manager.data.get("current_season", 1)
+
+			var season_index = ((season_num - 1) % 4) + 1
+			var weathers = []
+			if season_index == 1:
+				weathers = ["clear", "rain", "fog", "wind", "thunderstorm"]
+			elif season_index == 2:
+				weathers = ["clear", "heatwave", "sandstorm", "wind", "thunderstorm", "clear", "clear"]
+			elif season_index == 3:
+				weathers = ["clear", "fog", "wind", "rain", "magnetic_storm"]
+			elif season_index == 4:
+				weathers = ["clear", "snow", "blizzard", "fog", "wind"]
+			else:
+				weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm", "meteor_shower"]
 			var old_weather = weather
 			if not has_meta("next_weather"):
 				set_meta("next_weather", weathers[randi() % weathers.size()])

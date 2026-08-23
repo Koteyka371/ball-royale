@@ -5689,7 +5689,7 @@ class Action:
             if nearest:
                 dist = math.hypot(self.ball.x - nearest.x, self.ball.y - nearest.y)
                 if dist < 300:
-                    self.ball.inventory.remove("deployable_stasis_bubble", "deployable_ice_wall", "ice_wall_shrapnel")
+                    self.ball.inventory.remove("deployable_stasis_bubble")
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         try:
                             from arena.procedural_arena import Hazard
@@ -5832,7 +5832,7 @@ class Action:
             if nearest:
                 dist = math.hypot(self.ball.x - nearest.x, self.ball.y - nearest.y)
                 if dist < 300:
-                    self.ball.inventory.remove("deployable_stasis_bubble", "deployable_ice_wall", "ice_wall_shrapnel")
+                    self.ball.inventory.remove("deployable_stasis_bubble")
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         try:
                             from arena.procedural_arena import Hazard

@@ -3381,7 +3381,27 @@ class BattleRoyaleMode(GameMode):
         self.weather_timer += delta
         if self.weather_timer > 10.0:
             self.weather_timer = 0.0
-            weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm", "meteor_shower"]
+            season_num = 1
+            if hasattr(world, "leaderboard_manager") and getattr(world.leaderboard_manager, "data", None):
+                season_num = world.leaderboard_manager.data.get("current_season", 1)
+            elif hasattr(world, "profile_manager") and hasattr(world.profile_manager, "leaderboard_manager") and getattr(world.profile_manager.leaderboard_manager, "data", None):
+                season_num = world.profile_manager.leaderboard_manager.data.get("current_season", 1)
+
+            season_index = ((season_num - 1) % 4) + 1
+            if season_index == 1:
+                # Spring
+                weathers = ["clear", "rain", "fog", "wind", "thunderstorm"]
+            elif season_index == 2:
+                # Summer
+                weathers = ["clear", "heatwave", "sandstorm", "wind", "thunderstorm", "clear", "clear"]
+            elif season_index == 3:
+                # Autumn
+                weathers = ["clear", "fog", "wind", "rain", "magnetic_storm"]
+            elif season_index == 4:
+                # Winter
+                weathers = ["clear", "snow", "blizzard", "fog", "wind"]
+            else:
+                weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm", "meteor_shower"]
             import random
             rnd = getattr(self, "random", random)
             old_weather = self.weather
