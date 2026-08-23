@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2084] Voice Assistant Commentator — *2026-08-23 19:27:00 UTC*
+
+Integrate an AI-based voice assistant that generates context-aware conversational commentary throughout a match, analyzing strategies, reacting to surprising clutch plays in real-time, and personalizing the experience by addressing the player's specific build or class.
+
+---
+
 ## [idea-2058] Bounty Contract Streak — *2026-08-23 18:34:57 UTC*
 
 Players can place multiple bounties consecutively without claiming them to build up a multiplier. When they finally claim one, the reward is multiplied by the streak, encouraging risky investments for massive payoffs.
