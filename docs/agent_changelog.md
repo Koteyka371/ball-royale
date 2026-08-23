@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2069] Quantum Relay Trap — *2026-08-23 18:29:43 UTC*
+
+A deployable hazard that teleports any ball entering it to the most recent death location of another ball, dealing minor damage upon arrival.
+
+---
+
 ## [idea-2082] Crowd Directed Meteors — *2026-08-23 17:56:22 UTC*
 
 Instead of randomly spawning hazards, highly favored spectators with enough loyalty points can directly control the trajectory of a meteor strike via chat commands, causing a delayed massive area damage explosion where they aim.
