@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2071] Replay Highlight Reels — *2026-08-23 13:01:23 UTC*
+
+Automatically detect 'hype' moments in a replay (like a multi-kill or an extremely close call) and allow players to view an auto-generated highlight reel of their saved matches.
+
+---
+
 ## [idea-2080] Aura Nullifier Field — *2026-08-23 12:46:50 UTC*
 
 A stationary gadget that emits a continuous anti-magic field. Any balls within its radius immediately lose all active aura buffs and cannot re-apply them until they exit the zone, creating safe havens against aura-heavy teams.
