@@ -37284,11 +37284,10 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "grapple_booster":
-                if not self.ball.has_meta("inventory"):
-                    self.ball.set_meta("inventory", [])
-                var inv = self.ball.get_meta("inventory")
-                inv.append("grapple_hook")
-                self.ball.set_meta("inventory", inv)
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("grapple_booster_timer", 5.0)
+                else:
+                    self.ball.grapple_booster_timer = 5.0
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
@@ -53480,6 +53479,55 @@ func _update_skill_timer(delta: float):
 
     if "juggernaut_booster_timer" in self.ball: self.ball.juggernaut_booster_timer = juggernaut_timer
     elif self.ball.has_method("set_meta"): self.ball.set_meta("juggernaut_booster_timer", juggernaut_timer)
+
+    var gr_timer = 0.0
+    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("grapple_booster_timer"):
+        gr_timer = self.ball["grapple_booster_timer"]
+    elif typeof(self.ball) == TYPE_OBJECT:
+        if "grapple_booster_timer" in self.ball:
+            gr_timer = float(self.ball.grapple_booster_timer)
+        elif self.ball.has_method("has_meta") and self.ball.has_meta("grapple_booster_timer"):
+            gr_timer = float(self.ball.get_meta("grapple_booster_timer"))
+
+    if gr_timer > 0:
+        gr_timer -= delta
+        if typeof(self.ball) == TYPE_DICTIONARY:
+            self.ball["grapple_booster_timer"] = gr_timer
+        else:
+            if "grapple_booster_timer" in self.ball: self.ball.grapple_booster_timer = gr_timer
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("grapple_booster_timer", gr_timer)
+
+        var aw = 1000.0
+        var ah = 1000.0
+        if self.world != null and typeof(self.world) == TYPE_DICTIONARY and self.world.has("arena") and typeof(self.world.arena) == TYPE_DICTIONARY:
+            aw = self.world.arena.get("width", 1000.0)
+            ah = self.world.arena.get("height", 1000.0)
+        elif self.world != null and typeof(self.world) == TYPE_OBJECT and "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT:
+            aw = self.world.arena.width if "width" in self.world.arena else 1000.0
+            ah = self.world.arena.height if "height" in self.world.arena else 1000.0
+
+        var dists = {
+            "left": self.ball.x,
+            "right": aw - self.ball.x,
+            "top": self.ball.y,
+            "bottom": ah - self.ball.y
+        }
+        var closest_wall = "left"
+        var min_d = dists["left"]
+        for w in dists.keys():
+            if dists[w] < min_d:
+                min_d = dists[w]
+                closest_wall = w
+
+        var pull_strength = 600.0 * delta
+        if closest_wall == "left":
+            self.ball.x = max(0.0, self.ball.x - pull_strength)
+        elif closest_wall == "right":
+            self.ball.x = min(float(aw), self.ball.x + pull_strength)
+        elif closest_wall == "top":
+            self.ball.y = max(0.0, self.ball.y - pull_strength)
+        elif closest_wall == "bottom":
+            self.ball.y = min(float(ah), self.ball.y + pull_strength)
 
     var rg_timer = 0.0
     if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("reverse_grapple_booster_timer"):
