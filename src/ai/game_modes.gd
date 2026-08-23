@@ -26072,46 +26072,76 @@ class DayNightMode extends GameMode:
 				elif "is_night" in world.arena:
 					is_night = world.arena.is_night
 
+			var is_eclipse = false
+			if typeof(world) == TYPE_DICTIONARY and "arena" in world and typeof(world.arena) == TYPE_DICTIONARY:
+				is_eclipse = world.arena.get("is_eclipse", false)
+			elif world != null and "arena" in world and world.arena != null:
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					is_eclipse = world.arena.get("is_eclipse", false)
+				elif "is_eclipse" in world.arena:
+					is_eclipse = world.arena.is_eclipse
+
 			var has_light = b_type.find("light") != -1 or traits.has("light") or b_type.find("solar") != -1 or traits.has("solar") or b_type.find("radiant") != -1 or traits.has("radiant")
 			var has_shadow = b_type.find("shadow") != -1 or traits.has("shadow") or b_type.find("vampire") != -1 or traits.has("vampire") or b_type.find("stealth") != -1 or traits.has("stealth")
 
-			if has_light:
-				if not is_night:
+			var had_eclipse_light = false
+			var had_eclipse_shadow = false
+			if typeof(b) == TYPE_DICTIONARY:
+				had_eclipse_light = b.get("_had_eclipse_light", false)
+				had_eclipse_shadow = b.get("_had_eclipse_shadow", false)
+			else:
+				if b.has_method("has_meta"):
+					had_eclipse_light = b.get_meta("_had_eclipse_light") if b.has_meta("_had_eclipse_light") else false
+					had_eclipse_shadow = b.get_meta("_had_eclipse_shadow") if b.has_meta("_had_eclipse_shadow") else false
+				else:
+					had_eclipse_light = b.get("_had_eclipse_light") if "_had_eclipse_light" in b else false
+					had_eclipse_shadow = b.get("_had_eclipse_shadow") if "_had_eclipse_shadow" in b else false
+
+			if has_light or is_eclipse or had_eclipse_light:
+				if (not is_night and has_light) or is_eclipse:
 					if typeof(b) == TYPE_DICTIONARY:
 						var base_s = b.get("base_speed", b.get("speed", 100.0))
 						var base_pr = b.get("base_perception_radius", b.get("perception_radius", 150.0))
 						b["speed"] = base_s * 1.3
 						b["perception_radius"] = base_pr * 1.5
+						b["_had_eclipse_light"] = is_eclipse
 					else:
 						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
 						var base_pr = b.get("base_perception_radius") if "base_perception_radius" in b else b.get("perception_radius", 150.0)
 						if "speed" in b: b.speed = base_s * 1.3
 						if "perception_radius" in b: b.perception_radius = base_pr * 1.5
+						if b.has_method("set_meta"): b.set_meta("_had_eclipse_light", is_eclipse)
 				else:
 					if typeof(b) == TYPE_DICTIONARY:
 						if "base_speed" in b: b["speed"] = b["base_speed"]
 						if "base_perception_radius" in b: b["perception_radius"] = b["base_perception_radius"]
+						b["_had_eclipse_light"] = is_eclipse
 					else:
 						if "base_speed" in b and "speed" in b: b.speed = b.base_speed
 						if "base_perception_radius" in b and "perception_radius" in b: b.perception_radius = b.base_perception_radius
+						if b.has_method("set_meta"): b.set_meta("_had_eclipse_light", is_eclipse)
 
-			if has_shadow:
-				if is_night:
+			if has_shadow or is_eclipse or had_eclipse_shadow:
+				if (is_night and has_shadow) or is_eclipse:
 					if typeof(b) == TYPE_DICTIONARY:
 						b["stealth"] = true
 						var base_cc = b.get("base_crit_chance", b.get("crit_chance", 0.0))
 						b["crit_chance"] = base_cc + 0.25
+						b["_had_eclipse_shadow"] = is_eclipse
 					else:
 						if "stealth" in b: b.stealth = true
 						var base_cc = b.get("base_crit_chance") if "base_crit_chance" in b else b.get("crit_chance", 0.0)
 						if "crit_chance" in b: b.crit_chance = base_cc + 0.25
+						if b.has_method("set_meta"): b.set_meta("_had_eclipse_shadow", is_eclipse)
 				else:
 					if typeof(b) == TYPE_DICTIONARY:
 						b["stealth"] = false
 						if "base_crit_chance" in b: b["crit_chance"] = b["base_crit_chance"]
+						b["_had_eclipse_shadow"] = is_eclipse
 					else:
 						if "stealth" in b: b.stealth = false
 						if "base_crit_chance" in b and "crit_chance" in b: b.crit_chance = b.base_crit_chance
+						if b.has_method("set_meta"): b.set_meta("_had_eclipse_shadow", is_eclipse)
 
 			# Trait: Earth
 			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
@@ -26206,6 +26236,8 @@ class DayNightMode extends GameMode:
 		active_sunlight_beams = []
 		moonlight_shadow_timer = 0.0
 		active_moonlight_shadows = []
+		eclipse_timer = 0.0
+		is_eclipse_active = false
 		is_solar_flare = false
 		solar_flare_timer = 0.0
 
@@ -26268,6 +26300,19 @@ class DayNightMode extends GameMode:
 					# Clear active sunlight beams and moonlight shadows during eclipse
 					active_sunlight_beams.clear()
 					active_moonlight_shadows.clear()
+
+			var is_eclipse_check = false
+			if typeof(world) == TYPE_DICTIONARY and "arena" in world and typeof(world.arena) == TYPE_DICTIONARY:
+				is_eclipse_check = world.arena.get("is_eclipse", false)
+			elif world != null and "arena" in world and world.arena != null:
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					is_eclipse_check = world.arena.get("is_eclipse", false)
+				elif "is_eclipse" in world.arena:
+					is_eclipse_check = world.arena.is_eclipse
+
+			if is_eclipse_check:
+				active_sunlight_beams.clear()
+				active_moonlight_shadows.clear()
 
 			var is_night = false
 			if "is_night" in world.arena:
