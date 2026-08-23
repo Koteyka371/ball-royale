@@ -40187,7 +40187,74 @@ class FloatingPlatesMode(GameMode):
                     if ball.hp <= 0:
                         ball.is_alive = False
 
+
+class RandomTeleportEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Random Teleport Event"
+        self.description = "A random event that selects two random alive balls from different teams, displays a visual indicator, and swaps their positions after a short delay."
+        self.trigger_timer = 15.0
+        self.active_swap = None
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.trigger_timer = 15.0
+        self.active_swap = None
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import random
+
+        if self.active_swap:
+            self.active_swap['timer'] -= delta
+            if self.active_swap['timer'] <= 0:
+                b1, b2 = self.active_swap['balls']
+                if getattr(b1, 'alive', False) and getattr(b2, 'alive', False):
+                    # Swap physical positions
+                    temp_x, temp_y = b1.x, b1.y
+                    b1.x, b1.y = b2.x, b2.y
+                    b2.x, b2.y = temp_x, temp_y
+
+                    if hasattr(world, 'add_event'):
+                        world.add_event('teleport_swap_complete', {
+                            'b1_id': getattr(b1, 'id', 'unknown'),
+                            'b2_id': getattr(b2, 'id', 'unknown'),
+                            'message': f"Players swapped positions!"
+                        })
+                self.active_swap = None
+            return
+
+        self.trigger_timer -= delta
+        if self.trigger_timer <= 0:
+            self.trigger_timer = random.uniform(20.0, 40.0)
+
+            alive_balls = [b for b in balls if getattr(b, 'alive', False) and getattr(b, 'ball_type', '') != 'spectator']
+            if len(alive_balls) >= 2:
+                teams = list(set([getattr(b, 'team', 'none') for b in alive_balls]))
+                if len(teams) >= 2:
+                    # Select two from different teams
+                    team1, team2 = random.sample(teams, 2)
+                    b1 = random.choice([b for b in alive_balls if getattr(b, 'team', 'none') == team1])
+                    b2 = random.choice([b for b in alive_balls if getattr(b, 'team', 'none') == team2])
+                else:
+                    # Fallback to any two balls
+                    b1, b2 = random.sample(alive_balls, 2)
+
+                self.active_swap = {
+                    'timer': 3.0,
+                    'balls': (b1, b2)
+                }
+
+                if hasattr(world, 'add_event'):
+                    world.add_event('teleport_swap_warning', {
+                        'b1_id': getattr(b1, 'id', 'unknown'),
+                        'b2_id': getattr(b2, 'id', 'unknown'),
+                        'duration': 3.0,
+                        'message': "Two players are about to swap positions!"
+                    })
+
 GAME_MODES = {
+    'random_teleport_event': RandomTeleportEventMode(),
     'floating_plates': FloatingPlatesMode(),
 
     'cursed_relics': CursedRelicsMode(),
