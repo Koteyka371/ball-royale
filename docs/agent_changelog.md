@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2080] Aura Nullifier Field — *2026-08-23 12:46:50 UTC*
+
+A stationary gadget that emits a continuous anti-magic field. Any balls within its radius immediately lose all active aura buffs and cannot re-apply them until they exit the zone, creating safe havens against aura-heavy teams.
+
+---
+
 ## [idea-2077] Decoy Weather Altar — *2026-08-23 11:10:48 UTC*
 
 An altar that looks like it will provide a beneficial weather buff when captured, but actually triggers a localized storm that deals heavy damage to the capturing team.
