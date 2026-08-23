@@ -70656,7 +70656,7 @@ class PhantomReplayHazardMode extends GameMode:
 	var timer: float = 0.0
 	var record_duration: float = 3.0
 	var delay_duration: float = 1.0
-	var replay_duration: float = 3.0
+	var replay_duration: float = 15.0
 	var cooldown_duration: float = 2.0
 
 	var hazard_x: float = 500.0
@@ -70749,28 +70749,32 @@ class PhantomReplayHazardMode extends GameMode:
 		timer += delta
 
 		if phase == "record":
-			for b in balls:
-				if typeof(b) == TYPE_DICTIONARY:
-					if not b.get("alive", false): continue
-					var dist = sqrt((b.get("x", 0) - hazard_x)*(b.get("x", 0) - hazard_x) + (b.get("y", 0) - hazard_y)*(b.get("y", 0) - hazard_y))
-					if dist <= hazard_radius:
-						var bid = b.get("id", -1)
-						if not recordings.has(bid):
-							recordings[bid] = []
-						recordings[bid].append([timer, b.get("x", 0), b.get("y", 0)])
+			var projectiles = []
+			if typeof(world) == TYPE_DICTIONARY and world.has("projectiles"):
+				projectiles = world["projectiles"]
+			elif typeof(world) == TYPE_OBJECT and "projectiles" in world:
+				projectiles = world.projectiles
+
+			for p in projectiles:
+				var pid = -1
+				var px = 0.0
+				var py = 0.0
+
+				if typeof(p) == TYPE_DICTIONARY:
+					pid = p.get("id", -1)
+					px = p.get("x", 0.0)
+					py = p.get("y", 0.0)
 				else:
-					var is_alive = false
-					if b.has_method("get_meta"):
-						is_alive = b.alive if "alive" in b else false
-					if not is_alive: continue
-					var dx = b.x - hazard_x
-					var dy = b.y - hazard_y
-					var dist = sqrt(dx*dx + dy*dy)
-					if dist <= hazard_radius:
-						var bid = b.id if "id" in b else -1
-						if not recordings.has(bid):
-							recordings[bid] = []
-						recordings[bid].append([timer, b.x, b.y])
+					pid = p.id if "id" in p else -1
+					px = p.x if "x" in p else 0.0
+					py = p.y if "y" in p else 0.0
+
+				var dist = sqrt((px - hazard_x)*(px - hazard_x) + (py - hazard_y)*(py - hazard_y))
+				if dist <= hazard_radius:
+					if not recordings.has(pid):
+						recordings[pid] = []
+					recordings[pid].append([timer, px, py])
+
 			if timer >= record_duration:
 				phase = "delay"
 				timer = 0.0
@@ -70814,14 +70818,18 @@ class PhantomReplayHazardMode extends GameMode:
 						if not is_alive: continue
 						var dist = sqrt((bx - p.x)*(bx - p.x) + (by - p.y)*(by - p.y))
 						if dist <= bradius + p.radius:
-							if typeof(b) == TYPE_DICTIONARY:
+							if typeof(b) != TYPE_DICTIONARY and b.has_method("take_damage"):
+								b.take_damage(p.damage * delta, "phantom_clone")
+							elif typeof(b) == TYPE_DICTIONARY:
 								var hp = b.get("hp", 0)
 								b["hp"] = max(0, hp - p.damage * delta)
 								if b["hp"] == 0:
 									b["alive"] = false
 							else:
-								if b.has_method("take_damage"):
-									b.take_damage(p.damage * delta, "phantom_clone")
+								var hp = b.hp if "hp" in b else 0
+								b.hp = max(0, hp - p.damage * delta)
+								if b.hp == 0:
+									b.alive = false
 
 			if timer >= replay_duration:
 				phase = "cooldown"

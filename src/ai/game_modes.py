@@ -45672,7 +45672,7 @@ class PhantomReplayHazardMode(GameMode):
         self.timer = 0.0
         self.record_duration = 3.0
         self.delay_duration = 1.0
-        self.replay_duration = 3.0
+        self.replay_duration = 15.0
         self.cooldown_duration = 2.0
         self.hazard_x = 500.0
         self.hazard_y = 500.0
@@ -45751,14 +45751,22 @@ class PhantomReplayHazardMode(GameMode):
         self.timer += delta
 
         if self.phase == "record":
-            for b in balls:
-                if not getattr(b, "alive", False):
-                    continue
-                dist = math.hypot(b.x - self.hazard_x, b.y - self.hazard_y)
+            projectiles = []
+            if isinstance(world, dict) and "projectiles" in world:
+                projectiles = world["projectiles"]
+            elif hasattr(world, "projectiles"):
+                projectiles = world.projectiles
+
+            for p in projectiles:
+                p_id = p.get("id", -1) if isinstance(p, dict) else getattr(p, "id", -1)
+                p_x = p.get("x", 0) if isinstance(p, dict) else getattr(p, "x", 0)
+                p_y = p.get("y", 0) if isinstance(p, dict) else getattr(p, "y", 0)
+
+                dist = math.hypot(p_x - self.hazard_x, p_y - self.hazard_y)
                 if dist <= self.hazard_radius:
-                    if b.id not in self.recordings:
-                        self.recordings[b.id] = []
-                    self.recordings[b.id].append((self.timer, b.x, b.y))
+                    if p_id not in self.recordings:
+                        self.recordings[p_id] = []
+                    self.recordings[p_id].append((self.timer, p_x, p_y))
 
             if self.timer >= self.record_duration:
                 self.phase = "delay"
@@ -45782,12 +45790,27 @@ class PhantomReplayHazardMode(GameMode):
                 if p.alive:
                     p.update(delta)
                     for b in balls:
-                        if not getattr(b, "alive", False):
+                        is_alive = b.get("alive", False) if isinstance(b, dict) else getattr(b, "alive", False)
+                        if not is_alive:
                             continue
-                        dist = math.hypot(b.x - p.x, b.y - p.y)
-                        if dist <= getattr(b, "radius", 0) + p.radius:
+                        b_x = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                        b_y = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                        b_radius = b.get("radius", 0) if isinstance(b, dict) else getattr(b, "radius", 0)
+
+                        dist = math.hypot(b_x - p.x, b_y - p.y)
+                        if dist <= b_radius + p.radius:
                             if hasattr(b, "take_damage"):
                                 b.take_damage(p.damage * delta, "phantom_clone")
+                            elif isinstance(b, dict):
+                                hp = b.get("hp", 0)
+                                b["hp"] = max(0, hp - p.damage * delta)
+                                if b["hp"] == 0:
+                                    b["alive"] = False
+                            else:
+                                hp = getattr(b, "hp", 0)
+                                setattr(b, "hp", max(0, hp - p.damage * delta))
+                                if getattr(b, "hp") == 0:
+                                    setattr(b, "alive", False)
 
             if self.timer >= self.replay_duration:
                 self.phase = "cooldown"
