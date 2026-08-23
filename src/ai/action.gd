@@ -17540,6 +17540,16 @@ func execute(strategy: String, delta: float):
                         my_ball.x = owner.x + cos(orbit_angle) * radius
                         my_ball.y = owner.y + sin(orbit_angle) * radius
                     elif my_ball.get("is_perfect_mirror") == true or (my_ball.has_method("get_meta") and my_ball.get_meta("is_perfect_mirror") == true):
+                        if "duration" in my_ball:
+                            my_ball.duration -= delta
+                            if my_ball.duration <= 0:
+                                my_ball.alive = false
+                                return
+                        elif typeof(my_ball) == TYPE_DICTIONARY and my_ball.has("duration"):
+                            my_ball["duration"] -= delta
+                            if my_ball["duration"] <= 0:
+                                my_ball["alive"] = false
+                                return
                         var arena_w = 1000.0
                         var arena_h = 1000.0
                         if "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT:
@@ -41588,7 +41598,15 @@ func _use_skill():
             clone.owner_id = self.ball.id
             clone["is_perfect_mirror"] = true
             clone.alive = true
-            if "damage" in self.ball: clone.damage = self.ball.damage
+            if "damage" in self.ball: clone.damage = self.ball.damage * 0.5
+            clone.duration = 5.0
+            clone.invulnerable = true
+            if clone.has_method("set_meta"):
+                clone.set_meta("duration", 5.0)
+                clone.set_meta("invulnerable", true)
+            if typeof(clone) == TYPE_DICTIONARY:
+                clone["duration"] = 5.0
+                clone["invulnerable"] = true
 
             if "skill_timer" in clone: clone.skill_timer = 9999.0
             if "skill" in clone: clone.skill = ""

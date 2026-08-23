@@ -59,6 +59,9 @@ def test_perfect_mirror_clone_skill():
     assert clone.x == 800
     assert clone.y == 500
 
+    assert getattr(clone, "invulnerable", False) is True
+    assert getattr(clone, "duration", 0) > 0
+
     # Now simulate tick for clone
     clone_action = Action(clone, world)
     clone_action.execute("idle", 1.0)
