@@ -73,6 +73,42 @@ class ReplaySystem:
         if 0 <= index < len(self.frames):
             self.current_frame_index = index
 
+    def generate_highlight_reel(self, margin_before: int = 20, margin_after: int = 20) -> 'ReplaySystem':
+        """
+        Automatically generates a highlight reel based on hype moments (kills, low hp).
+        """
+        hype_frames = set()
+
+        for idx, frame in enumerate(self.frames):
+            is_hype = False
+            for e in frame.get("events", []):
+                if e.get("type") == "kill":
+                    is_hype = True
+                    break
+
+            if not is_hype:
+                for ent in frame.get("entities", []):
+                    hp = ent.get("hp")
+                    if hp is not None and hp <= 20:
+                        is_hype = True
+                        break
+
+            if is_hype:
+                start_idx = max(0, idx - margin_before)
+                end_idx = min(len(self.frames) - 1, idx + margin_after)
+                for i in range(start_idx, end_idx + 1):
+                    hype_frames.add(self.frames[i]["tick"])
+
+        highlight = ReplaySystem()
+        highlight.frames = [f for f in self.frames if f["tick"] in hype_frames]
+
+        if highlight.frames:
+            highlight.commentary.append("Welcome to the highlight reel!")
+        else:
+            highlight.commentary.append("No highlights found.")
+
+        return highlight
+
     def extract_highlight(self, start_tick: int, end_tick: int) -> 'ReplaySystem':
         """
         Extracts a subset of frames based on tick range.
