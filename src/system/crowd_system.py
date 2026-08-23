@@ -12,6 +12,7 @@ class CrowdSystem:
         self.team_alive_counts = {}
         self.active_vote = None
         self.votes = {}
+        self.pending_meteors = []
         self.vote_bids = {}
         self.vote_auction_timer = 0
         self.vote_auction_active = False
@@ -258,6 +259,7 @@ class CrowdSystem:
                         self.world.add_event("arena_modifier", {"temperature": -20.0})
                         self._add_viewer_loyalty(user, 10)
                         self.world.add_event("crowd_cheer", {"message": f"Viewer {self._get_user_display(user)} made it COLD!"})
+
                 else:
                     if hasattr(self.world, 'add_event'):
                         target = None
@@ -272,6 +274,31 @@ class CrowdSystem:
                             self._add_viewer_loyalty(user, 10)
                             self.world.add_event("crowd_cheer", {"message": f"Viewer {self._get_user_display(user)} summoned a {weather_type}!"})
                 self.excitement_level -= 10.0
+
+        elif cmd == "!meteor" and len(parts) >= 3:
+            if self.viewer_loyalty.get(user, 0) >= 50:
+                try:
+                    mx = float(parts[1])
+                    my = float(parts[2])
+                    self._add_viewer_loyalty(user, -50)
+                    self.pending_meteors.append({
+                        "x": mx,
+                        "y": my,
+                        "timer": 30
+                    })
+                    if hasattr(self.world, 'add_event'):
+                        self.world.add_event('spawn_hazard', {
+                            'x': mx,
+                            'y': my,
+                            'kind': 'meteor_indicator',
+                            'radius': 200.0
+                        })
+                        self.world.add_event("crowd_cheer", {
+                            "message": f"Viewer {self._get_user_display(user)} called in a meteor strike!"
+                        })
+                    self.excitement_level += 15.0
+                except ValueError:
+                    pass
 
         elif cmd == "!drop" and len(parts) >= 2:
             booster_kind = parts[1]
@@ -635,6 +662,29 @@ class CrowdSystem:
         self._process_spectator_signs(balls, tick)
         self._process_global_modifier(balls, tick)
         self._process_sabotage(balls, tick)
+
+        still_pending = []
+        for m in getattr(self, "pending_meteors", []):
+            m["timer"] -= 1
+            if m["timer"] <= 0:
+                if hasattr(self.world, "arena"):
+                    self.world.arena.hazards = [
+                        h for h in getattr(self.world.arena, 'hazards', [])
+                        if not (getattr(h, 'kind', '') == 'meteor_indicator' and getattr(h, 'x', 0) == m['x'] and getattr(h, 'y', 0) == m['y'])
+                    ]
+                if hasattr(self.world, 'add_event'):
+                    self.world.add_event("spawn_hazard", {
+                        "x": m["x"],
+                        "y": m["y"],
+                        "kind": "meteor",
+                        "radius": 200.0
+                    })
+                    self.world.add_event("crowd_cheer", {
+                        "message": "The meteor struck!"
+                    })
+            else:
+                still_pending.append(m)
+        self.pending_meteors = still_pending
         self._trigger_large_scale_event(balls, tick)
 
 
