@@ -291,6 +291,10 @@ class ProfileManager:
             self.data["active_bounties"][target_player_id]["reward"] += reward_tokens
             self.data["active_bounties"][target_player_id]["placer"] = placer_id
             self.data["active_bounties"][target_player_id]["currency"] = currency_type
+
+            if placer_id == "local_player":
+                self.data["bounty_streak"] = self.data.get("bounty_streak", 0) + 1
+
             self.save()
             return True
         return False
@@ -306,12 +310,20 @@ class ProfileManager:
             currency = bounties[target_player_id].get("currency", "prestige_tokens")
             bounties[target_player_id]["reward"] = 0
 
+            streak_multiplier = 1
+            if claiming_player_id == "local_player":
+                streak = self.data.get("bounty_streak", 0)
+                if streak > 0:
+                    streak_multiplier = streak
+                # Reset streak after claiming
+                self.data["bounty_streak"] = 0
+
             # If the player who placed the bounty claims it, they get triple the investment
             if claiming_player_id == placer and claiming_player_id == "local_player":
-                self.data[currency] = self.data.get(currency, 0) + (reward * 3)
+                self.data[currency] = self.data.get(currency, 0) + (reward * 3 * streak_multiplier)
             # If a different player claims it, they get a portion (e.g., half)
             elif claiming_player_id == "local_player":
-                self.data[currency] = self.data.get(currency, 0) + int(reward * 0.5)
+                self.data[currency] = self.data.get(currency, 0) + int(reward * 0.5 * streak_multiplier)
             else:
                 # Give portion to AI
                 pass
