@@ -92,3 +92,37 @@ def test_serialization():
     assert len(new_replay.frames) == 1
     assert new_replay.frames[0]["tick"] == 1
     assert new_replay.frames[0]["entities"][0]["hp"] == 100
+
+def test_generate_highlight_reel():
+    replay = ReplaySystem()
+    replay.start_recording()
+
+    # Normal frames
+    for i in range(1, 40):
+        replay.record_frame(i, [{"id": 1, "hp": 100}], [])
+
+    # Close call frame (hp <= 20)
+    replay.record_frame(40, [{"id": 1, "hp": 15}], [])
+
+    # Normal frames
+    for i in range(41, 100):
+        replay.record_frame(i, [{"id": 1, "hp": 50}], [])
+
+    # Kill frame
+    replay.record_frame(100, [{"id": 1, "hp": 50}], [{"type": "kill", "killer_id": 1}])
+
+    # Normal frames
+    for i in range(101, 150):
+        replay.record_frame(i, [{"id": 1, "hp": 100}], [])
+
+    replay.stop_recording()
+
+    reel = replay.generate_highlight_reel(margin_before=5, margin_after=5)
+
+    # 40 - 5 to 40 + 5 -> 35 to 45
+    # 100 - 5 to 100 + 5 -> 95 to 105
+    # Number of frames: 11 + 11 = 22
+    assert len(reel.frames) == 22
+    assert reel.frames[0]["tick"] == 35
+    assert reel.frames[-1]["tick"] == 105
+    assert "Welcome to the highlight reel!" in reel.commentary

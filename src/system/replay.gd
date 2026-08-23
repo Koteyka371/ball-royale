@@ -76,6 +76,44 @@ func set_frame(index: int) -> void:
     if index >= 0 and index < frames.size():
         current_frame_index = index
 
+func generate_highlight_reel(margin_before: int = 20, margin_after: int = 20) -> ReplaySystem:
+    var highlight = get_script().new()
+    var hype_frame_ticks = {}
+
+    for idx in range(frames.size()):
+        var f = frames[idx]
+        var is_hype = false
+
+        if f.has("events"):
+            for e in f["events"]:
+                if typeof(e) == TYPE_DICTIONARY and e.has("type") and e["type"] == "kill":
+                    is_hype = true
+                    break
+
+        if not is_hype and f.has("entities"):
+            for ent in f["entities"]:
+                if typeof(ent) == TYPE_DICTIONARY and ent.has("hp"):
+                    if ent["hp"] <= 20:
+                        is_hype = true
+                        break
+
+        if is_hype:
+            var start_idx = max(0, idx - margin_before)
+            var end_idx = min(frames.size() - 1, idx + margin_after)
+            for i in range(start_idx, end_idx + 1):
+                hype_frame_ticks[frames[i]["tick"]] = true
+
+    for f in frames:
+        if hype_frame_ticks.has(f["tick"]):
+            highlight.frames.append(f.duplicate(true))
+
+    if highlight.frames.size() > 0:
+        highlight.commentary.append("Welcome to the highlight reel!")
+    else:
+        highlight.commentary.append("No highlights found.")
+
+    return highlight
+
 func extract_highlight(start_tick: int, end_tick: int) -> ReplaySystem:
     var highlight = get_script().new()
     for f in frames:
