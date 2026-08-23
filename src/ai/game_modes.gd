@@ -136,7 +136,74 @@ class GameMode:
 		pass
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var in_pud = false
+			if typeof(b) == TYPE_DICTIONARY:
+				in_pud = b.get("in_puddle", false)
+			elif typeof(b) == TYPE_OBJECT:
+				if b.has_method("get_meta") and b.has_meta("in_puddle"):
+					in_pud = b.get_meta("in_puddle")
+				elif "in_puddle" in b:
+					in_pud = b.in_puddle
+
+			if in_pud:
+				if typeof(b) == TYPE_DICTIONARY:
+					var bs = b.get("base_speed", 100.0)
+					if b.has("speed") and typeof(b.speed) in [TYPE_REAL, TYPE_INT]:
+						b["speed"] = bs
+					b["in_puddle"] = false
+				elif typeof(b) == TYPE_OBJECT:
+					var bs = 100.0
+					if b.has_method("get_meta") and b.has_meta("base_speed"): bs = b.get_meta("base_speed")
+					elif "base_speed" in b: bs = b.base_speed
+
+					if "speed" in b and typeof(b.speed) in [TYPE_REAL, TYPE_INT]:
+						b.speed = bs
+
+					if b.has_method("set_meta"): b.set_meta("in_puddle", false)
+					if "in_puddle" in b: b.in_puddle = false
+
 		if world != null:
+			var arena_hazards = []
+			if typeof(world) == TYPE_DICTIONARY and world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+				arena_hazards = world.arena.hazards
+			elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null and "hazards" in world.arena:
+				arena_hazards = world.arena.hazards
+
+			for h in arena_hazards:
+				var h_kind = h.get("kind", "") if typeof(h) == TYPE_DICTIONARY else (h.get_meta("kind") if (h.has_method("get_meta") and h.has_meta("kind")) else (h.kind if "kind" in h else ""))
+				if h_kind == "puddle":
+					var h_x = h.get("x", 0.0) if typeof(h) == TYPE_DICTIONARY else (h.get_meta("x") if (h.has_method("get_meta") and h.has_meta("x")) else (h.x if "x" in h else 0.0))
+					var h_y = h.get("y", 0.0) if typeof(h) == TYPE_DICTIONARY else (h.get_meta("y") if (h.has_method("get_meta") and h.has_meta("y")) else (h.y if "y" in h else 0.0))
+					var h_r = h.get("radius", 50.0) if typeof(h) == TYPE_DICTIONARY else (h.get_meta("radius") if (h.has_method("get_meta") and h.has_meta("radius")) else (h.radius if "radius" in h else 50.0))
+
+					for b in balls:
+						var is_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else false)
+						var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else (b.ball_type if "ball_type" in b else "")
+						if not is_alive or b_type == "spectator":
+							continue
+
+						var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.x if "x" in b else 0.0)
+						var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.y if "y" in b else 0.0)
+						var br = b.get("radius", 15.0) if typeof(b) == TYPE_DICTIONARY else (b.radius if "radius" in b else 15.0)
+
+						var dist_sq = (bx - h_x) * (bx - h_x) + (by - h_y) * (by - h_y)
+						if dist_sq <= (h_r + br) * (h_r + br):
+							if typeof(b) == TYPE_DICTIONARY:
+								if not b.has("base_speed"): b["base_speed"] = b.get("speed", 100.0)
+								b["speed"] = b["base_speed"] * 0.7
+								b["in_puddle"] = true
+							elif typeof(b) == TYPE_OBJECT:
+								var has_bs = b.has_meta("base_speed") if b.has_method("has_meta") else ("base_speed" in b)
+								if not has_bs:
+									var s = b.speed if "speed" in b else 100.0
+									if b.has_method("set_meta"): b.set_meta("base_speed", s)
+									if "base_speed" in b: b.base_speed = s
+
+								var bs = b.get_meta("base_speed") if (b.has_method("get_meta") and b.has_meta("base_speed")) else (b.base_speed if "base_speed" in b else 100.0)
+								if "speed" in b: b.speed = bs * 0.7
+								if b.has_method("set_meta"): b.set_meta("in_puddle", true)
+								if "in_puddle" in b: b.in_puddle = true
 			var hazards = []
 			if typeof(world) == TYPE_DICTIONARY and "arena" in world and typeof(world.arena) == TYPE_DICTIONARY and "hazards" in world.arena:
 				hazards = world.arena.hazards

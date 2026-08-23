@@ -53,6 +53,22 @@ class GameMode:
                 b.in_puddle = False
 
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for h in world.arena.hazards:
+                if getattr(h, "kind", "") == "puddle":
+                    h_x = getattr(h, "x", 0.0)
+                    h_y = getattr(h, "y", 0.0)
+                    h_r = getattr(h, "radius", 50.0)
+                    for b in balls:
+                        if not getattr(b, "alive", False) or getattr(b, "ball_type", "") == "spectator":
+                            continue
+                        dist_sq = (getattr(b, "x", 0.0) - h_x)**2 + (getattr(b, "y", 0.0) - h_y)**2
+                        if dist_sq <= (h_r + getattr(b, "radius", 15.0))**2:
+                            if not hasattr(b, "base_speed"):
+                                b.base_speed = getattr(b, "speed", 100.0)
+                            b.speed = b.base_speed * 0.7
+                            setattr(b, "in_puddle", True)
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
             for hazard in world.arena.hazards[:]:
                 if getattr(hazard, "kind", "") == "momentum_mirror":
                     m_x = getattr(hazard, "x", 0.0)
