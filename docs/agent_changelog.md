@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2021] Slowing Puddles — *2026-08-23 05:50:10 UTC*
+
+Add new puddle hazards that slow down balls when they roll over them.
+
+---
+
 ## [idea-2078] Weather Anomaly Zones — *2026-08-23 04:42:17 UTC*
 
 Randomly spawning zones that inflict temporary extreme weather effects (e.g. freezing, blinding sandstorm) on any ball that stays within the zone for more than 3 seconds.
