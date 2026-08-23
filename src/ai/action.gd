@@ -33733,6 +33733,103 @@ func _collect_booster(delta: float):
                 if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena and typeof(self.world.arena.hazards) == TYPE_ARRAY:
                     self.world.arena.hazards.erase(b)
 
+            elif b_kind == "sun_aspect":
+                var dx = get_bx(b) - my_x
+                var dy = get_by(b) - my_y
+                var b_radius = 15.0
+                if typeof(b) == TYPE_DICTIONARY and b.has("radius"): b_radius = b.radius
+                elif typeof(b) == TYPE_OBJECT and "radius" in b: b_radius = b.radius
+                var dist = sqrt(dx*dx + dy*dy)
+                if dist <= my_radius + b_radius + 5.0:
+                    var traits = []
+                    var b_type = ""
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        traits = self.ball.get("traits", [])
+                        b_type = str(self.ball.get("ball_type", "")).to_lower()
+                    else:
+                        if "traits" in self.ball: traits = self.ball.traits
+                        if "ball_type" in self.ball: b_type = str(self.ball.ball_type).to_lower()
+                    var is_light = traits.has("light") or traits.has("solar") or traits.has("radiant") or b_type.find("solar") != -1 or b_type.find("radiant") != -1 or b_type.find("light") != -1
+                    var is_shadow = traits.has("shadow") or traits.has("dark") or traits.has("nocturnal") or b_type.find("shadow") != -1 or b_type.find("dark") != -1
+                    if is_light:
+                        var hp = 100.0
+                        var max_hp = 100.0
+                        if typeof(self.ball) == TYPE_DICTIONARY:
+                            hp = self.ball.get("hp", 100.0)
+                            max_hp = self.ball.get("max_hp", 100.0)
+                            self.ball["hp"] = min(max_hp, hp + 30.0)
+                        else:
+                            if "hp" in self.ball: hp = self.ball.hp
+                            if "max_hp" in self.ball: max_hp = self.ball.max_hp
+                            if "hp" in self.ball: self.ball.hp = min(max_hp, hp + 30.0)
+                    elif is_shadow:
+                        var bt = 0.0
+                        if typeof(self.ball) == TYPE_DICTIONARY:
+                            bt = self.ball.get("burn_timer", 0.0)
+                            self.ball["burn_timer"] = max(bt, 5.0)
+                        else:
+                            if "burn_timer" in self.ball: bt = self.ball.burn_timer
+                            elif self.ball.has_method("has_meta") and self.ball.has_meta("burn_timer"): bt = self.ball.get_meta("burn_timer")
+                            if "burn_timer" in self.ball: self.ball.burn_timer = max(bt, 5.0)
+                            elif self.ball.has_method("set_meta"): self.ball.set_meta("burn_timer", max(bt, 5.0))
+
+                    if typeof(b) == TYPE_DICTIONARY: b["active"] = false
+                    else:
+                        if "active" in b: b.active = false
+                        elif b.has_method("set_meta"): b.set_meta("active", false)
+                    if self.world != null and "boosters" in self.world and typeof(self.world.boosters) == TYPE_ARRAY:
+                        self.world.boosters.erase(b)
+                    if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena and typeof(self.world.arena.hazards) == TYPE_ARRAY:
+                        self.world.arena.hazards.erase(b)
+
+            elif b_kind == "moon_aspect":
+                var dx = get_bx(b) - my_x
+                var dy = get_by(b) - my_y
+                var b_radius = 15.0
+                if typeof(b) == TYPE_DICTIONARY and b.has("radius"): b_radius = b.radius
+                elif typeof(b) == TYPE_OBJECT and "radius" in b: b_radius = b.radius
+                var dist = sqrt(dx*dx + dy*dy)
+                if dist <= my_radius + b_radius + 5.0:
+                    var traits = []
+                    var b_type = ""
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        traits = self.ball.get("traits", [])
+                        b_type = str(self.ball.get("ball_type", "")).to_lower()
+                    else:
+                        if "traits" in self.ball: traits = self.ball.traits
+                        if "ball_type" in self.ball: b_type = str(self.ball.ball_type).to_lower()
+                    var is_light = traits.has("light") or traits.has("solar") or traits.has("radiant") or b_type.find("solar") != -1 or b_type.find("radiant") != -1 or b_type.find("light") != -1
+                    var is_shadow = traits.has("shadow") or traits.has("dark") or traits.has("nocturnal") or b_type.find("shadow") != -1 or b_type.find("dark") != -1
+                    if is_shadow:
+                        var iv = 0.0
+                        if typeof(self.ball) == TYPE_DICTIONARY:
+                            iv = self.ball.get("invisible_timer", 0.0)
+                            self.ball["invisible_timer"] = max(iv, 5.0)
+                        else:
+                            if "invisible_timer" in self.ball: iv = self.ball.invisible_timer
+                            elif self.ball.has_method("has_meta") and self.ball.has_meta("invisible_timer"): iv = self.ball.get_meta("invisible_timer")
+                            if "invisible_timer" in self.ball: self.ball.invisible_timer = max(iv, 5.0)
+                            elif self.ball.has_method("set_meta"): self.ball.set_meta("invisible_timer", max(iv, 5.0))
+                    elif is_light:
+                        var st = 0.0
+                        if typeof(self.ball) == TYPE_DICTIONARY:
+                            st = self.ball.get("slow_timer", 0.0)
+                            self.ball["slow_timer"] = max(st, 5.0)
+                        else:
+                            if "slow_timer" in self.ball: st = self.ball.slow_timer
+                            elif self.ball.has_method("has_meta") and self.ball.has_meta("slow_timer"): st = self.ball.get_meta("slow_timer")
+                            if "slow_timer" in self.ball: self.ball.slow_timer = max(st, 5.0)
+                            elif self.ball.has_method("set_meta"): self.ball.set_meta("slow_timer", max(st, 5.0))
+
+                    if typeof(b) == TYPE_DICTIONARY: b["active"] = false
+                    else:
+                        if "active" in b: b.active = false
+                        elif b.has_method("set_meta"): b.set_meta("active", false)
+                    if self.world != null and "boosters" in self.world and typeof(self.world.boosters) == TYPE_ARRAY:
+                        self.world.boosters.erase(b)
+                    if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena and typeof(self.world.arena.hazards) == TYPE_ARRAY:
+                        self.world.arena.hazards.erase(b)
+
             elif b_kind == "heroism_booster":
                 var dx = get_bx(b) - my_x
                 var dy = get_by(b) - my_y

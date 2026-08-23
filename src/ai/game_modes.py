@@ -17341,6 +17341,13 @@ class DayNightMode(GameMode):
                     if hasattr(world.arena, "items"):
                         world.arena.items.append({"kind": "reflective_shield", "x": random.uniform(50, arena_w-50), "y": random.uniform(50, arena_h-50), "radius": 10.0})
 
+                if random.random() < 0.005:
+                    arena_w = getattr(world.arena, "width", 1000)
+                    arena_h = getattr(world.arena, "height", 1000)
+                    if hasattr(world.arena, "hazards"):
+                        kind = "sun_aspect" if random.random() < 0.5 else "moon_aspect"
+                        world.arena.hazards.append({"kind": kind, "x": random.uniform(50, arena_w-50), "y": random.uniform(50, arena_h-50), "radius": 15.0, "active": True})
+
                 if self.sunlight_beam_timer >= 3.0:
                     self.sunlight_beam_timer = 0.0
 
