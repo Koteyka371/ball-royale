@@ -1,7 +1,7 @@
 from typing import Any, List, Optional
-from ai.game_modes import GameMode
+from ai.game_modes import GameMode, WeatherAltarMixin
 
-class DoubleJuggernautMode(GameMode):
+class DoubleJuggernautMode(GameMode, WeatherAltarMixin):
     def __init__(self):
         super().__init__()
         self.name = "Double Juggernaut"
@@ -9,6 +9,7 @@ class DoubleJuggernautMode(GameMode):
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
+        self.setup_altar(world)
         if not hasattr(world, "boosters"):
             world.boosters = []
 
@@ -54,6 +55,7 @@ class DoubleJuggernautMode(GameMode):
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
+        self.tick_altar(world, balls, delta)
 
         if not hasattr(world, "boosters"):
             world.boosters = []
