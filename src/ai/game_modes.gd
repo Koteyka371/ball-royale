@@ -90500,3 +90500,151 @@ class InvertedCloneHazardMode extends GameMode:
 						elif b.has_method("set_meta"): b.set_meta("clone_duration", dur)
 
 GAME_MODES["inverted_clone_hazard"] = InvertedCloneHazardMode.new()
+
+
+class LocalizedStormTrapMode extends GameMode:
+	var altars = []
+	var storms = []
+
+	func _init():
+		name = "Weather Storm Trap"
+		description = "An altar that looks like it will provide a beneficial weather buff when captured, but actually triggers a localized storm that deals heavy damage to the capturing team."
+		altars = []
+		storms = []
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		var arena_w = 1000.0
+		var arena_h = 1000.0
+		if typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			arena_w = float(world.arena.get("width", 1000.0))
+			arena_h = float(world.arena.get("height", 1000.0))
+		elif typeof(world) == TYPE_OBJECT and "arena" in world:
+			arena_w = float(world.arena.width)
+			arena_h = float(world.arena.height)
+
+		altars = [
+			{"x": arena_w * 0.5, "y": arena_h * 0.5, "radius": 150.0, "capture_progress": 0.0, "owner": null}
+		]
+		storms = []
+
+		for b in balls:
+			var ball_type = "unknown"
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.has("ball_type"): ball_type = b.ball_type
+				if ball_type == "spectator": continue
+				if not b.has("team"): b["team"] = ball_type
+			elif typeof(b) == TYPE_OBJECT:
+				if "ball_type" in b: ball_type = b.ball_type
+				if ball_type == "spectator": continue
+				if not "team" in b: b.team = ball_type
+
+	func tick(world, balls, delta):
+		super.tick(world, balls, delta)
+
+		var to_remove_altar = []
+
+		for altar in altars:
+			var teams_present = {}
+			for b in balls:
+				var is_alive = false
+				var ball_type = "unknown"
+				var b_team = "unknown"
+				var bx = 0.0
+				var by = 0.0
+
+				if typeof(b) == TYPE_DICTIONARY:
+					is_alive = b.get("alive", false)
+					ball_type = b.get("ball_type", "unknown")
+					b_team = b.get("team", ball_type)
+					bx = float(b.get("x", 0.0))
+					by = float(b.get("y", 0.0))
+				elif typeof(b) == TYPE_OBJECT:
+					if "alive" in b: is_alive = b.alive
+					if "ball_type" in b: ball_type = b.ball_type
+					if "team" in b: b_team = b.team
+					else: b_team = ball_type
+					bx = float(b.x)
+					by = float(b.y)
+
+				if is_alive and ball_type != "spectator":
+					var dist_sq = pow(bx - altar.x, 2) + pow(by - altar.y, 2)
+					if dist_sq <= pow(altar.radius, 2):
+						if not teams_present.has(b_team):
+							teams_present[b_team] = 0
+						teams_present[b_team] += 1
+
+			if not teams_present.is_empty():
+				var max_team = null
+				var max_count = -1
+				var is_tie = false
+
+				for t in teams_present.keys():
+					var count = teams_present[t]
+					if count > max_count:
+						max_count = count
+						max_team = t
+						is_tie = false
+					elif count == max_count:
+						is_tie = true
+
+				if not is_tie:
+					if altar.owner == max_team:
+						if altar.capture_progress < 100.0:
+							altar.capture_progress = min(100.0, float(altar.capture_progress + 20.0 * delta))
+							if altar.capture_progress == 100.0:
+								storms.append({"x": altar.x, "y": altar.y, "radius": 250.0, "team": altar.owner, "timer": 10.0})
+								to_remove_altar.append(altar)
+								if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+									world.add_event("storm_trap_triggered", {"team": altar.owner, "x": altar.x, "y": altar.y})
+								elif typeof(world) == TYPE_DICTIONARY and world.has("events"):
+									world.events.append({"type": "storm_trap_triggered", "data": {"team": altar.owner, "x": altar.x, "y": altar.y}})
+					else:
+						altar.capture_progress -= 20.0 * delta
+						if altar.capture_progress <= 0:
+							altar.owner = max_team
+							altar.capture_progress = 0.0
+			else:
+				altar.capture_progress = max(0.0, float(altar.capture_progress - 10.0 * delta))
+				if altar.capture_progress == 0.0:
+					altar.owner = null
+
+		for a in to_remove_altar:
+			altars.erase(a)
+
+		var to_remove_storms = []
+		for storm in storms:
+			storm.timer -= delta
+			if storm.timer <= 0:
+				to_remove_storms.append(storm)
+			else:
+				for b in balls:
+					var is_alive = false
+					var b_team = "unknown"
+					var bx = 0.0
+					var by = 0.0
+
+					if typeof(b) == TYPE_DICTIONARY:
+						is_alive = b.get("alive", false)
+						b_team = b.get("team", b.get("ball_type", "unknown"))
+						bx = float(b.get("x", 0.0))
+						by = float(b.get("y", 0.0))
+					elif typeof(b) == TYPE_OBJECT:
+						if "alive" in b: is_alive = b.alive
+						b_team = b.team if "team" in b else b.get("ball_type")
+						if b_team == null: b_team = "unknown"
+						bx = float(b.x)
+						by = float(b.y)
+
+					if is_alive and b_team == storm.team:
+						var dist_sq = pow(bx - storm.x, 2) + pow(by - storm.y, 2)
+						if dist_sq <= pow(storm.radius, 2):
+							if typeof(b) == TYPE_DICTIONARY:
+								b["hp"] = max(0.0, float(b.get("hp", 100.0)) - 35.0 * delta)
+							elif typeof(b) == TYPE_OBJECT:
+								b.hp = max(0.0, float(b.hp) - 35.0 * delta)
+
+		for t in to_remove_storms:
+			storms.erase(t)
+
+GAME_MODES['localized_storm_trap'] = LocalizedStormTrapMode.new()
