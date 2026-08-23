@@ -50674,7 +50674,106 @@ class WeatherTrapMode(GameMode):
 
 GAME_MODES['toxic_sludge_mutator'] = ToxicSludgeMutatorMode()
 GAME_MODES['chain_lightning_mutator'] = ChainLightningMutatorMode()
+
+class LocalizedStormTrapMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Weather Storm Trap"
+        self.description = "An altar that looks like it will provide a beneficial weather buff when captured, but actually triggers a localized storm that deals heavy damage to the capturing team."
+        self.altars = []
+        self.storms = []
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        arena_w = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_h = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        self.altars = [
+            {"x": arena_w * 0.5, "y": arena_h * 0.5, "radius": 150.0, "capture_progress": 0.0, "owner": None}
+        ]
+        self.storms = []
+
+        valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        for b in valid_balls:
+            if not hasattr(b, "team"):
+                b.team = getattr(b, "ball_type", "unknown")
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        if not hasattr(self, "altars"):
+            return
+
+        to_remove_altar = []
+
+        for altar in self.altars:
+            teams_present = {}
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                    bx = getattr(b, "x", 0.0)
+                    by = getattr(b, "y", 0.0)
+                    if not isinstance(bx, (int, float)): bx = 0.0
+                    if not isinstance(by, (int, float)): by = 0.0
+                    dist_sq = (bx - altar["x"])**2 + (by - altar["y"])**2
+                    if dist_sq <= altar["radius"]**2:
+                        team = getattr(b, "team", getattr(b, "ball_type", "unknown"))
+                        teams_present[team] = teams_present.get(team, 0) + 1
+
+            if teams_present:
+                max_team = max(teams_present, key=teams_present.get)
+                # Check if it is a clear majority
+                is_tie = sum(1 for t, v in teams_present.items() if v == teams_present[max_team]) > 1
+                if not is_tie:
+                    if altar["owner"] == max_team:
+                        if altar["capture_progress"] < 100.0:
+                            altar["capture_progress"] = min(100.0, altar["capture_progress"] + 20.0 * delta)
+                            if altar["capture_progress"] == 100.0:
+                                # Trigger localized storm trap
+                                self.storms.append({"x": altar["x"], "y": altar["y"], "radius": 250.0, "team": altar["owner"], "timer": 10.0})
+                                to_remove_altar.append(altar)
+                                if hasattr(world, "add_event"):
+                                    world.add_event("storm_trap_triggered", {"team": altar["owner"], "x": altar["x"], "y": altar["y"]})
+                    else:
+                        altar["capture_progress"] -= 20.0 * delta
+                        if altar["capture_progress"] <= 0:
+                            altar["owner"] = max_team
+                            altar["capture_progress"] = 0.0
+
+            else:
+                # Decay
+                altar["capture_progress"] = max(0.0, altar["capture_progress"] - 10.0 * delta)
+                if altar["capture_progress"] == 0.0:
+                    altar["owner"] = None
+
+        for a in to_remove_altar:
+            if a in self.altars:
+                self.altars.remove(a)
+
+        to_remove_storms = []
+        for storm in self.storms:
+            storm["timer"] -= delta
+            if storm["timer"] <= 0:
+                to_remove_storms.append(storm)
+            else:
+                # Apply heavy localized damage to the capturing team
+                for b in balls:
+                    if not getattr(b, "alive", False):
+                        continue
+                    b_team = getattr(b, "team", getattr(b, "ball_type", "unknown"))
+                    if b_team == storm["team"]:
+                        bx = getattr(b, "x", 0.0)
+                        by = getattr(b, "y", 0.0)
+                        dist_sq = (bx - storm["x"])**2 + (by - storm["y"])**2
+                        if dist_sq <= storm["radius"]**2:
+                            # Heavy damage! 35 DPS
+                            b.hp = max(0.0, getattr(b, "hp", 100.0) - 35.0 * delta)
+
+        for s in to_remove_storms:
+            self.storms.remove(s)
+
 GAME_MODES['weather_traps'] = WeatherTrapMode()
+GAME_MODES['localized_storm_trap'] = LocalizedStormTrapMode()
+
 
 class StaminaDrainZoneMode(GameMode):
     def __init__(self):
