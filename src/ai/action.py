@@ -262,6 +262,23 @@ class Action:
             target.out_of_combat_timer = 0.0
 
         original_damage = getattr(attacker, "damage", 10.0)
+
+        # Status Dome logic: double direct damage taken by allies inside the dome
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            import math as _math
+            t_team = getattr(target, "team", -1)
+            for h in self.world.arena.hazards:
+                if getattr(h, "kind", "") == "status_dome":
+                    dist = _math.hypot(target.x - getattr(h, "x", 0.0), target.y - getattr(h, "y", 0.0))
+                    if dist <= getattr(h, "radius", 150.0):
+                        dome_owner_id = getattr(h, "owner_id", None)
+                        if dome_owner_id is not None:
+                            balls = getattr(self.world, "balls", [])
+                            owner_ball = next((b for b in balls if getattr(b, "id", None) == dome_owner_id), None)
+                            if owner_ball and getattr(owner_ball, "team", -2) == t_team:
+                                original_damage *= 2.0
+                                break
+
         if getattr(target, "in_time_dilation_zone", False):
             original_damage *= 0.5
             # Apply to attacker temporarily
@@ -2132,6 +2149,29 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+
+        # Status Dome reflection logic
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            import math as _math
+            status_effects = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "slow_timer", "frozen_timer", "confusion_timer", "silence_timer"]
+            my_team = getattr(self.ball, "team", -1)
+            for h in self.world.arena.hazards:
+                if getattr(h, "kind", "") == "status_dome":
+                    dome_owner_id = getattr(h, "owner_id", None)
+                    # If this ball is the owner of the dome, we look for allies inside to reflect from
+                    if dome_owner_id == getattr(self.ball, "id", None):
+                        for b in getattr(self.world, "balls", []):
+                            if b != self.ball and getattr(b, "team", -2) == my_team and getattr(b, "alive", True):
+                                dist = _math.hypot(getattr(b, "x", 0.0) - getattr(h, "x", 0.0), getattr(b, "y", 0.0) - getattr(h, "y", 0.0))
+                                if dist <= getattr(h, "radius", 150.0):
+                                    # Transfer negative status effects
+                                    for eff in status_effects:
+                                        val = getattr(b, eff, 0.0)
+                                        if val > 0.0:
+                                            # Add to owner (self.ball)
+                                            setattr(self.ball, eff, max(getattr(self.ball, eff, 0.0), val))
+                                            # Clear from ally
+                                            setattr(b, eff, 0.0)
 
         if getattr(self.ball, "is_inverted_clone", False):
             owner_id = getattr(self.ball, "inverted_clone_owner", None)
@@ -5685,6 +5725,20 @@ class Action:
                         setattr(wall, 'wall_dy', -dx)
                         setattr(wall, 'wall_width', 100.0)
                         self.world.arena.hazards.append(wall)
+
+        if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "deployable_status_dome" in self.ball.inventory:
+            self.ball.inventory.remove("deployable_status_dome")
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                try:
+                    from arena.procedural_arena import Hazard
+                except ImportError:
+                    pass
+                else:
+                    dome_id = f"{len(self.world.arena.hazards)}_{getattr(self.world, 'tick', 0)}_status_dome"
+                    dome = Hazard(dome_id, self.ball.x, self.ball.y, 150.0, "status_dome", 0.0)
+                    dome.duration = 5.0
+                    setattr(dome, 'owner_id', getattr(self.ball, 'id', None))
+                    self.world.arena.hazards.append(dome)
 
         if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "deployable_stasis_bubble" in self.ball.inventory:
             enemies = self._get_enemies()
