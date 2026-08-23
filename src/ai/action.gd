@@ -9368,7 +9368,7 @@ func execute(strategy: String, delta: float):
                     if typeof(h) == TYPE_DICTIONARY and h.has("kind"): h_kind = h.kind
                     elif typeof(h) == TYPE_OBJECT and "kind" in h: h_kind = h.kind
 
-                    if h_kind not in ["healing_spring", "inverted_clone_hazard"] and h_kind != "defensive_shield" and h_kind != "personal_safe_zone":
+                    if h_kind not in ["healing_spring", "inverted_clone_hazard", "aura_nullifier_gadget"] and h_kind != "defensive_shield" and h_kind != "personal_safe_zone":
                         var hx = 0.0
                         var hy = 0.0
                         if typeof(h) == TYPE_DICTIONARY and h.has("x"): hx = h.x
@@ -54491,6 +54491,65 @@ func _update_skill_timer(delta: float):
 
 
 
+
+                if h_kind == "aura_nullifier_gadget":
+                    var h_rad = 150.0
+                    if typeof(hazard) == TYPE_DICTIONARY:
+                        h_rad = hazard.get("radius", 150.0)
+                    else:
+                        if "radius" in hazard: h_rad = hazard.radius
+                        elif hazard.has_method("has_meta") and hazard.has_meta("radius"): h_rad = hazard.get_meta("radius")
+
+                    if typeof(self.world) == TYPE_OBJECT and "balls" in self.world:
+                        for b in self.world.balls:
+                            var b_alive = true
+                            if typeof(b) == TYPE_DICTIONARY:
+                                b_alive = b.get("alive", true)
+                            else:
+                                if "alive" in b: b_alive = b.alive
+                                elif b.has_method("has_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+
+                            if b_alive:
+                                var b_x = 0.0
+                                var b_y = 0.0
+                                if typeof(b) == TYPE_DICTIONARY:
+                                    b_x = b.get("x", 0.0)
+                                    b_y = b.get("y", 0.0)
+                                else:
+                                    if "x" in b: b_x = b.x
+                                    if "y" in b: b_y = b.y
+
+                                var dx = h_x - b_x
+                                var dy = h_y - b_y
+                                var dist_sq = dx*dx + dy*dy
+                                if dist_sq < h_rad*h_rad:
+                                    if typeof(b) == TYPE_DICTIONARY:
+                                        b["in_aura_nullifier_zone"] = true
+                                        if "aura_booster_timer" in b: b["aura_booster_timer"] = 0.0
+                                        if "vampiric_aura_timer" in b: b["vampiric_aura_timer"] = 0.0
+                                        if "reflect_shield_active" in b: b["reflect_shield_active"] = false
+                                        if "half_reflect_shield_active" in b: b["half_reflect_shield_active"] = false
+                                        if "energy_shield_active" in b: b["energy_shield_active"] = false
+                                        if "orbital_shield_active" in b: b["orbital_shield_active"] = false
+                                        if "kinetic_shield_active" in b: b["kinetic_shield_active"] = false
+                                        if "charging_shockwave_shield_active" in b: b["charging_shockwave_shield_active"] = false
+                                        if "shield_booster_active" in b: b["shield_booster_active"] = false
+                                    else:
+                                        if "in_aura_nullifier_zone" in b: b.in_aura_nullifier_zone = true
+                                        elif b.has_method("set_meta"): b.set_meta("in_aura_nullifier_zone", true)
+
+                                        if "aura_booster_timer" in b: b.aura_booster_timer = 0.0
+                                        elif b.has_method("set_meta"): b.set_meta("aura_booster_timer", 0.0)
+                                        if "vampiric_aura_timer" in b: b.vampiric_aura_timer = 0.0
+                                        elif b.has_method("set_meta"): b.set_meta("vampiric_aura_timer", 0.0)
+
+                                        if "reflect_shield_active" in b: b.reflect_shield_active = false
+                                        if "half_reflect_shield_active" in b: b.half_reflect_shield_active = false
+                                        if "energy_shield_active" in b: b.energy_shield_active = false
+                                        if "orbital_shield_active" in b: b.orbital_shield_active = false
+                                        if "kinetic_shield_active" in b: b.kinetic_shield_active = false
+                                        if "charging_shockwave_shield_active" in b: b.charging_shockwave_shield_active = false
+                                        if "shield_booster_active" in b: b.shield_booster_active = false
 
                 if h_kind == "aura_nullifier_grenade":
                     var h_owner_id = null
