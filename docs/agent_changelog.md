@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2085] Shareable Interactive Highlights — *2026-08-23 15:36:15 UTC*
+
+A feature to export highlight clips not just as videos, but as lightweight interactive 'moments' where other players can take control at the critical juncture (the clutch or epic kill) to see if they could perform the same feat or do even better.
+
+---
+
 ## [idea-2083] Aegis Reflection Dome — *2026-08-23 14:27:19 UTC*
 
 An active ability that creates a temporary dome around the user. Any status effect (like slow, burn, or freeze) applied to an ally inside the dome is reflected back to the caster, but direct damage is doubled.
