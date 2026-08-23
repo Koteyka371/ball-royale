@@ -17056,6 +17056,10 @@ class DayNightMode(GameMode):
                             h.invisible = True
                             if hasattr(h, "set_meta"): h.set_meta("invisible", True)
 
+                    # Clear active sunlight beams and moonlight shadows during eclipse
+                    self.active_sunlight_beams = []
+                    self.active_moonlight_shadows = []
+
             is_night = getattr(world.arena, "is_night", False)
             world.arena.night_ratio = (self.timer / max(0.1, self.phase_duration)) if is_night else 0.0
 
