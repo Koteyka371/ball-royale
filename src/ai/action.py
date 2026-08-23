@@ -19065,9 +19065,7 @@ class Action:
                         self.world.boosters.remove(nearest)
 
                 elif getattr(nearest, "kind", None) == "grapple_booster":
-                    if not hasattr(self.ball, "inventory"):
-                        self.ball.inventory = []
-                    self.ball.inventory.append("grapple_hook")
+                    self.ball.grapple_booster_timer = 5.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
@@ -27202,6 +27200,29 @@ class Action:
                 if hasattr(self.ball, "hp"):
                     self.ball.hp = min(self.ball.hp, self.ball.max_hp)
                 self.ball.speed = getattr(self.ball, "base_speed", 100.0)
+
+        if hasattr(self.ball, "grapple_booster_timer") and self.ball.grapple_booster_timer > 0:
+            self.ball.grapple_booster_timer -= delta
+            arena_width = getattr(self.world.arena, "width", 1000) if hasattr(self.world, "arena") and self.world.arena else getattr(self.world, "width", 1000)
+            arena_height = getattr(self.world.arena, "height", 1000) if hasattr(self.world, "arena") and self.world.arena else getattr(self.world, "height", 1000)
+
+            dists = {
+                "left": self.ball.x,
+                "right": arena_width - self.ball.x,
+                "top": self.ball.y,
+                "bottom": arena_height - self.ball.y
+            }
+            closest_wall = min(dists, key=dists.get)
+            pull_strength = 600.0 * delta # pull towards wall
+
+            if closest_wall == "left":
+                self.ball.x = max(0.0, self.ball.x - pull_strength)
+            elif closest_wall == "right":
+                self.ball.x = min(float(arena_width), self.ball.x + pull_strength)
+            elif closest_wall == "top":
+                self.ball.y = max(0.0, self.ball.y - pull_strength)
+            elif closest_wall == "bottom":
+                self.ball.y = min(float(arena_height), self.ball.y + pull_strength)
 
         if hasattr(self.ball, "reverse_grapple_booster_timer") and self.ball.reverse_grapple_booster_timer > 0:
             self.ball.reverse_grapple_booster_timer -= delta
