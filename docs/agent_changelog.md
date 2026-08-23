@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2073] Mirror Mirage Field — *2026-08-23 07:57:28 UTC*
+
+A field hazard that spawns hostile clones of any ball that enters it. The clones mirror the movement of the player but inverted.
+
+---
+
 ## [idea-2021] Slowing Puddles — *2026-08-23 05:50:10 UTC*
 
 Add new puddle hazards that slow down balls when they roll over them.
