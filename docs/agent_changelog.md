@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2063] Aether Relay Booster — *2026-08-23 03:32:25 UTC*
+
+A booster that links multiple balls together with ethereal tethers. Tethers share healing and damage evenly among all linked balls, but also allow them to teleport to each other's location once per charge.
+
+---
+
 ## [idea-2012] Sticky Bomb Launcher — *2026-08-23 01:39:46 UTC*
 
 A new ranged weapon that fires sticky bombs that adhere to enemy balls or walls. They detonate after a short delay, dealing area-of-effect damage.
