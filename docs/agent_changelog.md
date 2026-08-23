@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2075] Sun and Moon Aspects — *2026-08-23 04:31:38 UTC*
+
+During the Day/Night mode, randomly drop Sun and Moon aspects (boosters). A Sun aspect instantly heals Light units but burns Shadow units, while a Moon aspect grants invisibility to Shadow units and slows Light units.
+
+---
+
 ## [idea-2063] Aether Relay Booster — *2026-08-23 03:32:25 UTC*
 
 A booster that links multiple balls together with ethereal tethers. Tethers share healing and damage evenly among all linked balls, but also allow them to teleport to each other's location once per charge.
