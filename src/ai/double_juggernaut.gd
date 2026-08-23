@@ -1,6 +1,10 @@
 extends "res://src/ai/game_modes.gd"
 
 class DoubleJuggernautMode extends GameMode:
+
+	var weather: String = "clear"
+	var weather_timer: float = 0.0
+	var altars: Array = []
 	func _init():
 		super._init()
 		name = "Double Juggernaut"
@@ -8,6 +12,17 @@ class DoubleJuggernautMode extends GameMode:
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
+
+		var arena_w = 1000.0
+		var arena_h = 1000.0
+		if world != null and ("arena" in world) and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				arena_w = world.arena.get("width", 1000.0)
+				arena_h = world.arena.get("height", 1000.0)
+			else:
+				if "width" in world.arena: arena_w = world.arena.width
+				if "height" in world.arena: arena_h = world.arena.height
+		altars = [{"x": arena_w/2.0, "y": arena_h/2.0, "radius": 150.0, "capture_progress": 0.0, "owner": null, "sabotaged_by": null}]
 
 		if world != null:
 			if typeof(world) == TYPE_DICTIONARY:
@@ -103,6 +118,97 @@ class DoubleJuggernautMode extends GameMode:
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
 		super.tick(world, balls, delta)
+
+		for altar in altars:
+			var teams_present = {}
+			for b in balls:
+				var is_alive = false
+				if typeof(b) == TYPE_DICTIONARY:
+					is_alive = b.get("alive", false)
+				else:
+					is_alive = b.get("alive") if "alive" in b else false
+
+				if is_alive and (b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type") if "ball_type" in b else "") != "spectator":
+					var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x") if "x" in b else 0.0
+					var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y") if "y" in b else 0.0
+					var dist_sq = pow(bx - altar["x"], 2) + pow(by - altar["y"], 2)
+					if dist_sq <= pow(altar["radius"], 2):
+						var team = b.get("team", b.get("ball_type", "")) if typeof(b) == TYPE_DICTIONARY else b.get("team") if "team" in b else b.get("ball_type") if "ball_type" in b else ""
+						if teams_present.has(team):
+							teams_present[team] += 1
+						else:
+							teams_present[team] = 1
+
+						var has_neg = false
+						if typeof(b) == TYPE_DICTIONARY and b.has("inventory") and b["inventory"].has("negative_modifier"):
+							has_neg = true
+							b["inventory"].erase("negative_modifier")
+						elif typeof(b) != TYPE_DICTIONARY and "inventory" in b and typeof(b.inventory) == TYPE_ARRAY and b.inventory.has("negative_modifier"):
+							has_neg = true
+							b.inventory.erase("negative_modifier")
+
+						if has_neg:
+							altar["sabotaged_by"] = team
+							if world != null and world.has_method("add_event"):
+								world.add_event("altar_sabotaged", {"team": team})
+
+						var saboteur = altar.get("sabotaged_by")
+						if saboteur != null and saboteur != team:
+							var cur_hp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.get("hp") if "hp" in b else 100.0
+							var new_hp = max(0.0, cur_hp - 15.0 * delta)
+							if typeof(b) == TYPE_DICTIONARY:
+								b["hp"] = new_hp
+							else:
+								b.hp = new_hp
+
+			if teams_present.size() > 0:
+				var max_team = ""
+				var max_count = 0
+				for t in teams_present.keys():
+					if teams_present[t] > max_count:
+						max_count = teams_present[t]
+						max_team = t
+				var tie = 0
+				for t in teams_present.keys():
+					if teams_present[t] == max_count:
+						tie += 1
+
+				if tie == 1:
+					if altar["owner"] == max_team:
+						altar["capture_progress"] = min(100.0, altar["capture_progress"] + 20.0 * delta)
+					else:
+						altar["capture_progress"] -= 20.0 * delta
+						if altar["capture_progress"] <= 0:
+							altar["owner"] = max_team
+							altar["capture_progress"] = 0.0
+							weather_timer = 0.0
+							var ctype = max_team
+							if ctype == "fire_elemental" or ctype == "fire_mage" or ctype == "inferno_boss":
+								weather = "heatwave"
+							elif ctype == "water_elemental" or ctype == "druid" or ctype == "leviathan":
+								weather = "heavy_rain"
+							elif ctype == "earth_elemental" or ctype == "golem":
+								weather = "sandstorm"
+							elif ctype == "air_elemental" or ctype == "scout":
+								weather = "hurricane"
+							elif ctype == "ice_elemental" or ctype == "frost_mage" or ctype == "yeti":
+								weather = "blizzard"
+							elif ctype == "necro" or ctype == "vampire":
+								weather = "blood_moon"
+							elif ctype == "paladin" or ctype == "light_mage":
+								weather = "solar_flare"
+							else:
+								var rng = RandomNumberGenerator.new()
+								if world != null and "tick_timer" in world:
+									rng.seed = int(world.tick_timer * 1000)
+								var weathers = ["thunderstorm", "blizzard", "hurricane", "storm", "heatwave", "sandstorm", "heavy_rain"]
+								weather = weathers[rng.randi_range(0, weathers.size() - 1)]
+
+							if world != null and ("arena" in world) and world.arena != null:
+								if typeof(world.arena) == TYPE_DICTIONARY:
+									world.arena["weather"] = weather
+								else:
+									world.arena.weather = weather
 
 		var boosters = []
 		if world != null:
