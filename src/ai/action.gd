@@ -28995,6 +28995,171 @@ func execute(strategy: String, delta: float):
                 self.ball.set_meta("shield_booster_active", false)
         damage_taken = 0
 
+    # Ethereal Tether Sharing & Teleport
+    var ethereal_tether_timer = 0.0
+    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ethereal_tether_timer"): ethereal_tether_timer = self.ball["ethereal_tether_timer"]
+    elif typeof(self.ball) == TYPE_OBJECT and "ethereal_tether_timer" in self.ball: ethereal_tether_timer = self.ball.ethereal_tether_timer
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("ethereal_tether_timer"): ethereal_tether_timer = self.ball.get_meta("ethereal_tether_timer")
+
+    if ethereal_tether_timer > 0.0:
+        if typeof(self.ball) == TYPE_DICTIONARY: self.ball["ethereal_tether_timer"] = ethereal_tether_timer - delta
+        elif typeof(self.ball) == TYPE_OBJECT:
+            if "ethereal_tether_timer" in self.ball: self.ball.ethereal_tether_timer = ethereal_tether_timer - delta
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("ethereal_tether_timer", ethereal_tether_timer - delta)
+
+        var ethereal_links = []
+        if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ethereal_tether_links"): ethereal_links = self.ball["ethereal_tether_links"]
+        elif typeof(self.ball) == TYPE_OBJECT and "ethereal_tether_links" in self.ball: ethereal_links = self.ball.ethereal_tether_links
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("ethereal_tether_links"): ethereal_links = self.ball.get_meta("ethereal_tether_links")
+
+        var alive_links = []
+        for ally in ethereal_links:
+            var a_alive = true
+            if typeof(ally) == TYPE_DICTIONARY and ally.has("alive"): a_alive = ally["alive"]
+            elif typeof(ally) == TYPE_OBJECT and "alive" in ally: a_alive = ally.alive
+            elif typeof(ally) == TYPE_OBJECT and ally.has_method("has_meta") and ally.has_meta("alive"): a_alive = ally.get_meta("alive")
+            if a_alive:
+                alive_links.append(ally)
+
+        if alive_links.size() > 0:
+            var is_receiving = false
+            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ethereal_is_receiving_hp_change"): is_receiving = self.ball["ethereal_is_receiving_hp_change"]
+            elif typeof(self.ball) == TYPE_OBJECT and "ethereal_is_receiving_hp_change" in self.ball: is_receiving = self.ball.ethereal_is_receiving_hp_change
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("ethereal_is_receiving_hp_change"): is_receiving = self.ball.get_meta("ethereal_is_receiving_hp_change")
+
+            if not is_receiving:
+                var total_balls = 1.0 + float(alive_links.size())
+
+                if damage_taken > 0:
+                    var shared_damage = float(damage_taken) / total_balls
+                    damage_taken = shared_damage
+                    current_hp = start_hp - damage_taken
+                    if typeof(self.ball) == TYPE_DICTIONARY: self.ball["hp"] = current_hp
+                    elif typeof(self.ball) == TYPE_OBJECT:
+                        if "hp" in self.ball: self.ball.hp = current_hp
+                        elif self.ball.has_method("set_meta"): self.ball.set_meta("hp", current_hp)
+
+                    for ally in alive_links:
+                        if typeof(ally) == TYPE_DICTIONARY: ally["ethereal_is_receiving_hp_change"] = true
+                        elif typeof(ally) == TYPE_OBJECT:
+                            if "ethereal_is_receiving_hp_change" in ally: ally.ethereal_is_receiving_hp_change = true
+                            elif ally.has_method("set_meta"): ally.set_meta("ethereal_is_receiving_hp_change", true)
+
+                        var a_hp = 100.0
+                        if typeof(ally) == TYPE_DICTIONARY and ally.has("hp"): a_hp = ally["hp"]
+                        elif typeof(ally) == TYPE_OBJECT and "hp" in ally: a_hp = ally.hp
+                        elif typeof(ally) == TYPE_OBJECT and ally.has_method("has_meta") and ally.has_meta("hp"): a_hp = ally.get_meta("hp")
+
+                        a_hp -= shared_damage
+
+                        if typeof(ally) == TYPE_DICTIONARY: ally["hp"] = a_hp
+                        elif typeof(ally) == TYPE_OBJECT:
+                            if "hp" in ally: ally.hp = a_hp
+                            elif ally.has_method("set_meta"): ally.set_meta("hp", a_hp)
+
+                        if a_hp <= 0:
+                            if typeof(ally) == TYPE_DICTIONARY: ally["alive"] = false
+                            elif typeof(ally) == TYPE_OBJECT:
+                                if "alive" in ally: ally.alive = false
+                                elif ally.has_method("set_meta"): ally.set_meta("alive", false)
+
+                        if typeof(ally) == TYPE_DICTIONARY: ally["ethereal_is_receiving_hp_change"] = false
+                        elif typeof(ally) == TYPE_OBJECT:
+                            if "ethereal_is_receiving_hp_change" in ally: ally.ethereal_is_receiving_hp_change = false
+                            elif ally.has_method("set_meta"): ally.set_meta("ethereal_is_receiving_hp_change", false)
+
+                elif current_hp > start_hp:
+                    var healing_taken = current_hp - start_hp
+                    var shared_heal = float(healing_taken) / total_balls
+                    current_hp = start_hp + shared_heal
+                    if typeof(self.ball) == TYPE_DICTIONARY: self.ball["hp"] = current_hp
+                    elif typeof(self.ball) == TYPE_OBJECT:
+                        if "hp" in self.ball: self.ball.hp = current_hp
+                        elif self.ball.has_method("set_meta"): self.ball.set_meta("hp", current_hp)
+
+                    for ally in alive_links:
+                        if typeof(ally) == TYPE_DICTIONARY: ally["ethereal_is_receiving_hp_change"] = true
+                        elif typeof(ally) == TYPE_OBJECT:
+                            if "ethereal_is_receiving_hp_change" in ally: ally.ethereal_is_receiving_hp_change = true
+                            elif ally.has_method("set_meta"): ally.set_meta("ethereal_is_receiving_hp_change", true)
+
+                        var a_hp = 100.0
+                        if typeof(ally) == TYPE_DICTIONARY and ally.has("hp"): a_hp = ally["hp"]
+                        elif typeof(ally) == TYPE_OBJECT and "hp" in ally: a_hp = ally.hp
+                        elif typeof(ally) == TYPE_OBJECT and ally.has_method("has_meta") and ally.has_meta("hp"): a_hp = ally.get_meta("hp")
+
+                        var a_max_hp = 100.0
+                        if typeof(ally) == TYPE_DICTIONARY and ally.has("max_hp"): a_max_hp = ally["max_hp"]
+                        elif typeof(ally) == TYPE_OBJECT and "max_hp" in ally: a_max_hp = ally.max_hp
+                        elif typeof(ally) == TYPE_OBJECT and ally.has_method("has_meta") and ally.has_meta("max_hp"): a_max_hp = ally.get_meta("max_hp")
+
+                        a_hp = min(a_max_hp, a_hp + shared_heal)
+
+                        if typeof(ally) == TYPE_DICTIONARY: ally["hp"] = a_hp
+                        elif typeof(ally) == TYPE_OBJECT:
+                            if "hp" in ally: ally.hp = a_hp
+                            elif ally.has_method("set_meta"): ally.set_meta("hp", a_hp)
+
+                        if typeof(ally) == TYPE_DICTIONARY: ally["ethereal_is_receiving_hp_change"] = false
+                        elif typeof(ally) == TYPE_OBJECT:
+                            if "ethereal_is_receiving_hp_change" in ally: ally.ethereal_is_receiving_hp_change = false
+                            elif ally.has_method("set_meta"): ally.set_meta("ethereal_is_receiving_hp_change", false)
+
+            var charges = 0
+            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ethereal_tether_teleport_charges"): charges = self.ball["ethereal_tether_teleport_charges"]
+            elif typeof(self.ball) == TYPE_OBJECT and "ethereal_tether_teleport_charges" in self.ball: charges = self.ball.ethereal_tether_teleport_charges
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("ethereal_tether_teleport_charges"): charges = self.ball.get_meta("ethereal_tether_teleport_charges")
+
+            var b_max_hp = 100.0
+            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("max_hp"): b_max_hp = self.ball["max_hp"]
+            elif typeof(self.ball) == TYPE_OBJECT and "max_hp" in self.ball: b_max_hp = self.ball.max_hp
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("max_hp"): b_max_hp = self.ball.get_meta("max_hp")
+
+            if current_hp <= b_max_hp * 0.2 and charges > 0:
+                var safest_ally = null
+                var safest_hp = -999.0
+                for ally in alive_links:
+                    var a_hp = 100.0
+                    if typeof(ally) == TYPE_DICTIONARY and ally.has("hp"): a_hp = ally["hp"]
+                    elif typeof(ally) == TYPE_OBJECT and "hp" in ally: a_hp = ally.hp
+                    elif typeof(ally) == TYPE_OBJECT and ally.has_method("has_meta") and ally.has_meta("hp"): a_hp = ally.get_meta("hp")
+                    if a_hp > safest_hp:
+                        safest_hp = a_hp
+                        safest_ally = ally
+
+                if safest_ally != null and safest_hp > current_hp:
+                    var a_x = 0.0
+                    var a_y = 0.0
+                    if typeof(safest_ally) == TYPE_DICTIONARY:
+                        a_x = safest_ally.get("x", 0.0)
+                        a_y = safest_ally.get("y", 0.0)
+                    elif typeof(safest_ally) == TYPE_OBJECT:
+                        if "x" in safest_ally: a_x = safest_ally.x
+                        elif safest_ally.has_method("get_meta"): a_x = safest_ally.get_meta("x")
+                        if "y" in safest_ally: a_y = safest_ally.y
+                        elif safest_ally.has_method("get_meta"): a_y = safest_ally.get_meta("y")
+
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["x"] = a_x
+                        self.ball["y"] = a_y
+                        self.ball["ethereal_tether_teleport_charges"] = charges - 1
+                    elif typeof(self.ball) == TYPE_OBJECT:
+                        if "x" in self.ball: self.ball.x = a_x
+                        elif self.ball.has_method("set_meta"): self.ball.set_meta("x", a_x)
+                        if "y" in self.ball: self.ball.y = a_y
+                        elif self.ball.has_method("set_meta"): self.ball.set_meta("y", a_y)
+
+                        if "ethereal_tether_teleport_charges" in self.ball: self.ball.ethereal_tether_teleport_charges = charges - 1
+                        elif self.ball.has_method("set_meta"): self.ball.set_meta("ethereal_tether_teleport_charges", charges - 1)
+
+                    if self.world != null and "events" in self.world:
+                        self.world.events.append({"type": "teleport", "data": {"x": a_x, "y": a_y}})
+        else:
+            if typeof(self.ball) == TYPE_DICTIONARY: self.ball["ethereal_tether_timer"] = 0.0
+            elif typeof(self.ball) == TYPE_OBJECT:
+                if "ethereal_tether_timer" in self.ball: self.ball.ethereal_tether_timer = 0.0
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("ethereal_tether_timer", 0.0)
+
     var quantum_target = null
     if "quantum_entanglement_target" in self.ball: quantum_target = self.ball.quantum_entanglement_target
     elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("quantum_entanglement_target"): quantum_target = self.ball.get_meta("quantum_entanglement_target")
@@ -33492,6 +33657,66 @@ func _collect_booster(delta: float):
                     world.boosters.erase(b)
                 if "arena" in world and "hazards" in world.arena and b in world.arena.hazards:
                     world.arena.hazards.erase(b)
+            elif b_kind == "ethereal_tether_booster" and b_active:
+                var b_x = 0.0
+                var b_y = 0.0
+                if typeof(b) == TYPE_DICTIONARY:
+                    b_x = b.get("x", 0.0)
+                    b_y = b.get("y", 0.0)
+                elif typeof(b) == TYPE_OBJECT:
+                    if "x" in b: b_x = b.x
+                    elif b.has_method("get_meta"): b_x = b.get_meta("x")
+                    if "y" in b: b_y = b.y
+                    elif b.has_method("get_meta"): b_y = b.get_meta("y")
+
+                var b_radius = 15.0
+                if typeof(b) == TYPE_DICTIONARY and b.has("radius"): b_radius = b["radius"]
+                elif typeof(b) == TYPE_OBJECT and "radius" in b: b_radius = b.radius
+                elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("radius"): b_radius = b.get_meta("radius")
+
+                var my_radius = 10.0
+                if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("radius"): my_radius = self.ball["radius"]
+                elif typeof(self.ball) == TYPE_OBJECT and "radius" in self.ball: my_radius = self.ball.radius
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("radius"): my_radius = self.ball.get_meta("radius")
+
+                var b_dist = sqrt(pow(b_x - self.ball.x, 2) + pow(b_y - self.ball.y, 2))
+
+                if b_dist <= my_radius + b_radius + 5.0:
+                    var allies = _get_allies()
+                    var linked_balls = [self.ball]
+                    for ally in allies:
+                        linked_balls.append(ally)
+
+                    if linked_balls.size() > 1:
+                        for ally_ball in linked_balls:
+                            var links = []
+                            for other in linked_balls:
+                                if other != ally_ball:
+                                    links.append(other)
+
+                            if typeof(ally_ball) == TYPE_DICTIONARY:
+                                ally_ball["ethereal_tether_links"] = links
+                                ally_ball["ethereal_tether_timer"] = 15.0
+                                ally_ball["ethereal_tether_teleport_charges"] = 1
+                            else:
+                                if "ethereal_tether_links" in ally_ball: ally_ball.ethereal_tether_links = links
+                                elif ally_ball.has_method("set_meta"): ally_ball.set_meta("ethereal_tether_links", links)
+
+                                if "ethereal_tether_timer" in ally_ball: ally_ball.ethereal_tether_timer = 15.0
+                                elif ally_ball.has_method("set_meta"): ally_ball.set_meta("ethereal_tether_timer", 15.0)
+
+                                if "ethereal_tether_teleport_charges" in ally_ball: ally_ball.ethereal_tether_teleport_charges = 1
+                                elif ally_ball.has_method("set_meta"): ally_ball.set_meta("ethereal_tether_teleport_charges", 1)
+
+                    if typeof(b) == TYPE_DICTIONARY: b["active"] = false
+                    else:
+                        if "active" in b: b.active = false
+                        elif b.has_method("set_meta"): b.set_meta("active", false)
+
+                    if self.world != null and "boosters" in self.world and typeof(self.world.boosters) == TYPE_ARRAY:
+                        self.world.boosters.erase(b)
+                    if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena and typeof(self.world.arena.hazards) == TYPE_ARRAY:
+                        self.world.arena.hazards.erase(b)
             if b_kind == "phylactery_item" and b_owner == b_id:
                 if typeof(self.ball) == TYPE_DICTIONARY: self.ball["phylactery_active"] = true
                 else:
@@ -48276,7 +48501,7 @@ func _use_skill():
                     elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
                     elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
 
-                    if not kind in ["event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "freeze_booster", "tether_trap", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "breaching_booster", "gravity_multiplier_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_relic", "cursed_booster", "exploding_booster", "debuff_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "recall_booster", "survival_rewind_booster", "snapback_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "vampiric_frenzy_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "anchor_repulsor_booster", "gravity_well_booster", "overclock_booster", "chronosphere_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "grapple_chain_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "insulator_booster", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "forecast_booster", "pet_item", "miniature_black_hole_item", "wind_tunnel", "cryogenic_booster", "eclipse_booster_item", "eclipse_booster", "echolocation_booster"]:
+                    if not kind in ["event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "freeze_booster", "tether_trap", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "breaching_booster", "gravity_multiplier_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_relic", "cursed_booster", "exploding_booster", "debuff_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "recall_booster", "survival_rewind_booster", "snapback_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "vampiric_frenzy_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "anchor_repulsor_booster", "gravity_well_booster", "overclock_booster", "chronosphere_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "grapple_chain_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "insulator_booster", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "forecast_booster", "pet_item", "miniature_black_hole_item", "wind_tunnel", "cryogenic_booster", "eclipse_booster_item", "eclipse_booster", "echolocation_booster", "ethereal_tether_booster"]:
 
                         var hx = 0.0
                         var hy = 0.0
@@ -52974,7 +53199,7 @@ func _update_skill_timer(delta: float):
                 elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("kind"): kind = hazard["kind"]
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): kind = hazard.get_meta("kind")
 
-                if kind in ["booster", "repulsor_booster", "anchor_repulsor_booster", "anchor_repulsor_booster", "healing_spring", "personal_safe_zone", "defensive_shield", "event_horizon_trap", "repulsion_zone", "forecast_booster", "pet_item", "miniature_black_hole_item", "wind_tunnel", "cryogenic_booster", "eclipse_booster_item", "eclipse_booster", "echolocation_booster"]:
+                if kind in ["booster", "repulsor_booster", "anchor_repulsor_booster", "anchor_repulsor_booster", "healing_spring", "personal_safe_zone", "defensive_shield", "event_horizon_trap", "repulsion_zone", "forecast_booster", "pet_item", "miniature_black_hole_item", "wind_tunnel", "cryogenic_booster", "eclipse_booster_item", "eclipse_booster", "echolocation_booster", "ethereal_tether_booster"]:
                     continue
 
                 var hx = 0.0
@@ -53080,7 +53305,7 @@ func _update_skill_timer(delta: float):
                 elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("kind"): kind = hazard["kind"]
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): kind = hazard.get_meta("kind")
 
-                if kind in ["booster", "repulsor_booster", "anchor_repulsor_booster", "healing_spring", "personal_safe_zone", "defensive_shield", "event_horizon_trap", "repulsion_zone", "forecast_booster", "pet_item", "miniature_black_hole_item", "wind_tunnel", "cryogenic_booster", "eclipse_booster_item", "eclipse_booster", "echolocation_booster"]:
+                if kind in ["booster", "repulsor_booster", "anchor_repulsor_booster", "healing_spring", "personal_safe_zone", "defensive_shield", "event_horizon_trap", "repulsion_zone", "forecast_booster", "pet_item", "miniature_black_hole_item", "wind_tunnel", "cryogenic_booster", "eclipse_booster_item", "eclipse_booster", "echolocation_booster", "ethereal_tether_booster"]:
 
                     continue
 
@@ -53618,7 +53843,7 @@ func _update_skill_timer(delta: float):
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
-                var pullable = ["deployable_proximity_mud_puddle", "overload_zone_item", "deployable_stasis_bubble", "deployable_ice_wall", "ice_wall_shrapnel", "deployable_reversal_trap", "deployable_pull_trap", "deployable_freeze_trap", "deployable_shrapnel_trap", "deployable_decoy_swap_item", "event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "vision_reduction_trap", "decoy_item", "silence_booster", "freeze_booster", "tether_trap", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "entanglement_booster", "weather_booster", "portal_gun_item", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "recall_booster", "survival_rewind_booster", "snapback_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "vampiric_frenzy_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "anchor_repulsor_booster", "gravity_well_booster", "overclock_booster", "chronosphere_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "grapple_chain_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "pet_item", "wind_tunnel", "cryogenic_booster", "eclipse_booster_item", "eclipse_booster", "echolocation_booster"]
+                var pullable = ["deployable_proximity_mud_puddle", "overload_zone_item", "deployable_stasis_bubble", "deployable_ice_wall", "ice_wall_shrapnel", "deployable_reversal_trap", "deployable_pull_trap", "deployable_freeze_trap", "deployable_shrapnel_trap", "deployable_decoy_swap_item", "event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "vision_reduction_trap", "decoy_item", "silence_booster", "freeze_booster", "tether_trap", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "entanglement_booster", "weather_booster", "portal_gun_item", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "recall_booster", "survival_rewind_booster", "snapback_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "vampiric_frenzy_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "anchor_repulsor_booster", "gravity_well_booster", "overclock_booster", "chronosphere_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "grapple_chain_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "pet_item", "wind_tunnel", "cryogenic_booster", "eclipse_booster_item", "eclipse_booster", "echolocation_booster", "ethereal_tether_booster"]
                 if h_rad < 30.0 or pullable.has(h_kind):
                     var dx = self.ball.x - hazard.x
                     var dy = self.ball.y - hazard.y
