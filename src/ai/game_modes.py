@@ -40257,7 +40257,95 @@ class RandomTeleportEventMode(GameMode):
                         'message': "Two players are about to swap positions!"
                     })
 
+
+class PhantomGraveyardMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Phantom Graveyard"
+        self.description = "A deployable hazard that teleports any ball entering it to the most recent death location of another ball, dealing minor damage upon arrival."
+        self.recent_death_locations = []
+        self.dead_ids = set()
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.recent_death_locations = []
+        self.dead_ids = set()
+
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        try:
+            from arena.procedural_arena import Hazard
+            hazard_class = Hazard
+        except ImportError:
+            class FallbackHazard:
+                def __init__(self, h_id, x, y, radius, kind, damage=0):
+                    self.id = h_id
+                    self.x = x
+                    self.y = y
+                    self.radius = radius
+                    self.kind = kind
+                    self.damage = damage
+            hazard_class = FallbackHazard
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") else 1000
+
+        import random
+        tx = arena_width / 2.0
+        ty = arena_height / 2.0
+
+        h_id = f"phantom_graveyard_zone_{random.randint(1000, 9999)}"
+        hazard = hazard_class(h_id, tx, ty, 150.0, "phantom_graveyard_zone", 0.0)
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            world.arena.hazards.append(hazard)
+
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        # Death tracking
+        for b in balls:
+            is_dead = not getattr(b, "alive", True) or getattr(b, "hp", 100.0) <= 0
+            if is_dead and getattr(b, "id", None) not in self.dead_ids:
+                if getattr(b, "id", None) is not None:
+                    self.dead_ids.add(b.id)
+                self.recent_death_locations.append((getattr(b, "x", 0.0), getattr(b, "y", 0.0)))
+                if len(self.recent_death_locations) > 10:
+                    self.recent_death_locations.pop(0)
+
+        # Cooldowns and Hazard Collision
+        if not hasattr(world, "arena") or not hasattr(world.arena, "hazards"):
+            return
+
+        for b in balls:
+            if hasattr(b, "graveyard_teleport_cd"):
+                b.graveyard_teleport_cd = max(0.0, getattr(b, "graveyard_teleport_cd", 0.0) - delta)
+
+        for hazard in world.arena.hazards:
+            if getattr(hazard, "kind", "") == "phantom_graveyard_zone":
+                hx = getattr(hazard, "x", 0.0)
+                hy = getattr(hazard, "y", 0.0)
+                hradius = getattr(hazard, "radius", 150.0)
+
+                for b in balls:
+                    if getattr(b, "alive", True) and getattr(b, "hp", 100.0) > 0 and getattr(b, "ball_type", None) != "spectator":
+                        dist_sq = (b.x - hx)**2 + (b.y - hy)**2
+                        # Hazard collision
+                        if dist_sq <= (hradius + getattr(b, "radius", 15.0))**2:
+                            cd = getattr(b, "graveyard_teleport_cd", 0.0)
+                            if cd <= 0 and len(self.recent_death_locations) > 0:
+                                last_death = self.recent_death_locations[-1]
+                                b.x, b.y = last_death
+                                b.hp = max(0.0, getattr(b, "hp", 100.0) - 10.0)
+                                b.graveyard_teleport_cd = 2.0
+                                if b.hp <= 0:
+                                    b.alive = False
+
+
 GAME_MODES = {
+    'phantom_graveyard': PhantomGraveyardMode(),
     'random_teleport_event': RandomTeleportEventMode(),
     'floating_plates': FloatingPlatesMode(),
 
