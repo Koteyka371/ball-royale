@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2058] Bounty Contract Streak — *2026-08-23 18:34:57 UTC*
+
+Players can place multiple bounties consecutively without claiming them to build up a multiplier. When they finally claim one, the reward is multiplied by the streak, encouraging risky investments for massive payoffs.
+
+---
+
 ## [idea-2069] Quantum Relay Trap — *2026-08-23 18:29:43 UTC*
 
 A deployable hazard that teleports any ball entering it to the most recent death location of another ball, dealing minor damage upon arrival.
