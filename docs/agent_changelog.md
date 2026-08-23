@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2012] Sticky Bomb Launcher — *2026-08-23 01:39:46 UTC*
+
+A new ranged weapon that fires sticky bombs that adhere to enemy balls or walls. They detonate after a short delay, dealing area-of-effect damage.
+
+---
+
 ## [idea-2070] Match Replay Fast Forward and Rewind — *2026-08-22 22:26:01 UTC*
 
 Add UI controls in the replay screen to fast forward or rewind the match at various speeds (e.g., 0.5x, 1x, 2x, 4x).
