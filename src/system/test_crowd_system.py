@@ -101,6 +101,64 @@ def test_external_command_spawn():
     assert hazard_events[-1][1]["kind"] == "lava_pit"
     assert hazard_events[-1][1]["x"] == 100.0
 
+def test_external_command_meteor():
+    world = MockWorld()
+    world.arena = MagicMock()
+    world.arena.hazards = []
+
+    system = CrowdSystem(world)
+    ball = MockBall(1, "red", "tank")
+    balls = [ball]
+
+    # Give user points
+    system._add_viewer_loyalty("MeteorFan", 100)
+
+    # Command
+    system.queue_external_command("MeteorFan", "!meteor 500 500")
+    system.tick(balls, [], 1)
+
+    # Verify points deducted
+    assert system.viewer_loyalty.get("MeteorFan", 0) == 50
+
+    # Verify indicator is spawned
+    spawn_events = [e for e in world.events if e[0] == "spawn_hazard"]
+    assert len(spawn_events) > 0
+    assert spawn_events[-1][1]["kind"] == "meteor_indicator"
+    assert spawn_events[-1][1]["x"] == 500
+    assert spawn_events[-1][1]["y"] == 500
+
+    # Ensure meteor is pending
+    assert len(system.pending_meteors) == 1
+    assert system.pending_meteors[0]["timer"] == 29  # ticked once
+
+    # Advance time to trigger explosion
+    for _ in range(29):
+        system.tick(balls, [], 1)
+
+    assert len(system.pending_meteors) == 0
+
+    # Verify meteor explosion
+    spawn_events = [e for e in world.events if e[0] == "spawn_hazard"]
+    meteor_events = [e for e in spawn_events if e[1]["kind"] == "meteor"]
+    assert len(meteor_events) > 0
+    assert meteor_events[-1][1]["x"] == 500
+    assert meteor_events[-1][1]["y"] == 500
+
+
+def test_external_command_meteor_insufficient_points():
+    world = MockWorld()
+    system = CrowdSystem(world)
+    ball = MockBall(1, "red", "tank")
+    balls = [ball]
+
+    # User has 0 points initially
+    system.queue_external_command("PoorFan", "!meteor 500 500")
+    system.tick(balls, [], 1)
+
+    assert system.viewer_loyalty.get("PoorFan", 0) == 0
+    assert len(system.pending_meteors) == 0
+
+
 def test_external_command_emote():
     world = MockWorld()
     system = CrowdSystem(world)
