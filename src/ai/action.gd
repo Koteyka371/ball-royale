@@ -21249,6 +21249,31 @@ func execute(strategy: String, delta: float):
                 elif hazard.kind == "lava":
                     if self.ball.has_method("set_meta"): self.ball.set_meta("is_in_lava", true)
                     elif "is_in_lava" in self.ball: self.ball.is_in_lava = true
+                elif hazard.kind == "lava_pool":
+                    var dx = hazard.x - self.ball.x
+                    var dy = hazard.y - self.ball.y
+                    var dist_sq = dx * dx + dy * dy
+                    if dist_sq < hazard.radius * hazard.radius:
+                        if self.ball.has_method("set_meta"): self.ball.set_meta("is_in_lava", true)
+                        elif "is_in_lava" in self.ball: self.ball.is_in_lava = true
+                        var dist = sqrt(dist_sq)
+                        if dist > 0.1:
+                            var nx = dx / dist
+                            var ny = dy / dist
+                            var pull_strength = 20.0 * delta
+                            var anchor_timer = 0.0
+                            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("anchor_booster_timer"):
+                                anchor_timer = self.ball["anchor_booster_timer"]
+                            elif typeof(self.ball) == TYPE_OBJECT:
+                                if "anchor_booster_timer" in self.ball:
+                                    anchor_timer = self.ball.anchor_booster_timer
+                                elif self.ball.has_method("has_meta") and self.ball.has_meta("anchor_booster_timer"):
+                                    anchor_timer = self.ball.get_meta("anchor_booster_timer")
+                            if anchor_timer <= 0.0:
+                                if "x" in self.ball: self.ball.x += nx * pull_strength
+                                elif self.ball.has_method("set_meta") and self.ball.has_meta("x"): self.ball.set_meta("x", self.ball.get_meta("x") + nx * pull_strength)
+                                if "y" in self.ball: self.ball.y += ny * pull_strength
+                                elif self.ball.has_method("set_meta") and self.ball.has_meta("y"): self.ball.set_meta("y", self.ball.get_meta("y") + ny * pull_strength)
                 elif hazard.kind == "lava_geyser":
                     if not ("active" in hazard) or hazard.active:
                         var dx = hazard.x - self.ball.x

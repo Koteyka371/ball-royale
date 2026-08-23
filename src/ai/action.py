@@ -11313,6 +11313,20 @@ class Action:
                                 self.ball.y += (dy / dist) * push_force * self.delta
                     elif hazard.kind == "lava":
                         self.ball.is_in_lava = True
+                    elif hazard.kind == "lava_pool":
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx * dx + dy * dy
+                        if dist_sq < hazard.radius * hazard.radius:
+                            self.ball.is_in_lava = True
+                            dist = dist_sq ** 0.5
+                            if dist > 0.1:
+                                nx = dx / dist
+                                ny = dy / dist
+                                pull_strength = 20.0 * delta
+                                if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
+                                    self.ball.x += nx * pull_strength
+                                    self.ball.y += ny * pull_strength
                     elif hazard.kind == "lava_geyser":
                         if getattr(hazard, "active", True):
                             dx = hazard.x - self.ball.x
