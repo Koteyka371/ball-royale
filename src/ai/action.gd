@@ -35226,6 +35226,17 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx >= 0:
                         self.world.boosters.remove_at(idx)
+            elif typeof(nearest) == TYPE_DICTIONARY and nearest.has("kind") and nearest["kind"] == "fire_sticky_bomb_booster":
+                ball.active_skill = "fire_sticky_bomb"
+                ball.skill_timer = 4.0
+                if typeof(world) == TYPE_DICTIONARY and world.has("arena") and typeof(world["arena"]) == TYPE_DICTIONARY and world["arena"].has("hazards"):
+                    world["arena"]["hazards"].erase(nearest)
+                elif typeof(world) == TYPE_OBJECT and world.get("arena") != null and typeof(world.arena) == TYPE_OBJECT and world.arena.get("hazards") != null:
+                    world.arena.hazards.erase(nearest)
+                if typeof(world) == TYPE_DICTIONARY and world.has("boosters"):
+                    world["boosters"].erase(nearest)
+                elif typeof(world) == TYPE_OBJECT and world.get("boosters") != null:
+                    world.boosters.erase(nearest)
             elif typeof(nearest) == TYPE_DICTIONARY and nearest.has("kind") and nearest["kind"] == "sticky_bomb_booster":
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var bomb = {}
