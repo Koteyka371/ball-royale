@@ -26721,6 +26721,15 @@ class DayNightMode extends GameMode:
 					if "items" in world.arena:
 						world.arena.items.append({"kind": "reflective_shield", "x": randf_range(50.0, arena_w - 50.0), "y": randf_range(50.0, arena_h - 50.0), "radius": 10.0})
 
+				if randf() < 0.005:
+					var arena_w = 1000.0
+					if "width" in world.arena: arena_w = float(world.arena.width)
+					var arena_h = 1000.0
+					if "height" in world.arena: arena_h = float(world.arena.height)
+					if "hazards" in world.arena:
+						var kind = "sun_aspect" if randf() < 0.5 else "moon_aspect"
+						world.arena.hazards.append({"kind": kind, "x": randf_range(50.0, arena_w - 50.0), "y": randf_range(50.0, arena_h - 50.0), "radius": 15.0, "active": true})
+
 				if sunlight_beam_timer >= 3.0:
 					sunlight_beam_timer = 0.0
 

@@ -17459,6 +17459,42 @@ class Action:
                             self.world.boosters.remove(b)
                         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and b in self.world.arena.hazards:
                             self.world.arena.hazards.remove(b)
+                elif getattr(b, "kind", "") == "sun_aspect":
+                    dist = __import__("math").sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
+                    if dist <= getattr(self.ball, "radius", 10.0) + getattr(b, "radius", 15.0) + 5.0:
+                        traits = getattr(self.ball, "traits", [])
+                        b_type = str(getattr(self.ball, "ball_type", "")).lower()
+                        is_light = "light" in traits or "solar" in traits or "radiant" in traits or "solar" in b_type or "radiant" in b_type or "light" in b_type
+                        is_shadow = "shadow" in traits or "dark" in traits or "nocturnal" in traits or "shadow" in b_type or "dark" in b_type
+
+                        if is_light:
+                            self.ball.hp = min(getattr(self.ball, "max_hp", 100.0), self.ball.hp + 30.0)
+                        elif is_shadow:
+                            self.ball.burn_timer = max(getattr(self.ball, "burn_timer", 0.0), 5.0)
+
+                        b.active = False
+                        if hasattr(self.world, "boosters") and b in self.world.boosters:
+                            self.world.boosters.remove(b)
+                        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and b in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(b)
+                elif getattr(b, "kind", "") == "moon_aspect":
+                    dist = __import__("math").sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
+                    if dist <= getattr(self.ball, "radius", 10.0) + getattr(b, "radius", 15.0) + 5.0:
+                        traits = getattr(self.ball, "traits", [])
+                        b_type = str(getattr(self.ball, "ball_type", "")).lower()
+                        is_light = "light" in traits or "solar" in traits or "radiant" in traits or "solar" in b_type or "radiant" in b_type or "light" in b_type
+                        is_shadow = "shadow" in traits or "dark" in traits or "nocturnal" in traits or "shadow" in b_type or "dark" in b_type
+
+                        if is_shadow:
+                            self.ball.invisible_timer = max(getattr(self.ball, "invisible_timer", 0.0), 5.0)
+                        elif is_light:
+                            self.ball.slow_timer = max(getattr(self.ball, "slow_timer", 0.0), 5.0)
+
+                        b.active = False
+                        if hasattr(self.world, "boosters") and b in self.world.boosters:
+                            self.world.boosters.remove(b)
+                        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and b in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(b)
                 elif getattr(b, "kind", "") == "grave_robber_shovel":
                     dist = __import__("math").sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
                     if dist <= getattr(self.ball, "radius", 10.0) + getattr(b, "radius", 15.0) + 5.0:
