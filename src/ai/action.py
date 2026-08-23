@@ -3611,6 +3611,11 @@ class Action:
                 self.ball.shuffler_clone_timer = timer
 
         if getattr(self.ball, "is_perfect_mirror", False):
+            if hasattr(self.ball, "duration"):
+                self.ball.duration -= delta
+                if self.ball.duration <= 0:
+                    self.ball.alive = False
+                    return
             owner_id = getattr(self.ball, "owner_id", None)
             if owner_id is not None and hasattr(self.world, "balls"):
                 owner = next((b for b in self.world.balls if getattr(b, "id", None) == owner_id and getattr(b, "alive", True)), None)
@@ -21535,7 +21540,9 @@ class Action:
                     clone.is_perfect_mirror = True
                     clone.owner_id = self.ball.id
                     clone.alive = True
-                    clone.damage = getattr(self.ball, "damage", 10)
+                    clone.damage = getattr(self.ball, "damage", 10) * 0.5
+                    clone.invulnerable = True
+                    clone.duration = 5.0
 
                     clone.skill_timer = 9999 # no skills
                     clone.skill = None
