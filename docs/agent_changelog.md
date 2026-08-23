@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2061] Seasonal Weather System — *2026-08-23 10:33:22 UTC*
+
+Introduce dynamic weather that changes during a match based on the current season, such as snowstorms in Winter or heatwaves in Summer, affecting visibility and movement.
+
+---
+
 ## [idea-1985] Weather Stations in more modes — *2026-08-23 09:24:10 UTC*
 
 Add the weather station altar to other game modes like Juggernaut and Watchtower to add more variety and control points.
