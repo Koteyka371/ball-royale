@@ -45,11 +45,21 @@ class BattleCommentator:
             streaks[killer_id] = streaks.get(killer_id, 0) + 1
             streak = streaks[killer_id]
 
+            killer_build = event.get("killer_build")
+            build_str = f" ({killer_build})" if killer_build else ""
+
             # First blood
             if i == 0:
-                lines.append(f"[FIRST BLOOD] The {killer_type} #{killer_id} drew first blood by eliminating {victim_type} #{victim_id}!")
+                lines.append(f"[FIRST BLOOD] The {killer_type}{build_str} #{killer_id} drew first blood by eliminating {victim_type} #{victim_id}!")
             else:
-                lines.append(f"[Tick {tick}] The {killer_type} #{killer_id} brutally eliminated {victim_type} #{victim_id}!")
+                lines.append(f"[Tick {tick}] The {killer_type}{build_str} #{killer_id} brutally eliminated {victim_type} #{victim_id}!")
+
+            if event.get("clutch") or event.get("clutch_play"):
+                lines.append(f"[CLUTCH] Unbelievable! A massive clutch play by {killer_type} #{killer_id}!")
+
+            strategy = event.get("strategy")
+            if strategy:
+                lines.append(f"[STRATEGY] Brilliant use of the {strategy} strategy by {killer_type} #{killer_id}!")
 
             # Streak messages
             if streak == 2:
@@ -66,4 +76,12 @@ class BattleCommentator:
         else:
             lines.append("[DRAW] Nobody survived the carnage!")
 
+        self.synthesize_voice(lines)
         return lines
+
+    def synthesize_voice(self, lines: List[str]) -> None:
+        """
+        Simulates AI-based voice synthesis for the commentary.
+        """
+        for line in lines:
+            print(f"[VOICE SYNTHESIS]: {line}")
