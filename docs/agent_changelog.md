@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2077] Decoy Weather Altar — *2026-08-23 11:10:48 UTC*
+
+An altar that looks like it will provide a beneficial weather buff when captured, but actually triggers a localized storm that deals heavy damage to the capturing team.
+
+---
+
 ## [idea-2061] Seasonal Weather System — *2026-08-23 10:33:22 UTC*
 
 Introduce dynamic weather that changes during a match based on the current season, such as snowstorms in Winter or heatwaves in Summer, affecting visibility and movement.
