@@ -17874,6 +17874,14 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "fire_sticky_bomb_booster":
+                    self.ball.active_skill = "fire_sticky_bomb"
+                    self.ball.skill_timer = 4.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "sticky_bomb_booster":
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         try:
