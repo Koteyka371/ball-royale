@@ -57370,7 +57370,8 @@ class DangerBeaconMode(GameMode):
             return
         # Let players pick up danger beacons
         for b in balls:
-            if getattr(b, "hp", 0) <= 0:
+            b_hp = b.get("hp", 0) if isinstance(b, dict) else getattr(b, "hp", 0)
+            if b_hp <= 0:
                 continue
             b_x = getattr(b, "x", 0.0) if not isinstance(b, dict) else b.get("x", 0.0)
             b_y = getattr(b, "y", 0.0) if not isinstance(b, dict) else b.get("y", 0.0)
@@ -57463,3 +57464,95 @@ class MorphingShapeArenaMode(GameMode):
         super().setup(world, balls)
 
 GAME_MODES["morphing_shape_arena"] = MorphingShapeArenaMode()
+
+
+class ExtremeWeatherZonesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Extreme Weather Zones"
+        self.description = "Random zones spawn inflicting extreme weather (slowdown/damage) on those inside for >3s."
+        self.weather_zones = []
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        self.weather_zones = []
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        super().tick(world, balls, delta)
+        # Random spawn
+        if _rnd.random() < delta * 0.2:
+            try:
+                arena_width = getattr(world.arena, 'width', 1000)
+                arena_height = getattr(world.arena, 'height', 1000)
+            except Exception:
+                arena_width = 1000
+                arena_height = 1000
+
+            self.weather_zones.append({
+                "x": _rnd.random() * arena_width,
+                "y": _rnd.random() * arena_height,
+                "radius": 150.0,
+                "duration": 10.0
+            })
+
+        # Process zones
+        active_zones = []
+        for zone in self.weather_zones:
+            zone["duration"] -= delta
+            if zone["duration"] > 0:
+                active_zones.append(zone)
+        self.weather_zones = active_zones
+
+        # Check balls
+        for b in balls:
+            b_hp = b.get("hp", 0) if isinstance(b, dict) else getattr(b, "hp", 0)
+            if b_hp <= 0:
+                continue
+
+            b_x = getattr(b, "x", 0.0) if not isinstance(b, dict) else b.get("x", 0.0)
+            b_y = getattr(b, "y", 0.0) if not isinstance(b, dict) else b.get("y", 0.0)
+            b_rad = getattr(b, "radius", 20.0) if not isinstance(b, dict) else b.get("radius", 20.0)
+
+            in_zone = False
+            for zone in self.weather_zones:
+                zx = zone["x"]
+                zy = zone["y"]
+                zrad = zone["radius"]
+
+                dist_sq = (b_x - zx)**2 + (b_y - zy)**2
+                if dist_sq < (b_rad + zrad)**2:
+                    in_zone = True
+                    break
+
+            timer = getattr(b, "weather_zone_timer", 0.0) if not isinstance(b, dict) else b.get("weather_zone_timer", 0.0)
+            if in_zone:
+                new_timer = timer + delta
+                if isinstance(b, dict):
+                    b["weather_zone_timer"] = new_timer
+                else:
+                    b.weather_zone_timer = new_timer
+
+                if new_timer > 3.0:
+                    if isinstance(b, dict):
+                        base_speed = b.get("base_speed", 100.0)
+                        b["speed"] = base_speed * 0.1
+                        b["weather_slowed"] = True
+                        b["hp"] = max(1.0, b.get("hp", 100) - (5.0 * delta))
+                    else:
+                        base_speed = getattr(b, "base_speed", 100.0)
+                        b.speed = base_speed * 0.1
+                        b.weather_slowed = True
+                        b.hp = max(1.0, getattr(b, "hp", 100) - (5.0 * delta))
+            else:
+                if isinstance(b, dict):
+                    b["weather_zone_timer"] = 0.0
+                    if b.get("weather_slowed", False):
+                        b["speed"] = b.get("base_speed", 100.0)
+                        b["weather_slowed"] = False
+                else:
+                    b.weather_zone_timer = 0.0
+                    if getattr(b, "weather_slowed", False):
+                        b.speed = getattr(b, "base_speed", 100.0)
+                        b.weather_slowed = False
+
+GAME_MODES["extreme_weather_zones"] = ExtremeWeatherZonesMode()

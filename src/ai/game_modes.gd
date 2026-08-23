@@ -90110,3 +90110,112 @@ class MorphingShapeArenaMode extends GameMode:
 # at the bottom of the file we should add GAME_MODES["morphing_shape_arena"] = MorphingShapeArenaMode.new()
 
 GAME_MODES["morphing_shape_arena"] = MorphingShapeArenaMode.new()
+
+
+class ExtremeWeatherZonesMode extends GameMode:
+	var weather_zones = []
+
+	func _init():
+		name = "Extreme Weather Zones"
+		description = "Random zones spawn inflicting extreme weather (slowdown/damage) on those inside for >3s."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		weather_zones = []
+
+	func tick(world, balls, delta):
+		super.tick(world, balls, delta)
+
+		if randf() < float(delta) * 0.2:
+			var arena_width = 1000.0
+			var arena_height = 1000.0
+			if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+				if "width" in world.arena: arena_width = float(world.arena.width)
+				if "height" in world.arena: arena_height = float(world.arena.height)
+			elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+				if world.arena.has("width"): arena_width = float(world.arena.width)
+				if world.arena.has("height"): arena_height = float(world.arena.height)
+
+			weather_zones.append({
+				"x": randf() * arena_width,
+				"y": randf() * arena_height,
+				"radius": 150.0,
+				"duration": 10.0
+			})
+
+		var active_zones = []
+		for zone in weather_zones:
+			zone.duration -= float(delta)
+			if zone.duration > 0:
+				active_zones.append(zone)
+		weather_zones = active_zones
+
+		for b in balls:
+			var b_hp = 0.0
+			if typeof(b) == TYPE_DICTIONARY and b.has("hp"): b_hp = b.hp
+			elif typeof(b) == TYPE_OBJECT and "hp" in b: b_hp = b.hp
+			if b_hp <= 0: continue
+
+			var b_x = 0.0
+			var b_y = 0.0
+			var b_rad = 20.0
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.has("x"): b_x = b.x
+				if b.has("y"): b_y = b.y
+				if b.has("radius"): b_rad = b.radius
+			else:
+				if "x" in b: b_x = b.x
+				if "y" in b: b_y = b.y
+				if "radius" in b: b_rad = b.radius
+
+			var in_zone = false
+			for zone in weather_zones:
+				var zx = zone.x
+				var zy = zone.y
+				var zrad = zone.radius
+
+				var dist_sq = (b_x - zx)*(b_x - zx) + (b_y - zy)*(b_y - zy)
+				if dist_sq < (b_rad + zrad)*(b_rad + zrad):
+					in_zone = true
+					break
+
+			var timer = 0.0
+			if typeof(b) == TYPE_DICTIONARY and b.has("weather_zone_timer"): timer = b.weather_zone_timer
+			elif typeof(b) == TYPE_OBJECT and b.has_meta("weather_zone_timer"): timer = b.get_meta("weather_zone_timer")
+
+			if in_zone:
+				var new_timer = timer + float(delta)
+				if typeof(b) == TYPE_DICTIONARY:
+					b["weather_zone_timer"] = new_timer
+					if new_timer > 3.0:
+						var base_speed = 100.0
+						if b.has("base_speed"): base_speed = float(b.base_speed)
+						b["speed"] = base_speed * 0.1
+						var cur_hp = b.get("hp", 100)
+						b["hp"] = max(1.0, cur_hp - (5.0 * float(delta)))
+				elif typeof(b) == TYPE_OBJECT:
+					b.set_meta("weather_zone_timer", new_timer)
+					if new_timer > 3.0:
+						var base_speed = 100.0
+						if "base_speed" in b: base_speed = float(b.base_speed)
+						b.speed = base_speed * 0.1
+						var cur_hp = 100
+						if "hp" in b: cur_hp = b.hp
+						b.hp = max(1.0, cur_hp - (5.0 * float(delta)))
+			else:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["weather_zone_timer"] = 0.0
+					var speed = 100.0
+					var base_speed = 100.0
+					if b.has("speed"): speed = float(b.speed)
+					if b.has("base_speed"): base_speed = float(b.base_speed)
+					if speed < base_speed: b["speed"] = base_speed
+				elif typeof(b) == TYPE_OBJECT:
+					b.set_meta("weather_zone_timer", 0.0)
+					var speed = 100.0
+					var base_speed = 100.0
+					if "speed" in b: speed = float(b.speed)
+					if "base_speed" in b: base_speed = float(b.base_speed)
+					if speed < base_speed: b.speed = base_speed
+
+GAME_MODES["extreme_weather_zones"] = ExtremeWeatherZonesMode.new()
