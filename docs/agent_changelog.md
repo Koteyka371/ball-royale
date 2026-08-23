@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1985] Weather Stations in more modes — *2026-08-23 09:24:10 UTC*
+
+Add the weather station altar to other game modes like Juggernaut and Watchtower to add more variety and control points.
+
+---
+
 ## [idea-2067] Black Hole Core Item — *2026-08-23 08:58:15 UTC*
 
 An item that, when thrown, activates after 2 seconds and intensely pulls all nearby balls, hazards, and projectiles towards its center for 5 seconds.
