@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2081] Cosmic Swap Event — *2026-08-23 13:21:11 UTC*
+
+A random arena event that selects two random alive balls (from different teams, if possible) and swaps their physical positions after a short delay, with a visual indicator beforehand. This forces players to adapt instantly as they might be teleported directly into an enemy cluster or out of a safe zone.
+
+---
+
 ## [idea-2071] Replay Highlight Reels — *2026-08-23 13:01:23 UTC*
 
 Automatically detect 'hype' moments in a replay (like a multi-kill or an extremely close call) and allow players to view an auto-generated highlight reel of their saved matches.
