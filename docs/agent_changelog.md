@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2083] Aegis Reflection Dome — *2026-08-23 14:27:19 UTC*
+
+An active ability that creates a temporary dome around the user. Any status effect (like slow, burn, or freeze) applied to an ally inside the dome is reflected back to the caster, but direct damage is doubled.
+
+---
+
 ## [idea-2056] Quantum Duplicate — *2026-08-23 13:29:32 UTC*
 
 A new skill that creates a short-lived, invincible duplicate of the player that mirrors all movements and attacks but deals 50% damage.
