@@ -61,6 +61,17 @@ func start_playback(speed: float = 1.0) -> void:
 func stop_playback() -> void:
     is_playing = false
 
+func take_control():
+    if not is_playing or current_frame_index >= frames.size() or current_frame_index < 0:
+        return null
+
+    stop_playback()
+
+    var frame = frames[current_frame_index]
+    if typeof(frame) == TYPE_DICTIONARY:
+        return frame.duplicate(true)
+    return frame
+
 func get_next_frame():
     if not is_playing or current_frame_index >= frames.size() or current_frame_index < 0:
         return null

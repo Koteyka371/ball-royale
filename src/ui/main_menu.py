@@ -103,6 +103,11 @@ class MainMenu:
                 self.active_replay.playback_speed = speed
                 return True
             return False
+        elif action == "take_control":
+            if self.active_replay:
+                state = self.active_replay.take_control()
+                return {"action": "resume_from_state", "state": state}
+            return False
         elif action == "back":
             self.active_screen = "main"
             self.active_replay = None

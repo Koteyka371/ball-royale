@@ -166,6 +166,11 @@ func process_replay_input(action: String, args: Array = []):
             active_replay.playback_speed = speed
             return true
         return false
+    elif action == "take_control":
+        if active_replay != null:
+            var state = active_replay.take_control()
+            return {"action": "resume_from_state", "state": state}
+        return false
     elif action == "back":
         active_screen = "main"
         active_replay = null
