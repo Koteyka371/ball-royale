@@ -16974,6 +16974,8 @@ class DayNightMode(GameMode):
         self.active_sunlight_beams = [] # list of dicts: {'x', 'y', 'radius', 'duration'}
         self.moonlight_shadow_timer = 0.0
         self.active_moonlight_shadows = [] # list of dicts: {'x', 'y', 'radius', 'duration'}
+        self.eclipse_timer = 0.0
+        self.is_eclipse_active = False
         self.is_solar_flare = False
         self.solar_flare_timer = 0.0
 
@@ -17059,6 +17061,11 @@ class DayNightMode(GameMode):
                     # Clear active sunlight beams and moonlight shadows during eclipse
                     self.active_sunlight_beams = []
                     self.active_moonlight_shadows = []
+
+            # Disable sunlight beams and moonlight shadows during eclipse
+            if getattr(world.arena, "is_eclipse", False):
+                self.active_sunlight_beams = []
+                self.active_moonlight_shadows = []
 
             is_night = getattr(world.arena, "is_night", False)
             world.arena.night_ratio = (self.timer / max(0.1, self.phase_duration)) if is_night else 0.0
@@ -17487,23 +17494,29 @@ class DayNightMode(GameMode):
 
             traits = getattr(b, "traits", [])
 
+            is_eclipse = getattr(world.arena, "is_eclipse", False)
+
             # Apply Light trait during the day
             has_light = "light" in traits or "solar" in traits or "radiant" in traits or "solar" in getattr(b, "ball_type", "").lower() or "radiant" in getattr(b, "ball_type", "").lower()
-            if not is_night and has_light:
-                b.speed = getattr(b, "base_speed", 100.0) * 1.3
-                b.perception_radius = getattr(b, "base_perception_radius", 150.0) * 1.5
-            elif has_light:
-                b.speed = getattr(b, "base_speed", 100.0)
-                b.perception_radius = getattr(b, "base_perception_radius", 150.0)
+            if has_light or is_eclipse or getattr(b, "_had_eclipse_light", False):
+                if (not is_night and has_light) or is_eclipse:
+                    b.speed = getattr(b, "base_speed", 100.0) * 1.3
+                    b.perception_radius = getattr(b, "base_perception_radius", 150.0) * 1.5
+                else:
+                    b.speed = getattr(b, "base_speed", 100.0)
+                    b.perception_radius = getattr(b, "base_perception_radius", 150.0)
+                b._had_eclipse_light = is_eclipse
 
             # Apply Shadow trait during the night
             has_shadow = "shadow" in traits or "vampire" in traits or "stealth" in traits or "vampire" in getattr(b, "ball_type", "").lower() or "stealth" in getattr(b, "ball_type", "").lower()
-            if is_night and has_shadow:
-                b.stealth = True
-                b.crit_chance = getattr(b, "base_crit_chance", 0.0) + 0.25
-            elif has_shadow:
-                b.stealth = False
-                b.crit_chance = getattr(b, "base_crit_chance", 0.0)
+            if has_shadow or is_eclipse or getattr(b, "_had_eclipse_shadow", False):
+                if (is_night and has_shadow) or is_eclipse:
+                    b.stealth = True
+                    b.crit_chance = getattr(b, "base_crit_chance", 0.0) + 0.25
+                else:
+                    b.stealth = False
+                    b.crit_chance = getattr(b, "base_crit_chance", 0.0)
+                b._had_eclipse_shadow = is_eclipse
 
 class GuildVsGuildMode(GameMode):
     """Guild vs Guild mode where players capture territory on a persistent world map."""
