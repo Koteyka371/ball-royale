@@ -435,6 +435,31 @@ func _attempt_damage_internal(attacker, target) -> void:
 	if has_original_damage:
 		original_damage_pre = float(attacker.damage) if "damage" in attacker else float(attacker.get_meta("damage"))
 
+	var w_arena_temp = world.get("arena") if typeof(world) == TYPE_OBJECT else world["arena"] if typeof(world) == TYPE_DICTIONARY and world.has("arena") else null
+	if w_arena_temp != null:
+		var hazards_list = w_arena_temp.hazards if typeof(w_arena_temp) == TYPE_OBJECT and "hazards" in w_arena_temp else w_arena_temp["hazards"] if typeof(w_arena_temp) == TYPE_DICTIONARY and w_arena_temp.has("hazards") else w_arena_temp.get_meta("hazards") if typeof(w_arena_temp) == TYPE_OBJECT and w_arena_temp.has_method("has_meta") and w_arena_temp.has_meta("hazards") else []
+		var t_team = target.team if typeof(target) == TYPE_OBJECT and "team" in target else target["team"] if typeof(target) == TYPE_DICTIONARY and target.has("team") else target.get_meta("team") if typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("team") else -1
+		var t_x = target.x if typeof(target) == TYPE_OBJECT and "x" in target else target["x"] if typeof(target) == TYPE_DICTIONARY and target.has("x") else target.get_meta("x") if typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("x") else 0.0
+		var t_y = target.y if typeof(target) == TYPE_OBJECT and "y" in target else target["y"] if typeof(target) == TYPE_DICTIONARY and target.has("y") else target.get_meta("y") if typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("y") else 0.0
+		for h in hazards_list:
+			var h_kind = h.kind if typeof(h) == TYPE_OBJECT and "kind" in h else h["kind"] if typeof(h) == TYPE_DICTIONARY and h.has("kind") else h.get_meta("kind") if typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind") else ""
+			if h_kind == "status_dome":
+				var h_x = h.x if typeof(h) == TYPE_OBJECT and "x" in h else h["x"] if typeof(h) == TYPE_DICTIONARY and h.has("x") else h.get_meta("x") if typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("x") else 0.0
+				var h_y = h.y if typeof(h) == TYPE_OBJECT and "y" in h else h["y"] if typeof(h) == TYPE_DICTIONARY and h.has("y") else h.get_meta("y") if typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("y") else 0.0
+				var h_radius = h.radius if typeof(h) == TYPE_OBJECT and "radius" in h else h["radius"] if typeof(h) == TYPE_DICTIONARY and h.has("radius") else h.get_meta("radius") if typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("radius") else 150.0
+				var dist = sqrt((t_x - h_x) * (t_x - h_x) + (t_y - h_y) * (t_y - h_y))
+				if dist <= h_radius:
+					var dome_owner_id = h.owner_id if typeof(h) == TYPE_OBJECT and "owner_id" in h else h["owner_id"] if typeof(h) == TYPE_DICTIONARY and h.has("owner_id") else h.get_meta("owner_id") if typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("owner_id") else null
+					if dome_owner_id != null:
+						var balls = world.get("balls") if typeof(world) == TYPE_OBJECT else world["balls"] if typeof(world) == TYPE_DICTIONARY and world.has("balls") else []
+						for b in balls:
+							var b_id = b.id if typeof(b) == TYPE_OBJECT and "id" in b else b["id"] if typeof(b) == TYPE_DICTIONARY and b.has("id") else b.get_meta("id") if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("id") else null
+							if b_id == dome_owner_id:
+								var owner_team = b.team if typeof(b) == TYPE_OBJECT and "team" in b else b["team"] if typeof(b) == TYPE_DICTIONARY and b.has("team") else b.get_meta("team") if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("team") else -2
+								if owner_team == t_team:
+									original_damage_pre *= 2.0
+								break
+
 	if t_in_dilation:
 		var new_dmg = original_damage_pre * 0.5
 		if "damage" in attacker:
