@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2056] Quantum Duplicate — *2026-08-23 13:29:32 UTC*
+
+A new skill that creates a short-lived, invincible duplicate of the player that mirrors all movements and attacks but deals 50% damage.
+
+---
+
 ## [idea-2081] Cosmic Swap Event — *2026-08-23 13:21:11 UTC*
 
 A random arena event that selects two random alive balls (from different teams, if possible) and swaps their physical positions after a short delay, with a visual indicator beforehand. This forces players to adapt instantly as they might be teleported directly into an enemy cluster or out of a safe zone.
