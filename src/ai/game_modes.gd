@@ -90286,3 +90286,200 @@ class ExtremeWeatherZonesMode extends GameMode:
 					if speed < base_speed: b.speed = base_speed
 
 GAME_MODES["extreme_weather_zones"] = ExtremeWeatherZonesMode.new()
+
+
+class InvertedCloneHazardMode extends GameMode:
+	func _init():
+		super._init()
+		name = "Inverted Clone Hazard"
+		description = "A field hazard that spawns hostile clones of any ball that enters it. The clones mirror the movement of the player but inverted."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		if not "arena" in world: return
+		if typeof(world.arena) == TYPE_DICTIONARY and not "hazards" in world.arena:
+			world.arena["hazards"] = []
+
+		var arena_width = 1000
+		var arena_height = 1000
+		if typeof(world.arena) == TYPE_DICTIONARY:
+			if "width" in world.arena: arena_width = world.arena.width
+			if "height" in world.arena: arena_height = world.arena.height
+		elif typeof(world.arena) == TYPE_OBJECT:
+			if "width" in world.arena: arena_width = world.arena.width
+			if "height" in world.arena: arena_height = world.arena.height
+
+		var tx = 200.0 + randf() * (arena_width - 400.0)
+		var ty = 200.0 + randf() * (arena_height - 400.0)
+
+		var h_id = "inverted_clone_hazard_" + str(randi() % 9000 + 1000)
+
+		var hazard = null
+		if ResourceLoader.exists("res://src/arena/procedural_arena.gd"):
+			var ProceduralArena = load("res://src/arena/procedural_arena.gd")
+			if ProceduralArena and ProceduralArena.has("Hazard"):
+				hazard = ProceduralArena.Hazard.new(h_id, tx, ty, 120.0, "inverted_clone_hazard", 0.0)
+
+		if hazard == null:
+			hazard = {
+				"id": h_id,
+				"x": tx,
+				"y": ty,
+				"radius": 120.0,
+				"kind": "inverted_clone_hazard",
+				"damage": 0.0
+			}
+
+		if typeof(hazard) == TYPE_DICTIONARY:
+			hazard["spawned_for"] = []
+		elif typeof(hazard) == TYPE_OBJECT:
+			if "spawned_for" in hazard:
+				hazard.spawned_for = []
+			elif hazard.has_method("set_meta"):
+				hazard.set_meta("spawned_for", [])
+
+		if typeof(world.arena) == TYPE_DICTIONARY and "hazards" in world.arena:
+			world.arena.hazards.append(hazard)
+		elif typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+			world.arena.hazards.append(hazard)
+
+	func tick(world, balls, delta=0.016):
+		super.tick(world, balls, delta)
+		if not "arena" in world: return
+
+		var hazards = []
+		if typeof(world.arena) == TYPE_DICTIONARY and "hazards" in world.arena:
+			hazards = world.arena.hazards
+		elif typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+			hazards = world.arena.hazards
+		else:
+			return
+
+		var to_append = []
+
+		for h in hazards:
+			var h_kind = ""
+			if typeof(h) == TYPE_DICTIONARY and h.has("kind"): h_kind = h.kind
+			elif typeof(h) == TYPE_OBJECT and "kind" in h: h_kind = h.kind
+
+			if h_kind == "inverted_clone_hazard":
+				var hx = 0.0
+				var hy = 0.0
+				var hradius = 0.0
+				var spawned_for = []
+
+				if typeof(h) == TYPE_DICTIONARY:
+					hx = h.get("x", 0.0)
+					hy = h.get("y", 0.0)
+					hradius = h.get("radius", 0.0)
+					spawned_for = h.get("spawned_for", [])
+				elif typeof(h) == TYPE_OBJECT:
+					hx = h.x if "x" in h else 0.0
+					hy = h.y if "y" in h else 0.0
+					hradius = h.radius if "radius" in h else 0.0
+					if "spawned_for" in h: spawned_for = h.spawned_for
+					elif h.has_method("has_meta") and h.has_meta("spawned_for"): spawned_for = h.get_meta("spawned_for")
+
+				for b in balls:
+					var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else false)
+					if not b_alive: continue
+
+					var b_hologram = b.get("is_hologram", false) if typeof(b) == TYPE_DICTIONARY else (b.is_hologram if "is_hologram" in b else (b.get_meta("is_hologram") if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("is_hologram") else false))
+					var b_inverted = b.get("is_inverted_clone", false) if typeof(b) == TYPE_DICTIONARY else (b.is_inverted_clone if "is_inverted_clone" in b else (b.get_meta("is_inverted_clone") if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("is_inverted_clone") else false))
+
+					if b_hologram or b_inverted: continue
+
+					var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.x if "x" in b else 0.0)
+					var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.y if "y" in b else 0.0)
+					var br = b.get("radius", 15.0) if typeof(b) == TYPE_DICTIONARY else (b.radius if "radius" in b else 15.0)
+					var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else (b.id if "id" in b else null)
+
+					if b_id != null:
+						var dist_sq = (bx - hx)*(bx - hx) + (by - hy)*(by - hy)
+						if dist_sq < (hradius + br)*(hradius + br):
+							if not b_id in spawned_for:
+								spawned_for.append(b_id)
+
+								var clone = null
+								if typeof(b) == TYPE_DICTIONARY:
+									clone = b.duplicate(true)
+								elif typeof(b) == TYPE_OBJECT and b.has_method("duplicate"):
+									clone = b.duplicate()
+								else:
+									continue
+
+								if clone != null:
+									var c_id = 160000 + (randi() % 90000)
+									var cx = hx + (randf() * 40.0 - 20.0)
+									var cy = hy + (randf() * 40.0 - 20.0)
+
+									if typeof(clone) == TYPE_DICTIONARY:
+										clone["id"] = c_id
+										clone["x"] = cx
+										clone["y"] = cy
+										clone["is_inverted_clone"] = true
+										clone["inverted_clone_owner"] = b_id
+										clone["team"] = 999
+										clone["skill"] = ""
+										clone["active_skill"] = null
+										clone["brain"] = null
+										var max_hp = clone.get("max_hp", 100.0)
+										clone["hp"] = max_hp * 0.5
+										clone["clone_duration"] = 15.0
+									elif typeof(clone) == TYPE_OBJECT:
+										if "id" in clone: clone.id = c_id
+										if "x" in clone: clone.x = cx
+										if "y" in clone: clone.y = cy
+										if "team" in clone: clone.team = 999
+										if "skill" in clone: clone.skill = ""
+										if "active_skill" in clone: clone.active_skill = null
+										if "brain" in clone: clone.brain = null
+
+										var max_hp = clone.max_hp if "max_hp" in clone else 100.0
+										if "hp" in clone: clone.hp = max_hp * 0.5
+
+										if "is_inverted_clone" in clone: clone.is_inverted_clone = true
+										elif clone.has_method("set_meta"): clone.set_meta("is_inverted_clone", true)
+
+										if "inverted_clone_owner" in clone: clone.inverted_clone_owner = b_id
+										elif clone.has_method("set_meta"): clone.set_meta("inverted_clone_owner", b_id)
+
+										if "clone_duration" in clone: clone.clone_duration = 15.0
+										elif clone.has_method("set_meta"): clone.set_meta("clone_duration", 15.0)
+
+									to_append.append(clone)
+
+				if typeof(h) == TYPE_DICTIONARY:
+					h["spawned_for"] = spawned_for
+				elif typeof(h) == TYPE_OBJECT:
+					if "spawned_for" in h: h.spawned_for = spawned_for
+					elif h.has_method("set_meta"): h.set_meta("spawned_for", spawned_for)
+
+		if to_append.size() > 0:
+			for c in to_append:
+				if not balls.has(c):
+					balls.append(c)
+				if typeof(world) == TYPE_DICTIONARY and world.has("balls"):
+					if not world["balls"].has(c):
+						world["balls"].append(c)
+				elif typeof(world) == TYPE_OBJECT and "balls" in world:
+					if not world.balls.has(c):
+						world.balls.append(c)
+
+		for b in balls:
+			var is_inv = b.get("is_inverted_clone", false) if typeof(b) == TYPE_DICTIONARY else (b.is_inverted_clone if "is_inverted_clone" in b else (b.get_meta("is_inverted_clone") if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("is_inverted_clone") else false))
+			var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else false)
+
+			if is_inv and b_alive:
+				var dur = b.get("clone_duration", 15.0) if typeof(b) == TYPE_DICTIONARY else (b.clone_duration if "clone_duration" in b else (b.get_meta("clone_duration") if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("clone_duration") else 15.0))
+				dur -= delta
+				if dur <= 0:
+					if typeof(b) == TYPE_DICTIONARY: b["alive"] = false
+					elif typeof(b) == TYPE_OBJECT and "alive" in b: b.alive = false
+				else:
+					if typeof(b) == TYPE_DICTIONARY: b["clone_duration"] = dur
+					elif typeof(b) == TYPE_OBJECT:
+						if "clone_duration" in b: b.clone_duration = dur
+						elif b.has_method("set_meta"): b.set_meta("clone_duration", dur)
+
+GAME_MODES["inverted_clone_hazard"] = InvertedCloneHazardMode.new()

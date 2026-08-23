@@ -57572,3 +57572,114 @@ class ExtremeWeatherZonesMode(GameMode):
                         b.weather_slowed = False
 
 GAME_MODES["extreme_weather_zones"] = ExtremeWeatherZonesMode()
+
+
+class InvertedCloneHazardMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Inverted Clone Hazard"
+        self.description = "A field hazard that spawns hostile clones of any ball that enters it. The clones mirror the movement of the player but inverted."
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        import random
+        try:
+            from arena.procedural_arena import Hazard
+            hazard_class = Hazard
+        except ImportError:
+            hazard_class = None
+
+        if hazard_class is None or not hasattr(hazard_class, "__init__"):
+            class FallbackHazard:
+                def __init__(self, h_id, x, y, radius, kind, damage=0):
+                    self.id = h_id
+                    self.x = x
+                    self.y = y
+                    self.radius = radius
+                    self.kind = kind
+                    self.damage = damage
+            hazard_class = FallbackHazard
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") else 1000
+
+        tx = random.uniform(200.0, arena_width - 200.0)
+        ty = random.uniform(200.0, arena_height - 200.0)
+
+        h_id = f"inverted_clone_hazard_{random.randint(1000, 9999)}"
+        hazard = hazard_class(h_id, tx, ty, 120.0, "inverted_clone_hazard", 0.0)
+        setattr(hazard, "spawned_for", set())
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            world.arena.hazards.append(hazard)
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        if not hasattr(world, "arena") or not hasattr(world.arena, "hazards"):
+            return
+
+        for hazard in world.arena.hazards:
+            if getattr(hazard, "kind", "") == "inverted_clone_hazard":
+                hx = getattr(hazard, "x", 0.0)
+                hy = getattr(hazard, "y", 0.0)
+                hradius = getattr(hazard, "radius", 0.0)
+                spawned_for = getattr(hazard, "spawned_for", set())
+
+                for b in balls:
+                    if not getattr(b, "alive", False):
+                        continue
+                    if getattr(b, "is_hologram", False) or getattr(b, "is_inverted_clone", False):
+                        continue
+
+                    dist_sq = (b.x - hx)**2 + (b.y - hy)**2
+                    if dist_sq < (hradius + getattr(b, "radius", 15.0))**2:
+                        if b.id not in spawned_for:
+                            spawned_for.add(b.id)
+                            import copy, random
+                            try:
+                                clone = copy.copy(b)
+                            except:
+                                class DummyClone:
+                                    pass
+                                clone = DummyClone()
+                                for k in dir(b):
+                                    if not k.startswith("__") and not callable(getattr(b, k)):
+                                        try:
+                                            setattr(clone, k, getattr(b, k))
+                                        except:
+                                            pass
+                            clone.id = 160000 + random.randint(1, 99999)
+                            clone.x = hx + random.uniform(-20, 20)
+                            clone.y = hy + random.uniform(-20, 20)
+                            clone.is_inverted_clone = True
+                            clone.inverted_clone_owner = b.id
+                            clone.team = 999
+                            clone.skill = None
+                            clone.active_skill = None
+                            clone.brain = None
+                            clone.hp = getattr(b, "max_hp", 100.0) * 0.5
+                            clone.clone_duration = 15.0
+
+                            if hasattr(world, "balls"):
+                                if clone not in world.balls:
+                                    world.balls.append(clone)
+                                if hasattr(world, "entities") and world.balls is not getattr(world, "entities", None):
+                                    if clone not in world.entities:
+                                        world.entities.append(clone)
+                            if clone not in balls:
+                                balls.append(clone)
+                setattr(hazard, "spawned_for", spawned_for)
+
+        for b in list(balls):
+            if getattr(b, "is_inverted_clone", False) and getattr(b, "alive", False):
+                dur = getattr(b, "clone_duration", 15.0)
+                dur -= delta
+                if dur <= 0:
+                    b.alive = False
+                else:
+                    b.clone_duration = dur
+
+GAME_MODES['inverted_clone_hazard'] = InvertedCloneHazardMode()
