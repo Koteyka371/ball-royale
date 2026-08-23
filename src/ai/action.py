@@ -5923,6 +5923,41 @@ class Action:
 
         # Check inventory for traps to place if fleeing or defending
         # Check inventory for black_hole_grenade
+        if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "gravity_well_grenade" in self.ball.inventory:
+            enemies = self._get_enemies()
+            if enemies:
+                closest_enemy = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                import math
+                if math.sqrt((closest_enemy.x - self.ball.x)**2 + (closest_enemy.y - self.ball.y)**2) < 400.0:
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        try:
+                            from arena.procedural_arena import Hazard
+                        except ImportError:
+                            pass
+                        else:
+                            dx = closest_enemy.x - self.ball.x
+                            dy = closest_enemy.y - self.ball.y
+                            dist = max(0.0001, (dx*dx + dy*dy)**0.5)
+                            nx, ny = dx/dist, dy/dist
+
+                            import random as _rnd
+                            grenade = Hazard(
+                                id=len(self.world.arena.hazards) + _rnd.randint(10000, 99999),
+                                x=self.ball.x + nx * (getattr(self.ball, "radius", 10.0) + 5.0),
+                                y=self.ball.y + ny * (getattr(self.ball, "radius", 10.0) + 5.0),
+                                radius=10.0,
+                                kind="thrown_gravity_well_grenade",
+                                damage=0.0
+                            )
+                            setattr(grenade, "owner_id", getattr(self.ball, "id", None))
+                            setattr(grenade, "vx", nx * 500.0)
+                            setattr(grenade, "vy", ny * 500.0)
+                            setattr(grenade, "duration", 2.0)
+                            setattr(grenade, "owner_id", getattr(self.ball, "id", None))
+                            self.world.arena.hazards.append(grenade)
+
+                        self.ball.inventory.remove("gravity_well_grenade")
+
         if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "black_hole_grenade" in self.ball.inventory:
             enemies = self._get_enemies()
             if enemies:
@@ -6679,7 +6714,7 @@ class Action:
 
                         if hasattr(self.world, "projectiles"):
                             projs_to_remove = []
-                            for p in self.world.projectiles:
+                            for p in list(self.world.projectiles):
                                 dx = hazard.x - p.x
                                 dy = hazard.y - p.y
                                 dist = math.sqrt(dx*dx + dy*dy)
@@ -6729,6 +6764,93 @@ class Action:
                             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                                 if hazard in self.world.arena.hazards:
                                     self.world.arena.hazards.remove(hazard)
+
+                if getattr(hazard, "kind", "") == "thrown_gravity_well_grenade":
+                    if getattr(hazard, "duration", 0.0) > 0:
+                        hazard.duration -= delta
+                        if hazard.duration <= 0:
+                            hazard.duration = 0.0
+                            # Explode into active gravity well grenade
+                            if hazard in getattr(self.world.arena, "hazards", []):
+                                self.world.arena.hazards.remove(hazard)
+
+                            # Spawn active well
+                            try:
+                                from arena.procedural_arena import Hazard
+                            except ImportError:
+                                class Hazard:
+                                    def __init__(self, id, x, y, radius, kind, damage, owner_id):
+                                        self.id = id
+                                        self.x = x
+                                        self.y = y
+                                        self.radius = radius
+                                        self.kind = kind
+                                        self.damage = damage
+
+                            gw = Hazard(
+                                id=len(self.world.arena.hazards) + 50000,
+                                x=hazard.x,
+                                y=hazard.y,
+                                radius=150.0, # Large pull radius
+                                kind="active_gravity_well_grenade",
+                                damage=0.0
+                            )
+                            setattr(gw, "owner_id", getattr(hazard, "owner_id", None))
+                            setattr(gw, 'duration', 5.0)
+                            setattr(gw, 'owner_id', getattr(hazard, 'owner_id', None))
+                            if hasattr(self.world.arena, "hazards"):
+                                self.world.arena.hazards.append(gw)
+
+                if getattr(hazard, "kind", "") == "active_gravity_well_grenade":
+                    if getattr(hazard, "duration", 0.0) > 0:
+                        hazard.duration -= delta
+
+                        import math
+                        pull_radius = getattr(hazard, "radius", 150.0)
+                        pull_strength = 300.0 * float(delta) # Intense pull
+
+                        # Pull balls
+                        for b in getattr(self.world, "balls", []):
+                            if not getattr(b, "alive", True):
+                                continue
+                            dist_sq = (hazard.x - b.x)**2 + (hazard.y - b.y)**2
+                            if dist_sq < pull_radius**2:
+                                dist = math.sqrt(dist_sq)
+                                if dist > 0.0001:
+                                    nx, ny = (hazard.x - b.x) / dist, (hazard.y - b.y) / dist
+                                    b.x += nx * min(pull_strength, dist)
+                                    b.y += ny * min(pull_strength, dist)
+
+                        # Pull hazards (that are not the active well itself)
+                        for h in list(getattr(self.world.arena, "hazards", [])):
+                            if h == hazard:
+                                continue
+                            if getattr(h, "kind", "") in ["active_gravity_well_grenade", "wall", "border"]:
+                                continue
+                            dist_sq = (hazard.x - h.x)**2 + (hazard.y - h.y)**2
+                            if dist_sq < pull_radius**2:
+                                dist = math.sqrt(dist_sq)
+                                if dist > 0.0001:
+                                    nx, ny = (hazard.x - h.x) / dist, (hazard.y - h.y) / dist
+                                    if hasattr(h, "x") and hasattr(h, "y"):
+                                        h.x += nx * min(pull_strength, dist)
+                                        h.y += ny * min(pull_strength, dist)
+
+                        # Pull projectiles (if applicable, though some are in hazards list)
+                        if hasattr(self.world, "projectiles"):
+                            for p in list(self.world.projectiles):
+                                dist_sq = (hazard.x - p.x)**2 + (hazard.y - p.y)**2
+                                if dist_sq < pull_radius**2:
+                                    dist = math.sqrt(dist_sq)
+                                    if dist > 0.0001:
+                                        nx, ny = (hazard.x - p.x) / dist, (hazard.y - p.y) / dist
+                                        if hasattr(p, "x") and hasattr(p, "y"):
+                                            p.x += nx * min(pull_strength, dist)
+                                            p.y += ny * min(pull_strength, dist)
+
+                        if hazard.duration <= 0:
+                            if hazard in getattr(self.world.arena, "hazards", []):
+                                self.world.arena.hazards.remove(hazard)
 
                 if getattr(hazard, "kind", "") == "thrown_black_hole_grenade":
                     if getattr(hazard, "duration", 0.0) > 0:
@@ -18755,6 +18877,9 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "gravity_well_grenade_booster":
+                    if hasattr(self.ball, "inventory"):
+                        self.ball.inventory.append("gravity_well_grenade")
                 elif getattr(nearest, "kind", None) == "black_hole_grenade_booster":
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
@@ -23422,7 +23547,7 @@ class Action:
                     target_hazard = None
                     min_dist_sq = 22500.0  # Range 150
                     for h in hazards:
-                        if getattr(h, "kind", "") not in ["deployable_ice_wall", "ice_wall_shrapnel", "deployable_proximity_mud_puddle", "overload_zone_item", "deployable_directional_shield", "deployable_stasis_bubble", "deployable_ice_wall", "ice_wall_shrapnel", "deployable_decoy_swap_item", "deployable_reversal_trap", "deployable_pull_trap", "deployable_freeze_trap", "deployable_hologram_trap", "event_horizon_trap", "repulsion_zone", "healing_spring", "inverted_clone_hazard", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "freeze_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "reverse_gravity_item", "gravity_multiplier_booster", "anchor_booster", "wind_shield_booster", "disruptor_booster", "emp_booster", "cursed_relic", "cursed_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "recall_booster", "survival_rewind_booster", "snapback_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "vampiric_frenzy_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "anchor_repulsor_booster", "gravity_well_booster", "overclock_booster", "chronosphere_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "grapple_chain_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "insulator_booster", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "pinball_projectile_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "forecast_booster", "pet_item", "artillery_pet_item", "miniature_black_hole_item", "reverse_gravity_item", "wind_tunnel", "cryogenic_booster", "overload_zone_item", "eclipse_booster_item", "eclipse_booster", "echolocation_booster", "ethereal_tether_booster"]:
+                        if getattr(h, "kind", "") not in ["deployable_ice_wall", "ice_wall_shrapnel", "deployable_proximity_mud_puddle", "overload_zone_item", "deployable_directional_shield", "deployable_stasis_bubble", "deployable_ice_wall", "ice_wall_shrapnel", "deployable_decoy_swap_item", "deployable_reversal_trap", "deployable_pull_trap", "deployable_freeze_trap", "deployable_hologram_trap", "event_horizon_trap", "repulsion_zone", "healing_spring", "inverted_clone_hazard", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "freeze_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "reverse_gravity_item", "gravity_multiplier_booster", "anchor_booster", "wind_shield_booster", "disruptor_booster", "emp_booster", "cursed_relic", "cursed_booster", "black_hole_grenade_booster", "gravity_well_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "recall_booster", "survival_rewind_booster", "snapback_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "vampiric_frenzy_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "anchor_repulsor_booster", "gravity_well_booster", "overclock_booster", "chronosphere_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "grapple_chain_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "insulator_booster", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "pinball_projectile_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "forecast_booster", "pet_item", "artillery_pet_item", "miniature_black_hole_item", "reverse_gravity_item", "wind_tunnel", "cryogenic_booster", "overload_zone_item", "eclipse_booster_item", "eclipse_booster", "echolocation_booster", "ethereal_tether_booster"]:
                             dx = h.x - self.ball.x
                             dy = h.y - self.ball.y
                             dist_sq = dx*dx + dy*dy
