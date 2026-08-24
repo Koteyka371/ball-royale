@@ -11393,7 +11393,7 @@ class Action:
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
                         dist_sq = dx * dx + dy * dy
-                        if dist_sq < hazard.radius * hazard.radius:
+                        if dist_sq < getattr(hazard, "radius", 50.0) * getattr(hazard, "radius", 50.0):
                             self.ball.is_in_lava = True
                             dist = dist_sq ** 0.5
                             if dist > 0.1:
@@ -11401,8 +11401,12 @@ class Action:
                                 ny = dy / dist
                                 pull_strength = 20.0 * delta
                                 if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
-                                    self.ball.x += nx * pull_strength
-                                    self.ball.y += ny * pull_strength
+                                    # Make pull periodic (every 2 seconds)
+                                    current_time = getattr(self.world, "time", getattr(self.world, "tick", 0.0) * 0.1)
+                                    # Simple periodic pulse based on time (pulse every 2 seconds, lasts for 1 second)
+                                    if current_time % 2.0 < 1.0:
+                                        self.ball.x += nx * pull_strength
+                                        self.ball.y += ny * pull_strength
                     elif hazard.kind == "lava_geyser":
                         if getattr(hazard, "active", True):
                             dx = hazard.x - self.ball.x
@@ -11508,8 +11512,12 @@ class Action:
                                 ny = dy / dist
                                 pull_strength = 20.0 * delta
                                 if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
-                                    self.ball.x += nx * pull_strength
-                                    self.ball.y += ny * pull_strength
+                                    # Make pull periodic (every 2 seconds)
+                                    current_time = getattr(self.world, "time", getattr(self.world, "tick", 0.0) * 0.1)
+                                    # Simple periodic pulse based on time (pulse every 2 seconds, lasts for 1 second)
+                                    if current_time % 2.0 < 1.0:
+                                        self.ball.x += nx * pull_strength
+                                        self.ball.y += ny * pull_strength
                     elif hazard.kind == "flood_zone":
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
@@ -11661,8 +11669,12 @@ class Action:
                                 ny = dy / dist
                                 pull_strength = 20.0 * delta
                                 if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
-                                    self.ball.x += nx * pull_strength
-                                    self.ball.y += ny * pull_strength
+                                    # Make pull periodic (every 2 seconds)
+                                    current_time = getattr(self.world, "time", getattr(self.world, "tick", 0.0) * 0.1)
+                                    # Simple periodic pulse based on time (pulse every 2 seconds, lasts for 1 second)
+                                    if current_time % 2.0 < 1.0:
+                                        self.ball.x += nx * pull_strength
+                                        self.ball.y += ny * pull_strength
 
                             # Occasional slow debuff that lingers
                             b_type = str(getattr(self.ball, "ball_type", "")).lower()

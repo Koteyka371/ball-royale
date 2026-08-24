@@ -21394,7 +21394,10 @@ func execute(strategy: String, delta: float):
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y
                     var dist_sq = dx * dx + dy * dy
-                    if dist_sq < hazard.radius * hazard.radius:
+                    var h_rad = 50.0
+                    if typeof(hazard) == TYPE_DICTIONARY and hazard.has("radius"): h_rad = hazard["radius"]
+                    elif typeof(hazard) == TYPE_OBJECT and "radius" in hazard: h_rad = hazard.radius
+                    if dist_sq < h_rad * h_rad:
                         if self.ball.has_method("set_meta"): self.ball.set_meta("is_in_lava", true)
                         elif "is_in_lava" in self.ball: self.ball.is_in_lava = true
                         var dist = sqrt(dist_sq)
@@ -21411,10 +21414,17 @@ func execute(strategy: String, delta: float):
                                 elif self.ball.has_method("has_meta") and self.ball.has_meta("anchor_booster_timer"):
                                     anchor_timer = self.ball.get_meta("anchor_booster_timer")
                             if anchor_timer <= 0.0:
-                                if "x" in self.ball: self.ball.x += nx * pull_strength
-                                elif self.ball.has_method("set_meta") and self.ball.has_meta("x"): self.ball.set_meta("x", self.ball.get_meta("x") + nx * pull_strength)
-                                if "y" in self.ball: self.ball.y += ny * pull_strength
-                                elif self.ball.has_method("set_meta") and self.ball.has_meta("y"): self.ball.set_meta("y", self.ball.get_meta("y") + ny * pull_strength)
+                                var current_time = 0.0
+                                if typeof(self.world) == TYPE_DICTIONARY and self.world.has("time"): current_time = self.world["time"]
+                                elif typeof(self.world) == TYPE_OBJECT and "time" in self.world: current_time = self.world.time
+                                elif typeof(self.world) == TYPE_DICTIONARY and self.world.has("tick"): current_time = float(self.world["tick"]) * 0.1
+                                elif typeof(self.world) == TYPE_OBJECT and "tick" in self.world: current_time = float(self.world.tick) * 0.1
+
+                                if fmod(current_time, 2.0) < 1.0:
+                                    if "x" in self.ball: self.ball.x += nx * pull_strength
+                                    elif self.ball.has_method("set_meta") and self.ball.has_meta("x"): self.ball.set_meta("x", self.ball.get_meta("x") + nx * pull_strength)
+                                    if "y" in self.ball: self.ball.y += ny * pull_strength
+                                    elif self.ball.has_method("set_meta") and self.ball.has_meta("y"): self.ball.set_meta("y", self.ball.get_meta("y") + ny * pull_strength)
                 elif hazard.kind == "lava_geyser":
                     if not ("active" in hazard) or hazard.active:
                         var dx = hazard.x - self.ball.x
