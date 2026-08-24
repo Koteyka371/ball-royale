@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2019] Sludge Bomb — *2026-08-24 23:57:39 UTC*
+
+A new deployable that explodes and creates slow walls in the vicinity.
+
+---
+
 ## [idea-2099] Weather Synergy: Thunderstorm Elementals — *2026-08-24 22:41:38 UTC*
 
 If a team has a 'lightning' and 'water' elemental unit while it is raining, they passively create a thunderstorm aura. The rain amplifies the lightning radius, hitting targets further away but consuming more stamina per hit.
