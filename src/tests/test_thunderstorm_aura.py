@@ -41,10 +41,10 @@ def test_thunderstorm_aura_raining():
 
     enemy = MockBall(4, "normal")
     enemy.team = "team2"
-    enemy.x, enemy.y = 180, 0 # within 200 (amplified), outside 150 (normal)
+    enemy.x, enemy.y = 220, 0 # within 250 (amplified), outside 200 (old amplified)
 
     mode = GameMode()
-    balls = [b1, b3, enemy] # Note: b1 is at 0,0, enemy at 180,0. Dist=180.
+    balls = [b1, b3, enemy] # Note: b1 is at 0,0, enemy at 220,0. Dist=220.
 
     # Fast forward to 1.0 second for the shock aura pulse
     for i in range(101):
@@ -72,7 +72,7 @@ def test_thunderstorm_aura_not_raining():
 
     enemy = MockBall(4, "normal")
     enemy.team = "team2"
-    enemy.x, enemy.y = 180, 0 # within 200 (amplified), outside 150 (normal)
+    enemy.x, enemy.y = 180, 0 # within 250 (amplified), outside 150 (normal)
 
     mode = GameMode()
     balls = [b1, b3, enemy]

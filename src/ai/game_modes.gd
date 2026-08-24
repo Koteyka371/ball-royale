@@ -1465,7 +1465,7 @@ class GameMode:
 
 								var b_x = b.get("x", 0.0)
 								var b_y = b.get("y", 0.0)
-								var shock_radius = 200.0 if is_raining else 150.0
+								var shock_radius = 250.0 if is_raining else 150.0
 								var shock_damage = 15.0
 
 								if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
@@ -1511,7 +1511,7 @@ class GameMode:
 																enemy.alive = false
 
 													if is_raining:
-														b["stamina"] = max(0.0, b.get("stamina", 100.0) - 10.0)
+														b["stamina"] = max(0.0, b.get("stamina", 100.0) - 15.0)
 
 													if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 														world.add_event("visual_effect", {"type": "lightning_chain", "x": b_x, "y": b_y, "tx": e_x, "ty": e_y, "color": "blue_yellow"})
@@ -1538,7 +1538,7 @@ class GameMode:
 
 								var b_x = b.get("x") if "x" in b else 0.0
 								var b_y = b.get("y") if "y" in b else 0.0
-								var shock_radius = 200.0 if is_raining else 150.0
+								var shock_radius = 250.0 if is_raining else 150.0
 								var shock_damage = 15.0
 
 								if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
@@ -1585,9 +1585,9 @@ class GameMode:
 
 													if is_raining:
 														if "stamina" in b:
-															b.stamina = max(0.0, b.stamina - 10.0)
+															b.stamina = max(0.0, b.stamina - 15.0)
 														else:
-															b.stamina = max(0.0, 100.0 - 10.0)
+															b.stamina = max(0.0, 100.0 - 15.0)
 
 													if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 														world.add_event("visual_effect", {"type": "lightning_chain", "x": b_x, "y": b_y, "tx": e_x, "ty": e_y, "color": "blue_yellow"})

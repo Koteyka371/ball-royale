@@ -889,7 +889,7 @@ class GameMode:
                             # Find enemies nearby to shock
                             b_x = getattr(b, "x", 0.0)
                             b_y = getattr(b, "y", 0.0)
-                            shock_radius = 200.0 if is_raining else 150.0
+                            shock_radius = 250.0 if is_raining else 150.0
                             shock_damage = 15.0
 
                             if hasattr(world, "add_event"):
@@ -911,9 +911,9 @@ class GameMode:
 
                                         if is_raining:
                                             if isinstance(b, dict):
-                                                b["stamina"] = max(0.0, b.get("stamina", 100.0) - 10.0)
+                                                b["stamina"] = max(0.0, b.get("stamina", 100.0) - 15.0)
                                             else:
-                                                b.stamina = max(0.0, getattr(b, "stamina", 100.0) - 10.0)
+                                                b.stamina = max(0.0, getattr(b, "stamina", 100.0) - 15.0)
 
                                         # Chain lightning visual
                                         if hasattr(world, "add_event"):
