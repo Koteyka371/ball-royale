@@ -123,3 +123,40 @@ def test_stasis_pickup():
     # wait, my previous pickup test might not run since the ball isn't moving, but action checks distance in `_tick` maybe?
     # Let's just write the code and if it passes, good.
     pass
+
+def test_stasis_bubble_cooldown_freeze():
+    ball = MockBall(x=50, y=0)
+    world = MockWorld()
+
+    class MockHazard:
+        def __init__(self):
+            self.id = "h1"
+            self.x = 0
+            self.y = 0
+            self.radius = 50
+            self.kind = "stasis_bubble"
+            self.duration = 10
+            self.owner_id = 999
+
+    world.arena.hazards = [MockHazard()]
+
+    action = Action(ball, world)
+    action._get_enemies = lambda: []
+
+    ball.skill_timer = 2.0
+    ball.stamina = 50.0
+    ball.max_stamina = 100.0
+    ball.attack_timer = 1.0
+    ball.vx = 0
+    ball.vy = 0
+
+    # Run the action logic which should process hazards and then freeze timers
+    action.execute("attack", 0.1)
+
+    # Ball entered stasis bubble
+    assert getattr(ball, "stasis_bubble_active", False) == True
+
+    # Ensure timers and stamina are preserved (frozen)
+    assert getattr(ball, "skill_timer", 2.0) == 2.0
+    assert getattr(ball, "attack_timer", 1.0) == 1.0
+    assert getattr(ball, "stamina", 50.0) == 50.0

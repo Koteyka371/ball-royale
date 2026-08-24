@@ -30921,6 +30921,18 @@ func execute(strategy: String, delta: float):
             if gm_name == "Stamina Vampire":
                 regen_mult = 0.0
 
+        var is_sb = false
+        if typeof(my_ball) == TYPE_DICTIONARY:
+            is_sb = my_ball.get("stasis_bubble_active", false)
+        elif typeof(my_ball) == TYPE_OBJECT and my_ball.has_method("get_meta") and my_ball.has_meta("stasis_bubble_active"):
+            is_sb = my_ball.get_meta("stasis_bubble_active")
+        elif "stasis_bubble_active" in my_ball:
+            is_sb = my_ball.stasis_bubble_active
+
+        if is_sb:
+            regen_mult = 0.0
+            drain_mult = 0.0
+
         if is_dash:
             if typeof(my_ball) == TYPE_OBJECT and my_ball.has_method("set_meta"):
                 my_ball.set_meta("bumper_combo", 0)
@@ -58304,7 +58316,14 @@ func _update_skill_timer(delta: float):
             is_sf = self.world.get_meta("solar_flare_active")
         elif self.world != null and "solar_flare_active" in self.world:
             is_sf = self.world.solar_flare_active
-        if not is_sf:
+        var is_sb = false
+        if typeof(self.ball) == TYPE_DICTIONARY:
+            is_sb = self.ball.get("stasis_bubble_active", false)
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("stasis_bubble_active"):
+            is_sb = self.ball.get_meta("stasis_bubble_active")
+        elif "stasis_bubble_active" in self.ball:
+            is_sb = self.ball.stasis_bubble_active
+        if not is_sf and not is_sb:
             self.ball.skill_timer -= delta * cooldown_mult
 
     var cur_hs_stored = 0.0
