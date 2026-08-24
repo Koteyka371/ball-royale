@@ -4132,6 +4132,7 @@ func execute(strategy: String, delta: float):
 					clone_dict["hp"] = 50.0
 					clone_dict["max_hp"] = 50.0
 					clone_dict["base_damage"] = clone_dict.get("base_damage", 10.0) * 0.5
+					clone_dict["damage"] = clone_dict["base_damage"]
 					clone_dict["phantom_artifact_timer"] = 0.0
 					clone_dict["phantom_artifact_playback"] = clone_dict.get("phantom_artifact_record", [])
 
@@ -31199,8 +31200,12 @@ func execute(strategy: String, delta: float):
 						elif typeof(self.ball) == TYPE_OBJECT:
 							self.ball.x = bx
 							self.ball.y = by
-							self.ball.vx = bvx
-							self.ball.vy = bvy
+							if "vx" in self.ball:
+								self.ball.vx = bvx
+								self.ball.vy = bvy
+							elif self.ball.has_method("set_meta"):
+								self.ball.set_meta("vx", bvx)
+								self.ball.set_meta("vy", bvy)
 						break
 
 func _apply_boid_rules(nx: float, ny: float) -> Array:
@@ -33904,6 +33909,40 @@ func _collect_booster(delta: float):
 
         # Check for blood orb
         for b in boosters:
+			var b_x = b["x"] if typeof(b) == TYPE_DICTIONARY else b.x
+			var b_y = b["y"] if typeof(b) == TYPE_DICTIONARY else b.y
+			var dist = sqrt((b_x - self.ball.x) * (b_x - self.ball.x) + (b_y - self.ball.y) * (b_y - self.ball.y))
+			var b_kind = b["kind"] if typeof(b) == TYPE_DICTIONARY else (b.kind if "kind" in b else b.get_meta("kind") if b.has_method("get_meta") and b.has_meta("kind") else "")
+			if b_kind == "phantom_artifact_item":
+				var my_rad = self.ball.radius if "radius" in self.ball else (self.ball.get_meta("radius") if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("radius") else 10.0)
+				var b_rad = 15.0
+				if typeof(b) == TYPE_DICTIONARY and b.has("radius"): b_rad = b["radius"]
+				elif typeof(b) == TYPE_OBJECT and "radius" in b: b_rad = b.radius
+				elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("radius"): b_rad = b.get_meta("radius")
+				if dist <= my_rad + b_rad + 5.0:
+					var is_active = b["active"] if typeof(b) == TYPE_DICTIONARY else b.active
+					if is_active:
+						if typeof(self.ball) == TYPE_DICTIONARY:
+							self.ball["has_phantom_artifact"] = true
+							self.ball["phantom_artifact_state"] = "idle"
+							self.ball["phantom_artifact_cooldown"] = 0.0
+						else:
+							if "has_phantom_artifact" in self.ball:
+								self.ball.has_phantom_artifact = true
+								self.ball.phantom_artifact_state = "idle"
+								self.ball.phantom_artifact_cooldown = 0.0
+							elif self.ball.has_method("set_meta"):
+								self.ball.set_meta("has_phantom_artifact", true)
+								self.ball.set_meta("phantom_artifact_state", "idle")
+								self.ball.set_meta("phantom_artifact_cooldown", 0.0)
+						if typeof(b) == TYPE_DICTIONARY: b["active"] = false
+						elif typeof(b) == TYPE_OBJECT: b.active = false
+
+						if self.world != null and "events" in self.world and typeof(self.world.events) == TYPE_ARRAY:
+							var my_id = self.ball.id if "id" in self.ball else (self.ball.get_meta("id") if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("id") else -1)
+							self.world.events.append({"type": "booster_pickup", "ball_id": my_id, "kind": b_kind})
+						return
+
             var bk = ""
             if typeof(b) == TYPE_DICTIONARY and b.has("kind"): bk = b.kind
             elif typeof(b) == TYPE_OBJECT and "kind" in b: bk = b.kind

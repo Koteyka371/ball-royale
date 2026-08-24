@@ -17663,6 +17663,17 @@ class Action:
 
             # Check for blood orb
             for b in boosters:
+                dist = math.sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
+                if getattr(b, 'kind', '') == 'phantom_artifact_item' and getattr(b, 'active', True):
+                    if dist <= getattr(self.ball, "radius", 10.0) + getattr(b, "radius", 15.0) + 5.0:
+                        self.ball.has_phantom_artifact = True
+                        self.ball.phantom_artifact_state = "idle"
+                        self.ball.phantom_artifact_cooldown = 0.0
+                        b.active = False
+                        if hasattr(self.world, "events"):
+                            self.world.events.append({"type": "booster_pickup", "ball_id": getattr(self.ball, "id", -1), "kind": getattr(b, "kind", "")})
+                        return
+
                 if getattr(b, 'kind', '') == 'blood_orb' and getattr(b, 'active', True):
                     heal_amount = 20.0
                     self.ball.hp = min(getattr(self.ball, 'hp', 100.0) + heal_amount, getattr(self.ball, 'max_hp', 100.0))
