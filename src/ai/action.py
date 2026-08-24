@@ -5663,6 +5663,30 @@ class Action:
                         except ImportError:
                             pass
 
+        if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "deployable_slow_bomb" in self.ball.inventory:
+            if getattr(self.ball, "action_cooldown", 0.0) <= 0.0:
+                enemy = None
+                min_dist = 999999
+                for b in getattr(self.world, "balls", []):
+                    if getattr(b, "id", -1) != self.ball.id and getattr(b, "hp", 0) > 0:
+                        d = (getattr(b, "x", 0) - self.ball.x)**2 + (getattr(b, "y", 0) - self.ball.y)**2
+                        if d < min_dist:
+                            min_dist = d
+                            enemy = b
+                if enemy:
+                    self.ball.inventory.remove("deployable_slow_bomb")
+                    self.ball.action_cooldown = 1.0
+                    try:
+                        from arena.procedural_arena import Hazard
+                        mine_id = self.ball.id * 10000 + int(getattr(self.world, "tick_timer", 0) * 1000)
+                        mine = Hazard(mine_id, self.ball.x, self.ball.y, 60.0, "deployable_slow_bomb", 0.0)
+                        mine.owner_id = self.ball.id
+                        mine.duration = 3.0
+                        mine.spawn_tick = getattr(self.world, 'tick', 0)
+                        self.world.arena.hazards.append(mine)
+                    except ImportError:
+                        pass
+
         if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "deployable_shockwave_mine" in self.ball.inventory:
             # Simple cooldown to avoid spamming
             if getattr(self.ball, "action_cooldown", 0.0) <= 0.0:
@@ -10518,6 +10542,31 @@ class Action:
                                                 b.hp = past_state["hp"]
                                             if "stamina" in past_state and hasattr(b, "stamina"):
                                                 b.stamina = past_state["stamina"]
+
+                    elif hazard.kind == "deployable_slow_bomb":
+                        current_tick = getattr(self.world, "tick", 0)
+                        last_updated = getattr(hazard, "last_updated_tick", -1)
+                        if last_updated != current_tick:
+                            hazard.last_updated_tick = current_tick
+                            hazard.duration = getattr(hazard, "duration", 3.0) - delta
+                            if hazard.duration <= 0:
+                                hazard.active = False
+                                # Explode into slow walls
+                                import math
+                                num_walls = 6
+                                for i in range(num_walls):
+                                    angle = i * (2 * math.pi / num_walls)
+                                    dist = 40.0
+                                    wx = hazard.x + math.cos(angle) * dist
+                                    wy = hazard.y + math.sin(angle) * dist
+                                    try:
+                                        from arena.procedural_arena import Hazard
+                                        wall_id = hazard.id * 10 + i
+                                        wall = Hazard(wall_id, wx, wy, 25.0, "slow_wall", 0.0)
+                                        wall.duration = 10.0
+                                        self.world.arena.hazards.append(wall)
+                                    except ImportError:
+                                        pass
 
                     elif hazard.kind == "deployable_shockwave_mine":
                         current_tick = getattr(self.world, "tick", 0)
@@ -20099,6 +20148,14 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "deployable_slow_bomb":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("deployable_slow_bomb")
+                    if nearest in getattr(self.world, "boosters", []):
+                        self.world.boosters.remove(nearest)
+                    if nearest in getattr(self.world.arena, "hazards", []):
+                        self.world.arena.hazards.remove(nearest)
                 elif getattr(nearest, "kind", None) == "deployable_shockwave_mine":
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []

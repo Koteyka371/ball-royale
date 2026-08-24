@@ -13098,6 +13098,67 @@ func execute(strategy: String, delta: float):
 					if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("inventory", inv)
 					elif "inventory" in self.ball: self.ball.inventory = inv
 
+		if inv.has("deployable_slow_bomb"):
+			var cd = 0.0
+			if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("action_cooldown"): cd = self.ball.get_meta("action_cooldown")
+			elif "action_cooldown" in self.ball: cd = self.ball.action_cooldown
+
+			if cd <= 0.0:
+				var enemy = null
+				var min_dist = 999999
+				var balls = world.balls if "balls" in world else []
+				for b in balls:
+					var b_id = -1
+					var b_hp = 0
+					var b_x = 0
+					var b_y = 0
+					if typeof(b) == TYPE_DICTIONARY:
+						if b.has("id"): b_id = b["id"]
+						if b.has("hp"): b_hp = b["hp"]
+						if b.has("x"): b_x = b["x"]
+						if b.has("y"): b_y = b["y"]
+					elif typeof(b) == TYPE_OBJECT:
+						if "id" in b: b_id = b.id
+						if "hp" in b: b_hp = b.hp
+						if "x" in b: b_x = b.x
+						if "y" in b: b_y = b.y
+
+					var self_id = -1
+					if typeof(self.ball) == TYPE_DICTIONARY: self_id = self.ball.get("id", -1)
+					elif typeof(self.ball) == TYPE_OBJECT: self_id = self.ball.id if "id" in self.ball else -1
+
+					if b_id != self_id and b_hp > 0:
+						var self_x = self.ball.get("x", 0) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.x if "x" in self.ball else 0)
+						var self_y = self.ball.get("y", 0) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.y if "y" in self.ball else 0)
+						var d = (b_x - self_x)*(b_x - self_x) + (b_y - self_y)*(b_y - self_y)
+						if d < min_dist:
+							min_dist = d
+							enemy = b
+				if enemy != null:
+					inv.erase("deployable_slow_bomb")
+					if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("action_cooldown", 1.0)
+					elif "action_cooldown" in self.ball: self.ball.action_cooldown = 1.0
+
+					var b_id = self.ball.id if "id" in self.ball else -1
+					var mine_id = b_id * 10000 + int((world.tick_timer if "tick_timer" in world else 0) * 1000)
+					var HazardClass = load("res://src/arena/procedural_arena.gd")
+					if HazardClass:
+						var p_mine = HazardClass.Hazard.new(mine_id, self.ball.x, self.ball.y, 60.0, "deployable_slow_bomb", 0.0)
+						if typeof(p_mine) == TYPE_OBJECT and p_mine.has_method("set_meta"):
+							p_mine.set_meta("owner_id", b_id)
+							p_mine.set_meta("duration", 3.0)
+							p_mine.set_meta("spawn_tick", world.tick if "tick" in world else 0)
+						elif typeof(p_mine) == TYPE_DICTIONARY:
+							p_mine["owner_id"] = b_id
+							p_mine["duration"] = 3.0
+							p_mine["spawn_tick"] = world.tick if "tick" in world else 0
+						elif typeof(p_mine) == TYPE_OBJECT:
+							p_mine.owner_id = b_id
+							p_mine.duration = 3.0
+							p_mine.spawn_tick = world.tick if "tick" in world else 0
+						if "arena" in world and "hazards" in world.arena:
+							world.arena.hazards.append(p_mine)
+
 		if inv.has("deployable_shockwave_mine"):
 			var cd = 0.0
 			if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("action_cooldown"): cd = self.ball.get_meta("action_cooldown")
@@ -19598,6 +19659,47 @@ func execute(strategy: String, delta: float):
                                                 if "y" in b: b.y = past_state["y"]
                                                 if "hp" in b and past_state.has("hp"): b.hp = past_state["hp"]
                                                 if "stamina" in b and past_state.has("stamina"): b.stamina = past_state["stamina"]
+
+                elif hazard.kind == "deployable_slow_bomb":
+                    var current_tick = world.tick if "tick" in world else 0
+                    var last_updated = -1
+                    if typeof(hazard) == TYPE_OBJECT and hazard.has_method("has_meta") and hazard.has_meta("last_updated_tick"): last_updated = hazard.get_meta("last_updated_tick")
+                    elif "last_updated_tick" in hazard: last_updated = hazard.last_updated_tick
+
+                    if last_updated != current_tick:
+                        if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"): hazard.set_meta("last_updated_tick", current_tick)
+                        elif "last_updated_tick" in hazard: hazard.last_updated_tick = current_tick
+
+                        var h_dur = 3.0
+                        if typeof(hazard) == TYPE_OBJECT and hazard.has_method("has_meta") and hazard.has_meta("duration"): h_dur = hazard.get_meta("duration")
+                        elif "duration" in hazard: h_dur = hazard.duration
+
+                        h_dur -= delta
+
+                        if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"): hazard.set_meta("duration", h_dur)
+                        elif "duration" in hazard: hazard.duration = h_dur
+
+                        if h_dur <= 0.0:
+                            if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"): hazard.set_meta("active", false)
+                            elif "active" in hazard: hazard.active = false
+
+                            var num_walls = 6
+                            var HazardClass = load("res://src/arena/procedural_arena.gd")
+                            if HazardClass:
+                                for i in range(num_walls):
+                                    var angle = i * (2.0 * PI / num_walls)
+                                    var dist = 40.0
+                                    var wx = hazard.x + cos(angle) * dist
+                                    var wy = hazard.y + sin(angle) * dist
+                                    var wall = HazardClass.Hazard.new(hazard.id * 10 + i, wx, wy, 25.0, "slow_wall", 0.0)
+                                    if typeof(wall) == TYPE_OBJECT and wall.has_method("set_meta"):
+                                        wall.set_meta("duration", 10.0)
+                                    elif typeof(wall) == TYPE_DICTIONARY:
+                                        wall["duration"] = 10.0
+                                    elif typeof(wall) == TYPE_OBJECT:
+                                        wall.duration = 10.0
+                                    if "arena" in world and "hazards" in world.arena:
+                                        world.arena.hazards.append(wall)
 
                 elif hazard.kind == "deployable_shockwave_mine":
                     var current_tick = world.tick if "tick" in world else 0
@@ -39103,6 +39205,18 @@ func _collect_booster(delta: float):
                                     b["speed_debuff_timer"] = 5.0
                                     b["speed_debuff_multiplier"] = 0.5
 
+            elif h_kind == "deployable_slow_bomb":
+                var inv = []
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("inventory"): inv = self.ball.get_meta("inventory")
+                elif "inventory" in self.ball: inv = self.ball.inventory
+                if typeof(inv) != TYPE_ARRAY: inv = []
+                inv.append("deployable_slow_bomb")
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("inventory", inv)
+                elif "inventory" in self.ball: self.ball.inventory = inv
+                if "boosters" in world and nearest in world.boosters:
+                    world.boosters.erase(nearest)
+                if "arena" in world and "hazards" in world.arena and nearest in world.arena.hazards:
+                    world.arena.hazards.erase(nearest)
             elif h_kind == "deployable_shockwave_mine":
                 var inv = []
                 if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("inventory"): inv = self.ball.get_meta("inventory")
