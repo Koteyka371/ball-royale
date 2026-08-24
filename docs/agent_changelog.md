@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2079] Kinetic Amplifier Trap — *2026-08-24 21:19:15 UTC*
+
+A placeable trap that absorbs kinetic energy from passing friendly balls (increasing their speed slightly) and violently releases it when an enemy approaches, dealing immense knockback.
+
+---
+
 ## [idea-2097] Aura Overload Booster — *2026-08-24 17:37:23 UTC*
 
 A rare consumable booster that amplifies the player's current auras to 300% effectiveness but drains their HP over time while active. High risk, high reward.
