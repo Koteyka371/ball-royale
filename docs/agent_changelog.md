@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2035] Magnetic Lava Traps — *2026-08-24 14:58:13 UTC*
+
+Lava pools periodically pull players towards them with a weak magnetic force, requiring players to actively dash or move against the pull to avoid damage.
+
+---
+
 ## [idea-2065] Echo Bracers — *2026-08-24 10:38:28 UTC*
 
 An artifact that records the player's movement and actions for 5 seconds. On reactivation, a phantom clone replays these actions while dealing 50% damage.
