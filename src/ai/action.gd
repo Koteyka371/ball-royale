@@ -870,7 +870,7 @@ func _attempt_damage_internal(attacker, target) -> void:
 			var w_balls = []
 			if typeof(world) == TYPE_OBJECT and "balls" in world:
 				w_balls = world.balls
-			elif typeof(world) == TYPE_DICTIONARY and world.has("balls"):
+			elif (typeof(world) == TYPE_DICTIONARY and world.has("balls")) or (typeof(world) == TYPE_OBJECT and "balls" in world):
 				w_balls = world.balls
 
 			var tx = target.x if "x" in target else 0.0
@@ -4137,7 +4137,7 @@ func execute(strategy: String, delta: float):
 					clone_dict["phantom_artifact_playback"] = clone_dict.get("phantom_artifact_record", [])
 
 				var w_balls = []
-				if typeof(world) == TYPE_DICTIONARY and world.has("balls"): w_balls = world["balls"]
+				if (typeof(world) == TYPE_DICTIONARY and world.has("balls")) or (typeof(world) == TYPE_OBJECT and "balls" in world): w_balls = world["balls"]
 				elif typeof(world) == TYPE_OBJECT and "balls" in world: w_balls = world.balls
 				w_balls.append(clone_dict)
 
@@ -4155,7 +4155,7 @@ func execute(strategy: String, delta: float):
 		if owner_id != null:
 			var owner = null
 			var w_balls = []
-			if typeof(world) == TYPE_DICTIONARY and world.has("balls"): w_balls = world["balls"]
+			if (typeof(world) == TYPE_DICTIONARY and world.has("balls")) or (typeof(world) == TYPE_OBJECT and "balls" in world): w_balls = world["balls"]
 			elif typeof(world) == TYPE_OBJECT and "balls" in world: w_balls = world.balls
 			for b in w_balls:
 				var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else (b.id if "id" in b else null)
@@ -4585,7 +4585,7 @@ func execute(strategy: String, delta: float):
 
 		var world_balls = []
 		if typeof(world) == TYPE_OBJECT and "balls" in world: world_balls = world.balls
-		elif typeof(world) == TYPE_DICTIONARY and world.has("balls"): world_balls = world.balls
+		elif (typeof(world) == TYPE_DICTIONARY and world.has("balls")) or (typeof(world) == TYPE_OBJECT and "balls" in world): world_balls = world.balls
 
 		for b in world_balls:
 			var b_id = null
@@ -4963,7 +4963,7 @@ func execute(strategy: String, delta: float):
 			self.ball["intangible"] = true
 
 		var balls_array = []
-		if typeof(world) == TYPE_DICTIONARY and world.has("balls"):
+		if (typeof(world) == TYPE_DICTIONARY and world.has("balls")) or (typeof(world) == TYPE_OBJECT and "balls" in world):
 			balls_array = world["balls"]
 		elif typeof(world) == TYPE_OBJECT and "balls" in world:
 			balls_array = world.balls
@@ -7456,7 +7456,7 @@ func execute(strategy: String, delta: float):
             var hit_target = false
             if world != null:
                 var balls_arr = []
-                if typeof(world) == TYPE_DICTIONARY and world.has("balls"):
+                if (typeof(world) == TYPE_DICTIONARY and world.has("balls")) or (typeof(world) == TYPE_OBJECT and "balls" in world):
                     balls_arr = world.balls
                 elif typeof(world) == TYPE_OBJECT and "balls" in world:
                     balls_arr = world.balls
@@ -7568,7 +7568,7 @@ func execute(strategy: String, delta: float):
             var hit_target = false
             if world != null:
                 var balls_arr = []
-                if typeof(world) == TYPE_DICTIONARY and world.has("balls"):
+                if (typeof(world) == TYPE_DICTIONARY and world.has("balls")) or (typeof(world) == TYPE_OBJECT and "balls" in world):
                     balls_arr = world.balls
                 elif typeof(world) == TYPE_OBJECT and "balls" in world:
                     balls_arr = world.balls
@@ -36166,7 +36166,7 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'deploy_clan_banner', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_aura_nullifier_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'survival_rewind', 'echo_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_dash', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_stabilizer_field', 'deploy_tracker_drone', 'deploy_distract_drone', 'deploy_fake_balls', 'decoy_swarm', 'hire_mercenary', 'hazard_surfing', 'grapple_hook', 'elastic_tether', 'instant_swap']
+                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'deploy_clan_banner', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_aura_nullifier_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'survival_rewind', 'echo_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_dash', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'deploy_kinetic_trap', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_stabilizer_field', 'deploy_tracker_drone', 'deploy_distract_drone', 'deploy_fake_balls', 'decoy_swarm', 'hire_mercenary', 'hazard_surfing', 'grapple_hook', 'elastic_tether', 'instant_swap']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -47828,6 +47828,41 @@ func _use_skill():
                 self.world.arena.hazards.append(node)
             self.ball.skill_timer = 20.0
 
+        elif skill_name == "deploy_kinetic_trap":
+            if typeof(self.world) == TYPE_OBJECT and "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT and "hazards" in self.world.arena:
+                var node = {}
+                node["id"] = "kinetic_trap_%s_%s" % [str(self.ball.get("id") if typeof(self.ball) == TYPE_DICTIONARY else self.ball.id), str(self.world.get("tick") if typeof(self.world) == TYPE_DICTIONARY else self.world.tick)]
+                node["kind"] = "kinetic_trap"
+                node["x"] = self.ball.x
+                node["y"] = self.ball.y
+                node["radius"] = 30.0
+                node["damage"] = 0.0
+                node["owner_id"] = self.ball.get("id") if typeof(self.ball) == TYPE_DICTIONARY else self.ball.id
+                node["team"] = self.ball.get("team") if typeof(self.ball) == TYPE_DICTIONARY else self.ball.team
+                node["duration"] = 20.0
+                node["active"] = true
+                node["kinetic_energy_pool"] = 0.0
+                self.world.arena.hazards.append(node)
+            elif typeof(self.world) == TYPE_DICTIONARY and self.world.has("arena") and typeof(self.world.arena) == TYPE_DICTIONARY and self.world.arena.has("hazards"):
+                var node = {}
+                node["id"] = "kinetic_trap_%s_%s" % [str(self.ball.get("id") if typeof(self.ball) == TYPE_DICTIONARY else self.ball.id), str(self.world.get("tick") if typeof(self.world) == TYPE_DICTIONARY else self.world.tick)]
+                node["kind"] = "kinetic_trap"
+                node["x"] = self.ball.x
+                node["y"] = self.ball.y
+                node["radius"] = 30.0
+                node["damage"] = 0.0
+                node["owner_id"] = self.ball.get("id") if typeof(self.ball) == TYPE_DICTIONARY else self.ball.id
+                node["team"] = self.ball.get("team") if typeof(self.ball) == TYPE_DICTIONARY else self.ball.team
+                node["duration"] = 20.0
+                node["active"] = true
+                node["kinetic_energy_pool"] = 0.0
+                self.world.arena.hazards.append(node)
+
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["skill_timer"] = 20.0
+            else:
+                self.ball.skill_timer = 20.0
+
         elif skill_name == "deploy_electric_beam_trap":
             if self.world.has("arena") and self.world.arena.has("hazards"):
                 var node = {}
@@ -55877,6 +55912,81 @@ func _update_skill_timer(delta: float):
                                             self.ball.x += nx * force
                                             self.ball.y += ny * force
                             elif typeof(hazard) == TYPE_DICTIONARY: hazard["duration"] = 0.0
+
+                if h_kind == "kinetic_trap":
+                    var trap_team = ""
+                    if typeof(hazard) == TYPE_DICTIONARY and hazard.has("team"):
+                        trap_team = hazard.team
+                    elif typeof(hazard) == TYPE_OBJECT and "team" in hazard:
+                        trap_team = hazard.team
+
+                    var owner_id = null
+                    if typeof(hazard) == TYPE_DICTIONARY and hazard.has("owner_id"):
+                        owner_id = hazard.owner_id
+                    elif typeof(hazard) == TYPE_OBJECT and "owner_id" in hazard:
+                        owner_id = hazard.owner_id
+
+                    if (typeof(world) == TYPE_DICTIONARY and world.has("balls")) or (typeof(world) == TYPE_OBJECT and "balls" in world):
+                        for b in world.balls:
+                            var b_alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else b.alive
+                            var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.id
+                            if b_alive and b_id != owner_id:
+                                var bx = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.x
+                                var by = b.get("y") if typeof(b) == TYPE_DICTIONARY else b.y
+                                var b_radius = b.get("radius") if typeof(b) == TYPE_DICTIONARY else (b.radius if "radius" in b else 10.0)
+                                var dist_sq = (h_x - bx)*(h_x - bx) + (h_y - by)*(h_y - by)
+
+                                if dist_sq <= (h_radius + b_radius + 100.0) * (h_radius + b_radius + 100.0):
+                                    var b_team = b.get("team") if typeof(b) == TYPE_DICTIONARY else (b.team if "team" in b else "")
+                                    var dist = sqrt(dist_sq)
+                                    if b_team == trap_team or (trap_team == "" and b_id == owner_id):
+                                        var b_vx = b.get("vx") if typeof(b) == TYPE_DICTIONARY else b.vx
+                                        var b_vy = b.get("vy") if typeof(b) == TYPE_DICTIONARY else b.vy
+                                        var speed_sq = b_vx*b_vx + b_vy*b_vy
+                                        if speed_sq < 90000.0:
+                                            var multiplier = 1.0 + (0.5 * float(delta))
+                                            if typeof(b) == TYPE_DICTIONARY:
+                                                b["vx"] = b_vx * multiplier
+                                                b["vy"] = b_vy * multiplier
+                                            else:
+                                                b.vx = b_vx * multiplier
+                                                b.vy = b_vy * multiplier
+
+                                        var cur_pool = hazard.get("kinetic_energy_pool") if typeof(hazard) == TYPE_DICTIONARY else hazard.kinetic_energy_pool
+                                        if typeof(hazard) == TYPE_DICTIONARY:
+                                            hazard["kinetic_energy_pool"] = cur_pool + 100.0 * float(delta)
+                                        else:
+                                            hazard.kinetic_energy_pool = cur_pool + 100.0 * float(delta)
+                                    else:
+                                        if dist <= h_radius + b_radius + 50.0:
+                                            var cur_pool = hazard.get("kinetic_energy_pool") if typeof(hazard) == TYPE_DICTIONARY else hazard.kinetic_energy_pool
+                                            var shockwave_force = 2000.0 + cur_pool * 10.0
+                                            var nx = (bx - h_x) / (dist + 0.0001)
+                                            var ny = (by - h_y) / (dist + 0.0001)
+                                            var b_vx = b.get("vx") if typeof(b) == TYPE_DICTIONARY else b.vx
+                                            var b_vy = b.get("vy") if typeof(b) == TYPE_DICTIONARY else b.vy
+                                            if typeof(b) == TYPE_DICTIONARY:
+                                                b["vx"] = b_vx + nx * shockwave_force
+                                                b["vy"] = b_vy + ny * shockwave_force
+                                                if b.has("shield") and b.get("shield") > 0:
+                                                    b["shield"] = max(0.0, b.get("shield") - 150.0)
+                                            else:
+                                                b.vx = b_vx + nx * shockwave_force
+                                                b.vy = b_vy + ny * shockwave_force
+                                                if "shield" in b and b.shield > 0:
+                                                    b.shield = max(0.0, b.shield - 150.0)
+
+                                            if (typeof(world) == TYPE_DICTIONARY and world.has("events")) or (typeof(world) == TYPE_OBJECT and "events" in world):
+                                                world.events.append({'type': 'visual_effect', 'data': {'type': 'kinetic_trap_explosion', 'x': h_x, 'y': h_y, 'radius': 150.0}})
+
+                                            if typeof(hazard) == TYPE_DICTIONARY:
+                                                hazard["duration"] = 0.0
+                                                hazard["active"] = false
+                                            else:
+                                                hazard.duration = 0.0
+                                                hazard.active = false
+                                            break
+
                 if h_kind == "kinetic_absorber":
                     var current_pool = 0.0
                     if typeof(hazard) == TYPE_DICTIONARY and hazard.has("kinetic_energy_pool"): current_pool = hazard["kinetic_energy_pool"]
@@ -56772,7 +56882,7 @@ func _update_skill_timer(delta: float):
                                     var target_balls = []
                                     if typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("balls") != null:
                                         target_balls = world.get("balls")
-                                    elif typeof(world) == TYPE_DICTIONARY and world.has("balls"):
+                                    elif (typeof(world) == TYPE_DICTIONARY and world.has("balls")) or (typeof(world) == TYPE_OBJECT and "balls" in world):
                                         target_balls = world["balls"]
 
                                     for tb in target_balls:
