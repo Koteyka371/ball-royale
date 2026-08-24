@@ -39659,6 +39659,23 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "aura_overcharge_booster":
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("aura_overcharge_timer", 10.0)
+                elif typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["aura_overcharge_timer"] = 10.0
+                else:
+                    self.ball.aura_overcharge_timer = 10.0
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "link_booster":
                 var enemies_link = _get_enemies()
                 if enemies_link.size() > 0:
@@ -51473,6 +51490,46 @@ func _apply_friendly_aura(delta: float):
             self.ball.set_meta("aura_amplifier_timer", amp_timer)
         if "aura_amplifier_timer" in self.ball:
             self.ball["aura_amplifier_timer"] = amp_timer
+
+    var aoc_timer = 0.0
+    if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("aura_overcharge_timer"):
+        aoc_timer = float(self.ball.get_meta("aura_overcharge_timer"))
+    elif "aura_overcharge_timer" in self.ball:
+        aoc_timer = float(self.ball.aura_overcharge_timer)
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("aura_overcharge_timer"):
+        aoc_timer = float(self.ball["aura_overcharge_timer"])
+
+    if aoc_timer > 0.0:
+        aura_multiplier *= 3.0
+        aoc_timer -= delta
+        if aoc_timer < 0.0: aoc_timer = 0.0
+        if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+            self.ball.set_meta("aura_overcharge_timer", aoc_timer)
+        if "aura_overcharge_timer" in self.ball:
+            self.ball.aura_overcharge_timer = aoc_timer
+        elif typeof(self.ball) == TYPE_DICTIONARY:
+            self.ball["aura_overcharge_timer"] = aoc_timer
+
+        var damage_amount = 5.0 * delta
+        if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("take_damage"):
+            self.ball.take_damage(damage_amount, "aura_overcharge")
+        else:
+            var current_hp = 100.0
+            if "hp" in self.ball: current_hp = float(self.ball.hp)
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("hp"): current_hp = float(self.ball["hp"])
+
+            var new_hp = current_hp - damage_amount
+            if new_hp <= 0:
+                new_hp = 0
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["alive"] = false
+                else:
+                    self.ball.alive = false
+
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["hp"] = new_hp
+            else:
+                self.ball.hp = new_hp
 
     if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("aura_inversion_timer"):
 

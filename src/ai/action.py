@@ -20588,6 +20588,13 @@ class Action:
                     # If it's stored in world.boosters, _collect_booster handles it, but just in case
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "aura_overcharge_booster":
+                    self.ball.aura_overcharge_timer = 10.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "quantum_swap_powerup":
                     enemies = self._get_enemies()
                     if enemies:
@@ -26571,6 +26578,21 @@ class Action:
             self.ball.aura_amplifier_timer -= delta
             if self.ball.aura_amplifier_timer < 0:
                 self.ball.aura_amplifier_timer = 0.0
+
+        if getattr(self.ball, "aura_overcharge_timer", 0.0) > 0:
+            aura_multiplier *= 3.0
+            self.ball.aura_overcharge_timer -= delta
+            if self.ball.aura_overcharge_timer < 0:
+                self.ball.aura_overcharge_timer = 0.0
+
+            damage_amount = 5.0 * delta
+            if hasattr(self.ball, 'take_damage'):
+                self.ball.take_damage(damage_amount, "aura_overcharge")
+            else:
+                self.ball.hp = getattr(self.ball, "hp", 100.0) - damage_amount
+                if self.ball.hp <= 0:
+                    self.ball.hp = 0
+                    self.ball.alive = False
 
         if getattr(self.ball, "aura_inversion_timer", 0.0) > 0:
 
