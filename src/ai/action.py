@@ -18463,7 +18463,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'deploy_clan_banner', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_aura_nullifier_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'survival_rewind', 'echo_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_dash', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'sabotage_bounty', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_stabilizer_field', 'deploy_tracker_drone', 'deploy_distract_drone', 'deploy_fake_balls', 'decoy_swarm', 'hire_mercenary', 'hazard_surfing', 'grapple_hook', 'elastic_tether']
+                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'deploy_clan_banner', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_aura_nullifier_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'survival_rewind', 'echo_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_dash', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'sabotage_bounty', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'deploy_kinetic_trap', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_stabilizer_field', 'deploy_tracker_drone', 'deploy_distract_drone', 'deploy_fake_balls', 'decoy_swarm', 'hire_mercenary', 'hazard_surfing', 'grapple_hook', 'elastic_tether']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
@@ -25398,6 +25398,25 @@ class Action:
                     self.world.arena.hazards.append(node)
                 self.ball.skill_timer = 20.0
 
+            elif skill_name == "deploy_kinetic_trap":
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    class KineticTrapNode:
+                        pass
+                    node = KineticTrapNode()
+                    node.id = f"kinetic_trap_{getattr(self.ball, 'id', 0)}_{getattr(self.world, 'tick', 0)}"
+                    node.kind = "kinetic_trap"
+                    node.x = self.ball.x
+                    node.y = self.ball.y
+                    node.radius = 30.0
+                    node.damage = 0.0
+                    node.owner_id = getattr(self.ball, "id", None)
+                    node.team = getattr(self.ball, "team", "")
+                    node.duration = 20.0
+                    node.active = True
+                    node.kinetic_energy_pool = 0.0
+                    self.world.arena.hazards.append(node)
+                self.ball.skill_timer = 20.0
+
             elif skill_name == "deploy_electric_beam_trap":
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     class ElectricBeamTrapNode:
@@ -28289,6 +28308,45 @@ class Action:
 
                             hazard.duration = 0.0
                             hazard.active = False
+
+                if getattr(hazard, "kind", "") == "kinetic_trap":
+                    trap_team = getattr(hazard, "team", "")
+                    for b in getattr(self.world, "balls", []):
+                        if getattr(b, "alive", True) and getattr(b, "id", None) != getattr(hazard, "owner_id", None):
+                            dist_sq = (hazard.x - b.x)**2 + (hazard.y - b.y)**2
+                            b_radius = getattr(b, "radius", 10.0)
+                            if dist_sq <= (hazard.radius + b_radius + 100.0)**2:
+                                import math
+                                b_team = getattr(b, "team", "")
+                                dist = math.sqrt(dist_sq)
+                                if b_team == trap_team or (trap_team == "" and getattr(b, "id", None) == getattr(hazard, "owner_id", None)):
+                                    # Passing friendly ball
+                                    speed_sq = getattr(b, "vx", 0.0)**2 + getattr(b, "vy", 0.0)**2
+                                    if speed_sq < 90000.0:  # max speed cap around 300
+                                        multiplier = 1.0 + (0.5 * float(delta))
+                                        b.vx = getattr(b, "vx", 0.0) * multiplier
+                                        b.vy = getattr(b, "vy", 0.0) * multiplier
+                                    hazard.kinetic_energy_pool = getattr(hazard, "kinetic_energy_pool", 0.0) + 100.0 * float(delta)
+                                else:
+                                    # Enemy approaches!
+                                    if dist <= hazard.radius + b_radius + 50.0:
+                                        shockwave_force = 2000.0 + getattr(hazard, "kinetic_energy_pool", 0.0) * 10.0
+                                        nx = (b.x - hazard.x) / (dist + 0.0001)
+                                        ny = (b.y - hazard.y) / (dist + 0.0001)
+                                        b.vx = getattr(b, "vx", 0.0) + nx * shockwave_force
+                                        b.vy = getattr(b, "vy", 0.0) + ny * shockwave_force
+
+                                        # Damage shield slightly just for impact
+                                        if hasattr(b, "shield") and b.shield > 0:
+                                            b.shield = max(0.0, b.shield - 150.0)
+
+                                        if hasattr(self.world, "events"):
+                                            self.world.events.append({'type': 'visual_effect', 'data': {'type': 'kinetic_trap_explosion', 'x': hazard.x, 'y': hazard.y, 'radius': 150.0}})
+
+                                        hazard.duration = 0.0
+                                        hazard.active = False
+                                        break
+
                 if getattr(hazard, "kind", "") == "kinetic_absorber":
                     if getattr(hazard, "kinetic_energy_pool", 0.0) >= 500.0:
                         hazard.kinetic_energy_pool = 0.0
