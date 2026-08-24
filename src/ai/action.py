@@ -15855,6 +15855,10 @@ class Action:
             if gm and getattr(gm, "name", "") == "Stamina Regen modifier":
                 regen_mult *= 2.0
 
+            if getattr(self.ball, "stasis_bubble_active", False):
+                regen_mult = 0.0
+                drain_mult = 0.0
+
             if getattr(self.ball, "is_dashing", False):
                 if getattr(self.ball, "infinite_stamina_timer", 0.0) <= 0:
                     self.ball.stamina = max(0.0, getattr(self.ball, "stamina", 0.0) - (50.0 * drain_mult) * delta)
@@ -29483,13 +29487,15 @@ class Action:
         cooldown_mult *= chronosphere_slowdown
 
         if hasattr(self.ball, "skill_timer") and self.ball.skill_timer > 0:
-            if not getattr(self.world, "solar_flare_active", False):
+            if not getattr(self.world, "solar_flare_active", False) and not getattr(self.ball, "stasis_bubble_active", False):
                 self.ball.skill_timer -= delta * cooldown_mult
         if hasattr(self.ball, "sonar_ping_timer") and self.ball.sonar_ping_timer > 0:
-            self.ball.sonar_ping_timer -= delta * cooldown_mult
+            if not getattr(self.ball, "stasis_bubble_active", False):
+                self.ball.sonar_ping_timer -= delta * cooldown_mult
 
         if hasattr(self.ball, "attack_timer") and self.ball.attack_timer > 0:
-            self.ball.attack_timer -= delta * cooldown_mult
+            if not getattr(self.ball, "stasis_bubble_active", False):
+                self.ball.attack_timer -= delta * cooldown_mult
 
         if hasattr(self.ball, "quantum_tether_timer") and self.ball.quantum_tether_timer > 0:
             self.ball.quantum_tether_timer -= delta
@@ -30416,6 +30422,10 @@ class Action:
             regen_mult *= 2.0
         if gm and getattr(gm, "name", "") == "Stamina Vampire":
             regen_mult = 0.0
+
+        if getattr(self.ball, "stasis_bubble_active", False):
+            regen_mult = 0.0
+            drain_mult = 0.0
 
         if getattr(self.ball, "is_dashing", False):
             self.ball.bumper_combo = 0
