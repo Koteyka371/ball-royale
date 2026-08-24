@@ -884,10 +884,12 @@ class GameMode:
                         if b.electrified_water_timer >= 1.0:
                             b.electrified_water_timer = 0.0
 
+                            is_raining = getattr(world.arena, "is_raining", False) if hasattr(world, "arena") else False
+
                             # Find enemies nearby to shock
                             b_x = getattr(b, "x", 0.0)
                             b_y = getattr(b, "y", 0.0)
-                            shock_radius = 150.0
+                            shock_radius = 200.0 if is_raining else 150.0
                             shock_damage = 15.0
 
                             if hasattr(world, "add_event"):
@@ -906,6 +908,12 @@ class GameMode:
                                             enemy.hp = getattr(enemy, "hp", 100.0) - shock_damage
                                             if enemy.hp <= 0:
                                                 enemy.alive = False
+
+                                        if is_raining:
+                                            if isinstance(b, dict):
+                                                b["stamina"] = max(0.0, b.get("stamina", 100.0) - 10.0)
+                                            else:
+                                                b.stamina = max(0.0, getattr(b, "stamina", 100.0) - 10.0)
 
                                         # Chain lightning visual
                                         if hasattr(world, "add_event"):
