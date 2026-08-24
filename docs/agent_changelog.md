@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2065] Echo Bracers — *2026-08-24 10:38:28 UTC*
+
+An artifact that records the player's movement and actions for 5 seconds. On reactivation, a phantom clone replays these actions while dealing 50% damage.
+
+---
+
 ## [idea-2076] Eclipse Event — *2026-08-23 21:42:12 UTC*
 
 Add a rare eclipse event to the Day/Night mode where both Light and Shadow buffs are active simultaneously for all units, and all sunlight beams and moonlight shadows disappear, creating a chaotic arena for a short duration.
