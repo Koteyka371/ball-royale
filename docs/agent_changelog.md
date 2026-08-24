@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2099] Weather Synergy: Thunderstorm Elementals — *2026-08-24 22:41:38 UTC*
+
+If a team has a 'lightning' and 'water' elemental unit while it is raining, they passively create a thunderstorm aura. The rain amplifies the lightning radius, hitting targets further away but consuming more stamina per hit.
+
+---
+
 ## [idea-2079] Kinetic Amplifier Trap — *2026-08-24 21:19:15 UTC*
 
 A placeable trap that absorbs kinetic energy from passing friendly balls (increasing their speed slightly) and violently releases it when an enemy approaches, dealing immense knockback.
