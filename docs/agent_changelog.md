@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2097] Aura Overload Booster — *2026-08-24 17:37:23 UTC*
+
+A rare consumable booster that amplifies the player's current auras to 300% effectiveness but drains their HP over time while active. High risk, high reward.
+
+---
+
 ## [idea-2035] Magnetic Lava Traps — *2026-08-24 14:58:13 UTC*
 
 Lava pools periodically pull players towards them with a weak magnetic force, requiring players to actively dash or move against the pull to avoid damage.
