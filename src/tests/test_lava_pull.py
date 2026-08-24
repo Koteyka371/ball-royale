@@ -41,6 +41,8 @@ class MockWorld:
 
 def test_lava_pull():
     ball = MockBall(1, 20.0, 0.0) # Outside center, inside radius
+    ball.speed = 0.0
+    ball.base_speed = 0.0
     arena = MockArena()
     world = MockWorld(arena)
     world.balls.append(ball)
@@ -48,6 +50,7 @@ def test_lava_pull():
     arena.hazards.append(hazard)
 
     action = Action(ball, world)
+    world.time = 0.5 # Should be pulled (0.5 % 2.0 < 1.0)
 
     initial_x = ball.x
     action.execute("idle", 0.1)
@@ -55,6 +58,13 @@ def test_lava_pull():
     print(f"Ball x after lava_pool: {ball.x}")
     assert getattr(ball, "is_in_lava", False) == True
     assert ball.x < initial_x # Pulled towards center
+
+    # Test periodic pause
+    world.time = 1.5
+    initial_x2 = ball.x
+    action.execute("idle", 0.1)
+    assert ball.x == initial_x2 # Not pulled during pause
+
 
 if __name__ == "__main__":
     test_lava_pull()
