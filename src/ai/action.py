@@ -2150,6 +2150,57 @@ class Action:
 
     def execute(self, strategy: str, delta: float) -> None:
 
+        if getattr(self.ball, "has_phantom_artifact", False):
+            state = getattr(self.ball, "phantom_artifact_state", "idle")
+            if state == "idle":
+                if getattr(self.ball, "phantom_artifact_cooldown", 0.0) <= 0:
+                    self.ball.phantom_artifact_state = "recording"
+                    self.ball.phantom_artifact_record_timer = 5.0
+                    self.ball.phantom_artifact_record = []
+                    self.ball.phantom_artifact_elapsed = 0.0
+                    if hasattr(self.world, "events"):
+                        self.world.events.append(("phantom_artifact_recording", {"ball_id": self.ball.id}))
+            elif state == "recording":
+                self.ball.phantom_artifact_record_timer -= delta
+                self.ball.phantom_artifact_elapsed += delta
+                record = getattr(self.ball, "phantom_artifact_record", [])
+                record.append({
+                    "t": self.ball.phantom_artifact_elapsed,
+                    "x": self.ball.x,
+                    "y": self.ball.y,
+                    "vx": getattr(self.ball, "vx", 0.0),
+                    "vy": getattr(self.ball, "vy", 0.0)
+                })
+                self.ball.phantom_artifact_record = record
+                if self.ball.phantom_artifact_record_timer <= 0:
+                    self.ball.phantom_artifact_state = "ready"
+                    self.ball.phantom_artifact_cooldown = 15.0
+                    if hasattr(self.world, "events"):
+                        self.world.events.append(("phantom_artifact_ready", {"ball_id": self.ball.id}))
+            elif state == "ready":
+                if getattr(self.ball, "phantom_artifact_cooldown", 0.0) > 0:
+                    self.ball.phantom_artifact_cooldown -= delta
+                if getattr(self.ball, "phantom_artifact_cooldown", 0.0) <= 0:
+                    self.ball.phantom_artifact_state = "idle"
+                    import copy
+                    clone = copy.copy(self.ball)
+                    clone.id = getattr(self.world, "next_id", __import__('random').randint(10000, 99999))
+                    if hasattr(self.world, "next_id"):
+                        self.world.next_id += 1
+                    clone.is_phantom_artifact_clone = True
+                    clone.phantom_artifact_playback = getattr(self.ball, "phantom_artifact_record", [])
+                    clone.phantom_artifact_timer = 0.0
+                    clone.has_phantom_artifact = False
+                    clone.hp = 50.0
+                    clone.max_hp = 50.0
+                    clone.damage = getattr(self.ball, "base_damage", 10.0) * 0.5
+                    if hasattr(clone, "base_damage"):
+                        clone.base_damage = clone.damage
+                    if hasattr(self.world, "balls"):
+                        self.world.balls.append(clone)
+                    if hasattr(self.world, "events"):
+                        self.world.events.append(("phantom_artifact_reactivated", {"ball_id": self.ball.id}))
+
         # Status Dome reflection logic
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             import math as _math
@@ -2374,6 +2425,31 @@ class Action:
         except (TypeError, ValueError):
             pass
 
+
+        if getattr(self.ball, "is_phantom_artifact_clone", False):
+            playback = getattr(self.ball, "phantom_artifact_playback", [])
+            if not playback:
+                self.ball.alive = False
+            else:
+                self.ball.phantom_artifact_timer = getattr(self.ball, "phantom_artifact_timer", 0.0) + delta
+                t = self.ball.phantom_artifact_timer
+                if t >= playback[-1]["t"]:
+                    self.ball.alive = False
+                else:
+                    for i in range(len(playback) - 1):
+                        f1 = playback[i]
+                        f2 = playback[i+1]
+                        if f1["t"] <= t <= f2["t"]:
+                            if f2["t"] == f1["t"]:
+                                self.ball.x, self.ball.y = f1["x"], f1["y"]
+                                self.ball.vx, self.ball.vy = f1["vx"], f1["vy"]
+                            else:
+                                ratio = (t - f1["t"]) / (f2["t"] - f1["t"])
+                                self.ball.x = f1["x"] + (f2["x"] - f1["x"]) * ratio
+                                self.ball.y = f1["y"] + (f2["y"] - f1["y"]) * ratio
+                                self.ball.vx = f1["vx"] + (f2["vx"] - f1["vx"]) * ratio
+                                self.ball.vy = f1["vy"] + (f2["vy"] - f1["vy"]) * ratio
+                            break
     def _execute_internal(self, strategy: str, delta: float) -> None:
         if getattr(self.ball, "is_clan_banner", False):
             # Process Clan Banner healing aura
