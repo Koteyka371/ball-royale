@@ -33712,6 +33712,115 @@ class ExpandingLavaRoyaleMode(GameMode):
 
 
 
+class ProjectileReplayZoneHazard:
+    def __init__(self, x: float, y: float, radius: float):
+        self.x = x
+        self.y = y
+        self.radius = radius
+        self.kind = 'projectile_replay_zone'
+        self.recorded_projectiles = []
+        self.replay_timer = 0.0
+        self.replay_interval = 2.0
+
+class GenericReplayProjectile:
+    def __init__(self):
+        pass
+    def __getitem__(self, key):
+        return getattr(self, key)
+    def __setitem__(self, key, value):
+        setattr(self, key, value)
+    def get(self, key, default=None):
+        return getattr(self, key, default)
+    def __contains__(self, key):
+        return hasattr(self, key)
+
+class ProjectileReplayZoneMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.initialized = False
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        if not hasattr(world, 'arena') or not hasattr(world.arena, 'hazards'):
+            return
+
+        if not self.initialized:
+            self.initialized = True
+            zone = ProjectileReplayZoneHazard(0.0, 0.0, 150.0)
+            world.arena.hazards.append(zone)
+
+        for hazard in world.arena.hazards:
+            h_kind = getattr(hazard, 'kind', hazard.get('kind', '') if isinstance(hazard, dict) else '')
+            if h_kind == 'projectile_replay_zone':
+                h_x = getattr(hazard, 'x', hazard.get('x', 0) if isinstance(hazard, dict) else 0)
+                h_y = getattr(hazard, 'y', hazard.get('y', 0) if isinstance(hazard, dict) else 0)
+                h_r = getattr(hazard, 'radius', hazard.get('radius', 100) if isinstance(hazard, dict) else 100)
+
+                projectiles = getattr(world, 'projectiles', world.get('projectiles', []) if isinstance(world, dict) else [])
+                for proj in projectiles:
+                    p_x = getattr(proj, 'x', proj.get('x', 0) if isinstance(proj, dict) else 0)
+                    p_y = getattr(proj, 'y', proj.get('y', 0) if isinstance(proj, dict) else 0)
+                    dist_sq = (p_x - h_x)**2 + (p_y - h_y)**2
+                    if dist_sq <= h_r**2:
+                        if not hasattr(proj, 'recorded_in_zone') and not (isinstance(proj, dict) and 'recorded_in_zone' in proj):
+                            if isinstance(proj, dict):
+                                proj['recorded_in_zone'] = True
+                            else:
+                                proj.recorded_in_zone = True
+
+                            snapshot = {
+                                'x': p_x, 'y': p_y,
+                                'vx': getattr(proj, 'vx', proj.get('vx', 0) if isinstance(proj, dict) else 0),
+                                'vy': getattr(proj, 'vy', proj.get('vy', 0) if isinstance(proj, dict) else 0),
+                                'team': getattr(proj, 'team', proj.get('team', -1) if isinstance(proj, dict) else -1),
+                                'damage': getattr(proj, 'damage', proj.get('damage', 10) if isinstance(proj, dict) else 10),
+                                'shooter_id': getattr(proj, 'shooter_id', proj.get('shooter_id', None) if isinstance(proj, dict) else None),
+                                'time_left': 15.0
+                            }
+
+                            if isinstance(hazard, dict):
+                                if 'recorded_projectiles' not in hazard:
+                                    hazard['recorded_projectiles'] = []
+                                hazard['recorded_projectiles'].append(snapshot)
+                            else:
+                                hazard.recorded_projectiles.append(snapshot)
+
+                records = hazard.get('recorded_projectiles', []) if isinstance(hazard, dict) else getattr(hazard, 'recorded_projectiles', [])
+
+                new_records = []
+                for rec in records:
+                    rec['time_left'] -= delta
+                    if rec['time_left'] > 0:
+                        new_records.append(rec)
+
+                if isinstance(hazard, dict):
+                    hazard['recorded_projectiles'] = new_records
+                else:
+                    hazard.recorded_projectiles = new_records
+
+                replay_timer = hazard.get('replay_timer', 0.0) if isinstance(hazard, dict) else getattr(hazard, 'replay_timer', 0.0)
+                replay_timer -= delta
+                if replay_timer <= 0:
+                    replay_timer = getattr(hazard, 'replay_interval', hazard.get('replay_interval', 2.0) if isinstance(hazard, dict) else 2.0)
+                    for rec in new_records:
+                        if isinstance(projectiles, list):
+                            new_proj = GenericReplayProjectile()
+                            new_proj.x = rec['x']
+                            new_proj.y = rec['y']
+                            new_proj.vx = rec['vx']
+                            new_proj.vy = rec['vy']
+                            new_proj.team = rec['team']
+                            new_proj.damage = rec['damage']
+                            new_proj.shooter_id = rec['shooter_id']
+                            new_proj.recorded_in_zone = True
+                            new_proj.is_projectile = True
+
+                            projectiles.append(new_proj)
+
+                if isinstance(hazard, dict):
+                    hazard['replay_timer'] = replay_timer
+                else:
+                    hazard.replay_timer = replay_timer
+
 class AuraSiphonMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -40457,6 +40566,7 @@ GAME_MODES = {
     "decaying_projectiles_mutator": DecayingProjectilesMutatorMode(),
     "bouncing_projectiles_mutator": BouncingProjectilesMutatorMode(),
     "wrap_around": WrapAroundMode(),
+    "projectile_replay_zone": ProjectileReplayZoneMode(),
     "slime_boss": SlimeBossMode(),
     "explosive_meteors": ExplosiveMeteorsMode(),
     "void_tiles": VoidTilesMode(),

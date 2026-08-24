@@ -76451,6 +76451,103 @@ class BouncingProjectilesMutatorMode extends GameMode:
 					if proj.has("bounces_left"):
 						proj["bounces_left"] += 1
 
+class ProjectileReplayZoneMode extends GameMode:
+	var initialized = false
+
+	func tick(world: Dictionary, balls: Array, delta: float = 0.016) -> void:
+		var arena = world.get("arena") if typeof(world) == TYPE_DICTIONARY else world.arena
+		var hazards = arena.get("hazards") if typeof(arena) == TYPE_DICTIONARY else arena.hazards
+
+		if not initialized:
+			initialized = true
+			var zone = {
+				"x": 0.0,
+				"y": 0.0,
+				"radius": 150.0,
+				"kind": "projectile_replay_zone",
+				"recorded_projectiles": [],
+				"replay_timer": 0.0,
+				"replay_interval": 2.0
+			}
+			hazards.append(zone)
+
+		for hazard in hazards:
+			var h_kind = hazard.get("kind", "") if typeof(hazard) == TYPE_DICTIONARY else hazard.kind
+			if h_kind == "projectile_replay_zone":
+				var h_x = hazard.get("x", 0.0) if typeof(hazard) == TYPE_DICTIONARY else hazard.x
+				var h_y = hazard.get("y", 0.0) if typeof(hazard) == TYPE_DICTIONARY else hazard.y
+				var h_r = hazard.get("radius", 100.0) if typeof(hazard) == TYPE_DICTIONARY else hazard.radius
+
+				var projectiles = world.get("projectiles", []) if typeof(world) == TYPE_DICTIONARY else world.projectiles
+				for proj in projectiles:
+					var p_x = proj.get("x", 0.0) if typeof(proj) == TYPE_DICTIONARY else proj.x
+					var p_y = proj.get("y", 0.0) if typeof(proj) == TYPE_DICTIONARY else proj.y
+					var dist_sq = pow(p_x - h_x, 2) + pow(p_y - h_y, 2)
+					if dist_sq <= pow(h_r, 2):
+						var recorded_in_zone = false
+						if typeof(proj) == TYPE_DICTIONARY:
+							recorded_in_zone = proj.get("recorded_in_zone", false)
+						else:
+							recorded_in_zone = "recorded_in_zone" in proj and proj.recorded_in_zone
+
+						if not recorded_in_zone:
+							if typeof(proj) == TYPE_DICTIONARY:
+								proj["recorded_in_zone"] = true
+							else:
+								proj.recorded_in_zone = true
+
+							var snapshot = {
+								"x": p_x, "y": p_y,
+								"vx": proj.get("vx", 0.0) if typeof(proj) == TYPE_DICTIONARY else proj.vx,
+								"vy": proj.get("vy", 0.0) if typeof(proj) == TYPE_DICTIONARY else proj.vy,
+								"team": proj.get("team", -1) if typeof(proj) == TYPE_DICTIONARY else proj.team,
+								"damage": proj.get("damage", 10.0) if typeof(proj) == TYPE_DICTIONARY else proj.damage,
+								"shooter_id": proj.get("shooter_id", null) if typeof(proj) == TYPE_DICTIONARY else proj.shooter_id,
+								"time_left": 15.0
+							}
+
+							if typeof(hazard) == TYPE_DICTIONARY:
+								if not hazard.has("recorded_projectiles"):
+									hazard["recorded_projectiles"] = []
+								hazard["recorded_projectiles"].append(snapshot)
+							else:
+								hazard.recorded_projectiles.append(snapshot)
+
+				var records = hazard.get("recorded_projectiles", []) if typeof(hazard) == TYPE_DICTIONARY else hazard.recorded_projectiles
+				var new_records = []
+				for rec in records:
+					rec["time_left"] -= delta
+					if rec["time_left"] > 0:
+						new_records.append(rec)
+
+				if typeof(hazard) == TYPE_DICTIONARY:
+					hazard["recorded_projectiles"] = new_records
+				else:
+					hazard.recorded_projectiles = new_records
+
+				var replay_timer = hazard.get("replay_timer", 0.0) if typeof(hazard) == TYPE_DICTIONARY else hazard.replay_timer
+				replay_timer -= delta
+				if replay_timer <= 0:
+					replay_timer = hazard.get("replay_interval", 2.0) if typeof(hazard) == TYPE_DICTIONARY else hazard.replay_interval
+					for rec in new_records:
+						var new_proj = {
+							"x": rec["x"],
+							"y": rec["y"],
+							"vx": rec["vx"],
+							"vy": rec["vy"],
+							"team": rec["team"],
+							"damage": rec["damage"],
+							"shooter_id": rec["shooter_id"],
+							"recorded_in_zone": true,
+							"is_projectile": true
+						}
+						projectiles.append(new_proj)
+
+				if typeof(hazard) == TYPE_DICTIONARY:
+					hazard["replay_timer"] = replay_timer
+				else:
+					hazard.replay_timer = replay_timer
+
 class WrapAroundMode extends GameMode:
 	func _init():
 		name = "Wrap Around Arena"
@@ -91090,3 +91187,4 @@ class PhantomGraveyardMode extends GameMode:
 										b.alive = false
 
 GAME_MODES["phantom_graveyard"] = PhantomGraveyardMode.new()
+GAME_MODES["projectile_replay_zone"] = ProjectileReplayZoneMode.new()
