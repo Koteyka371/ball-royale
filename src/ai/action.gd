@@ -4000,6 +4000,146 @@ func _init(ball_ref, world_ref):
 
 func execute(strategy: String, delta: float):
 
+	var has_phantom_artifact = false
+	if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("has_phantom_artifact"): has_phantom_artifact = self.ball["has_phantom_artifact"]
+	elif typeof(self.ball) == TYPE_OBJECT and "has_phantom_artifact" in self.ball: has_phantom_artifact = self.ball.has_phantom_artifact
+	elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("has_phantom_artifact"): has_phantom_artifact = self.ball.get_meta("has_phantom_artifact")
+
+	if has_phantom_artifact:
+		var state = "idle"
+		if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("phantom_artifact_state"): state = self.ball["phantom_artifact_state"]
+		elif typeof(self.ball) == TYPE_OBJECT and "phantom_artifact_state" in self.ball: state = self.ball.phantom_artifact_state
+
+		var cooldown = 0.0
+		if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("phantom_artifact_cooldown"): cooldown = self.ball["phantom_artifact_cooldown"]
+		elif typeof(self.ball) == TYPE_OBJECT and "phantom_artifact_cooldown" in self.ball: cooldown = self.ball.phantom_artifact_cooldown
+
+		if state == "idle":
+			if cooldown <= 0:
+				if typeof(self.ball) == TYPE_DICTIONARY:
+					self.ball["phantom_artifact_state"] = "recording"
+					self.ball["phantom_artifact_record_timer"] = 5.0
+					self.ball["phantom_artifact_record"] = []
+					self.ball["phantom_artifact_elapsed"] = 0.0
+				elif typeof(self.ball) == TYPE_OBJECT:
+					if "phantom_artifact_state" in self.ball:
+						self.ball.phantom_artifact_state = "recording"
+						self.ball.phantom_artifact_record_timer = 5.0
+						self.ball.phantom_artifact_record = []
+						self.ball.phantom_artifact_elapsed = 0.0
+					else:
+						self.ball.set_meta("phantom_artifact_state", "recording")
+						self.ball.set_meta("phantom_artifact_record_timer", 5.0)
+						self.ball.set_meta("phantom_artifact_record", [])
+						self.ball.set_meta("phantom_artifact_elapsed", 0.0)
+				if self.world != null and typeof(self.world) == TYPE_OBJECT and self.world.has_method("add_event"):
+					self.world.add_event("phantom_artifact_recording", {"ball_id": self.ball.get("id") if typeof(self.ball) == TYPE_DICTIONARY else self.ball.id})
+		elif state == "recording":
+			var rtimer = 0.0
+			var relapsed = 0.0
+			var record = []
+			if typeof(self.ball) == TYPE_DICTIONARY:
+				rtimer = self.ball.get("phantom_artifact_record_timer", 0.0) - delta
+				relapsed = self.ball.get("phantom_artifact_elapsed", 0.0) + delta
+				record = self.ball.get("phantom_artifact_record", [])
+				self.ball["phantom_artifact_record_timer"] = rtimer
+				self.ball["phantom_artifact_elapsed"] = relapsed
+			elif typeof(self.ball) == TYPE_OBJECT:
+				if "phantom_artifact_record_timer" in self.ball:
+					self.ball.phantom_artifact_record_timer -= delta
+					self.ball.phantom_artifact_elapsed += delta
+					rtimer = self.ball.phantom_artifact_record_timer
+					relapsed = self.ball.phantom_artifact_elapsed
+					record = self.ball.phantom_artifact_record
+				else:
+					rtimer = self.ball.get_meta("phantom_artifact_record_timer") - delta
+					relapsed = self.ball.get_meta("phantom_artifact_elapsed") + delta
+					self.ball.set_meta("phantom_artifact_record_timer", rtimer)
+					self.ball.set_meta("phantom_artifact_elapsed", relapsed)
+					record = self.ball.get_meta("phantom_artifact_record")
+
+			var bx = self.ball.get("x", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.x
+			var by = self.ball.get("y", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.y
+			var bvx = self.ball.get("vx", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.vx
+			var bvy = self.ball.get("vy", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.vy
+
+			record.append({
+				"t": relapsed,
+				"x": bx,
+				"y": by,
+				"vx": bvx,
+				"vy": bvy
+			})
+
+			if typeof(self.ball) == TYPE_DICTIONARY: self.ball["phantom_artifact_record"] = record
+			elif typeof(self.ball) == TYPE_OBJECT:
+				if "phantom_artifact_record" in self.ball: self.ball.phantom_artifact_record = record
+				else: self.ball.set_meta("phantom_artifact_record", record)
+
+			if rtimer <= 0:
+				if typeof(self.ball) == TYPE_DICTIONARY:
+					self.ball["phantom_artifact_state"] = "ready"
+					self.ball["phantom_artifact_cooldown"] = 15.0
+				elif typeof(self.ball) == TYPE_OBJECT:
+					if "phantom_artifact_state" in self.ball:
+						self.ball.phantom_artifact_state = "ready"
+						self.ball.phantom_artifact_cooldown = 15.0
+					else:
+						self.ball.set_meta("phantom_artifact_state", "ready")
+						self.ball.set_meta("phantom_artifact_cooldown", 15.0)
+		elif state == "ready":
+			if cooldown > 0:
+				cooldown -= delta
+				if typeof(self.ball) == TYPE_DICTIONARY: self.ball["phantom_artifact_cooldown"] = cooldown
+				elif typeof(self.ball) == TYPE_OBJECT:
+					if "phantom_artifact_cooldown" in self.ball: self.ball.phantom_artifact_cooldown = cooldown
+					else: self.ball.set_meta("phantom_artifact_cooldown", cooldown)
+			if cooldown <= 0:
+				if typeof(self.ball) == TYPE_DICTIONARY: self.ball["phantom_artifact_state"] = "idle"
+				elif typeof(self.ball) == TYPE_OBJECT:
+					if "phantom_artifact_state" in self.ball: self.ball.phantom_artifact_state = "idle"
+					else: self.ball.set_meta("phantom_artifact_state", "idle")
+
+				# Spawn clone
+				var clone_dict = {}
+				if typeof(self.ball) == TYPE_DICTIONARY:
+					clone_dict = self.ball.duplicate(true)
+				else:
+					# Basic dictionary representation for GDScript tests if needed
+					clone_dict = {
+						"id": randi() % 90000 + 10000,
+						"x": self.ball.x if "x" in self.ball else 0.0,
+						"y": self.ball.y if "y" in self.ball else 0.0,
+						"vx": 0.0,
+						"vy": 0.0,
+						"alive": true,
+						"ball_type": self.ball.ball_type if "ball_type" in self.ball else "",
+						"team": self.ball.team if "team" in self.ball else 1,
+						"radius": self.ball.radius if "radius" in self.ball else 15.0,
+						"speed": self.ball.speed if "speed" in self.ball else 50.0,
+						"base_damage": (self.ball.base_damage if "base_damage" in self.ball else 10.0) * 0.5,
+						"hp": 50.0,
+						"max_hp": 50.0,
+						"is_phantom_artifact_clone": true,
+						"has_phantom_artifact": false,
+						"phantom_artifact_playback": self.ball.phantom_artifact_record if "phantom_artifact_record" in self.ball else [],
+						"phantom_artifact_timer": 0.0
+					}
+				if typeof(self.ball) == TYPE_DICTIONARY:
+					clone_dict["id"] = randi() % 90000 + 10000
+					clone_dict["is_phantom_artifact_clone"] = true
+					clone_dict["has_phantom_artifact"] = false
+					clone_dict["hp"] = 50.0
+					clone_dict["max_hp"] = 50.0
+					clone_dict["base_damage"] = clone_dict.get("base_damage", 10.0) * 0.5
+					clone_dict["phantom_artifact_timer"] = 0.0
+					clone_dict["phantom_artifact_playback"] = clone_dict.get("phantom_artifact_record", [])
+
+				var w_balls = []
+				if typeof(world) == TYPE_DICTIONARY and world.has("balls"): w_balls = world["balls"]
+				elif typeof(world) == TYPE_OBJECT and "balls" in world: w_balls = world.balls
+				w_balls.append(clone_dict)
+
 	var is_inverted_clone = false
 	if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("is_inverted_clone"): is_inverted_clone = self.ball["is_inverted_clone"]
 	elif typeof(self.ball) == TYPE_OBJECT and "is_inverted_clone" in self.ball: is_inverted_clone = self.ball.is_inverted_clone
@@ -30999,6 +31139,69 @@ func execute(strategy: String, delta: float):
             var current_dist = self.ball.get_meta("distance_traveled") if self.ball.has_meta("distance_traveled") else 0.0
             self.ball.set_meta("distance_traveled", current_dist + sqrt(dx*dx + dy*dy))
 
+
+
+	var is_phantom_artifact_clone = false
+	if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("is_phantom_artifact_clone"): is_phantom_artifact_clone = self.ball["is_phantom_artifact_clone"]
+	elif typeof(self.ball) == TYPE_OBJECT and "is_phantom_artifact_clone" in self.ball: is_phantom_artifact_clone = self.ball.is_phantom_artifact_clone
+	elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("is_phantom_artifact_clone"): is_phantom_artifact_clone = self.ball.get_meta("is_phantom_artifact_clone")
+
+	if is_phantom_artifact_clone:
+		var playback = []
+		if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("phantom_artifact_playback"): playback = self.ball["phantom_artifact_playback"]
+		elif typeof(self.ball) == TYPE_OBJECT and "phantom_artifact_playback" in self.ball: playback = self.ball.phantom_artifact_playback
+
+		if playback.size() == 0:
+			if typeof(self.ball) == TYPE_DICTIONARY: self.ball["alive"] = false
+			elif typeof(self.ball) == TYPE_OBJECT: self.ball.alive = false
+		else:
+			var t = 0.0
+			if typeof(self.ball) == TYPE_DICTIONARY:
+				t = self.ball.get("phantom_artifact_timer", 0.0) + delta
+				self.ball["phantom_artifact_timer"] = t
+			elif typeof(self.ball) == TYPE_OBJECT:
+				if "phantom_artifact_timer" in self.ball:
+					self.ball.phantom_artifact_timer += delta
+					t = self.ball.phantom_artifact_timer
+				else:
+					t = self.ball.get_meta("phantom_artifact_timer") + delta
+					self.ball.set_meta("phantom_artifact_timer", t)
+
+			if t >= playback[playback.size() - 1]["t"]:
+				if typeof(self.ball) == TYPE_DICTIONARY: self.ball["alive"] = false
+				elif typeof(self.ball) == TYPE_OBJECT: self.ball.alive = false
+			else:
+				for i in range(playback.size() - 1):
+					var f1 = playback[i]
+					var f2 = playback[i+1]
+					if f1["t"] <= t and t <= f2["t"]:
+						var bx = 0.0
+						var by = 0.0
+						var bvx = 0.0
+						var bvy = 0.0
+						if f2["t"] == f1["t"]:
+							bx = f1["x"]
+							by = f1["y"]
+							bvx = f1["vx"]
+							bvy = f1["vy"]
+						else:
+							var ratio = (t - f1["t"]) / (f2["t"] - f1["t"])
+							bx = f1["x"] + (f2["x"] - f1["x"]) * ratio
+							by = f1["y"] + (f2["y"] - f1["y"]) * ratio
+							bvx = f1["vx"] + (f2["vx"] - f1["vx"]) * ratio
+							bvy = f1["vy"] + (f2["vy"] - f1["vy"]) * ratio
+
+						if typeof(self.ball) == TYPE_DICTIONARY:
+							self.ball["x"] = bx
+							self.ball["y"] = by
+							self.ball["vx"] = bvx
+							self.ball["vy"] = bvy
+						elif typeof(self.ball) == TYPE_OBJECT:
+							self.ball.x = bx
+							self.ball.y = by
+							self.ball.vx = bvx
+							self.ball.vy = bvy
+						break
 
 func _apply_boid_rules(nx: float, ny: float) -> Array:
     var b_type = ""
