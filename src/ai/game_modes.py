@@ -58175,3 +58175,151 @@ class InfectionAuraMode(GameMode):
                 setattr(uninfected, "infection_exposure_timer", timer)
 
 GAME_MODES["infection_aura"] = InfectionAuraMode()
+
+
+class DeepWaterMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Deep Water"
+        self.description = "The entire arena is submerged in deep water, significantly reducing movement speed and perception for non-aquatic balls. Periodically, giant whirlpools spawn, dragging players into the center. Players must find buoyant floating debris to regain normal speed and stamina."
+        self.whirlpool_timer = 0.0
+        self.debris_timer = 0.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.whirlpool_timer = 5.0
+        self.debris_timer = 2.0
+        if not hasattr(world, "arena"):
+            return
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+    def tick(self, world, balls, delta=0.016):
+        import random as _rnd
+        import math
+        super().tick(world, balls, delta)
+
+        if not hasattr(world, "arena") or not hasattr(world.arena, "hazards"):
+            return
+
+        self.whirlpool_timer -= delta
+        self.debris_timer -= delta
+
+        arena_width = getattr(world.arena, "width", 1000)
+        arena_height = getattr(world.arena, "height", 1000)
+
+        class DeepWaterHazard:
+            def __init__(self, kind, x, y, radius, life):
+                self.id = int(_rnd.random() * 1000000)
+                self.kind = kind
+                self.x = x
+                self.y = y
+                self.radius = radius
+                self.life = life
+                self.active = True
+                self.damage = 0.0
+
+        if self.whirlpool_timer <= 0:
+            world.arena.hazards.append(DeepWaterHazard("giant_whirlpool", _rnd.random() * arena_width, _rnd.random() * arena_height, 200.0, 10.0))
+            self.whirlpool_timer = 15.0
+
+        if self.debris_timer <= 0:
+            for _ in range(3):
+                world.arena.hazards.append(DeepWaterHazard("floating_debris", _rnd.random() * arena_width, _rnd.random() * arena_height, 40.0, 15.0))
+            self.debris_timer = 10.0
+
+        active_hazards = []
+        for h in world.arena.hazards:
+            kind = getattr(h, "kind", "")
+            if kind in ["giant_whirlpool", "floating_debris"]:
+                life = getattr(h, "life", 0.0) - delta
+                if isinstance(h, dict):
+                    h["life"] = life
+                else:
+                    h.life = life
+                if life > 0:
+                    active_hazards.append(h)
+            else:
+                active_hazards.append(h)
+        world.arena.hazards = active_hazards
+
+        for b in balls:
+            if not getattr(b, "alive", True) or getattr(b, "ball_type", "") == "spectator":
+                continue
+
+            bx = getattr(b, "x", 0.0)
+            by = getattr(b, "y", 0.0)
+            bradius = getattr(b, "radius", 15.0)
+
+            buff_timer = getattr(b, "buoyant_buff_timer", 0.0)
+            if buff_timer > 0:
+                buff_timer -= delta
+                if isinstance(b, dict):
+                    b["buoyant_buff_timer"] = buff_timer
+                else:
+                    b.buoyant_buff_timer = buff_timer
+
+            # Check collisions
+            for h in world.arena.hazards:
+                kind = getattr(h, "kind", "")
+                hx = getattr(h, "x", 0.0)
+                hy = getattr(h, "y", 0.0)
+                hradius = getattr(h, "radius", 0.0)
+
+                dx = hx - bx
+                dy = hy - by
+                dist = math.hypot(dx, dy)
+
+                if dist < hradius + bradius:
+                    if kind == "floating_debris":
+                        if isinstance(b, dict):
+                            b["buoyant_buff_timer"] = 2.0
+                        else:
+                            b.buoyant_buff_timer = 2.0
+                    elif kind == "giant_whirlpool":
+                        if dist > 10.0:
+                            pull_force = 50.0
+                            if isinstance(b, dict):
+                                b["x"] += (dx / dist) * pull_force * delta
+                                b["y"] += (dy / dist) * pull_force * delta
+                            else:
+                                b.x += (dx / dist) * pull_force * delta
+                                b.y += (dy / dist) * pull_force * delta
+
+            traits = getattr(b, "traits", [])
+            has_aquatic = "aquatic" in traits
+            is_buffed = getattr(b, "buoyant_buff_timer", 0.0) > 0
+
+            base_speed = getattr(b, "base_speed", 100.0)
+            base_max_speed = getattr(b, "base_max_speed", base_speed)
+            base_perception = getattr(b, "base_perception_radius", 200.0)
+
+            if is_buffed or has_aquatic:
+                if isinstance(b, dict):
+                    b["speed"] = base_speed
+                    b["max_speed"] = base_max_speed
+                    b["perception_radius"] = base_perception
+                else:
+                    b.speed = base_speed
+                    b.max_speed = base_max_speed
+                    b.perception_radius = base_perception
+
+                if is_buffed:
+                    stamina = getattr(b, "stamina", 0.0)
+                    max_stamina = getattr(b, "max_stamina", 100.0)
+                    new_stamina = min(max_stamina, stamina + 20.0 * delta)
+                    if isinstance(b, dict):
+                        b["stamina"] = new_stamina
+                    else:
+                        b.stamina = new_stamina
+            else:
+                if isinstance(b, dict):
+                    b["speed"] = base_speed * 0.5
+                    b["max_speed"] = base_max_speed * 0.5
+                    b["perception_radius"] = base_perception * 0.5
+                else:
+                    b.speed = base_speed * 0.5
+                    b.max_speed = base_max_speed * 0.5
+                    b.perception_radius = base_perception * 0.5
+
+GAME_MODES["deep_water"] = DeepWaterMode()
