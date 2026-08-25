@@ -52042,6 +52042,76 @@ func _apply_friendly_aura(delta: float):
         if "has_vampiric_aura" in self.ball:
             self.ball.has_vampiric_aura = has_vampiric_aura
 
+    if has_vampiric_aura:
+        var drain_rate = 15.0 * delta
+        var stamina_gained = 0.0
+        if world != null and "balls" in world:
+            var balls = world.balls
+            if typeof(balls) == TYPE_ARRAY:
+                for other in balls:
+                    var other_id = -1
+                    if typeof(other) == TYPE_DICTIONARY and other.has("id"): other_id = other.id
+                    elif typeof(other) == TYPE_OBJECT and "id" in other: other_id = other.id
+
+                    var other_alive = true
+                    if typeof(other) == TYPE_DICTIONARY and other.has("alive"): other_alive = other.alive
+                    elif typeof(other) == TYPE_OBJECT and "alive" in other: other_alive = other.alive
+
+                    if other_alive and other_id != ball_id:
+                        var other_team = ""
+                        if typeof(other) == TYPE_DICTIONARY:
+                            if other.has("team"): other_team = other.team
+                            elif other.has("ball_type"): other_team = other.ball_type
+                        elif typeof(other) == TYPE_OBJECT:
+                            if "team" in other: other_team = other.team
+                            elif "ball_type" in other: other_team = other.ball_type
+
+                        if other_team != team:
+                            var ox = 0.0
+                            var oy = 0.0
+                            if typeof(other) == TYPE_DICTIONARY:
+                                if other.has("x"): ox = other.x
+                                if other.has("y"): oy = other.y
+                            elif typeof(other) == TYPE_OBJECT:
+                                if "x" in other: ox = other.x
+                                if "y" in other: oy = other.y
+
+                            var mx = 0.0
+                            var my = 0.0
+                            if typeof(self.ball) == TYPE_DICTIONARY:
+                                if self.ball.has("x"): mx = self.ball.x
+                                if self.ball.has("y"): my = self.ball.y
+                            elif typeof(self.ball) == TYPE_OBJECT:
+                                if "x" in self.ball: mx = self.ball.x
+                                if "y" in self.ball: my = self.ball.y
+
+                            var dx = ox - mx
+                            var dy = oy - my
+                            if dx*dx + dy*dy <= aura_radius * aura_radius:
+                                var other_stamina = 0.0
+                                if typeof(other) == TYPE_DICTIONARY and other.has("stamina"): other_stamina = other.stamina
+                                elif typeof(other) == TYPE_OBJECT and "stamina" in other: other_stamina = other.stamina
+
+                                var drain = min(other_stamina, drain_rate)
+                                if drain > 0:
+                                    if typeof(other) == TYPE_DICTIONARY: other.stamina = other_stamina - drain
+                                    elif typeof(other) == TYPE_OBJECT: other.stamina = other_stamina - drain
+                                    stamina_gained += drain
+
+        if stamina_gained > 0:
+            var my_stamina = 0.0
+            var my_max_stamina = 100.0
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                if self.ball.has("stamina"): my_stamina = self.ball.stamina
+                if self.ball.has("max_stamina"): my_max_stamina = self.ball.max_stamina
+            elif typeof(self.ball) == TYPE_OBJECT:
+                if "stamina" in self.ball: my_stamina = self.ball.stamina
+                if "max_stamina" in self.ball: my_max_stamina = self.ball.max_stamina
+
+            var new_stamina = min(my_max_stamina, my_stamina + stamina_gained)
+            if typeof(self.ball) == TYPE_DICTIONARY: self.ball.stamina = new_stamina
+            elif typeof(self.ball) == TYPE_OBJECT: self.ball.stamina = new_stamina
+
     # Apply buffs based on stack count
     if is_cursed_aura and stack_count >= 1:
         var damage = (2.0 * stack_count) * delta

@@ -26794,6 +26794,23 @@ class Action:
                     break
         self.ball.has_vampiric_aura = has_vampiric_aura
 
+        if has_vampiric_aura:
+            drain_rate = 15.0 * delta
+            stamina_gained = 0.0
+            for other in getattr(self.world, "balls", []):
+                if getattr(other, "alive", True) and getattr(other, "id", None) != ball_id and getattr(other, "team", getattr(other, "ball_type", "")) != team:
+                    dx = getattr(other, "x", 0.0) - getattr(self.ball, "x", 0.0)
+                    dy = getattr(other, "y", 0.0) - getattr(self.ball, "y", 0.0)
+                    if dx*dx + dy*dy <= aura_radius**2:
+                        other_stamina = getattr(other, "stamina", 0.0)
+                        drain = min(other_stamina, drain_rate)
+                        if drain > 0:
+                            other.stamina = other_stamina - drain
+                            stamina_gained += drain
+
+            if stamina_gained > 0:
+                self.ball.stamina = min(getattr(self.ball, "max_stamina", 100.0), getattr(self.ball, "stamina", 0.0) + stamina_gained)
+
         # Apply buffs based on stack count
         if is_cursed_aura and stack_count >= 1:
             # Under cursed aura event, stacking penalizes with scaling damage
