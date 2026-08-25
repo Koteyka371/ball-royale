@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2104] Chain Reaction Combos — *2026-08-25 12:06:26 UTC*
+
+Introduce combo potentials for hazard traits. For instance, 'fire' units can ignite 'poison' clouds, creating an explosion that heavily damages any unit inside the cloud. Units with 'earth' can build a barrier to shield themselves against it.
+
+---
+
 ## [idea-2093] Time Loop Zone — *2026-08-25 09:50:04 UTC*
 
 A hazard zone where any projectile that passes through it has its trajectory recorded and periodically replayed for the next 15 seconds, creating a dense bullet-hell area.
