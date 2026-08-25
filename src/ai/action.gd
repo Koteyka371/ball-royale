@@ -4000,6 +4000,62 @@ func _init(ball_ref, world_ref):
 
 func execute(strategy: String, delta: float):
 
+	var has_blood_pact = false
+	if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("has_blood_pact_artifact"): has_blood_pact = self.ball.has_blood_pact_artifact
+	elif typeof(self.ball) == TYPE_OBJECT and "has_blood_pact_artifact" in self.ball: has_blood_pact = self.ball.has_blood_pact_artifact
+	elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("has_blood_pact_artifact"): has_blood_pact = self.ball.get_meta("has_blood_pact_artifact")
+
+	if has_blood_pact:
+		var hp_val = 0.0
+		if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("hp"): hp_val = float(self.ball.hp)
+		elif typeof(self.ball) == TYPE_OBJECT and "hp" in self.ball: hp_val = float(self.ball.hp)
+		elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("hp"): hp_val = float(self.ball.get_meta("hp"))
+
+		if hp_val > 0.0:
+			var drain = 3.0 * delta
+			hp_val = max(0.0, hp_val - drain)
+			if typeof(self.ball) == TYPE_DICTIONARY: self.ball.hp = hp_val
+			elif typeof(self.ball) == TYPE_OBJECT and "hp" in self.ball: self.ball.hp = hp_val
+			elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("hp", hp_val)
+
+		var applied = false
+		if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("blood_pact_artifact_applied"): applied = self.ball.blood_pact_artifact_applied
+		elif typeof(self.ball) == TYPE_OBJECT and "blood_pact_artifact_applied" in self.ball: applied = self.ball.blood_pact_artifact_applied
+		elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("blood_pact_artifact_applied"): applied = self.ball.get_meta("blood_pact_artifact_applied")
+
+		if not applied:
+			var base_speed = 10.0
+			if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("speed"): base_speed = float(self.ball.speed)
+			elif typeof(self.ball) == TYPE_OBJECT and "speed" in self.ball: base_speed = float(self.ball.speed)
+			elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("speed"): base_speed = float(self.ball.get_meta("speed"))
+
+			if typeof(self.ball) == TYPE_DICTIONARY: self.ball["base_speed_blood_pact"] = base_speed
+			elif typeof(self.ball) == TYPE_OBJECT and "base_speed_blood_pact" in self.ball: self.ball.base_speed_blood_pact = base_speed
+			elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("base_speed_blood_pact", base_speed)
+
+			var new_speed = base_speed * 2.0
+			if typeof(self.ball) == TYPE_DICTIONARY: self.ball.speed = new_speed
+			elif typeof(self.ball) == TYPE_OBJECT and "speed" in self.ball: self.ball.speed = new_speed
+			elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("speed", new_speed)
+
+			var base_damage = 10.0
+			if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("damage"): base_damage = float(self.ball.damage)
+			elif typeof(self.ball) == TYPE_OBJECT and "damage" in self.ball: base_damage = float(self.ball.damage)
+			elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("damage"): base_damage = float(self.ball.get_meta("damage"))
+
+			if typeof(self.ball) == TYPE_DICTIONARY: self.ball["base_damage_blood_pact"] = base_damage
+			elif typeof(self.ball) == TYPE_OBJECT and "base_damage_blood_pact" in self.ball: self.ball.base_damage_blood_pact = base_damage
+			elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("base_damage_blood_pact", base_damage)
+
+			var new_damage = base_damage * 2.0
+			if typeof(self.ball) == TYPE_DICTIONARY: self.ball.damage = new_damage
+			elif typeof(self.ball) == TYPE_OBJECT and "damage" in self.ball: self.ball.damage = new_damage
+			elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("damage", new_damage)
+
+			if typeof(self.ball) == TYPE_DICTIONARY: self.ball.blood_pact_artifact_applied = true
+			elif typeof(self.ball) == TYPE_OBJECT and "blood_pact_artifact_applied" in self.ball: self.ball.blood_pact_artifact_applied = true
+			elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("blood_pact_artifact_applied", true)
+
 	var has_phantom_artifact = false
 	if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("has_phantom_artifact"): has_phantom_artifact = self.ball["has_phantom_artifact"]
 	elif typeof(self.ball) == TYPE_OBJECT and "has_phantom_artifact" in self.ball: has_phantom_artifact = self.ball.has_phantom_artifact
@@ -34050,6 +34106,29 @@ func _collect_booster(delta: float):
 						if typeof(b) == TYPE_DICTIONARY: b["active"] = false
 						elif typeof(b) == TYPE_OBJECT: b.active = false
 
+						if self.world != null and "events" in self.world and typeof(self.world.events) == TYPE_ARRAY:
+							var my_id = self.ball.id if "id" in self.ball else (self.ball.get_meta("id") if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("id") else -1)
+							self.world.events.append({"type": "booster_pickup", "ball_id": my_id, "kind": b_kind})
+						return
+
+			if b_kind == "blood_pact_artifact_item":
+				var my_rad = self.ball.radius if "radius" in self.ball else (self.ball.get_meta("radius") if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("radius") else 10.0)
+				var b_rad = 15.0
+				if typeof(b) == TYPE_DICTIONARY and b.has("radius"): b_rad = b["radius"]
+				elif typeof(b) == TYPE_OBJECT and "radius" in b: b_rad = b.radius
+				elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("radius"): b_rad = b.get_meta("radius")
+				if dist <= my_rad + b_rad + 5.0:
+					var is_active = b["active"] if typeof(b) == TYPE_DICTIONARY else b.active
+					if is_active:
+						if typeof(self.ball) == TYPE_DICTIONARY:
+							self.ball["has_blood_pact_artifact"] = true
+						else:
+							if "has_blood_pact_artifact" in self.ball:
+								self.ball.has_blood_pact_artifact = true
+							elif self.ball.has_method("set_meta"):
+								self.ball.set_meta("has_blood_pact_artifact", true)
+						if typeof(b) == TYPE_DICTIONARY: b["active"] = false
+						elif typeof(b) == TYPE_OBJECT: b.active = false
 						if self.world != null and "events" in self.world and typeof(self.world.events) == TYPE_ARRAY:
 							var my_id = self.ball.id if "id" in self.ball else (self.ball.get_meta("id") if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("id") else -1)
 							self.world.events.append({"type": "booster_pickup", "ball_id": my_id, "kind": b_kind})
