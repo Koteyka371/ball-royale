@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2103] Abyssal Deep Biome Mode — *2026-08-25 16:45:41 UTC*
+
+A new mode where the entire arena is submerged in deep water, significantly reducing movement speed and perception for non-aquatic balls. Periodically, giant whirlpools spawn, dragging players into the center. Players must find buoyant floating debris to regain normal speed and stamina.
+
+---
+
 ## [idea-2104] Chain Reaction Combos — *2026-08-25 12:06:26 UTC*
 
 Introduce combo potentials for hazard traits. For instance, 'fire' units can ignite 'poison' clouds, creating an explosion that heavily damages any unit inside the cloud. Units with 'earth' can build a barrier to shield themselves against it.
