@@ -91211,3 +91211,137 @@ class PhantomGraveyardMode extends GameMode:
 
 GAME_MODES["phantom_graveyard"] = PhantomGraveyardMode.new()
 GAME_MODES["projectile_replay_zone"] = ProjectileReplayZoneMode.new()
+
+
+
+class InfectionAuraMode extends GameMode:
+	func _init():
+		name = "Infection Aura"
+		description = "One random player starts with an Infection aura. Any player who comes too close for more than 2 seconds gets infected as well. Infected players take low continuous damage over time."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		var valid_balls = []
+		for b in balls:
+			var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else (b.get("ball_type") if "ball_type" in b else "")
+			if b_type != "spectator":
+				valid_balls.append(b)
+
+		if valid_balls.size() > 0:
+			var initial_infected = valid_balls[randi() % valid_balls.size()]
+			if typeof(initial_infected) == TYPE_DICTIONARY:
+				initial_infected["is_infected"] = true
+			elif typeof(initial_infected) == TYPE_OBJECT:
+				if "is_infected" in initial_infected:
+					initial_infected.is_infected = true
+				elif initial_infected.has_method("set_meta"):
+					initial_infected.set_meta("is_infected", true)
+
+	func tick(world, balls, delta=0.016):
+		super.tick(world, balls, delta)
+
+		var infected_balls = []
+		var uninfected_balls = []
+
+		for b in balls:
+			var is_alive = false
+			var is_inf = false
+
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+				is_inf = b.get("is_infected", false)
+			elif typeof(b) == TYPE_OBJECT:
+				is_alive = b.get("alive") if "alive" in b else false
+				if "is_infected" in b:
+					is_inf = b.is_infected
+				elif b.has_method("has_meta") and b.has_meta("is_infected"):
+					is_inf = b.get_meta("is_infected")
+
+			if not is_alive:
+				continue
+
+			if is_inf:
+				infected_balls.append(b)
+				var current_hp = 0.0
+				if typeof(b) == TYPE_DICTIONARY:
+					current_hp = float(b.get("hp", 0.0))
+					var new_hp = max(0.0, current_hp - 5.0 * delta)
+					b["hp"] = new_hp
+					if new_hp <= 0:
+						b["alive"] = false
+				elif typeof(b) == TYPE_OBJECT:
+					current_hp = float(b.get("hp")) if "hp" in b else 0.0
+					var new_hp = max(0.0, current_hp - 5.0 * delta)
+					if "hp" in b:
+						b.hp = new_hp
+					if new_hp <= 0 and "alive" in b:
+						b.alive = false
+			else:
+				uninfected_balls.append(b)
+
+		for uninfected in uninfected_balls:
+			var ux = 0.0
+			var uy = 0.0
+			var urad = 15.0
+
+			if typeof(uninfected) == TYPE_DICTIONARY:
+				ux = float(uninfected.get("x", 0.0))
+				uy = float(uninfected.get("y", 0.0))
+				urad = float(uninfected.get("radius", 15.0))
+			elif typeof(uninfected) == TYPE_OBJECT:
+				ux = float(uninfected.get("x")) if "x" in uninfected else 0.0
+				uy = float(uninfected.get("y")) if "y" in uninfected else 0.0
+				urad = float(uninfected.get("radius")) if "radius" in uninfected else 15.0
+
+			var getting_infected = false
+			for infected in infected_balls:
+				var ix = 0.0
+				var iy = 0.0
+				var irad = 15.0
+
+				if typeof(infected) == TYPE_DICTIONARY:
+					ix = float(infected.get("x", 0.0))
+					iy = float(infected.get("y", 0.0))
+					irad = float(infected.get("radius", 15.0))
+				elif typeof(infected) == TYPE_OBJECT:
+					ix = float(infected.get("x")) if "x" in infected else 0.0
+					iy = float(infected.get("y")) if "y" in infected else 0.0
+					irad = float(infected.get("radius")) if "radius" in infected else 15.0
+
+				var dist_sq = pow(ux - ix, 2) + pow(uy - iy, 2)
+				var aura_radius = irad + urad + 100.0
+				if dist_sq <= pow(aura_radius, 2):
+					getting_infected = true
+					break
+
+			var timer = 0.0
+			if typeof(uninfected) == TYPE_DICTIONARY:
+				timer = float(uninfected.get("infection_exposure_timer", 0.0))
+			elif typeof(uninfected) == TYPE_OBJECT:
+				if "infection_exposure_timer" in uninfected:
+					timer = float(uninfected.get("infection_exposure_timer"))
+				elif uninfected.has_method("has_meta") and uninfected.has_meta("infection_exposure_timer"):
+					timer = float(uninfected.get_meta("infection_exposure_timer"))
+
+			if getting_infected:
+				timer += delta
+				if timer >= 2.0:
+					if typeof(uninfected) == TYPE_DICTIONARY:
+						uninfected["is_infected"] = true
+					elif typeof(uninfected) == TYPE_OBJECT:
+						if "is_infected" in uninfected:
+							uninfected.is_infected = true
+						elif uninfected.has_method("set_meta"):
+							uninfected.set_meta("is_infected", true)
+			else:
+				timer = max(0.0, timer - delta)
+
+			if typeof(uninfected) == TYPE_DICTIONARY:
+				uninfected["infection_exposure_timer"] = timer
+			elif typeof(uninfected) == TYPE_OBJECT:
+				if "infection_exposure_timer" in uninfected:
+					uninfected.infection_exposure_timer = timer
+				elif uninfected.has_method("set_meta"):
+					uninfected.set_meta("infection_exposure_timer", timer)
+
+GAME_MODES["infection_aura"] = InfectionAuraMode.new()

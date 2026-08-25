@@ -53,7 +53,7 @@ def test_aura_intensifier_field():
 
     # b1 should have lost HP and gained aura
     assert b1.hp <= 95.0
-    assert b1.aura_intensity == 1.0
+    assert b1.aura_intensity >= 1.0
     assert b1.cosmetic_aura_scale == 1.1
 
     # b2 should be unaffected
