@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2087] Kinetic Accumulator Trait — *2026-08-25 01:01:24 UTC*
+
+A ball trait where bouncing off walls builds up a 'kinetic charge'. Once fully charged, the ball's next direct collision with an enemy unleashes an explosive shockwave that knocks back all nearby entities.
+
+---
+
 ## [idea-2019] Sludge Bomb — *2026-08-24 23:57:39 UTC*
 
 A new deployable that explodes and creates slow walls in the vicinity.
