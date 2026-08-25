@@ -76477,6 +76477,10 @@ class BouncingProjectilesMutatorMode extends GameMode:
 class ProjectileReplayZoneMode extends GameMode:
 	var initialized = false
 
+	func _init():
+		name = "Projectile Replay Zone"
+		description = "A hazard zone where any projectile that passes through it has its trajectory recorded and periodically replayed for the next 15 seconds, creating a dense bullet-hell area."
+
 	func tick(world: Dictionary, balls: Array, delta: float = 0.016) -> void:
 		var arena = world.get("arena") if typeof(world) == TYPE_DICTIONARY else world.arena
 		var hazards = arena.get("hazards") if typeof(arena) == TYPE_DICTIONARY else arena.hazards

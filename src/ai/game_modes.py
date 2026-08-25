@@ -33745,6 +33745,8 @@ class GenericReplayProjectile:
 class ProjectileReplayZoneMode(GameMode):
     def __init__(self):
         super().__init__()
+        self.name = "Projectile Replay Zone"
+        self.description = "A hazard zone where any projectile that passes through it has its trajectory recorded and periodically replayed for the next 15 seconds, creating a dense bullet-hell area."
         self.initialized = False
 
     def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
