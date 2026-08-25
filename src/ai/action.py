@@ -26025,6 +26025,15 @@ class Action:
                 if hasattr(self.world, "add_event"):
                     self.world.add_event("rebound_boost_activate", {"id": getattr(self.ball, "id", None)})
 
+            if getattr(self.ball, "trait", "") == "kinetic_charge":
+                charge = getattr(self.ball, "kinetic_charge", 0)
+                if charge < 3:
+                    self.ball.kinetic_charge = charge + 1
+                    if self.ball.kinetic_charge >= 3 and not getattr(self.ball, "kinetic_charge_ready", False):
+                        self.ball.kinetic_charge_ready = True
+                        if hasattr(self.world, "add_event"):
+                            self.world.add_event("visual_effect", {"type": "kinetic_charge_ready", "x": self.ball.x, "y": self.ball.y})
+
         return bounced
 
     def _resolve_collisions(self) -> bool:
@@ -26185,6 +26194,36 @@ class Action:
                 else:
                     self.ball.x += nx * overlap * knockback_multiplier
                     self.ball.y += ny * overlap * knockback_multiplier
+
+                # Handle kinetic_charge trait
+                if getattr(self.ball, "kinetic_charge_ready", False) and getattr(other, "team", None) != getattr(self.ball, "team", None):
+                    self.ball.kinetic_charge = 0
+                    self.ball.kinetic_charge_ready = False
+
+                    shockwave_radius = 200.0
+                    shockwave_force = 1000.0
+
+                    nearby_all = []
+                    if hasattr(self.world, "balls"): nearby_all.extend(self.world.balls)
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"): nearby_all.extend(self.world.arena.hazards)
+
+                    for entity in nearby_all:
+                        if entity is self.ball: continue
+                        if getattr(entity, "team", None) == getattr(self.ball, "team", None) and hasattr(entity, "team"): continue
+
+                        dx_shock = entity.x - self.ball.x
+                        dy_shock = entity.y - self.ball.y
+                        dist_shock = math.sqrt(dx_shock**2 + dy_shock**2)
+
+                        if dist_shock < shockwave_radius and dist_shock > 0.0001:
+                            nx_shock = dx_shock / dist_shock
+                            ny_shock = dy_shock / dist_shock
+
+                            if hasattr(entity, "vx"): entity.vx += nx_shock * shockwave_force
+                            if hasattr(entity, "vy"): entity.vy += ny_shock * shockwave_force
+
+                    if hasattr(self.world, "add_event"):
+                        self.world.add_event("visual_effect", {"type": "kinetic_shockwave", "x": self.ball.x, "y": self.ball.y, "radius": shockwave_radius})
 
                 # Handle kinetic_absorber hazard collision
                 if getattr(other, "kind", "") == "kinetic_absorber":

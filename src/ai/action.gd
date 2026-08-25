@@ -50319,6 +50319,49 @@ func _clamp_position() -> bool:
                 if "id" in self.ball: id_val = self.ball.id
                 self.world.add_event("rebound_boost_activate", {"id": id_val})
 
+        var trait_val = ""
+        if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("trait"):
+            trait_val = str(self.ball["trait"])
+        elif typeof(self.ball) == TYPE_OBJECT and "trait" in self.ball:
+            trait_val = str(self.ball.trait)
+
+        if trait_val == "kinetic_charge":
+            var charge = 0
+            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("kinetic_charge"):
+                charge = int(self.ball["kinetic_charge"])
+            elif typeof(self.ball) == TYPE_OBJECT and "kinetic_charge" in self.ball:
+                charge = int(self.ball.kinetic_charge)
+
+            if charge < 3:
+                charge += 1
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["kinetic_charge"] = charge
+                elif typeof(self.ball) == TYPE_OBJECT:
+                    self.ball.kinetic_charge = charge
+
+                var is_ready = false
+                if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("kinetic_charge_ready"):
+                    is_ready = bool(self.ball["kinetic_charge_ready"])
+                elif typeof(self.ball) == TYPE_OBJECT and "kinetic_charge_ready" in self.ball:
+                    is_ready = bool(self.ball.kinetic_charge_ready)
+
+                if charge >= 3 and not is_ready:
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["kinetic_charge_ready"] = true
+                    elif typeof(self.ball) == TYPE_OBJECT:
+                        self.ball.kinetic_charge_ready = true
+
+                    if self.world != null and self.world.has_method("add_event"):
+                        var bx = 0.0
+                        var by = 0.0
+                        if typeof(self.ball) == TYPE_DICTIONARY:
+                            bx = self.ball.get("x", 0.0)
+                            by = self.ball.get("y", 0.0)
+                        elif typeof(self.ball) == TYPE_OBJECT:
+                            bx = self.ball.x if "x" in self.ball else 0.0
+                            by = self.ball.y if "y" in self.ball else 0.0
+                        self.world.add_event("visual_effect", {"type": "kinetic_charge_ready", "x": bx, "y": by})
+
     return bounced
 
 func _resolve_collisions() -> bool:
@@ -50762,6 +50805,88 @@ func _resolve_collisions() -> bool:
 
             self.ball.x += nx * overlap * knockback_multiplier
             self.ball.y += ny * overlap * knockback_multiplier
+
+            # Handle kinetic_charge trait
+            var trait_val_rc = ""
+            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("trait"):
+                trait_val_rc = str(self.ball["trait"])
+            elif typeof(self.ball) == TYPE_OBJECT and "trait" in self.ball:
+                trait_val_rc = str(self.ball.trait)
+
+            var is_ready = false
+            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("kinetic_charge_ready"):
+                is_ready = bool(self.ball["kinetic_charge_ready"])
+            elif typeof(self.ball) == TYPE_OBJECT and "kinetic_charge_ready" in self.ball:
+                is_ready = bool(self.ball.kinetic_charge_ready)
+
+            var b_team_rc = null
+            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"):
+                b_team_rc = self.ball["team"]
+            elif typeof(self.ball) == TYPE_OBJECT and "team" in self.ball:
+                b_team_rc = self.ball.team
+
+            var o_team_rc = null
+            if typeof(other) == TYPE_DICTIONARY and other.has("team"):
+                o_team_rc = other["team"]
+            elif typeof(other) == TYPE_OBJECT and "team" in other:
+                o_team_rc = other.team
+
+            if is_ready and o_team_rc != null and b_team_rc != null and o_team_rc != b_team_rc:
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["kinetic_charge"] = 0
+                    self.ball["kinetic_charge_ready"] = false
+                elif typeof(self.ball) == TYPE_OBJECT:
+                    self.ball.kinetic_charge = 0
+                    self.ball.kinetic_charge_ready = false
+
+                var shockwave_radius = 200.0
+                var shockwave_force = 1000.0
+
+                var nearby_all = []
+                if self.world != null:
+                    if typeof(self.world) == TYPE_DICTIONARY and self.world.has("balls"):
+                        nearby_all.append_array(self.world["balls"])
+                    elif typeof(self.world) == TYPE_OBJECT and "balls" in self.world:
+                        nearby_all.append_array(self.world.balls)
+
+                    var h_list = []
+                    if typeof(self.world) == TYPE_DICTIONARY and self.world.has("arena") and typeof(self.world["arena"]) == TYPE_DICTIONARY and self.world["arena"].has("hazards"):
+                        h_list = self.world["arena"]["hazards"]
+                    elif typeof(self.world) == TYPE_OBJECT and "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT and "hazards" in self.world.arena:
+                        h_list = self.world.arena.hazards
+                    nearby_all.append_array(h_list)
+
+                var bx_rc = self.ball.get("x", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.x if "x" in self.ball else 0.0)
+                var by_rc = self.ball.get("y", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.y if "y" in self.ball else 0.0)
+
+                for entity in nearby_all:
+                    if entity == self.ball: continue
+                    var ent_team = null
+                    if typeof(entity) == TYPE_DICTIONARY and entity.has("team"): ent_team = entity["team"]
+                    elif typeof(entity) == TYPE_OBJECT and "team" in entity: ent_team = entity.team
+
+                    if ent_team != null and ent_team == b_team_rc: continue
+
+                    var ex_rc = entity.get("x", 0.0) if typeof(entity) == TYPE_DICTIONARY else (entity.x if "x" in entity else 0.0)
+                    var ey_rc = entity.get("y", 0.0) if typeof(entity) == TYPE_DICTIONARY else (entity.y if "y" in entity else 0.0)
+
+                    var dx_shock = ex_rc - bx_rc
+                    var dy_shock = ey_rc - by_rc
+                    var dist_shock = sqrt(dx_shock * dx_shock + dy_shock * dy_shock)
+
+                    if dist_shock < shockwave_radius and dist_shock > 0.0001:
+                        var nx_shock = dx_shock / dist_shock
+                        var ny_shock = dy_shock / dist_shock
+
+                        if typeof(entity) == TYPE_DICTIONARY:
+                            if entity.has("vx"): entity["vx"] += nx_shock * shockwave_force
+                            if entity.has("vy"): entity["vy"] += ny_shock * shockwave_force
+                        elif typeof(entity) == TYPE_OBJECT:
+                            if "vx" in entity: entity.vx += nx_shock * shockwave_force
+                            if "vy" in entity: entity.vy += ny_shock * shockwave_force
+
+                if self.world != null and self.world.has_method("add_event"):
+                    self.world.add_event("visual_effect", {"type": "kinetic_shockwave", "x": bx_rc, "y": by_rc, "radius": shockwave_radius})
 
 
             # Aura Clash Check
