@@ -58092,3 +58092,84 @@ class InvertedCloneHazardMode(GameMode):
                     b.clone_duration = dur
 
 GAME_MODES['inverted_clone_hazard'] = InvertedCloneHazardMode()
+
+
+
+class InfectionAuraMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Infection Aura"
+        self.description = "One random player starts with an Infection aura. Any player who comes too close for more than 2 seconds gets infected as well. Infected players take low continuous damage over time."
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        import random
+        valid_balls = [b for b in balls if getattr(b, "ball_type", "") != "spectator"]
+        if valid_balls:
+            initial_infected = random.choice(valid_balls)
+            if isinstance(initial_infected, dict):
+                initial_infected["is_infected"] = True
+            else:
+                setattr(initial_infected, "is_infected", True)
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        infected_balls = []
+        uninfected_balls = []
+
+        for b in balls:
+            alive = b.get("alive", False) if isinstance(b, dict) else getattr(b, "alive", False)
+            if not alive:
+                continue
+
+            is_infected = b.get("is_infected", False) if isinstance(b, dict) else getattr(b, "is_infected", False)
+            if is_infected:
+                infected_balls.append(b)
+                hp = b.get("hp", 0.0) if isinstance(b, dict) else getattr(b, "hp", 0.0)
+                new_hp = max(0.0, hp - 5.0 * delta)
+                if isinstance(b, dict):
+                    b["hp"] = new_hp
+                    if new_hp <= 0:
+                        b["alive"] = False
+                else:
+                    b.hp = new_hp
+                    if new_hp <= 0:
+                        b.alive = False
+            else:
+                uninfected_balls.append(b)
+
+        for uninfected in uninfected_balls:
+            ux = uninfected.get("x", 0.0) if isinstance(uninfected, dict) else getattr(uninfected, "x", 0.0)
+            uy = uninfected.get("y", 0.0) if isinstance(uninfected, dict) else getattr(uninfected, "y", 0.0)
+            urad = uninfected.get("radius", 15.0) if isinstance(uninfected, dict) else getattr(uninfected, "radius", 15.0)
+
+            getting_infected = False
+            for infected in infected_balls:
+                ix = infected.get("x", 0.0) if isinstance(infected, dict) else getattr(infected, "x", 0.0)
+                iy = infected.get("y", 0.0) if isinstance(infected, dict) else getattr(infected, "y", 0.0)
+                irad = infected.get("radius", 15.0) if isinstance(infected, dict) else getattr(infected, "radius", 15.0)
+
+                dist_sq = (ux - ix)**2 + (uy - iy)**2
+                aura_radius = irad + urad + 100.0
+                if dist_sq <= aura_radius**2:
+                    getting_infected = True
+                    break
+
+            timer = uninfected.get("infection_exposure_timer", 0.0) if isinstance(uninfected, dict) else getattr(uninfected, "infection_exposure_timer", 0.0)
+            if getting_infected:
+                timer += delta
+                if timer >= 2.0:
+                    if isinstance(uninfected, dict):
+                        uninfected["is_infected"] = True
+                    else:
+                        setattr(uninfected, "is_infected", True)
+            else:
+                timer = max(0.0, timer - delta)
+
+            if isinstance(uninfected, dict):
+                uninfected["infection_exposure_timer"] = timer
+            else:
+                setattr(uninfected, "infection_exposure_timer", timer)
+
+GAME_MODES["infection_aura"] = InfectionAuraMode()
