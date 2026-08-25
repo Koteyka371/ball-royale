@@ -91349,3 +91349,228 @@ class InfectionAuraMode extends GameMode:
 					uninfected.set_meta("infection_exposure_timer", timer)
 
 GAME_MODES["infection_aura"] = InfectionAuraMode.new()
+
+
+class DeepWaterMode extends GameMode:
+	var whirlpool_timer = 0.0
+	var debris_timer = 0.0
+
+	func _init():
+		name = "Deep Water"
+		description = "The entire arena is submerged in deep water, significantly reducing movement speed and perception for non-aquatic balls. Periodically, giant whirlpools spawn, dragging players into the center. Players must find buoyant floating debris to regain normal speed and stamina."
+		whirlpool_timer = 0.0
+		debris_timer = 0.0
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		whirlpool_timer = 5.0
+		debris_timer = 2.0
+
+		if world != null and "arena" in world and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY and not "hazards" in world.arena:
+				world.arena["hazards"] = []
+			elif typeof(world.arena) == TYPE_OBJECT and not "hazards" in world.arena:
+				world.arena.hazards = []
+
+	func tick(world, balls, delta):
+		super.tick(world, balls, delta)
+
+		if world == null or not "arena" in world or world.arena == null:
+			return
+
+		whirlpool_timer -= delta
+		debris_timer -= delta
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if typeof(world.arena) == TYPE_DICTIONARY:
+			if "width" in world.arena: arena_width = float(world.arena.width)
+			if "height" in world.arena: arena_height = float(world.arena.height)
+		elif typeof(world.arena) == TYPE_OBJECT:
+			if "width" in world.arena: arena_width = float(world.arena.width)
+			if "height" in world.arena: arena_height = float(world.arena.height)
+
+		var hazards = []
+		if typeof(world.arena) == TYPE_DICTIONARY and "hazards" in world.arena:
+			hazards = world.arena.hazards
+		elif typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+			hazards = world.arena.hazards
+
+		if whirlpool_timer <= 0:
+			var h = {
+				"id": randi() % 1000000,
+				"kind": "giant_whirlpool",
+				"x": randf() * arena_width,
+				"y": randf() * arena_height,
+				"radius": 200.0,
+				"life": 10.0,
+				"active": true,
+				"damage": 0.0
+			}
+			hazards.append(h)
+			whirlpool_timer = 15.0
+
+		if debris_timer <= 0:
+			for _i in range(3):
+				var h = {
+					"id": randi() % 1000000,
+					"kind": "floating_debris",
+					"x": randf() * arena_width,
+					"y": randf() * arena_height,
+					"radius": 40.0,
+					"life": 15.0,
+					"active": true,
+					"damage": 0.0
+				}
+				hazards.append(h)
+			debris_timer = 10.0
+
+		var active_hazards = []
+		for h in hazards:
+			var kind = ""
+			if typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h.kind
+			elif typeof(h) == TYPE_OBJECT and "kind" in h: kind = h.kind
+
+			if kind == "giant_whirlpool" or kind == "floating_debris":
+				var life = 0.0
+				if typeof(h) == TYPE_DICTIONARY and h.has("life"): life = float(h.life)
+				elif typeof(h) == TYPE_OBJECT and "life" in h: life = float(h.life)
+
+				life -= delta
+
+				if typeof(h) == TYPE_DICTIONARY: h["life"] = life
+				elif typeof(h) == TYPE_OBJECT and "life" in h: h.life = life
+
+				if life > 0:
+					active_hazards.append(h)
+			else:
+				active_hazards.append(h)
+
+		if typeof(world.arena) == TYPE_DICTIONARY:
+			world.arena["hazards"] = active_hazards
+		elif typeof(world.arena) == TYPE_OBJECT:
+			world.arena.hazards = active_hazards
+
+		hazards = active_hazards
+
+		for b in balls:
+			var alive = true
+			if typeof(b) == TYPE_DICTIONARY and b.has("alive"): alive = b.alive
+			elif typeof(b) == TYPE_OBJECT and "alive" in b: alive = b.alive
+
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY and b.has("ball_type"): b_type = b.ball_type
+			elif typeof(b) == TYPE_OBJECT and "ball_type" in b: b_type = b.ball_type
+
+			if not alive or b_type == "spectator":
+				continue
+
+			var bx = 0.0
+			var by = 0.0
+			var bradius = 15.0
+			var buff_timer = 0.0
+
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.has("x"): bx = float(b.x)
+				if b.has("y"): by = float(b.y)
+				if b.has("radius"): bradius = float(b.radius)
+				if b.has("buoyant_buff_timer"): buff_timer = float(b.buoyant_buff_timer)
+			elif typeof(b) == TYPE_OBJECT:
+				if "x" in b: bx = float(b.x)
+				if "y" in b: by = float(b.y)
+				if "radius" in b: bradius = float(b.radius)
+				if "buoyant_buff_timer" in b: buff_timer = float(b.buoyant_buff_timer)
+
+			if buff_timer > 0:
+				buff_timer -= delta
+				if typeof(b) == TYPE_DICTIONARY: b["buoyant_buff_timer"] = buff_timer
+				elif typeof(b) == TYPE_OBJECT and "buoyant_buff_timer" in b: b.buoyant_buff_timer = buff_timer
+
+			for h in hazards:
+				var h_kind = ""
+				var hx = 0.0
+				var hy = 0.0
+				var hradius = 0.0
+
+				if typeof(h) == TYPE_DICTIONARY:
+					if h.has("kind"): h_kind = h.kind
+					if h.has("x"): hx = float(h.x)
+					if h.has("y"): hy = float(h.y)
+					if h.has("radius"): hradius = float(h.radius)
+				elif typeof(h) == TYPE_OBJECT:
+					if "kind" in h: h_kind = h.kind
+					if "x" in h: hx = float(h.x)
+					if "y" in h: hy = float(h.y)
+					if "radius" in h: hradius = float(h.radius)
+
+				var dx = hx - bx
+				var dy = hy - by
+				var dist = sqrt(dx*dx + dy*dy)
+
+				if dist < hradius + bradius:
+					if h_kind == "floating_debris":
+						if typeof(b) == TYPE_DICTIONARY: b["buoyant_buff_timer"] = 2.0
+						elif typeof(b) == TYPE_OBJECT and "buoyant_buff_timer" in b: b.buoyant_buff_timer = 2.0
+					elif h_kind == "giant_whirlpool":
+						if dist > 10.0:
+							var pull_force = 50.0
+							var move_x = (dx / dist) * pull_force * delta
+							var move_y = (dy / dist) * pull_force * delta
+							if typeof(b) == TYPE_DICTIONARY:
+								if b.has("x"): b["x"] += move_x
+								if b.has("y"): b["y"] += move_y
+							elif typeof(b) == TYPE_OBJECT:
+								if "x" in b: b.x += move_x
+								if "y" in b: b.y += move_y
+
+			var traits = []
+			var has_aquatic = false
+			if typeof(b) == TYPE_DICTIONARY and b.has("traits"): traits = b.traits
+			elif typeof(b) == TYPE_OBJECT and "traits" in b: traits = b.traits
+			if "aquatic" in traits: has_aquatic = true
+
+			var is_buffed = false
+			if typeof(b) == TYPE_DICTIONARY and b.has("buoyant_buff_timer") and float(b.buoyant_buff_timer) > 0: is_buffed = true
+			elif typeof(b) == TYPE_OBJECT and "buoyant_buff_timer" in b and float(b.buoyant_buff_timer) > 0: is_buffed = true
+
+			var base_speed = 100.0
+			var base_perception = 200.0
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.has("base_speed"): base_speed = float(b.base_speed)
+				if b.has("base_perception_radius"): base_perception = float(b.base_perception_radius)
+			elif typeof(b) == TYPE_OBJECT:
+				if "base_speed" in b: base_speed = float(b.base_speed)
+				if "base_perception_radius" in b: base_perception = float(b.base_perception_radius)
+
+			if is_buffed or has_aquatic:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["speed"] = base_speed
+					b["perception_radius"] = base_perception
+				elif typeof(b) == TYPE_OBJECT:
+					if "speed" in b: b.speed = base_speed
+					if "perception_radius" in b: b.perception_radius = base_perception
+
+				if is_buffed:
+					var stamina = 0.0
+					var max_stamina = 100.0
+					if typeof(b) == TYPE_DICTIONARY:
+						if b.has("stamina"): stamina = float(b.stamina)
+						if b.has("max_stamina"): max_stamina = float(b.max_stamina)
+					elif typeof(b) == TYPE_OBJECT:
+						if "stamina" in b: stamina = float(b.stamina)
+						if "max_stamina" in b: max_stamina = float(b.max_stamina)
+
+					var new_stamina = min(max_stamina, stamina + 20.0 * delta)
+					if typeof(b) == TYPE_DICTIONARY:
+						b["stamina"] = new_stamina
+					elif typeof(b) == TYPE_OBJECT and "stamina" in b:
+						b.stamina = new_stamina
+			else:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["speed"] = base_speed * 0.5
+					b["perception_radius"] = base_perception * 0.5
+				elif typeof(b) == TYPE_OBJECT:
+					if "speed" in b: b.speed = base_speed * 0.5
+					if "perception_radius" in b: b.perception_radius = base_perception * 0.5
+
+GAME_MODES["deep_water"] = DeepWaterMode.new()
