@@ -65163,6 +65163,50 @@ class RandomTeleportEventMode extends GameMode:
                         "message": "Two players are about to swap positions!"
                     })
 
+class FatigueAuraMode extends GameMode:
+	var aura_x = 500.0
+	var aura_y = 500.0
+	var aura_radius = 200.0
+	var aura_angle = 0.0
+	var aura_speed = 0.5
+	var orbit_radius = 250.0
+	var drain_rate = 30.0
+
+	func _init() -> void:
+		name = "Fatigue Aura"
+		description = "A slow-moving aura circles the arena. Any player caught inside has their stamina slowly drained, forcing them to rely on base movement speed."
+
+	func tick(world, balls, delta: float = 0.016) -> void:
+		aura_angle += aura_speed * delta
+		aura_x = 500.0 + orbit_radius * cos(aura_angle)
+		aura_y = 500.0 + orbit_radius * sin(aura_angle)
+
+		for b in balls:
+			var b_x = 0.0
+			var b_y = 0.0
+			var b_r = 20.0
+			var is_dict = typeof(b) == TYPE_DICTIONARY
+
+			if is_dict:
+				b_x = b.get("x", 0.0)
+				b_y = b.get("y", 0.0)
+				b_r = b.get("radius", 20.0)
+			else:
+				b_x = b.x
+				b_y = b.y
+				b_r = b.radius
+
+			var dx = b_x - aura_x
+			var dy = b_y - aura_y
+			var dist_sq = dx*dx + dy*dy
+			var total_r = aura_radius + b_r
+
+			if dist_sq < total_r * total_r:
+				if is_dict and b.has("stamina"):
+					b["stamina"] = max(0.0, b["stamina"] - drain_rate * delta)
+				elif not is_dict and "stamina" in b:
+					b.stamina = max(0.0, b.stamina - drain_rate * delta)
+
 var GAME_MODES = {
     'random_teleport_event': RandomTeleportEventMode.new(),
     "cursed_relics": CursedRelicsMode.new(),
@@ -65885,6 +65929,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"volatile_clones": VolatileClonesMode.new(),
 	"supernova": SupernovaMode.new(),
 	"echolocation": EcholocationMode.new(),
+	"fatigue_aura": FatigueAuraMode.new(),
 	"body_swap": BodySwapMode.new(),
 	"hazard_billiards": HazardBilliardsMode.new(),
 	"time_rewind": TimeRewindMode.new(),
