@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2060] Hive Defense Structure — *2026-08-25 09:33:51 UTC*
+
+New team-based game mode Hive Defense
+
+---
+
 ## [idea-2088] Stamina Siphon Aura — *2026-08-25 03:25:08 UTC*
 
 An aura that drains a small amount of stamina from nearby enemies over time and grants it to the user.
