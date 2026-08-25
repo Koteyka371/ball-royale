@@ -40476,6 +40476,34 @@ class PhantomGraveyardMode(GameMode):
                                     b.alive = False
 
 
+class FatigueAuraMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Fatigue Aura"
+        self.description = "A slow-moving aura circles the arena. Any player caught inside has their stamina slowly drained, forcing them to rely on base movement speed."
+        self.aura_x = 500.0
+        self.aura_y = 500.0
+        self.aura_radius = 200.0
+        self.aura_angle = 0.0
+        self.aura_speed = 0.5
+        self.orbit_radius = 250.0
+        self.drain_rate = 30.0
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        self.aura_angle += self.aura_speed * delta
+        self.aura_x = 500.0 + self.orbit_radius * math.cos(self.aura_angle)
+        self.aura_y = 500.0 + self.orbit_radius * math.sin(self.aura_angle)
+
+        for b in balls:
+            bx = getattr(b, 'x', 0.0)
+            by = getattr(b, 'y', 0.0)
+            br = getattr(b, 'radius', 20.0)
+
+            dist_sq = (bx - self.aura_x)**2 + (by - self.aura_y)**2
+            if dist_sq < (self.aura_radius + br)**2:
+                if hasattr(b, 'stamina'):
+                    b.stamina = max(0.0, b.stamina - self.drain_rate * delta)
+
 GAME_MODES = {
     'phantom_graveyard': PhantomGraveyardMode(),
     'random_teleport_event': RandomTeleportEventMode(),
@@ -40756,6 +40784,7 @@ GAME_MODES = {
     "volatile_clones": VolatileClonesMode(),
     "supernova": SupernovaMode(),
     "echolocation": EcholocationMode(),
+    "fatigue_aura": FatigueAuraMode(),
     "body_swap": BodySwapMode(),
     "hazard_billiards": HazardBilliardsMode(),
     "time_rewind": TimeRewindMode(),
