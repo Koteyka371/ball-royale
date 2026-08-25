@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2093] Time Loop Zone — *2026-08-25 09:50:04 UTC*
+
+A hazard zone where any projectile that passes through it has its trajectory recorded and periodically replayed for the next 15 seconds, creating a dense bullet-hell area.
+
+---
+
 ## [idea-2102] Infected Shadows — *2026-08-25 09:49:58 UTC*
 
 One random player starts with an 'Infection' aura. Any player who comes too close for more than 2 seconds gets infected as well. Infected players take low continuous damage over time, and the last surviving player wins.
