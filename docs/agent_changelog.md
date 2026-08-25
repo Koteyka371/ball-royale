@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2105] Meteor Strike Event — *2026-08-25 20:20:44 UTC*
+
+An arena-wide event where meteors fall from the sky, dealing massive damage to anyone caught in the blast radius.
+
+---
+
 ## [idea-2103] Abyssal Deep Biome Mode — *2026-08-25 16:45:41 UTC*
 
 A new mode where the entire arena is submerged in deep water, significantly reducing movement speed and perception for non-aquatic balls. Periodically, giant whirlpools spawn, dragging players into the center. Players must find buoyant floating debris to regain normal speed and stamina.
