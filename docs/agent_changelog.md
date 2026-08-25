@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2094] Health Drain Artifact — *2026-08-25 03:07:33 UTC*
+
+An artifact that, when equipped, slowly drains the user's health but significantly boosts their movement speed and damage output.
+
+---
+
 ## [idea-2087] Kinetic Accumulator Trait — *2026-08-25 01:01:24 UTC*
 
 A ball trait where bouncing off walls builds up a 'kinetic charge'. Once fully charged, the ball's next direct collision with an enemy unleashes an explosive shockwave that knocks back all nearby entities.
