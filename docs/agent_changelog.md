@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2088] Stamina Siphon Aura — *2026-08-25 03:25:08 UTC*
+
+An aura that drains a small amount of stamina from nearby enemies over time and grants it to the user.
+
+---
+
 ## [idea-2094] Health Drain Artifact — *2026-08-25 03:07:33 UTC*
 
 An artifact that, when equipped, slowly drains the user's health but significantly boosts their movement speed and damage output.
