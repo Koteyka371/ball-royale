@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2102] Infected Shadows — *2026-08-25 09:49:58 UTC*
+
+One random player starts with an 'Infection' aura. Any player who comes too close for more than 2 seconds gets infected as well. Infected players take low continuous damage over time, and the last surviving player wins.
+
+---
+
 ## [idea-2060] Hive Defense Structure — *2026-08-25 09:33:51 UTC*
 
 New team-based game mode Hive Defense
