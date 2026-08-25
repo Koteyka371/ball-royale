@@ -34199,6 +34199,37 @@ func _collect_booster(delta: float):
                     world.boosters.erase(b)
                 if "arena" in world and "hazards" in world.arena and b in world.arena.hazards:
                     world.arena.hazards.erase(b)
+            elif b_kind == "floating_debris" and b_active:
+                var dx = get_bx(b) - my_x
+                var dy = get_by(b) - my_y
+                var b_radius = 15.0
+                if typeof(b) == TYPE_DICTIONARY and b.has("radius"): b_radius = b.radius
+                elif typeof(b) == TYPE_OBJECT and "radius" in b: b_radius = b.radius
+                var dist = sqrt(dx*dx + dy*dy)
+                if dist <= my_radius + b_radius + 5.0:
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["has_floating_debris"] = true
+                        self.ball["floating_debris_timer"] = 10.0
+                        if self.ball.has("stamina"):
+                            self.ball["stamina"] = self.ball.get("max_stamina", 100.0)
+                    else:
+                        if "has_floating_debris" in self.ball: self.ball.has_floating_debris = true
+                        elif self.ball.has_method("set_meta"): self.ball.set_meta("has_floating_debris", true)
+                        if "floating_debris_timer" in self.ball: self.ball.floating_debris_timer = 10.0
+                        elif self.ball.has_method("set_meta"): self.ball.set_meta("floating_debris_timer", 10.0)
+                        if "stamina" in self.ball and "max_stamina" in self.ball:
+                            self.ball.stamina = self.ball.max_stamina
+
+                    if typeof(b) == TYPE_DICTIONARY: b["active"] = false
+                    else:
+                        if "active" in b: b.active = false
+                        elif b.has_method("set_meta"): b.set_meta("active", false)
+
+                    if self.world != null and "boosters" in self.world and typeof(self.world.boosters) == TYPE_ARRAY:
+                        self.world.boosters.erase(b)
+                    if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena and typeof(self.world.arena.hazards) == TYPE_ARRAY:
+                        self.world.arena.hazards.erase(b)
+
             elif b_kind == "ethereal_tether_booster" and b_active:
                 var b_x = 0.0
                 var b_y = 0.0

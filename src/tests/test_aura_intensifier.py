@@ -43,6 +43,7 @@ def test_aura_intensifier_field():
     assert len(mode.zones) > 0
 
     # Force one zone to a specific location for testing
+    for z in mode.zones: z.active = False
     zone = mode.zones[0]
     zone.x = 500.0
     zone.y = 500.0
