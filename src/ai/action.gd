@@ -4000,6 +4000,112 @@ func _init(ball_ref, world_ref):
 
 func execute(strategy: String, delta: float):
 
+	if world != null and "arena" in world and world.arena != null and typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+		var traits = []
+		if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("traits"):
+			traits = self.ball.traits
+		elif typeof(self.ball) == TYPE_OBJECT and "traits" in self.ball:
+			traits = self.ball.traits
+
+		var hazards_to_remove = []
+
+		for hazard in world.arena.hazards:
+			var active = true
+			if typeof(hazard) == TYPE_DICTIONARY and hazard.has("active"): active = hazard.active
+			elif typeof(hazard) == TYPE_OBJECT and "active" in hazard: active = hazard.active
+
+			if not active:
+				continue
+
+			var hx = 0.0
+			var hy = 0.0
+			var hradius = 60.0
+			var hkind = ""
+
+			if typeof(hazard) == TYPE_DICTIONARY:
+				if hazard.has("x"): hx = float(hazard.x)
+				if hazard.has("y"): hy = float(hazard.y)
+				if hazard.has("radius"): hradius = float(hazard.radius)
+				if hazard.has("kind"): hkind = str(hazard.kind)
+			elif typeof(hazard) == TYPE_OBJECT:
+				if "x" in hazard: hx = float(hazard.x)
+				if "y" in hazard: hy = float(hazard.y)
+				if "radius" in hazard: hradius = float(hazard.radius)
+				if "kind" in hazard: hkind = str(hazard.kind)
+
+			var bx = 0.0
+			var by = 0.0
+			var bradius = 15.0
+			if typeof(self.ball) == TYPE_DICTIONARY:
+				if self.ball.has("x"): bx = float(self.ball.x)
+				if self.ball.has("y"): by = float(self.ball.y)
+				if self.ball.has("radius"): bradius = float(self.ball.radius)
+			elif typeof(self.ball) == TYPE_OBJECT:
+				if "x" in self.ball: bx = float(self.ball.x)
+				if "y" in self.ball: by = float(self.ball.y)
+				if "radius" in self.ball: bradius = float(self.ball.radius)
+
+			var dx = hx - bx
+			var dy = hy - by
+			var dist_sq = dx*dx + dy*dy
+
+			if dist_sq < (hradius + bradius) * (hradius + bradius):
+				if traits.has("fire") and hkind == "poison_cloud":
+					hazards_to_remove.append(hazard)
+
+					var explosion_radius = hradius * 2.5
+					var explosion_damage = 80.0
+
+					if "balls" in world:
+						for b in world.balls:
+							var balive = true
+							if typeof(b) == TYPE_DICTIONARY and b.has("alive"): balive = b.alive
+							elif typeof(b) == TYPE_OBJECT and "alive" in b: balive = b.alive
+
+							if balive:
+								var b_x = 0.0
+								var b_y = 0.0
+								if typeof(b) == TYPE_DICTIONARY:
+									if b.has("x"): b_x = float(b.x)
+									if b.has("y"): b_y = float(b.y)
+								elif typeof(b) == TYPE_OBJECT:
+									if "x" in b: b_x = float(b.x)
+									if "y" in b: b_y = float(b.y)
+
+								var bdx = b_x - hx
+								var bdy = b_y - hy
+								var bdist_sq = bdx*bdx + bdy*bdy
+
+								if bdist_sq <= explosion_radius * explosion_radius:
+									var btraits = []
+									if typeof(b) == TYPE_DICTIONARY and b.has("traits"): btraits = b.traits
+									elif typeof(b) == TYPE_OBJECT and "traits" in b: btraits = b.traits
+
+									if btraits.has("earth"):
+										if typeof(b) == TYPE_DICTIONARY:
+											if b.has("shield"): b["shield"] = float(b.shield) + explosion_damage
+											else: b["shield"] = explosion_damage
+										elif typeof(b) == TYPE_OBJECT:
+											if "shield" in b: b.shield = float(b.shield) + explosion_damage
+									else:
+										if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+											b.take_damage(explosion_damage)
+										else:
+											if typeof(b) == TYPE_DICTIONARY and b.has("hp"):
+												b["hp"] = float(b.hp) - explosion_damage
+												if float(b.hp) <= 0: b["alive"] = false
+											elif typeof(b) == TYPE_OBJECT and "hp" in b:
+												b.hp = float(b.hp) - explosion_damage
+												if float(b.hp) <= 0: b.alive = false
+
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						world.add_event("combo_explosion", {"x": hx, "y": hy, "radius": explosion_radius})
+
+		for h in hazards_to_remove:
+			if typeof(world.arena.hazards) == TYPE_ARRAY:
+				world.arena.hazards.erase(h)
+
+
 	var has_blood_pact = false
 	if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("has_blood_pact_artifact"): has_blood_pact = self.ball.has_blood_pact_artifact
 	elif typeof(self.ball) == TYPE_OBJECT and "has_blood_pact_artifact" in self.ball: has_blood_pact = self.ball.has_blood_pact_artifact
