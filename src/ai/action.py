@@ -2150,6 +2150,57 @@ class Action:
 
     def execute(self, strategy: str, delta: float) -> None:
 
+        # Combo potentials logic for hazard traits
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            traits = getattr(self.ball, "traits", [])
+            hazards_to_remove = []
+
+            for hazard in self.world.arena.hazards:
+                if not getattr(hazard, "active", True):
+                    continue
+
+                dx = getattr(hazard, "x", 0.0) - self.ball.x
+                dy = getattr(hazard, "y", 0.0) - self.ball.y
+                dist_sq = dx*dx + dy*dy
+                hradius = getattr(hazard, "radius", 60.0)
+                bradius = getattr(self.ball, "radius", 15.0)
+
+                if dist_sq < (hradius + bradius)**2:
+                    # 'fire' unit ignites 'poison' clouds
+                    if "fire" in traits and hazard.kind == "poison_cloud":
+                        hazards_to_remove.append(hazard)
+
+                        # Trigger explosion
+                        explosion_radius = hradius * 2.5
+                        explosion_damage = 80.0
+
+                        if hasattr(self.world, "balls"):
+                            for b in self.world.balls:
+                                if getattr(b, "alive", True):
+                                    bdx = b.x - hazard.x
+                                    bdy = b.y - hazard.y
+                                    bdist_sq = bdx*bdx + bdy*bdy
+                                    if bdist_sq <= explosion_radius**2:
+                                        # Check if unit inside has 'earth' trait to build barrier
+                                        btraits = getattr(b, "traits", [])
+                                        if "earth" in btraits:
+                                            b.shield = getattr(b, "shield", 0.0) + explosion_damage
+                                        else:
+                                            if hasattr(b, "take_damage"):
+                                                b.take_damage(explosion_damage)
+                                            elif hasattr(b, "hp"):
+                                                b.hp -= explosion_damage
+                                                if b.hp <= 0:
+                                                    b.alive = False
+
+                        if hasattr(self.world, "add_event"):
+                            self.world.add_event("combo_explosion", {"x": hazard.x, "y": hazard.y, "radius": explosion_radius})
+
+            for h in hazards_to_remove:
+                if h in self.world.arena.hazards:
+                    self.world.arena.hazards.remove(h)
+
+
         if getattr(self.ball, "has_blood_pact_artifact", False):
             if getattr(self.ball, "hp", 0.0) > 0.0:
                 drain = 3.0 * delta
