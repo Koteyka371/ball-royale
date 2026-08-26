@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2090] Bounty Hunter Tracking Contracts — *2026-08-26 03:04:09 UTC*
+
+Players can find 'Contract' items on the map. Activating them assigns a specific enemy player as their Bounty for 60 seconds, giving them a slight movement speed bonus when moving toward the target and dropping massive rewards upon a successful takedown.
+
+---
+
 ## [idea-2105] Meteor Strike Event — *2026-08-25 20:20:44 UTC*
 
 An arena-wide event where meteors fall from the sky, dealing massive damage to anyone caught in the blast radius.
