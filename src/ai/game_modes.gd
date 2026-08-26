@@ -91619,3 +91619,179 @@ class DeepWaterMode extends GameMode:
 					if "perception_radius" in b: b.perception_radius = base_perception * 0.5
 
 GAME_MODES["deep_water"] = DeepWaterMode.new()
+
+class SeasonalCycleMode extends GameMode:
+	var season_timer = 10.0
+	var current_season = 0 # 0=Spring, 1=Summer, 2=Autumn, 3=Winter
+	var seasons = ["Spring", "Summer", "Autumn", "Winter"]
+	var wind_dir_x = 1.0
+	var wind_dir_y = 0.5
+
+	func _init():
+		super._init()
+		self.name = "Seasonal Cycle"
+		self.description = "Cycles through Spring, Summer, Autumn, and Winter phases. Each season alters arena physics and buffs aligned balls."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		self.season_timer = 10.0
+		self.current_season = 0
+		var r_x = randf_range(-1.0, 1.0)
+		var r_y = randf_range(-1.0, 1.0)
+		var norm = sqrt(r_x*r_x + r_y*r_y)
+		if norm > 0:
+			self.wind_dir_x = r_x / norm
+			self.wind_dir_y = r_y / norm
+		else:
+			self.wind_dir_x = 1.0
+			self.wind_dir_y = 0.0
+
+	func get_aligned_traits(season_idx: int) -> Array:
+		if season_idx == 0:
+			return ["nature", "water", "healer", "spring"]
+		elif season_idx == 1:
+			return ["fire", "light", "paladin", "summer"]
+		elif season_idx == 2:
+			return ["wind", "earth", "rogue", "autumn"]
+		elif season_idx == 3:
+			return ["ice", "dark", "mage", "winter"]
+		return []
+
+	func tick(world, balls, delta = 0.016):
+		super.tick(world, balls, delta)
+
+		self.season_timer -= delta
+		if self.season_timer <= 0:
+			self.season_timer = 10.0
+			self.current_season = (self.current_season + 1) % 4
+			var r_x = randf_range(-1.0, 1.0)
+			var r_y = randf_range(-1.0, 1.0)
+			var norm = sqrt(r_x*r_x + r_y*r_y)
+			if norm > 0:
+				self.wind_dir_x = r_x / norm
+				self.wind_dir_y = r_y / norm
+			else:
+				self.wind_dir_x = 1.0
+				self.wind_dir_y = 0.0
+
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("season_change", {"season": self.seasons[self.current_season]})
+			elif typeof(world) == TYPE_DICTIONARY and world.has("add_event") and typeof(world["add_event"]) == TYPE_CALLABLE:
+				world["add_event"].call("season_change", {"season": self.seasons[self.current_season]})
+
+		var aligned_traits = self.get_aligned_traits(self.current_season)
+
+		for b in balls:
+			var is_alive = false
+			var b_type = ""
+			var traits = []
+
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.has("alive"): is_alive = b.alive
+				if b.has("ball_type"): b_type = b.ball_type
+				if b.has("traits"): traits = b.traits
+			elif typeof(b) == TYPE_OBJECT:
+				if "alive" in b: is_alive = b.alive
+				if "ball_type" in b: b_type = b.ball_type
+				if "traits" in b: traits = b.traits
+
+			if not is_alive or b_type == "spectator":
+				continue
+
+			var is_aligned = false
+			for t in aligned_traits:
+				if traits.has(t) or t == b_type:
+					is_aligned = true
+					break
+
+			var base_speed = 100.0
+			var base_max_speed = base_speed
+			var base_damage = 10.0
+
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.has("base_speed"): base_speed = float(b.base_speed)
+				if b.has("base_max_speed"): base_max_speed = float(b.base_max_speed)
+				elif b.has("base_speed"): base_max_speed = base_speed
+				if b.has("base_damage"): base_damage = float(b.base_damage)
+			elif typeof(b) == TYPE_OBJECT:
+				if "base_speed" in b: base_speed = float(b.base_speed)
+				if "base_max_speed" in b: base_max_speed = float(b.base_max_speed)
+				elif "base_speed" in b: base_max_speed = base_speed
+				if "base_damage" in b: base_damage = float(b.base_damage)
+
+			if is_aligned:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["speed"] = base_speed * 2.0
+					b["max_speed"] = base_max_speed * 2.0
+					b["damage"] = base_damage * 2.0
+				elif typeof(b) == TYPE_OBJECT:
+					if "speed" in b: b.speed = base_speed * 2.0
+					if "max_speed" in b: b.max_speed = base_max_speed * 2.0
+					if "damage" in b: b.damage = base_damage * 2.0
+			else:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["speed"] = base_speed
+					b["max_speed"] = base_max_speed
+					b["damage"] = base_damage
+				elif typeof(b) == TYPE_OBJECT:
+					if "speed" in b: b.speed = base_speed
+					if "max_speed" in b: b.max_speed = base_max_speed
+					if "damage" in b: b.damage = base_damage
+
+			if self.current_season == 0:
+				var attrs = ["dash_cooldown", "skill_timer", "action_cooldown"]
+				for attr in attrs:
+					var val = 0.0
+					if typeof(b) == TYPE_DICTIONARY and b.has(attr):
+						val = float(b[attr])
+					elif typeof(b) == TYPE_OBJECT and attr in b:
+						val = float(b.get(attr))
+
+					if val > 0:
+						val = max(0.0, val - delta * 2.0)
+						if typeof(b) == TYPE_DICTIONARY:
+							b[attr] = val
+						elif typeof(b) == TYPE_OBJECT:
+							b.set(attr, val)
+
+			elif self.current_season == 1:
+				if not is_aligned:
+					var stamina = 0.0
+					if typeof(b) == TYPE_DICTIONARY and b.has("stamina"):
+						stamina = float(b.stamina)
+					elif typeof(b) == TYPE_OBJECT and "stamina" in b:
+						stamina = float(b.stamina)
+
+					var new_stamina = max(0.0, stamina - 20.0 * delta)
+
+					if typeof(b) == TYPE_DICTIONARY:
+						b["stamina"] = new_stamina
+					elif typeof(b) == TYPE_OBJECT and "stamina" in b:
+						b.stamina = new_stamina
+
+			elif self.current_season == 2:
+				var wind_force = 50.0
+				if typeof(b) == TYPE_DICTIONARY:
+					var bx = 0.0
+					var by = 0.0
+					if b.has("x"): bx = float(b.x)
+					if b.has("y"): by = float(b.y)
+					b["x"] = bx + self.wind_dir_x * wind_force * delta
+					b["y"] = by + self.wind_dir_y * wind_force * delta
+				elif typeof(b) == TYPE_OBJECT:
+					if "x" in b: b.x += self.wind_dir_x * wind_force * delta
+					if "y" in b: b.y += self.wind_dir_y * wind_force * delta
+
+			elif self.current_season == 3:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["friction_multiplier"] = 0.1
+				elif typeof(b) == TYPE_OBJECT:
+					if "friction_multiplier" in b: b.friction_multiplier = 0.1
+
+			if self.current_season != 3:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["friction_multiplier"] = 1.0
+				elif typeof(b) == TYPE_OBJECT:
+					if "friction_multiplier" in b: b.friction_multiplier = 1.0
+
+GAME_MODES["seasonal_cycle"] = SeasonalCycleMode.new()
