@@ -2156,7 +2156,63 @@ class Action:
 
 
 
+    def _apply_artifact_set_bonuses(self):
+        void_count = 0
+        cyber_count = 0
+        blood_count = 0
+
+        inv = getattr(self.ball, "inventory", [])
+
+        # Check inventory items
+        for item in inv:
+            if isinstance(item, dict):
+                k = item.get("item", "")
+            else:
+                k = item
+
+            if k in ["void_shard", "void_amulet", "void_cloak", "miniature_black_hole", "deployable_black_hole", "black_hole_grenade", "phantom_artifact_item"]:
+                void_count += 1
+            if k in ["overclock_booster", "emp_wave_item", "holographic_decoy_module", "nemesis_drone_booster", "cybernetic_implant"]:
+                cyber_count += 1
+            if k in ["blood_pact_artifact_item", "vampiric_aura_booster", "blood_orb"]:
+                blood_count += 1
+
+        # Check artifact flags
+        if getattr(self.ball, "has_phantom_artifact", False):
+            void_count += 1
+        if getattr(self.ball, "has_blood_pact_artifact", False):
+            blood_count += 1
+
+        # Calculate bonuses
+        speed_mult = 1.0
+        dmg_mult = 1.0
+
+        if void_count >= 2:
+            speed_mult *= 1.2
+            dmg_mult *= 1.2
+        if cyber_count >= 2:
+            speed_mult *= 1.3
+        if blood_count >= 2:
+            dmg_mult *= 1.3
+
+        # To avoid permanently stacking buffs when items are dropped, we must always update
+        # when the buff is active OR when the buff WAS active previously. We can track this using a flag.
+        was_speed_buffed = getattr(self.ball, "artifact_speed_buffed", False)
+        if speed_mult != 1.0 or was_speed_buffed:
+            if not hasattr(self.ball, "base_speed"):
+                self.ball.base_speed = getattr(self.ball, "speed", 100.0)
+            self.ball.speed = self.ball.base_speed * speed_mult
+            self.ball.artifact_speed_buffed = (speed_mult != 1.0)
+
+        was_dmg_buffed = getattr(self.ball, "artifact_dmg_buffed", False)
+        if dmg_mult != 1.0 or was_dmg_buffed:
+            if not hasattr(self.ball, "base_damage"):
+                self.ball.base_damage = getattr(self.ball, "damage", 10.0)
+            self.ball.damage = self.ball.base_damage * dmg_mult
+            self.ball.artifact_dmg_buffed = (dmg_mult != 1.0)
+
     def execute(self, strategy: str, delta: float) -> None:
+        self._apply_artifact_set_bonuses()
 
         # Combo potentials logic for hazard traits
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
