@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2091] Artifact Set Bonuses — *2026-08-26 10:12:18 UTC*
+
+Equipping multiple artifacts from the same 'set' (e.g., matching lore origins like 'Void' or 'Cybernetic') provides a powerful hidden passive bonus to encourage synergy-based builds.
+
+---
+
 ## [idea-2109] Season-Based Evolution Mode — *2026-08-26 08:29:00 UTC*
 
 A game mode that cycles through Spring, Summer, Autumn, and Winter phases. Each season fundamentally alters arena physics (e.g. Winter makes surfaces slippery, Summer causes stamina drain, Autumn creates strong winds, Spring speeds up cooldowns). Ball units that align with the current season gain temporary massive buffs to unique abilities.
