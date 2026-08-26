@@ -3313,6 +3313,15 @@ func _attempt_damage_internal(attacker, target) -> void:
 			if "speed" in attacker: attacker.speed = float(attacker.speed) * 1.25
 			if typeof(self.world) == TYPE_OBJECT and self.world.has_method("add_event"):
 				self.world.add_event("bounty_contract_completed", {"message": "Bounty Contract Completed!"})
+			if typeof(self.world) == TYPE_OBJECT and "arena" in self.world and "hazards" in self.world.arena:
+				var ScriptType = load("res://src/arena/procedural_arena.gd")
+				if ScriptType != null and ScriptType.has_method("new"):
+					var HazardClass = load("res://src/arena/procedural_arena.gd").Hazard
+					if HazardClass != null:
+						var tx = target.x if typeof(target) == TYPE_OBJECT else target.get("x", 0.0)
+						var ty = target.y if typeof(target) == TYPE_OBJECT else target.get("y", 0.0)
+						for i in range(5):
+							self.world.arena.hazards.append(HazardClass.new(100000 + (randi() % 90000), tx+(i*20), ty+(i*20), 15.0, "legendary_loot", 0.0))
 
 		if target_is_bounty_target:
 			var owner_id = null
@@ -10194,6 +10203,26 @@ func execute(strategy: String, delta: float):
             has_bh_trait = true
 
         if b_type_ind == "bounty_hunter" or has_bh_trait or has_bounty_contract:
+            if typeof(self.world) == TYPE_OBJECT and "balls" in self.world:
+                for other in self.world.balls:
+                    var o_id = other.id if typeof(other) == TYPE_OBJECT else other.get("id", -1)
+                    var o_alive = other.alive if typeof(other) == TYPE_OBJECT else other.get("alive", true)
+                    if o_id != my_id and o_alive:
+                        var is_bc = other.get("is_bounty_contract_target", false) if typeof(other) == TYPE_DICTIONARY else other.get("is_bounty_contract_target", false) if "is_bounty_contract_target" in other else other.get_meta("is_bounty_contract_target") if other.has_method("get_meta") and other.has_meta("is_bounty_contract_target") else false
+                        var hid = other.get("bounty_contract_hunter_id", null) if typeof(other) == TYPE_DICTIONARY else other.get("bounty_contract_hunter_id", null) if "bounty_contract_hunter_id" in other else other.get_meta("bounty_contract_hunter_id") if other.has_method("get_meta") and other.has_meta("bounty_contract_hunter_id") else null
+                        if is_bc and hid == my_id:
+                            var dx = (other.x if typeof(other) == TYPE_OBJECT else other.get("x", 0.0)) - (self.ball.x if typeof(self.ball) == TYPE_OBJECT else self.ball.get("x", 0.0))
+                            var dy = (other.y if typeof(other) == TYPE_OBJECT else other.get("y", 0.0)) - (self.ball.y if typeof(self.ball) == TYPE_OBJECT else self.ball.get("y", 0.0))
+                            var vx = self.ball.vx if typeof(self.ball) == TYPE_OBJECT else self.ball.get("vx", 0.0)
+                            var vy = self.ball.vy if typeof(self.ball) == TYPE_OBJECT else self.ball.get("vy", 0.0)
+                            if vx * dx + vy * dy > 0:
+                                var current_speed = self.ball.base_speed if typeof(self.ball) == TYPE_OBJECT and "base_speed" in self.ball else self.ball.get("base_speed", self.ball.get("speed", 100.0)) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get_meta("base_speed") if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("base_speed") else 100.0)
+                                var new_speed = current_speed * 1.15
+                                if typeof(self.ball) == TYPE_OBJECT:
+                                    if "speed" in self.ball: self.ball.speed = new_speed
+                                    elif self.ball.has_method("set_meta"): self.ball.set_meta("speed", new_speed)
+                                elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["speed"] = new_speed
+
             var timer_val = 0.0
             if typeof(self.ball) == TYPE_OBJECT:
                 if not "bounty_indicator_timer" in self.ball:
@@ -35286,7 +35315,7 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
-            elif "kind" in nearest and nearest.kind == "bounty_contract":
+            elif "kind" in nearest and (nearest.kind == "bounty_contract" or nearest.kind == "contract_item"):
                 var enemies = self._get_enemies()
                 var valid_targets = []
                 for e in enemies:

@@ -1685,6 +1685,14 @@ class Action:
                 attacker.speed = getattr(attacker, "speed", 2.0) * 1.25
                 if hasattr(self.world, "add_event"):
                     self.world.add_event("bounty_contract_completed", {"message": "Bounty Contract Completed!"})
+                # Drop massive rewards
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    from arena.procedural_arena import Hazard
+                    import random
+                    tx = getattr(target, "x", 0.0)
+                    ty = getattr(target, "y", 0.0)
+                    for i in range(5):
+                        self.world.arena.hazards.append(Hazard(id=100000+random.randint(0, 99999), x=tx+(i*20), y=ty+(i*20), radius=15.0, kind="legendary_loot", damage=0.0))
 
             if getattr(target, "is_dynamic_bounty", False):
                 attacker.damage = getattr(attacker, "damage", 10.0) * 1.5
@@ -4840,6 +4848,17 @@ class Action:
         # REPLACED
         # Bounty Hunter / Bounty Contract target indicator
         if (getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")) == "bounty_hunter" or "bounty_hunter" in getattr(self.ball, "traits", [])) or any(getattr(b, "is_bounty_contract_target", False) and getattr(b, "bounty_contract_hunter_id", None) == getattr(self.ball, "id", None) for b in getattr(self.world, "balls", [])):
+            if hasattr(self.world, "balls"):
+                for other in self.world.balls:
+                    if getattr(other, "id", -1) != getattr(self.ball, "id", -1) and getattr(other, "alive", True):
+                        if getattr(other, "is_bounty_contract_target", False) and getattr(other, "bounty_contract_hunter_id", None) == getattr(self.ball, "id", None):
+                            dx = other.x - self.ball.x
+                            dy = other.y - self.ball.y
+                            vx = getattr(self.ball, "vx", 0.0)
+                            vy = getattr(self.ball, "vy", 0.0)
+                            if vx * dx + vy * dy > 0:
+                                self.ball.speed = getattr(self.ball, "base_speed", getattr(self.ball, "speed", 100.0)) * 1.15
+
             if not hasattr(self.ball, "bounty_indicator_timer"):
                 self.ball.bounty_indicator_timer = 2.0
 
@@ -18686,7 +18705,7 @@ class Action:
                         self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
-                elif getattr(nearest, "kind", None) == "bounty_contract":
+                elif getattr(nearest, "kind", None) in ("bounty_contract", "contract_item"):
                     import random
                     enemies = self._get_enemies()
                     valid_targets = [e for e in enemies if getattr(e, "alive", True)]
