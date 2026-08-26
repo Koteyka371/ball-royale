@@ -2072,6 +2072,85 @@ func _attempt_damage_internal(attacker, target) -> void:
 			attacker.kinetic_shield_active = false
 			attacker.kinetic_shield_stored_damage = 0.0
 
+	var a_kinetic_booster = 0.0
+	if typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("has_meta") and attacker.has_meta("kinetic_booster_timer"):
+		a_kinetic_booster = float(attacker.get_meta("kinetic_booster_timer"))
+	elif "kinetic_booster_timer" in attacker:
+		a_kinetic_booster = float(attacker.kinetic_booster_timer)
+
+	if a_kinetic_booster > 0.0 and not is_ranged_attack:
+		var stored_energy = 0.0
+		if typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("has_meta") and attacker.has_meta("kinetic_energy_pool"):
+			stored_energy = float(attacker.get_meta("kinetic_energy_pool"))
+		elif "kinetic_energy_pool" in attacker:
+			stored_energy = float(attacker.kinetic_energy_pool)
+
+		if stored_energy > 0.0:
+			original_damage += stored_energy * 0.5
+			var kb_force = stored_energy * 20.0
+			kb_force = min(kb_force, 20000.0)
+			if kb_force > 0.0:
+				var t_x = 0.0
+				var t_y = 0.0
+				if typeof(target) == TYPE_DICTIONARY:
+					t_x = target.get("x", 0.0)
+					t_y = target.get("y", 0.0)
+				else:
+					if "x" in target: t_x = target.x
+					elif target.has_method("get_meta") and target.has_meta("x"): t_x = target.get_meta("x")
+					if "y" in target: t_y = target.y
+					elif target.has_method("get_meta") and target.has_meta("y"): t_y = target.get_meta("y")
+				var a_x = 0.0
+				var a_y = 0.0
+				if typeof(attacker) == TYPE_DICTIONARY:
+					a_x = attacker.get("x", 0.0)
+					a_y = attacker.get("y", 0.0)
+				else:
+					if "x" in attacker: a_x = attacker.x
+					elif attacker.has_method("get_meta") and attacker.has_meta("x"): a_x = attacker.get_meta("x")
+					if "y" in attacker: a_y = attacker.y
+					elif attacker.has_method("get_meta") and attacker.has_meta("y"): a_y = attacker.get_meta("y")
+
+				var dx = t_x - a_x
+				var dy = t_y - a_y
+				var dist = sqrt(dx*dx + dy*dy)
+				if dist > 0.0001:
+					var nx = dx / dist
+					var ny = dy / dist
+					var t_mass = 1.0
+					if typeof(target) == TYPE_DICTIONARY: t_mass = target.get("mass", 1.0)
+					else:
+						if "mass" in target: t_mass = target.mass
+						elif target.has_method("get_meta") and target.has_meta("mass"): t_mass = target.get_meta("mass")
+
+					var cur_vx = 0.0
+					var cur_vy = 0.0
+					if typeof(target) == TYPE_DICTIONARY:
+						cur_vx = target.get("vx", 0.0)
+						cur_vy = target.get("vy", 0.0)
+						target["vx"] = cur_vx + nx * (kb_force / t_mass)
+						target["vy"] = cur_vy + ny * (kb_force / t_mass)
+						target["_knockback_timer"] = 1.0
+					else:
+						if "vx" in target: cur_vx = target.vx
+						elif target.has_method("get_meta") and target.has_meta("vx"): cur_vx = target.get_meta("vx")
+						if "vy" in target: cur_vy = target.vy
+						elif target.has_method("get_meta") and target.has_meta("vy"): cur_vy = target.get_meta("vy")
+
+						if "vx" in target: target.vx = cur_vx + nx * (kb_force / t_mass)
+						elif target.has_method("set_meta"): target.set_meta("vx", cur_vx + nx * (kb_force / t_mass))
+						if "vy" in target: target.vy = cur_vy + ny * (kb_force / t_mass)
+						elif target.has_method("set_meta"): target.set_meta("vy", cur_vy + ny * (kb_force / t_mass))
+
+						if "_knockback_timer" in target: target._knockback_timer = 1.0
+						elif target.has_method("set_meta"): target.set_meta("_knockback_timer", 1.0)
+
+			if typeof(attacker) == TYPE_DICTIONARY:
+				attacker["kinetic_energy_pool"] = 0.0
+			else:
+				if "kinetic_energy_pool" in attacker: attacker.kinetic_energy_pool = 0.0
+				elif attacker.has_method("set_meta"): attacker.set_meta("kinetic_energy_pool", 0.0)
+
 	var target_weakness = ""
 	if typeof(target) == TYPE_DICTIONARY:
 		if target.has("weakness"): target_weakness = str(target["weakness"])
@@ -34624,6 +34703,34 @@ func _collect_booster(delta: float):
                     if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena and typeof(self.world.arena.hazards) == TYPE_ARRAY:
                         self.world.arena.hazards.erase(b)
 
+            elif b_kind == "kinetic_booster":
+                var dx = get_bx(b) - my_x
+                var dy = get_by(b) - my_y
+                var b_radius = 15.0
+                if typeof(b) == TYPE_DICTIONARY and b.has("radius"): b_radius = b.radius
+                elif typeof(b) == TYPE_OBJECT and "radius" in b: b_radius = b.radius
+                elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("radius"): b_radius = b.get_meta("radius")
+
+                var dist = sqrt(dx*dx + dy*dy)
+                if dist <= my_rad + b_radius + 5.0:
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["kinetic_booster_timer"] = 15.0
+                        self.ball["kinetic_energy_pool"] = 0.0
+                    else:
+                        if "kinetic_booster_timer" in self.ball: self.ball.kinetic_booster_timer = 15.0
+                        elif self.ball.has_method("set_meta"): self.ball.set_meta("kinetic_booster_timer", 15.0)
+                        if "kinetic_energy_pool" in self.ball: self.ball.kinetic_energy_pool = 0.0
+                        elif self.ball.has_method("set_meta"): self.ball.set_meta("kinetic_energy_pool", 0.0)
+
+                    if typeof(b) == TYPE_DICTIONARY: b["active"] = false
+                    elif typeof(b) == TYPE_OBJECT and "active" in b: b.active = false
+                    elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("active", false)
+
+                    if self.world != null and "boosters" in self.world and typeof(self.world.boosters) == TYPE_ARRAY:
+                        self.world.boosters.erase(b)
+                    if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena and typeof(self.world.arena.hazards) == TYPE_ARRAY:
+                        self.world.arena.hazards.erase(b)
+
             elif b_kind == "heroism_booster":
                 var dx = get_bx(b) - my_x
                 var dy = get_by(b) - my_y
@@ -54754,6 +54861,58 @@ func _update_skill_timer(delta: float):
         elif typeof(self.ball) == TYPE_OBJECT:
             if "pinball_booster_timer" in self.ball: self.ball.pinball_booster_timer = pinball_booster_timer
             elif self.ball.has_method("set_meta"): self.ball.set_meta("pinball_booster_timer", pinball_booster_timer)
+
+    var kinetic_booster_timer = 0.0
+    if "kinetic_booster_timer" in self.ball:
+        kinetic_booster_timer = float(self.ball.kinetic_booster_timer)
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("kinetic_booster_timer"):
+        kinetic_booster_timer = float(self.ball.get_meta("kinetic_booster_timer"))
+
+    if kinetic_booster_timer > 0.0:
+        kinetic_booster_timer -= delta
+        if kinetic_booster_timer <= 0.0:
+            kinetic_booster_timer = 0.0
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["kinetic_booster_timer"] = 0.0
+                self.ball["kinetic_energy_pool"] = 0.0
+            else:
+                if "kinetic_booster_timer" in self.ball: self.ball.kinetic_booster_timer = 0.0
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("kinetic_booster_timer", 0.0)
+                if "kinetic_energy_pool" in self.ball: self.ball.kinetic_energy_pool = 0.0
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("kinetic_energy_pool", 0.0)
+        else:
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["kinetic_booster_timer"] = kinetic_booster_timer
+            else:
+                if "kinetic_booster_timer" in self.ball: self.ball.kinetic_booster_timer = kinetic_booster_timer
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("kinetic_booster_timer", kinetic_booster_timer)
+
+            var b_vx = 0.0
+            var b_vy = 0.0
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                if self.ball.has("vx"): b_vx = self.ball.vx
+                if self.ball.has("vy"): b_vy = self.ball.vy
+            else:
+                if "vx" in self.ball: b_vx = self.ball.vx
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("vx"): b_vx = self.ball.get_meta("vx")
+                if "vy" in self.ball: b_vy = self.ball.vy
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("vy"): b_vy = self.ball.get_meta("vy")
+
+            var actual_speed = sqrt(b_vx*b_vx + b_vy*b_vy)
+            if actual_speed > 1.0:
+                var current_energy = 0.0
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    if self.ball.has("kinetic_energy_pool"): current_energy = float(self.ball.kinetic_energy_pool)
+                else:
+                    if "kinetic_energy_pool" in self.ball: current_energy = float(self.ball.kinetic_energy_pool)
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("kinetic_energy_pool"): current_energy = float(self.ball.get_meta("kinetic_energy_pool"))
+
+                var new_energy = current_energy + (actual_speed * delta * 0.5)
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["kinetic_energy_pool"] = new_energy
+                else:
+                    if "kinetic_energy_pool" in self.ball: self.ball.kinetic_energy_pool = new_energy
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("kinetic_energy_pool", new_energy)
 
     var pinball_timer = 0.0
     if "pinball_projectile_timer" in self.ball:

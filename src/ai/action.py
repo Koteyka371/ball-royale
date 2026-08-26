@@ -1142,6 +1142,30 @@ class Action:
             attacker.kinetic_shield_active = False
             attacker.kinetic_shield_stored_damage = 0.0
 
+        if getattr(attacker, "kinetic_booster_timer", 0.0) > 0.0 and not is_ranged:
+            stored_energy = getattr(attacker, "kinetic_energy_pool", 0.0)
+            if stored_energy > 0:
+                original_damage += stored_energy * 0.5
+                kb_force = stored_energy * 20.0
+                kb_force = min(kb_force, 20000.0)
+                if kb_force > 0:
+                    import math
+                    dx = target.x - attacker.x
+                    dy = target.y - attacker.y
+                    dist = math.hypot(dx, dy)
+                    if dist > 0.0001:
+                        nx = dx / dist
+                        ny = dy / dist
+                        target.vx = getattr(target, "vx", 0.0) + nx * (kb_force / getattr(target, "mass", 1.0))
+                        target.vy = getattr(target, "vy", 0.0) + ny * (kb_force / getattr(target, "mass", 1.0))
+                        if hasattr(target, "set_meta"):
+                            target.set_meta("_knockback_timer", 1.0)
+                        else:
+                            setattr(target, "_knockback_timer", 1.0)
+
+                # Consume energy
+                attacker.kinetic_energy_pool = 0.0
+
         if getattr(target, "takes_double_damage", False):
             original_damage *= 2.0
 
@@ -17911,6 +17935,16 @@ class Action:
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and b in self.world.arena.hazards:
                         self.world.arena.hazards.remove(b)
 
+                elif getattr(b, "kind", "") == "kinetic_booster":
+                    dist = __import__("math").sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
+                    if dist <= getattr(self.ball, "radius", 10.0) + getattr(b, "radius", 15.0) + 5.0:
+                        self.ball.kinetic_booster_timer = 15.0
+                        self.ball.kinetic_energy_pool = 0.0
+                        b.active = False
+                        if hasattr(self.world, "boosters") and b in self.world.boosters:
+                            self.world.boosters.remove(b)
+                        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and b in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(b)
                 elif getattr(b, "kind", "") == "ethereal_tether_booster" and getattr(b, "active", True):
                     dist = __import__("math").sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
                     if dist <= getattr(self.ball, "radius", 10.0) + getattr(b, "radius", 15.0) + 5.0:
@@ -27865,6 +27899,20 @@ class Action:
                 self.ball.is_frictionless = False
                 self.ball.skill_silenced = False
                 self.ball.knockback_multiplier_outgoing = 1.0
+
+        if getattr(self.ball, "kinetic_booster_timer", 0.0) > 0.0:
+            self.ball.kinetic_booster_timer -= delta
+            if self.ball.kinetic_booster_timer <= 0.0:
+                self.ball.kinetic_booster_timer = 0.0
+                self.ball.kinetic_energy_pool = 0.0
+            else:
+                # Accumulate energy based on speed
+                vx = getattr(self.ball, "vx", 0.0)
+                vy = getattr(self.ball, "vy", 0.0)
+                import math
+                actual_speed = math.hypot(vx, vy)
+                if actual_speed > 1.0:
+                    self.ball.kinetic_energy_pool = getattr(self.ball, "kinetic_energy_pool", 0.0) + (actual_speed * delta * 0.5)
 
         if hasattr(self.ball, "pinball_projectile_timer") and self.ball.pinball_projectile_timer > 0:
             self.ball.pinball_projectile_timer -= delta
