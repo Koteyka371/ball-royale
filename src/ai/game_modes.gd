@@ -65208,6 +65208,7 @@ class FatigueAuraMode extends GameMode:
 					b.stamina = max(0.0, b.stamina - drain_rate * delta)
 
 var GAME_MODES = {
+	"abyssal_fog_event": AbyssalFogEventMode.new(),
     'random_teleport_event': RandomTeleportEventMode.new(),
     "cursed_relics": CursedRelicsMode.new(),
     "irradiation_survival": IrradiationSurvivalMode.new(),
@@ -91619,6 +91620,64 @@ class DeepWaterMode extends GameMode:
 					if "perception_radius" in b: b.perception_radius = base_perception * 0.5
 
 GAME_MODES["deep_water"] = DeepWaterMode.new()
+
+
+class AbyssalFogEventMode extends GameMode:
+	func teardown(world, balls):
+		super.teardown(world, balls)
+		if fog_active:
+			for i in range(balls.size()):
+				var b = balls[i]
+				if typeof(b) == TYPE_DICTIONARY:
+					if b.has("orig_vision_radius"): b["vision_radius"] = b["orig_vision_radius"]
+					b["perception_radius"] = b.get("base_perception_radius", 500.0)
+				else:
+					var orig_vision = b.get_meta("orig_vision_radius") if b.has_method("get_meta") and b.has_meta("orig_vision_radius") else (b.orig_vision_radius if "orig_vision_radius" in b else 500.0)
+					if "vision_radius" in b: b.vision_radius = orig_vision
+					if "perception_radius" in b and "base_perception_radius" in b: b.perception_radius = b.base_perception_radius
+	var fog_timer = 20.0
+	var fog_duration = 15.0
+	var fog_active = false
+
+	func _init():
+		name = "Abyssal Fog Event"
+		description = "Dense purple fog covers the arena, limiting vision radius to 150 units for 15 seconds."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		fog_timer = 15.0
+		fog_active = true
+
+	func tick(world, balls, delta):
+		if fog_active:
+			fog_timer -= delta
+
+			for i in range(balls.size()):
+				var b = balls[i]
+				if typeof(b) == TYPE_DICTIONARY:
+					if not b.has("orig_vision_radius"):
+						b["orig_vision_radius"] = b.get("vision_radius", 500.0)
+					b["vision_radius"] = 150.0
+					b["perception_radius"] = 150.0
+				else:
+					if not b.has_meta("orig_vision_radius") and not "orig_vision_radius" in b:
+						if "vision_radius" in b:
+							b.set_meta("orig_vision_radius", b.vision_radius)
+					if "vision_radius" in b: b.vision_radius = 150.0
+					if "perception_radius" in b: b.perception_radius = 150.0
+
+			if fog_timer <= 0:
+				fog_active = false
+
+				for i in range(balls.size()):
+					var b = balls[i]
+					if typeof(b) == TYPE_DICTIONARY:
+						if b.has("orig_vision_radius"): b["vision_radius"] = b["orig_vision_radius"]
+						b["perception_radius"] = b.get("base_perception_radius", 500.0)
+					else:
+						var orig_vision = b.get_meta("orig_vision_radius") if b.has_method("get_meta") and b.has_meta("orig_vision_radius") else (b.orig_vision_radius if "orig_vision_radius" in b else 500.0)
+						if "vision_radius" in b: b.vision_radius = orig_vision
+						if "perception_radius" in b and "base_perception_radius" in b: b.perception_radius = b.base_perception_radius
 
 class SeasonalCycleMode extends GameMode:
 	var season_timer = 10.0

@@ -40504,7 +40504,68 @@ class FatigueAuraMode(GameMode):
                 if hasattr(b, 'stamina'):
                     b.stamina = max(0.0, b.stamina - self.drain_rate * delta)
 
+
+class AbyssalFogEventMode(GameMode):
+    def teardown(self, world, balls):
+        super().teardown(world, balls)
+        if self.fog_active:
+            for b in balls:
+                if isinstance(b, dict):
+                    if "orig_vision_radius" in b:
+                        b["vision_radius"] = b["orig_vision_radius"]
+                    b["perception_radius"] = b.get("base_perception_radius", 500.0)
+                else:
+                    if hasattr(b, "orig_vision_radius"):
+                        b.vision_radius = b.orig_vision_radius
+                    b.perception_radius = getattr(b, "base_perception_radius", 500.0)
+    def __init__(self):
+        super().__init__()
+        self.name = "Abyssal Fog Event"
+        self.description = "Dense purple fog covers the arena, limiting vision radius to 150 units for 15 seconds."
+        self.fog_timer = 20.0
+        self.fog_duration = 15.0
+        self.fog_active = False
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.fog_timer = 15.0
+        self.fog_active = True
+
+    def tick(self, world, balls, delta):
+        super().tick(world, balls, delta)
+
+        if self.fog_active:
+            self.fog_timer -= delta
+
+            # Apply effect
+            for b in balls:
+                if isinstance(b, dict):
+                    if "orig_vision_radius" not in b:
+                        b["orig_vision_radius"] = b.get("vision_radius", 500.0)
+                    b["vision_radius"] = 150.0
+                    b["perception_radius"] = 150.0
+                else:
+                    if not hasattr(b, "orig_vision_radius"):
+                        b.orig_vision_radius = getattr(b, "vision_radius", 500.0)
+                    b.vision_radius = 150.0
+                    b.perception_radius = 150.0
+
+            if self.fog_timer <= 0:
+                self.fog_active = False
+
+                # Restore vision
+                for b in balls:
+                    if isinstance(b, dict):
+                        if "orig_vision_radius" in b:
+                            b["vision_radius"] = b["orig_vision_radius"]
+                        b["perception_radius"] = b.get("base_perception_radius", 500.0)
+                    else:
+                        if hasattr(b, "orig_vision_radius"):
+                            b.vision_radius = b.orig_vision_radius
+                        b.perception_radius = getattr(b, "base_perception_radius", 500.0)
+
 GAME_MODES = {
+    'abyssal_fog_event': AbyssalFogEventMode(),
     'phantom_graveyard': PhantomGraveyardMode(),
     'random_teleport_event': RandomTeleportEventMode(),
     'floating_plates': FloatingPlatesMode(),
@@ -58352,6 +58413,7 @@ class DeepWaterMode(GameMode):
                     b.perception_radius = base_perception * 0.5
 
 GAME_MODES["deep_water"] = DeepWaterMode()
+
 
 class SeasonalCycleMode(GameMode):
     def __init__(self):
