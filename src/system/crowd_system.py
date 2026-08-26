@@ -742,7 +742,7 @@ class CrowdSystem:
         juggernaut = None
         for b in balls:
             team = getattr(b, "team", getattr(b, "ball_type", ""))
-            if "Juggernaut" in team and getattr(b, "alive", False):
+            if isinstance(team, str) and "Juggernaut" in team and getattr(b, "alive", False):
                 juggernaut = b
                 break
 
