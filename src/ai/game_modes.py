@@ -58352,3 +58352,144 @@ class DeepWaterMode(GameMode):
                     b.perception_radius = base_perception * 0.5
 
 GAME_MODES["deep_water"] = DeepWaterMode()
+
+class SeasonalCycleMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Seasonal Cycle"
+        self.description = "Cycles through Spring, Summer, Autumn, and Winter phases. Each season alters arena physics and buffs aligned balls."
+        self.season_timer = 10.0
+        self.current_season = 0 # 0=Spring, 1=Summer, 2=Autumn, 3=Winter
+        self.seasons = ["Spring", "Summer", "Autumn", "Winter"]
+        self.wind_dir_x = 1.0
+        self.wind_dir_y = 0.5
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        self.season_timer = 10.0
+        self.current_season = 0
+        import random as _rnd
+        self.wind_dir_x = _rnd.uniform(-1.0, 1.0)
+        self.wind_dir_y = _rnd.uniform(-1.0, 1.0)
+        norm = (self.wind_dir_x**2 + self.wind_dir_y**2)**0.5
+        if norm > 0:
+            self.wind_dir_x /= norm
+            self.wind_dir_y /= norm
+        else:
+            self.wind_dir_x = 1.0
+            self.wind_dir_y = 0.0
+
+    def get_aligned_traits(self, season_idx):
+        if season_idx == 0:
+            return ["nature", "water", "healer", "spring"]
+        elif season_idx == 1:
+            return ["fire", "light", "paladin", "summer"]
+        elif season_idx == 2:
+            return ["wind", "earth", "rogue", "autumn"]
+        elif season_idx == 3:
+            return ["ice", "dark", "mage", "winter"]
+        return []
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        self.season_timer -= delta
+        if self.season_timer <= 0:
+            self.season_timer = 10.0
+            self.current_season = (self.current_season + 1) % 4
+            import random as _rnd
+            self.wind_dir_x = _rnd.uniform(-1.0, 1.0)
+            self.wind_dir_y = _rnd.uniform(-1.0, 1.0)
+            norm = (self.wind_dir_x**2 + self.wind_dir_y**2)**0.5
+            if norm > 0:
+                self.wind_dir_x /= norm
+                self.wind_dir_y /= norm
+            else:
+                self.wind_dir_x = 1.0
+                self.wind_dir_y = 0.0
+
+            if hasattr(world, "add_event"):
+                world.add_event("season_change", {"season": self.seasons[self.current_season]})
+
+        aligned_traits = self.get_aligned_traits(self.current_season)
+
+        for b in balls:
+            is_dict = isinstance(b, dict)
+            alive = b.get("alive", True) if is_dict else getattr(b, "alive", True)
+            b_type = b.get("ball_type", "") if is_dict else getattr(b, "ball_type", "")
+
+            if not alive or b_type == "spectator":
+                continue
+
+            traits = b.get("traits", []) if is_dict else getattr(b, "traits", [])
+
+            is_aligned = False
+            for t in aligned_traits:
+                if t in traits or t == b_type:
+                    is_aligned = True
+                    break
+
+            base_speed = b.get("base_speed", 100.0) if is_dict else getattr(b, "base_speed", 100.0)
+            base_max_speed = b.get("base_max_speed", base_speed) if is_dict else getattr(b, "base_max_speed", base_speed)
+            base_damage = b.get("base_damage", 10.0) if is_dict else getattr(b, "base_damage", 10.0)
+
+            if is_aligned:
+                if is_dict:
+                    b["speed"] = base_speed * 2.0
+                    b["max_speed"] = base_max_speed * 2.0
+                    b["damage"] = base_damage * 2.0
+                else:
+                    b.speed = base_speed * 2.0
+                    b.max_speed = base_max_speed * 2.0
+                    b.damage = base_damage * 2.0
+            else:
+                if is_dict:
+                    b["speed"] = base_speed
+                    b["max_speed"] = base_max_speed
+                    b["damage"] = base_damage
+                else:
+                    b.speed = base_speed
+                    b.max_speed = base_max_speed
+                    b.damage = base_damage
+
+            if self.current_season == 0:
+                for attr in ["dash_cooldown", "skill_timer", "action_cooldown"]:
+                    val = b.get(attr, 0.0) if is_dict else getattr(b, attr, 0.0)
+                    if val > 0:
+                        val = max(0.0, val - delta * 2.0)
+                        if is_dict:
+                            b[attr] = val
+                        else:
+                            setattr(b, attr, val)
+
+            elif self.current_season == 1:
+                if not is_aligned:
+                    stamina = b.get("stamina", 0.0) if is_dict else getattr(b, "stamina", 0.0)
+                    new_stamina = max(0.0, stamina - 20.0 * delta)
+                    if is_dict:
+                        b["stamina"] = new_stamina
+                    else:
+                        b.stamina = new_stamina
+
+            elif self.current_season == 2:
+                wind_force = 50.0
+                if is_dict:
+                    b["x"] = b.get("x", 0.0) + self.wind_dir_x * wind_force * delta
+                    b["y"] = b.get("y", 0.0) + self.wind_dir_y * wind_force * delta
+                else:
+                    b.x = getattr(b, "x", 0.0) + self.wind_dir_x * wind_force * delta
+                    b.y = getattr(b, "y", 0.0) + self.wind_dir_y * wind_force * delta
+
+            elif self.current_season == 3:
+                if is_dict:
+                    b["friction_multiplier"] = 0.1
+                else:
+                    b.friction_multiplier = 0.1
+
+            if self.current_season != 3:
+                if is_dict:
+                    b["friction_multiplier"] = 1.0
+                else:
+                    b.friction_multiplier = 1.0
+
+GAME_MODES["seasonal_cycle"] = SeasonalCycleMode()
