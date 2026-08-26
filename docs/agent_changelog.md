@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2109] Season-Based Evolution Mode — *2026-08-26 08:29:00 UTC*
+
+A game mode that cycles through Spring, Summer, Autumn, and Winter phases. Each season fundamentally alters arena physics (e.g. Winter makes surfaces slippery, Summer causes stamina drain, Autumn creates strong winds, Spring speeds up cooldowns). Ball units that align with the current season gain temporary massive buffs to unique abilities.
+
+---
+
 ## [idea-2090] Bounty Hunter Tracking Contracts — *2026-08-26 03:04:09 UTC*
 
 Players can find 'Contract' items on the map. Activating them assigns a specific enemy player as their Bounty for 60 seconds, giving them a slight movement speed bonus when moving toward the target and dropping massive rewards upon a successful takedown.
