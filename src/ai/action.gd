@@ -4007,7 +4007,124 @@ func _init(ball_ref, world_ref):
     self.ball = ball_ref
     self.world = world_ref
 
+func _apply_artifact_set_bonuses():
+	var void_count = 0
+	var cyber_count = 0
+	var blood_count = 0
+
+	var inv = []
+	if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("inventory"):
+		inv = self.ball.inventory
+	elif typeof(self.ball) == TYPE_OBJECT and "inventory" in self.ball:
+		inv = self.ball.inventory
+	elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("inventory"):
+		inv = self.ball.get_meta("inventory")
+
+	for item in inv:
+		var k = ""
+		if typeof(item) == TYPE_DICTIONARY and item.has("item"):
+			k = item.item
+		elif typeof(item) == TYPE_STRING:
+			k = item
+
+		if k in ["void_shard", "void_amulet", "void_cloak", "miniature_black_hole", "deployable_black_hole", "black_hole_grenade", "phantom_artifact_item"]:
+			void_count += 1
+		if k in ["overclock_booster", "emp_wave_item", "holographic_decoy_module", "nemesis_drone_booster", "cybernetic_implant"]:
+			cyber_count += 1
+		if k in ["blood_pact_artifact_item", "vampiric_aura_booster", "blood_orb"]:
+			blood_count += 1
+
+	var has_phantom = false
+	if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("has_phantom_artifact"): has_phantom = self.ball.has_phantom_artifact
+	elif typeof(self.ball) == TYPE_OBJECT and "has_phantom_artifact" in self.ball: has_phantom = self.ball.has_phantom_artifact
+	elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("has_phantom_artifact"): has_phantom = self.ball.get_meta("has_phantom_artifact")
+	if has_phantom:
+		void_count += 1
+
+	var has_blood = false
+	if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("has_blood_pact_artifact"): has_blood = self.ball.has_blood_pact_artifact
+	elif typeof(self.ball) == TYPE_OBJECT and "has_blood_pact_artifact" in self.ball: has_blood = self.ball.has_blood_pact_artifact
+	elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("has_blood_pact_artifact"): has_blood = self.ball.get_meta("has_blood_pact_artifact")
+	if has_blood:
+		blood_count += 1
+
+	var speed_mult = 1.0
+	var dmg_mult = 1.0
+
+	if void_count >= 2:
+		speed_mult *= 1.2
+		dmg_mult *= 1.2
+	if cyber_count >= 2:
+		speed_mult *= 1.3
+	if blood_count >= 2:
+		dmg_mult *= 1.3
+
+	var was_speed_buffed = false
+	if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("artifact_speed_buffed"): was_speed_buffed = self.ball.artifact_speed_buffed
+	elif typeof(self.ball) == TYPE_OBJECT and "artifact_speed_buffed" in self.ball: was_speed_buffed = self.ball.artifact_speed_buffed
+	elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("artifact_speed_buffed"): was_speed_buffed = self.ball.get_meta("artifact_speed_buffed")
+
+	if speed_mult != 1.0 or was_speed_buffed:
+		var base_speed = 100.0
+		if typeof(self.ball) == TYPE_DICTIONARY:
+			if self.ball.has("base_speed"): base_speed = self.ball.base_speed
+			elif self.ball.has("speed"):
+				base_speed = self.ball.speed
+				self.ball.base_speed = base_speed
+			self.ball.speed = base_speed * speed_mult
+			self.ball.artifact_speed_buffed = (speed_mult != 1.0)
+		elif typeof(self.ball) == TYPE_OBJECT:
+			if "base_speed" in self.ball: base_speed = self.ball.base_speed
+			elif "speed" in self.ball:
+				base_speed = self.ball.speed
+				self.ball.base_speed = base_speed
+			elif self.ball.has_method("has_meta"):
+				if self.ball.has_meta("base_speed"): base_speed = self.ball.get_meta("base_speed")
+				elif self.ball.has_meta("speed"):
+					base_speed = self.ball.get_meta("speed")
+					self.ball.set_meta("base_speed", base_speed)
+
+			if "speed" in self.ball:
+				self.ball.speed = base_speed * speed_mult
+				self.ball.artifact_speed_buffed = (speed_mult != 1.0)
+			elif self.ball.has_method("set_meta"):
+				self.ball.set_meta("speed", base_speed * speed_mult)
+				self.ball.set_meta("artifact_speed_buffed", speed_mult != 1.0)
+
+	var was_dmg_buffed = false
+	if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("artifact_dmg_buffed"): was_dmg_buffed = self.ball.artifact_dmg_buffed
+	elif typeof(self.ball) == TYPE_OBJECT and "artifact_dmg_buffed" in self.ball: was_dmg_buffed = self.ball.artifact_dmg_buffed
+	elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("artifact_dmg_buffed"): was_dmg_buffed = self.ball.get_meta("artifact_dmg_buffed")
+
+	if dmg_mult != 1.0 or was_dmg_buffed:
+		var base_dmg = 10.0
+		if typeof(self.ball) == TYPE_DICTIONARY:
+			if self.ball.has("base_damage"): base_dmg = self.ball.base_damage
+			elif self.ball.has("damage"):
+				base_dmg = self.ball.damage
+				self.ball.base_damage = base_dmg
+			self.ball.damage = base_dmg * dmg_mult
+			self.ball.artifact_dmg_buffed = (dmg_mult != 1.0)
+		elif typeof(self.ball) == TYPE_OBJECT:
+			if "base_damage" in self.ball: base_dmg = self.ball.base_damage
+			elif "damage" in self.ball:
+				base_dmg = self.ball.damage
+				self.ball.base_damage = base_dmg
+			elif self.ball.has_method("has_meta"):
+				if self.ball.has_meta("base_damage"): base_dmg = self.ball.get_meta("base_damage")
+				elif self.ball.has_meta("damage"):
+					base_dmg = self.ball.get_meta("damage")
+					self.ball.set_meta("base_damage", base_dmg)
+
+			if "damage" in self.ball:
+				self.ball.damage = base_dmg * dmg_mult
+				self.ball.artifact_dmg_buffed = (dmg_mult != 1.0)
+			elif self.ball.has_method("set_meta"):
+				self.ball.set_meta("damage", base_dmg * dmg_mult)
+				self.ball.set_meta("artifact_dmg_buffed", dmg_mult != 1.0)
+
 func execute(strategy: String, delta: float):
+	_apply_artifact_set_bonuses()
 
 	if world != null and "arena" in world and world.arena != null and typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
 		var traits = []
