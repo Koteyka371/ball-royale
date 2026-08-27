@@ -11016,6 +11016,58 @@ class Action:
                                                 self.world.add_combat_log(owner_id, "triggered deployable_swap_trap", 0)
                                         else:
                                             pass
+                    elif hazard.kind == "deployable_random_teleport_trap":
+                        current_tick = getattr(self.world, "tick", 0)
+                        last_updated = getattr(hazard, "last_updated_tick", -1)
+                        if last_updated != current_tick:
+                            hazard.last_updated_tick = current_tick
+
+                            if getattr(hazard, "activation_timer", 2.0) > 0.0:
+                                hazard.activation_timer = getattr(hazard, "activation_timer", 2.0) - delta
+
+                            if getattr(hazard, "activation_timer", 2.0) <= 0.0:
+                                if not getattr(hazard, "trap_triggered", False):
+                                    owner_id = getattr(hazard, "owner_id", None)
+                                    if owner_id is None:
+                                        owner_id = getattr(hazard, "creator_id", None)
+                                    owner_team = None
+                                    for b in getattr(self.world, "balls", []):
+                                        if getattr(b, "id", None) == owner_id:
+                                            owner_team = getattr(b, "team", getattr(b, "ball_type", ""))
+                                            break
+
+                                    if owner_team is not None:
+                                        closest_enemy = None
+                                        min_dist_enemy = float('inf')
+                                        for b in getattr(self.world, "balls", []):
+                                            if getattr(b, "alive", True) and getattr(b, "id", None) != owner_id:
+                                                hx = getattr(hazard, "x", 0)
+                                                hy = getattr(hazard, "y", 0)
+                                                bx = getattr(b, "x", 0)
+                                                by = getattr(b, "y", 0)
+                                                dist_sq = (hx - bx)**2 + (hy - by)**2
+                                                if dist_sq <= getattr(hazard, "radius", 200.0)**2:
+                                                    b_team = getattr(b, "team", getattr(b, "ball_type", ""))
+                                                    if b_team != owner_team:
+                                                        if dist_sq < min_dist_enemy:
+                                                            min_dist_enemy = dist_sq
+                                                            closest_enemy = b
+
+                                        if closest_enemy:
+                                            arena_w = getattr(self.world.arena, "width", 800.0)
+                                            arena_h = getattr(self.world.arena, "height", 800.0)
+                                            margin = 20.0
+                                            import random
+                                            new_x = random.uniform(margin, arena_w - margin)
+                                            new_y = random.uniform(margin, arena_h - margin)
+
+                                            closest_enemy.x = new_x
+                                            closest_enemy.y = new_y
+                                            closest_enemy.vx = getattr(closest_enemy, "vx", 0.0) * 3.0
+                                            closest_enemy.vy = getattr(closest_enemy, "vy", 0.0) * 3.0
+
+                                            hazard.trap_triggered = True
+                                            hazard.duration = 0.0
                     elif hazard.kind == "electric_beam_trap":
                         hazard_is_active = getattr(hazard, "active", True)
                         if getattr(self.world.arena, "weather", "") in ["rain", "heavy_rain", "monsoon", "thunderstorm"]:

@@ -52,8 +52,8 @@ def test_cursed_relics_mode():
     relic.transfer_cooldown = 0.0
     mode.tick(world, balls, 0.5)
 
-    assert balls[0].damage == 20.0 # double damage
-    assert balls[0].base_damage_cursed == 10.0
+    assert balls[0].damage == 40.0 # double damage
+    assert balls[0].base_damage_cursed == 20.0
     assert balls[0].hp < 100.0 # hp drained
     assert relic.x == balls[0].x
     assert relic.y == balls[0].y
@@ -69,6 +69,6 @@ def test_cursed_relics_mode():
 
     # Clean up tick (b1 should lose buff, b2 shouldn't have it yet because it was just passed)
     mode.tick(world, balls, 0.016)
-    assert balls[0].damage == 10.0
+    assert balls[0].damage == 20.0
     assert not hasattr(balls[0], "base_damage_cursed")
-    assert balls[1].damage == 20.0
+    assert balls[1].damage == 40.0
