@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2086] Quantum Bumper Trap — *2026-08-29 15:50:36 UTC*
+
+A deployable trap that, when triggered, teleports the victim to a random location in the arena while retaining their current velocity, but multiplied by a small factor. This forces them to abruptly navigate a new environment with high speed.
+
+---
+
 ## [idea-2091] Artifact Set Bonuses — *2026-08-26 10:12:18 UTC*
 
 Equipping multiple artifacts from the same 'set' (e.g., matching lore origins like 'Void' or 'Cybernetic') provides a powerful hidden passive bonus to encourage synergy-based builds.
