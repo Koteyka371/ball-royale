@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2098] Decoy Mimic Cast — *2026-08-29 23:30:15 UTC*
+
+A new passive skill where decoys deployed by the player not only copy their appearance, but occasionally mimic casting harmless visual versions of their current active skill.
+
+---
+
 ## [idea-2112] Seasonal Booster Synergy — *2026-08-29 19:45:54 UTC*
 
 Boosters also react to the seasonal theme. For example, during the 'Frost' season, speed boosters leave a temporary slippery ice trail behind the player for 3 seconds, making it harder for enemies to chase.
