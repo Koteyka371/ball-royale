@@ -30520,7 +30520,7 @@ class Action:
         if getattr(self.ball, "speed_boost_timer", 0.0) > 0:
             self.ball.speed_boost_timer -= delta
             self.ball.speed = getattr(self.ball, "base_speed", 2.0) * 3.0
-            # leave fire trail
+            # leave trail
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 if getattr(self.ball, "speed_boost_timer", 0.0) > 0 and __import__('random').random() < 0.3:
                     class DummyHazard:
@@ -30529,11 +30529,19 @@ class Action:
                     hazard.x = self.ball.x
                     hazard.y = self.ball.y
                     hazard.radius = 15.0
-                    hazard.damage = 10.0
-                    hazard.kind = "fire"
-                    hazard.duration = 2.0
                     hazard.owner_id = getattr(self.ball, "id", None)
                     hazard.creation_time = getattr(self.world, "time", 0.0)
+
+                    theme = getattr(getattr(self.world, "leaderboard_manager", None), "season_theme", "")
+                    if theme == "Frost":
+                        hazard.damage = 0.0
+                        hazard.kind = "ice_patch"
+                        hazard.duration = 3.0
+                        hazard.radius = 30.0
+                    else:
+                        hazard.damage = 10.0
+                        hazard.kind = "fire"
+                        hazard.duration = 2.0
                     self.world.arena.hazards.append(hazard)
             if self.ball.speed_boost_timer <= 0:
                 self.ball.speed_boost_timer = 0.0

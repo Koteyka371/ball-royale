@@ -60843,9 +60843,21 @@ func _update_skill_timer(delta: float):
                 hazard["x"] = self.ball.x
                 hazard["y"] = self.ball.y
                 hazard["radius"] = 15.0
-                hazard["damage"] = 10.0
-                hazard["kind"] = "fire"
-                hazard["duration"] = 2.0
+
+                var theme = ""
+                if self.world != null and "leaderboard_manager" in self.world and self.world.leaderboard_manager != null and "season_theme" in self.world.leaderboard_manager:
+                    theme = self.world.leaderboard_manager.season_theme
+
+                if theme == "Frost":
+                    hazard["damage"] = 0.0
+                    hazard["kind"] = "ice_patch"
+                    hazard["duration"] = 3.0
+                    hazard["radius"] = 30.0
+                else:
+                    hazard["damage"] = 10.0
+                    hazard["kind"] = "fire"
+                    hazard["duration"] = 2.0
+
                 var oid = null
                 if "id" in self.ball: oid = self.ball.id
                 elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): oid = self.ball.get_meta("id")
