@@ -24708,27 +24708,49 @@ class ExtremeWeatherMode(GameMode):
                         world.arena.hazards.remove(h)
 
         if self.current_weather == "magnetic_storm":
-            metal_balls = []
+            metal_entities = []
             for b in balls:
                 if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                     b_type = getattr(b, "ball_type", "").lower()
                     traits = getattr(b, "traits", [])
                     if "metal" in b_type or "armor" in b_type or "metal" in traits or "armor" in traits:
-                        metal_balls.append(b)
+                        metal_entities.append(b)
 
-            # Pull metal balls towards each other
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                for h in world.arena.hazards:
+                    h_kind = getattr(h, "kind", "").lower()
+                    if "metal" in h_kind or "armor" in h_kind or "mine" in h_kind or "bomb" in h_kind or "trap" in h_kind or "turret" in h_kind or "magnet" in h_kind:
+                        metal_entities.append(h)
+
+            import random
             import math
-            for i, b1 in enumerate(metal_balls):
-                for j, b2 in enumerate(metal_balls):
-                    if i != j:
-                        dx = getattr(b2, "x", 0) - getattr(b1, "x", 0)
-                        dy = getattr(b2, "y", 0) - getattr(b1, "y", 0)
-                        dist = math.hypot(dx, dy)
-                        if dist > 0 and dist < 600.0:
-                            pull_force = 15000.0 / (dist * dist)
-                            pull_force = min(pull_force, 400.0)
-                            b1.vx = getattr(b1, "vx", 0) + (dx / dist) * pull_force * delta
-                            b1.vy = getattr(b1, "vy", 0) + (dy / dist) * pull_force * delta
+            arena_w = getattr(world.arena, "width", 1000) if hasattr(world, "arena") else 1000
+            arena_h = getattr(world.arena, "height", 1000) if hasattr(world, "arena") else 1000
+            center_x = arena_w / 2.0
+            center_y = arena_h / 2.0
+
+            for e in metal_entities:
+                if not hasattr(e, "polarity"):
+                    # Use deterministic polarity based on ID if available
+                    e_id = getattr(e, "id", None)
+                    if isinstance(e_id, int):
+                        e.polarity = 1 if e_id % 2 != 0 else -1
+                    else:
+                        e.polarity = random.choice([1, -1])
+
+                dx = center_x - getattr(e, "x", 0)
+                dy = center_y - getattr(e, "y", 0)
+                dist = math.hypot(dx, dy)
+                if dist > 0:
+                    force = 500.0 if getattr(e, "polarity", 1) == 1 else -500.0
+                    if hasattr(e, "vx"):
+                        e.vx += (dx / dist) * force * delta
+                    elif hasattr(e, "x"):
+                        e.x += (dx / dist) * force * delta
+                    if hasattr(e, "vy"):
+                        e.vy += (dy / dist) * force * delta
+                    elif hasattr(e, "y"):
+                        e.y += (dy / dist) * force * delta
 
             # Disable tracking projectiles
             if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
