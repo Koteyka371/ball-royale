@@ -30520,18 +30520,41 @@ class Action:
         if getattr(self.ball, "speed_boost_timer", 0.0) > 0:
             self.ball.speed_boost_timer -= delta
             self.ball.speed = getattr(self.ball, "base_speed", 2.0) * 3.0
-            # leave fire trail
+            # leave fire trail or ice trail based on theme
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 if getattr(self.ball, "speed_boost_timer", 0.0) > 0 and __import__('random').random() < 0.3:
+                    theme = "Genesis"
+                    season_num = 1
+                    if hasattr(self.world, "leaderboard_manager"):
+                        season_num = getattr(self.world.leaderboard_manager, "data", {}).get("current_season", 1)
+                    elif hasattr(self.world, "profile_manager") and hasattr(self.world.profile_manager, "leaderboard_manager"):
+                        season_num = getattr(self.world.profile_manager.leaderboard_manager, "data", {}).get("current_season", 1)
+
+                    if hasattr(self.world, "leaderboard_manager") and hasattr(self.world.leaderboard_manager, "get_theme"):
+                        try:
+                            theme = self.world.leaderboard_manager.get_theme(season_num)
+                        except Exception:
+                            pass
+                    elif hasattr(self.world, "profile_manager") and hasattr(self.world.profile_manager, "leaderboard_manager") and hasattr(self.world.profile_manager.leaderboard_manager, "get_theme"):
+                        try:
+                            theme = self.world.profile_manager.leaderboard_manager.get_theme(season_num)
+                        except Exception:
+                            pass
+
                     class DummyHazard:
                         pass
                     hazard = DummyHazard()
                     hazard.x = self.ball.x
                     hazard.y = self.ball.y
                     hazard.radius = 15.0
-                    hazard.damage = 10.0
-                    hazard.kind = "fire"
-                    hazard.duration = 2.0
+                    if theme == "Frost":
+                        hazard.damage = 0.0
+                        hazard.kind = "ice_patch"
+                        hazard.duration = 3.0
+                    else:
+                        hazard.damage = 10.0
+                        hazard.kind = "fire"
+                        hazard.duration = 2.0
                     hazard.owner_id = getattr(self.ball, "id", None)
                     hazard.creation_time = getattr(self.world, "time", 0.0)
                     self.world.arena.hazards.append(hazard)

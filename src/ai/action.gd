@@ -60839,13 +60839,45 @@ func _update_skill_timer(delta: float):
         sb_timer -= delta
         if randf() < 0.3:
             if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                var theme = "Genesis"
+                var season_num = 1
+                if "leaderboard_manager" in self.world and self.world.leaderboard_manager != null:
+                    var lbm = self.world.leaderboard_manager
+                    if typeof(lbm) == TYPE_OBJECT and "data" in lbm and typeof(lbm.data) == TYPE_DICTIONARY and lbm.data.has("current_season"):
+                        season_num = lbm.data["current_season"]
+                    elif typeof(lbm) == TYPE_DICTIONARY and lbm.has("data") and typeof(lbm["data"]) == TYPE_DICTIONARY and lbm["data"].has("current_season"):
+                        season_num = lbm["data"]["current_season"]
+                elif "profile_manager" in self.world and self.world.profile_manager != null and "leaderboard_manager" in self.world.profile_manager and self.world.profile_manager.leaderboard_manager != null:
+                    var lbm = self.world.profile_manager.leaderboard_manager
+                    if typeof(lbm) == TYPE_OBJECT and "data" in lbm and typeof(lbm.data) == TYPE_DICTIONARY and lbm.data.has("current_season"):
+                        season_num = lbm.data["current_season"]
+                    elif typeof(lbm) == TYPE_DICTIONARY and lbm.has("data") and typeof(lbm["data"]) == TYPE_DICTIONARY and lbm["data"].has("current_season"):
+                        season_num = lbm["data"]["current_season"]
+
+                var lbm_for_theme = null
+                if "leaderboard_manager" in self.world and self.world.leaderboard_manager != null:
+                    lbm_for_theme = self.world.leaderboard_manager
+                elif "profile_manager" in self.world and self.world.profile_manager != null and "leaderboard_manager" in self.world.profile_manager and self.world.profile_manager.leaderboard_manager != null:
+                    lbm_for_theme = self.world.profile_manager.leaderboard_manager
+
+                if lbm_for_theme != null:
+                    if typeof(lbm_for_theme) == TYPE_OBJECT and lbm_for_theme.has_method("get_theme"):
+                        theme = lbm_for_theme.get_theme(season_num)
+                    elif typeof(lbm_for_theme) == TYPE_DICTIONARY and lbm_for_theme.has("get_theme") and lbm_for_theme["get_theme"] != null and lbm_for_theme["get_theme"].has_method("call"):
+                        theme = lbm_for_theme["get_theme"].call(season_num)
+
                 var hazard = {}
                 hazard["x"] = self.ball.x
                 hazard["y"] = self.ball.y
                 hazard["radius"] = 15.0
-                hazard["damage"] = 10.0
-                hazard["kind"] = "fire"
-                hazard["duration"] = 2.0
+                if theme == "Frost":
+                    hazard["damage"] = 0.0
+                    hazard["kind"] = "ice_patch"
+                    hazard["duration"] = 3.0
+                else:
+                    hazard["damage"] = 10.0
+                    hazard["kind"] = "fire"
+                    hazard["duration"] = 2.0
                 var oid = null
                 if "id" in self.ball: oid = self.ball.id
                 elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): oid = self.ball.get_meta("id")
