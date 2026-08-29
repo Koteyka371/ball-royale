@@ -38498,37 +38498,78 @@ class ExtremeWeatherMode extends GameMode:
 					if is_metal:
 						metal_balls.append(b)
 
-			# Pull metal balls towards each other
-			for i in range(metal_balls.size()):
-				for j in range(metal_balls.size()):
-					if i != j:
-						var b1 = metal_balls[i]
-						var b2 = metal_balls[j]
-						var b1_x = 0.0; var b1_y = 0.0
-						var b2_x = 0.0; var b2_y = 0.0
-						if typeof(b1) == TYPE_DICTIONARY:
-							b1_x = b1.get("x", 0.0); b1_y = b1.get("y", 0.0)
-						else:
-							if "x" in b1: b1_x = b1.x
-							if "y" in b1: b1_y = b1.y
-						if typeof(b2) == TYPE_DICTIONARY:
-							b2_x = b2.get("x", 0.0); b2_y = b2.get("y", 0.0)
-						else:
-							if "x" in b2: b2_x = b2.x
-							if "y" in b2: b2_y = b2.y
+			if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
+				for h in world.arena.hazards:
+					var h_kind = ""
+					if typeof(h) == TYPE_DICTIONARY:
+						h_kind = h.get("kind", "").to_lower()
+					elif typeof(h) == TYPE_OBJECT and "kind" in h:
+						h_kind = h.kind.to_lower()
 
-						var dx = b2_x - b1_x
-						var dy = b2_y - b1_y
-						var dist = sqrt(dx*dx + dy*dy)
-						if dist > 0 and dist < 600.0:
-							var pull_force = 15000.0 / (dist * dist)
-							pull_force = min(pull_force, 400.0)
-							if typeof(b1) == TYPE_DICTIONARY:
-								b1["vx"] = b1.get("vx", 0.0) + (dx / dist) * pull_force * delta
-								b1["vy"] = b1.get("vy", 0.0) + (dy / dist) * pull_force * delta
-							else:
-								if "vx" in b1: b1.vx += (dx / dist) * pull_force * delta
-								if "vy" in b1: b1.vy += (dy / dist) * pull_force * delta
+					if h_kind.find("metal") != -1 or h_kind.find("armor") != -1 or h_kind.find("mine") != -1 or h_kind.find("bomb") != -1 or h_kind.find("trap") != -1 or h_kind.find("turret") != -1 or h_kind.find("magnet") != -1:
+						metal_balls.append(h)
+
+			var arena_w = 1000.0
+			var arena_h = 1000.0
+			if world != null and "arena" in world and world.arena != null:
+				if "width" in world.arena: arena_w = world.arena.width
+				elif typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("width"): arena_w = world.arena["width"]
+				if "height" in world.arena: arena_h = world.arena.height
+				elif typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("height"): arena_h = world.arena["height"]
+			var center_x = arena_w / 2.0
+			var center_y = arena_h / 2.0
+
+			for e in metal_balls:
+				var has_pol = false
+				if typeof(e) == TYPE_DICTIONARY: has_pol = e.has("polarity")
+				elif typeof(e) == TYPE_OBJECT: has_pol = e.has_meta("polarity") if e.has_method("has_meta") else "polarity" in e
+
+				if not has_pol:
+					var e_id = null
+					if typeof(e) == TYPE_DICTIONARY and e.has("id"): e_id = e["id"]
+					elif typeof(e) == TYPE_OBJECT and "id" in e: e_id = e.id
+
+					var new_pol = 1
+					if typeof(e_id) == TYPE_INT:
+						new_pol = 1 if (e_id % 2) != 0 else -1
+					else:
+						new_pol = 1 if randf() > 0.5 else -1
+
+					if typeof(e) == TYPE_DICTIONARY: e["polarity"] = new_pol
+					elif typeof(e) == TYPE_OBJECT:
+						if e.has_method("set_meta"): e.set_meta("polarity", new_pol)
+						elif "polarity" in e: e.polarity = new_pol
+
+				var pol = 1
+				if typeof(e) == TYPE_DICTIONARY: pol = e.get("polarity", 1)
+				elif typeof(e) == TYPE_OBJECT:
+					if e.has_method("get_meta") and e.has_meta("polarity"): pol = e.get_meta("polarity")
+					elif "polarity" in e: pol = e.polarity
+
+				var e_x = 0.0
+				var e_y = 0.0
+				if typeof(e) == TYPE_DICTIONARY:
+					e_x = e.get("x", 0.0)
+					e_y = e.get("y", 0.0)
+				else:
+					if "x" in e: e_x = e.x
+					if "y" in e: e_y = e.y
+
+				var dx = center_x - e_x
+				var dy = center_y - e_y
+				var dist = sqrt(dx*dx + dy*dy)
+				if dist > 0:
+					var force = 500.0 if pol == 1 else -500.0
+					if typeof(e) == TYPE_DICTIONARY:
+						if e.has("vx"): e["vx"] = e.get("vx", 0.0) + (dx / dist) * force * delta
+						elif e.has("x"): e["x"] = e.get("x", 0.0) + (dx / dist) * force * delta
+						if e.has("vy"): e["vy"] = e.get("vy", 0.0) + (dy / dist) * force * delta
+						elif e.has("y"): e["y"] = e.get("y", 0.0) + (dy / dist) * force * delta
+					else:
+						if "vx" in e: e.vx += (dx / dist) * force * delta
+						elif "x" in e: e.x += (dx / dist) * force * delta
+						if "vy" in e: e.vy += (dy / dist) * force * delta
+						elif "y" in e: e.y += (dy / dist) * force * delta
 
 			# Disable tracking projectiles
 			if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
