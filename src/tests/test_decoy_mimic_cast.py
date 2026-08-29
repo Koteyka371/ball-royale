@@ -58,3 +58,20 @@ def test_decoy_mimic_cast_from_traits():
     assert world.events[0]['type'] == 'visual_effect'
     assert world.events[0]['data']['type'] == 'skill_cast_mimic'
     assert world.events[0]['data']['skill'] == 'frost_nova'
+
+def test_decoy_mimic_cast_with_no_skill():
+    world = MockWorld()
+
+    # No active_skill or skill defined
+    owner = MockBall(id=1, traits=["decoy_mimic_cast"])
+    decoy = MockBall(id=2, mimic_owner=1, is_decoy_clone=True, x=50.0, y=50.0, decoy_mimic_cast_timer=0.5, decoy_timer=10.0)
+
+    world.balls = [owner, decoy]
+
+    action = Action(decoy, world)
+
+    # Tick past the timer
+    action.execute("idle", 1.0)
+
+    # No events should be created because there is no skill to mimic
+    assert len(world.events) == 0
