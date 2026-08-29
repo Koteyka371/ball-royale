@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2112] Seasonal Booster Synergy — *2026-08-29 19:45:54 UTC*
+
+Boosters also react to the seasonal theme. For example, during the 'Frost' season, speed boosters leave a temporary slippery ice trail behind the player for 3 seconds, making it harder for enemies to chase.
+
+---
+
 ## [idea-2116] Magnetic Anomaly Event — *2026-08-29 19:45:49 UTC*
 
 Periodically, an intense magnetic storm sweeps across the arena, forcefully pushing or pulling all metallic balls or hazard items towards the center or edges depending on their polarity.
