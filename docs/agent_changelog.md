@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2116] Magnetic Anomaly Event — *2026-08-29 19:45:49 UTC*
+
+Periodically, an intense magnetic storm sweeps across the arena, forcefully pushing or pulling all metallic balls or hazard items towards the center or edges depending on their polarity.
+
+---
+
 ## [idea-2086] Quantum Bumper Trap — *2026-08-29 15:50:36 UTC*
 
 A deployable trap that, when triggered, teleports the victim to a random location in the arena while retaining their current velocity, but multiplied by a small factor. This forces them to abruptly navigate a new environment with high speed.
