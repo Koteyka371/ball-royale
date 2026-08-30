@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2101] Quantum Leap Mutator — *2026-08-30 21:44:15 UTC*
+
+Every 15 seconds, all players instantly swap positions with a randomly chosen opponent. Players must adapt quickly to their new surroundings and momentum to avoid taking damage or falling into hazards.
+
+---
+
 ## [idea-2095] Aura Disruption Trap — *2026-08-30 18:10:46 UTC*
 
 A new trap that emits an EMP-like pulse. Enemies caught in its radius instantly lose all active aura effects (speed, healing, etc.) and cannot gain new ones for a short duration.
