@@ -40666,7 +40666,38 @@ class AbyssalFogEventMode(GameMode):
                             b.vision_radius = b.orig_vision_radius
                         b.perception_radius = getattr(b, "base_perception_radius", 500.0)
 
+
+class BloodThirstMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Blood Thirst"
+        self.description = "A mutator where all balls slowly lose health over time, and the only way to regain health is by dealing damage to enemies, encouraging highly aggressive playstyles."
+        self.health_drain_rate = 5.0
+        self.lifesteal_bonus = 1.0
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        if hasattr(super(), 'setup'):
+            super().setup(world, balls)
+        for b in balls:
+            if getattr(b, "alive", False):
+                b.lifesteal = getattr(b, "lifesteal", 0.0) + self.lifesteal_bonus
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        if hasattr(super(), 'tick'):
+            super().tick(world, balls, delta)
+        drain_amount = self.health_drain_rate * delta
+        for b in balls:
+            if getattr(b, "alive", False):
+                b.hp_regen_timer = 0.0
+                b.hp = getattr(b, "hp", 100.0) - drain_amount
+                if b.hp <= 0:
+                    b.hp = 0
+                    b.alive = False
+                    if hasattr(world, "add_event"):
+                        world.add_event("death", {"id": getattr(b, "id", None), "reason": "blood_thirst_drain"})
+
 GAME_MODES = {
+    'blood_thirst': BloodThirstMode(),
     'abyssal_fog_event': AbyssalFogEventMode(),
     'phantom_graveyard': PhantomGraveyardMode(),
     'random_teleport_event': RandomTeleportEventMode(),

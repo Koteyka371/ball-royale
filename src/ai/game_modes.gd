@@ -92120,3 +92120,48 @@ class SlowDrainAuraMode extends GameMode:
 					b.stamina = new_stamina
 
 GAME_MODES["slow_drain_aura"] = SlowDrainAuraMode.new()
+
+class BloodThirstMode extends GameMode:
+	var health_drain_rate: float = 5.0
+	var lifesteal_bonus: float = 1.0
+
+	func _init().():
+		name = "Blood Thirst"
+		description = "A mutator where all balls slowly lose health over time, and the only way to regain health is by dealing damage to enemies, encouraging highly aggressive playstyles."
+
+	func setup(world, balls):
+		.setup(world, balls)
+		for b in balls:
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.get("alive", false):
+					b["lifesteal"] = b.get("lifesteal", 0.0) + lifesteal_bonus
+			else:
+				if b.get("alive"):
+					b.set("lifesteal", b.get("lifesteal", 0.0) + lifesteal_bonus)
+
+	func tick(world, balls, delta: float = 0.016):
+		.tick(world, balls, delta)
+		var drain_amount = health_drain_rate * delta
+		for b in balls:
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.get("alive", false):
+					b["hp_regen_timer"] = 0.0
+					var current_hp = b.get("hp", 100.0) - drain_amount
+					b["hp"] = current_hp
+					if current_hp <= 0:
+						b["hp"] = 0
+						b["alive"] = false
+						if world.has_method("add_event"):
+							world.add_event("death", {"id": b.get("id"), "reason": "blood_thirst_drain"})
+			else:
+				if b.get("alive"):
+					b.set("hp_regen_timer", 0.0)
+					var current_hp = b.get("hp", 100.0) - drain_amount
+					b.set("hp", current_hp)
+					if current_hp <= 0:
+						b.set("hp", 0)
+						b.set("alive", false)
+						if world.has_method("add_event"):
+							world.add_event("death", {"id": b.get("id"), "reason": "blood_thirst_drain"})
+
+GAME_MODES["blood_thirst"] = BloodThirstMode.new()
