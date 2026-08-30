@@ -30660,6 +30660,10 @@ class PositionSwapMode(GameMode):
                         ball_a.x, ball_a.y = ball_b.x, ball_b.y
                         ball_b.x, ball_b.y = temp_x, temp_y
 
+                        temp_vx, temp_vy = getattr(ball_a, "vx", 0.0), getattr(ball_a, "vy", 0.0)
+                        ball_a.vx, ball_a.vy = getattr(ball_b, "vx", 0.0), getattr(ball_b, "vy", 0.0)
+                        ball_b.vx, ball_b.vy = temp_vx, temp_vy
+
                         if hasattr(world, "add_event"):
                             world.add_event("position_swapped", {
                                 "ball_a": aid,
