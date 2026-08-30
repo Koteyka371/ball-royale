@@ -58642,3 +58642,50 @@ class SeasonalCycleMode(GameMode):
                     b.friction_multiplier = 1.0
 
 GAME_MODES["seasonal_cycle"] = SeasonalCycleMode()
+
+
+class SlowDrainAuraMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Slow Drain Aura"
+        self.description = "A slow-moving aura circles the arena. Any player caught inside has their stamina slowly drained, forcing them to rely on base movement speed."
+        self.aura_angle = 0.0
+        self.aura_orbit_radius = 300.0
+        self.aura_radius = 150.0
+        self.aura_speed = 0.5
+        self.drain_rate = 10.0
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        self.aura_angle += self.aura_speed * delta
+
+        # Center of arena is usually 500, 500 based on standard 1000x1000 size, or getting from arena
+        arena_w = getattr(world.arena, "width", 1000.0)
+        arena_h = getattr(world.arena, "height", 1000.0)
+        center_x = arena_w / 2
+        center_y = arena_h / 2
+
+        import math
+        aura_x = center_x + math.cos(self.aura_angle) * self.aura_orbit_radius
+        aura_y = center_y + math.sin(self.aura_angle) * self.aura_orbit_radius
+
+        for b in balls:
+            is_dict = isinstance(b, dict)
+            alive = b.get("alive", True) if is_dict else getattr(b, "alive", True)
+            if not alive or (b.get("ball_type", "") if is_dict else getattr(b, "ball_type", "")) == "spectator":
+                continue
+
+            bx = b.get("x", 0.0) if is_dict else getattr(b, "x", 0.0)
+            by = b.get("y", 0.0) if is_dict else getattr(b, "y", 0.0)
+
+            dist = math.hypot(bx - aura_x, by - aura_y)
+            if dist <= self.aura_radius:
+                stamina = b.get("stamina", 0.0) if is_dict else getattr(b, "stamina", 0.0)
+                new_stamina = max(0.0, stamina - self.drain_rate * delta)
+                if is_dict:
+                    b["stamina"] = new_stamina
+                else:
+                    setattr(b, "stamina", new_stamina)
+
+GAME_MODES["slow_drain_aura"] = SlowDrainAuraMode()
