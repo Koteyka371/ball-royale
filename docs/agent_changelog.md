@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2121] Vampiric Leech Mode — *2026-08-30 23:35:42 UTC*
+
+A mutator where all balls slowly lose health over time, and the only way to regain health is by dealing damage to enemies, encouraging highly aggressive playstyles.
+
+---
+
 ## [idea-2101] Quantum Leap Mutator — *2026-08-30 21:44:15 UTC*
 
 Every 15 seconds, all players instantly swap positions with a randomly chosen opponent. Players must adapt quickly to their new surroundings and momentum to avoid taking damage or falling into hazards.
