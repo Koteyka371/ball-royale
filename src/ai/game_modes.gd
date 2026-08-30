@@ -50778,17 +50778,17 @@ class DiscoFloorMode extends GameMode:
 
 
 class PositionSwapMode extends GameMode:
-	var swap_interval: float = 5.0
+	var swap_interval: float = 15.0
 	var telegraph_duration: float = 1.0
 
 	func _init() -> void:
 		name = "Position Swap"
-		description = "Players swap positions with an enemy at random intervals"
+		description = "Every 15 seconds, all players instantly swap positions with a randomly chosen opponent."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
 		var timer = world.get("position_swap_timer")
 		if typeof(timer) != TYPE_FLOAT and typeof(timer) != TYPE_INT:
-			timer = randf_range(3.0, 8.0)
+			timer = swap_interval
 		timer -= delta
 		if timer < 0:
 			timer = 0
@@ -50805,56 +50805,74 @@ class PositionSwapMode extends GameMode:
 			telegraph_timer -= delta
 			if telegraph_timer <= 0:
 				pending = false
-				timer = randf_range(3.0, 8.0)
+				timer = swap_interval
 
-				var ball_a_id = world.get("position_swap_ball_a")
-				var ball_b_id = world.get("position_swap_ball_b")
+				var swap_pairs = world.get("position_swap_pairs")
+				if typeof(swap_pairs) != TYPE_ARRAY:
+					swap_pairs = []
 
-				var ball_a = null
-				var ball_b = null
-
+				var ball_map = {}
 				for b in balls:
 					var bid = b.get("id") if typeof(b) == TYPE_DICTIONARY else (b.id if "id" in b else null)
-					if bid == ball_a_id:
-						ball_a = b
-					elif bid == ball_b_id:
-						ball_b = b
+					if bid != null:
+						ball_map[bid] = b
 
-				var a_alive = ball_a.get("alive", false) if typeof(ball_a) == TYPE_DICTIONARY else (ball_a.alive if ball_a and "alive" in ball_a else false)
-				var b_alive = ball_b.get("alive", false) if typeof(ball_b) == TYPE_DICTIONARY else (ball_b.alive if ball_b and "alive" in ball_b else false)
+				for pair in swap_pairs:
+					if typeof(pair) == TYPE_ARRAY and pair.size() >= 2:
+						var aid = pair[0]
+						var bid = pair[1]
+						var ball_a = ball_map.get(aid)
+						var ball_b = ball_map.get(bid)
 
-				if ball_a != null and ball_b != null and a_alive and b_alive:
-					var ax = ball_a.get("x", 0.0) if typeof(ball_a) == TYPE_DICTIONARY else ball_a.x
-					var ay = ball_a.get("y", 0.0) if typeof(ball_a) == TYPE_DICTIONARY else ball_a.y
-					var bx = ball_b.get("x", 0.0) if typeof(ball_b) == TYPE_DICTIONARY else ball_b.x
-					var by = ball_b.get("y", 0.0) if typeof(ball_b) == TYPE_DICTIONARY else ball_b.y
+						if ball_a != null and ball_b != null:
+							var a_alive = ball_a.get("alive", false) if typeof(ball_a) == TYPE_DICTIONARY else (ball_a.alive if "alive" in ball_a else false)
+							var b_alive = ball_b.get("alive", false) if typeof(ball_b) == TYPE_DICTIONARY else (ball_b.alive if "alive" in ball_b else false)
 
-					if typeof(ball_a) == TYPE_DICTIONARY:
-						ball_a["x"] = bx
-						ball_a["y"] = by
-					else:
-						ball_a.x = bx
-						ball_a.y = by
+							if a_alive and b_alive:
+								var ax = ball_a.get("x", 0.0) if typeof(ball_a) == TYPE_DICTIONARY else ball_a.x
+								var ay = ball_a.get("y", 0.0) if typeof(ball_a) == TYPE_DICTIONARY else ball_a.y
+								var bx = ball_b.get("x", 0.0) if typeof(ball_b) == TYPE_DICTIONARY else ball_b.x
+								var by = ball_b.get("y", 0.0) if typeof(ball_b) == TYPE_DICTIONARY else ball_b.y
 
-					if typeof(ball_b) == TYPE_DICTIONARY:
-						ball_b["x"] = ax
-						ball_b["y"] = ay
-					else:
-						ball_b.x = ax
-						ball_b.y = ay
+								if typeof(ball_a) == TYPE_DICTIONARY:
+									ball_a["x"] = bx
+									ball_a["y"] = by
+								else:
+									ball_a.x = bx
+									ball_a.y = by
 
-					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
-						world.add_event("position_swapped", {
-							"ball_a": ball_a_id,
-							"ball_b": ball_b_id,
-							"pos_a": [bx, by],
-							"pos_b": [ax, ay]
-						})
+								if typeof(ball_b) == TYPE_DICTIONARY:
+									ball_b["x"] = ax
+									ball_b["y"] = ay
+								else:
+									ball_b.x = ax
+									ball_b.y = ay
+
+								if typeof(world) == TYPE_DICTIONARY and world.has("events"):
+									world["events"].append({
+										"type": "position_swapped",
+										"ball_a": aid,
+										"ball_b": bid,
+										"pos_a": [bx, by],
+										"pos_b": [ax, ay]
+									})
+								elif typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+									world.add_event("position_swapped", {
+										"ball_a": aid,
+										"ball_b": bid,
+										"pos_a": [bx, by],
+										"pos_b": [ax, ay]
+									})
+
+				if typeof(world) == TYPE_DICTIONARY:
+					world["position_swap_pairs"] = []
+				else:
+					world.set("position_swap_pairs", [])
 
 			if typeof(world) == TYPE_DICTIONARY:
 				world["position_swap_telegraph_timer"] = telegraph_timer
 			else:
-				world.position_swap_telegraph_timer = telegraph_timer
+				world.set("position_swap_telegraph_timer", telegraph_timer)
 		else:
 			if timer <= 0:
 				var living = []
@@ -50864,53 +50882,75 @@ class PositionSwapMode extends GameMode:
 						living.append(b)
 
 				if living.size() >= 2:
-					var a_idx = randi() % living.size()
-					var ball_a = living[a_idx]
-					var a_team = ball_a.get("team") if typeof(ball_a) == TYPE_DICTIONARY else (ball_a.team if "team" in ball_a else null)
+					var swap_pairs = []
+					var unswapped = living.duplicate()
 
-					var candidates = []
-					for b in living:
-						if b != ball_a:
-							var b_team = b.get("team") if typeof(b) == TYPE_DICTIONARY else (b.team if "team" in b else null)
-							if b_team != a_team:
-								candidates.append(b)
+					var i = 0
+					while i < unswapped.size():
+						var b = unswapped[i]
+						unswapped.remove_at(i)
 
-					if candidates.size() == 0:
-						for b in living:
-							if b != ball_a:
-								candidates.append(b)
+						var b_team = b.get("team", null) if typeof(b) == TYPE_DICTIONARY else (b.team if "team" in b else null)
 
-					if candidates.size() > 0:
-						var b_idx = randi() % candidates.size()
-						var ball_b = candidates[b_idx]
+						var enemies = []
+						for e in unswapped:
+							var e_team = e.get("team", null) if typeof(e) == TYPE_DICTIONARY else (e.team if "team" in e else null)
+							if e_team != b_team:
+								enemies.append(e)
 
+						if enemies.size() == 0:
+							enemies = unswapped.duplicate()
+
+						if enemies.size() > 0:
+							var target_idx = randi() % enemies.size()
+							var target = enemies[target_idx]
+
+							var target_unswapped_idx = unswapped.find(target)
+							if target_unswapped_idx != -1:
+								unswapped.remove_at(target_unswapped_idx)
+
+							var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else (b.id if "id" in b else null)
+							var t_id = target.get("id") if typeof(target) == TYPE_DICTIONARY else (target.id if "id" in target else null)
+
+							if b_id != null and t_id != null:
+								swap_pairs.append([b_id, t_id])
+						else:
+							break
+
+					if swap_pairs.size() > 0:
 						pending = true
 						telegraph_timer = telegraph_duration
 
-						var bid_a = ball_a.get("id") if typeof(ball_a) == TYPE_DICTIONARY else ball_a.id
-						var bid_b = ball_b.get("id") if typeof(ball_b) == TYPE_DICTIONARY else ball_b.id
-
 						if typeof(world) == TYPE_DICTIONARY:
-							world["position_swap_ball_a"] = bid_a
-							world["position_swap_ball_b"] = bid_b
+							world["position_swap_pairs"] = swap_pairs
 							world["position_swap_telegraph_timer"] = telegraph_timer
 						else:
-							world.position_swap_ball_a = bid_a
-							world.position_swap_ball_b = bid_b
-							world.position_swap_telegraph_timer = telegraph_timer
+							world.set("position_swap_pairs", swap_pairs)
+							world.set("position_swap_telegraph_timer", telegraph_timer)
 
-						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						var targets = []
+						for p in swap_pairs:
+							targets.append(p[0])
+							targets.append(p[1])
+
+						if typeof(world) == TYPE_DICTIONARY and world.has("events"):
+							world["events"].append({
+								"type": "portal_telegraph",
+								"duration": telegraph_duration,
+								"targets": targets
+							})
+						elif typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 							world.add_event("portal_telegraph", {
 								"duration": telegraph_duration,
-								"targets": [bid_a, bid_b]
+								"targets": targets
 							})
 
 		if typeof(world) == TYPE_DICTIONARY:
 			world["position_swap_timer"] = timer
 			world["position_swap_pending"] = pending
 		else:
-			world.position_swap_timer = timer
-			world.position_swap_pending = pending
+			world.set("position_swap_timer", timer)
+			world.set("position_swap_pending", pending)
 
 
 class SpectatorHologramsMode extends GameMode:
