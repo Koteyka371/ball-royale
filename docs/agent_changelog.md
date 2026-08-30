@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2095] Aura Disruption Trap — *2026-08-30 18:10:46 UTC*
+
+A new trap that emits an EMP-like pulse. Enemies caught in its radius instantly lose all active aura effects (speed, healing, etc.) and cannot gain new ones for a short duration.
+
+---
+
 ## [idea-2120] Time Stop Powerup — *2026-08-30 13:35:03 UTC*
 
 Freezes all other players for 3 seconds.
