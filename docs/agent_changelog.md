@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2108] Stamina Drain Aura — *2026-08-30 01:38:40 UTC*
+
+An event where a slow-moving aura circles the arena. Any player caught inside the aura has their stamina slowly drained, forcing them to rely on base movement speed.
+
+---
+
 ## [idea-2098] Decoy Mimic Cast — *2026-08-29 23:30:15 UTC*
 
 A new passive skill where decoys deployed by the player not only copy their appearance, but occasionally mimic casting harmless visual versions of their current active skill.
