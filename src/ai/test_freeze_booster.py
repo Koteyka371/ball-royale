@@ -79,8 +79,8 @@ def test_collect_freeze_booster():
     # Check enemies in arena get stunned/frozen
     assert enemy.stun_timer == 3.0
     assert enemy_far.stun_timer == 3.0 # it should freeze ALL enemies
-    # Check ally is not stunned
-    assert ally.stun_timer == 0
+    # Check ally is stunned
+    assert ally.stun_timer == 3.0
     # Check hazards are frozen
     assert hazard1.frozen_timer == 3.0
     # Check booster is removed from hazards

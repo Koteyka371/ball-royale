@@ -19558,7 +19558,7 @@ class Action:
                     duration = getattr(nearest, "duration", 3.0)
                     if hasattr(self.world, "balls"):
                         for other_ball in self.world.balls:
-                            if getattr(other_ball, "team", None) != getattr(self.ball, "team", None) and getattr(other_ball, "alive", True):
+                            if getattr(other_ball, "id", None) != getattr(self.ball, "id", None) and getattr(other_ball, "alive", True):
                                 other_ball.stun_timer = max(getattr(other_ball, "stun_timer", 0.0), duration)
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         for h in self.world.arena.hazards:
