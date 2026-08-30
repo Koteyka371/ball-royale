@@ -4124,6 +4124,27 @@ func _apply_artifact_set_bonuses():
 				self.ball.set_meta("artifact_dmg_buffed", dmg_mult != 1.0)
 
 func execute(strategy: String, delta: float):
+	var emp_trap_timer = 0.0
+	if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("emp_trap_disabled_timer"): emp_trap_timer = self.ball.emp_trap_disabled_timer
+	elif typeof(self.ball) == TYPE_OBJECT and "emp_trap_disabled_timer" in self.ball: emp_trap_timer = self.ball.emp_trap_disabled_timer
+	elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("emp_trap_disabled_timer"): emp_trap_timer = self.ball.get_meta("emp_trap_disabled_timer")
+	if emp_trap_timer > 0.0:
+		emp_trap_timer -= delta
+		if typeof(self.ball) == TYPE_DICTIONARY:
+			self.ball["emp_trap_disabled_timer"] = emp_trap_timer
+			self.ball["in_aura_nullifier_zone"] = true
+			if self.ball.has("aura_booster_timer"): self.ball["aura_booster_timer"] = 0.0
+			if self.ball.has("vampiric_aura_timer"): self.ball["vampiric_aura_timer"] = 0.0
+		else:
+			if "emp_trap_disabled_timer" in self.ball: self.ball.emp_trap_disabled_timer = emp_trap_timer
+			elif self.ball.has_method("set_meta"): self.ball.set_meta("emp_trap_disabled_timer", emp_trap_timer)
+			if "in_aura_nullifier_zone" in self.ball: self.ball.in_aura_nullifier_zone = true
+			elif self.ball.has_method("set_meta"): self.ball.set_meta("in_aura_nullifier_zone", true)
+			if "aura_booster_timer" in self.ball: self.ball.aura_booster_timer = 0.0
+			elif self.ball.has_method("set_meta"): self.ball.set_meta("aura_booster_timer", 0.0)
+			if "vampiric_aura_timer" in self.ball: self.ball.vampiric_aura_timer = 0.0
+			elif self.ball.has_method("set_meta"): self.ball.set_meta("vampiric_aura_timer", 0.0)
+
 	_apply_artifact_set_bonuses()
 
 	if world != null and "arena" in world and world.arena != null and typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
@@ -9822,7 +9843,7 @@ func execute(strategy: String, delta: float):
                     if typeof(h) == TYPE_DICTIONARY and h.has("kind"): h_kind = h.kind
                     elif typeof(h) == TYPE_OBJECT and "kind" in h: h_kind = h.kind
 
-                    if h_kind not in ["healing_spring", "inverted_clone_hazard", "aura_nullifier_gadget"] and h_kind != "defensive_shield" and h_kind != "personal_safe_zone":
+                    if h_kind not in ["healing_spring", "inverted_clone_hazard", "aura_nullifier_gadget", "emp_trap"] and h_kind != "defensive_shield" and h_kind != "personal_safe_zone":
                         var hx = 0.0
                         var hy = 0.0
                         if typeof(h) == TYPE_DICTIONARY and h.has("x"): hx = h.x
@@ -36599,7 +36620,7 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'deploy_clan_banner', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_aura_nullifier_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'survival_rewind', 'echo_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_dash', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'deploy_kinetic_trap', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_stabilizer_field', 'deploy_tracker_drone', 'deploy_distract_drone', 'deploy_fake_balls', 'decoy_swarm', 'hire_mercenary', 'hazard_surfing', 'grapple_hook', 'elastic_tether', 'instant_swap']
+                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'deploy_clan_banner', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_aura_nullifier_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'survival_rewind', 'echo_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_dash', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'deploy_kinetic_trap', 'deploy_emp_trap', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_stabilizer_field', 'deploy_tracker_drone', 'deploy_distract_drone', 'deploy_fake_balls', 'decoy_swarm', 'hire_mercenary', 'hazard_surfing', 'grapple_hook', 'elastic_tether', 'instant_swap']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -48273,6 +48294,27 @@ func _use_skill():
                 self.world.arena.hazards.append(node)
             self.ball.skill_timer = 20.0
 
+        elif skill_name == "deploy_emp_trap":
+            if typeof(self.world) == TYPE_OBJECT and "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT and "hazards" in self.world.arena:
+                var node = {}
+                node["id"] = "emp_trap_%s_%s" % [str(self.ball.get("id") if typeof(self.ball) == TYPE_DICTIONARY else self.ball.id), str(self.world.get("tick") if typeof(self.world) == TYPE_DICTIONARY else self.world.tick)]
+                node["kind"] = "emp_trap"
+                node["x"] = self.ball.x
+                node["y"] = self.ball.y
+                node["radius"] = 40.0
+                node["damage"] = 0.0
+                node["owner_id"] = self.ball.get("id") if typeof(self.ball) == TYPE_DICTIONARY else self.ball.id
+                node["team"] = self.ball.get("team") if typeof(self.ball) == TYPE_DICTIONARY else self.ball.team
+                node["duration"] = 20.0
+                node["active"] = true
+                self.world.arena.hazards.append(node)
+            if "skill_timer" in self.ball:
+                self.ball.skill_timer = 20.0
+            elif self.ball.has_method("set_meta"):
+                self.ball.set_meta("skill_timer", 20.0)
+            elif typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["skill_timer"] = 20.0
+
         elif skill_name == "deploy_kinetic_trap":
             if typeof(self.world) == TYPE_OBJECT and "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT and "hazards" in self.world.arena:
                 var node = {}
@@ -56552,6 +56594,82 @@ func _update_skill_timer(delta: float):
                                             self.ball.x += nx * force
                                             self.ball.y += ny * force
                             elif typeof(hazard) == TYPE_DICTIONARY: hazard["duration"] = 0.0
+
+                if h_kind == "emp_trap":
+                    var h_active = true
+                    if typeof(hazard) == TYPE_DICTIONARY and hazard.has("active"): h_active = hazard.active
+                    elif typeof(hazard) == TYPE_OBJECT and "active" in hazard: h_active = hazard.active
+                    if h_active:
+                        var trap_team = ""
+                        if typeof(hazard) == TYPE_DICTIONARY and hazard.has("team"): trap_team = hazard.team
+                        elif typeof(hazard) == TYPE_OBJECT and "team" in hazard: trap_team = hazard.team
+                        var owner_id = null
+                        if typeof(hazard) == TYPE_DICTIONARY and hazard.has("owner_id"): owner_id = hazard.owner_id
+                        elif typeof(hazard) == TYPE_OBJECT and "owner_id" in hazard: owner_id = hazard.owner_id
+                        if (typeof(world) == TYPE_DICTIONARY and world.has("balls")) or (typeof(world) == TYPE_OBJECT and "balls" in world):
+                            for b in world.balls:
+                                var b_alive = true
+                                if typeof(b) == TYPE_DICTIONARY and b.has("alive"): b_alive = b.alive
+                                elif typeof(b) == TYPE_OBJECT and "alive" in b: b_alive = b.alive
+
+                                var b_team = ""
+                                if typeof(b) == TYPE_DICTIONARY and b.has("team"): b_team = b.team
+                                elif typeof(b) == TYPE_OBJECT and "team" in b: b_team = b.team
+
+                                var b_id = null
+                                if typeof(b) == TYPE_DICTIONARY and b.has("id"): b_id = b.id
+                                elif typeof(b) == TYPE_OBJECT and "id" in b: b_id = b.id
+
+                                if b_alive and b_team != trap_team and not (trap_team == "" and b_id == owner_id):
+                                    var h_rad = 40.0
+                                    if typeof(hazard) == TYPE_DICTIONARY and hazard.has("radius"): h_rad = hazard.radius
+                                    elif typeof(hazard) == TYPE_OBJECT and "radius" in hazard: h_rad = hazard.radius
+                                    var b_x = 0.0
+                                    var b_y = 0.0
+                                    var h_x = 0.0
+                                    var h_y = 0.0
+                                    if typeof(b) == TYPE_DICTIONARY: b_x = b.get("x", 0.0); b_y = b.get("y", 0.0)
+                                    else:
+                                        if "x" in b: b_x = b.x
+                                        if "y" in b: b_y = b.y
+                                    if typeof(hazard) == TYPE_DICTIONARY: h_x = hazard.get("x", 0.0); h_y = hazard.get("y", 0.0)
+                                    else:
+                                        if "x" in hazard: h_x = hazard.x
+                                        if "y" in hazard: h_y = hazard.y
+                                    var dist_sq = (h_x - b_x)*(h_x - b_x) + (h_y - b_y)*(h_y - b_y)
+                                    if dist_sq < h_rad*h_rad:
+                                        if typeof(b) == TYPE_DICTIONARY:
+                                            b["in_aura_nullifier_zone"] = true
+                                            if b.has("aura_booster_timer"): b["aura_booster_timer"] = 0.0
+                                            if b.has("vampiric_aura_timer"): b["vampiric_aura_timer"] = 0.0
+                                            if b.has("reflect_shield_active"): b["reflect_shield_active"] = false
+                                            if b.has("half_reflect_shield_active"): b["half_reflect_shield_active"] = false
+                                            if b.has("energy_shield_active"): b["energy_shield_active"] = false
+                                            if b.has("orbital_shield_active"): b["orbital_shield_active"] = false
+                                            if b.has("kinetic_shield_active"): b["kinetic_shield_active"] = false
+                                            if b.has("charging_shockwave_shield_active"): b["charging_shockwave_shield_active"] = false
+                                            if b.has("shield_booster_active"): b["shield_booster_active"] = false
+                                            b["emp_trap_disabled_timer"] = 5.0
+                                        else:
+                                            if "in_aura_nullifier_zone" in b: b.in_aura_nullifier_zone = true
+                                            elif b.has_method("set_meta"): b.set_meta("in_aura_nullifier_zone", true)
+                                            if "aura_booster_timer" in b: b.aura_booster_timer = 0.0
+                                            elif b.has_method("set_meta"): b.set_meta("aura_booster_timer", 0.0)
+                                            if "vampiric_aura_timer" in b: b.vampiric_aura_timer = 0.0
+                                            elif b.has_method("set_meta"): b.set_meta("vampiric_aura_timer", 0.0)
+                                            if "reflect_shield_active" in b: b.reflect_shield_active = false
+                                            if "half_reflect_shield_active" in b: b.half_reflect_shield_active = false
+                                            if "energy_shield_active" in b: b.energy_shield_active = false
+                                            if "orbital_shield_active" in b: b.orbital_shield_active = false
+                                            if "kinetic_shield_active" in b: b.kinetic_shield_active = false
+                                            if "charging_shockwave_shield_active" in b: b.charging_shockwave_shield_active = false
+                                            if "shield_booster_active" in b: b.shield_booster_active = false
+                                            if "emp_trap_disabled_timer" in b: b.emp_trap_disabled_timer = 5.0
+                                            elif b.has_method("set_meta"): b.set_meta("emp_trap_disabled_timer", 5.0)
+                                            else: b.set("emp_trap_disabled_timer", 5.0)
+
+                                        if typeof(hazard) == TYPE_DICTIONARY: hazard["duration"] = 0.0
+                                        elif typeof(hazard) == TYPE_OBJECT and "duration" in hazard: hazard.duration = 0.0
 
                 if h_kind == "kinetic_trap":
                     var trap_team = ""
