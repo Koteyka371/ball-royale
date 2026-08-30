@@ -91978,3 +91978,86 @@ class SeasonalCycleMode extends GameMode:
 					if "friction_multiplier" in b: b.friction_multiplier = 1.0
 
 GAME_MODES["seasonal_cycle"] = SeasonalCycleMode.new()
+
+
+class SlowDrainAuraMode extends GameMode:
+	var aura_angle = 0.0
+	var aura_orbit_radius = 300.0
+	var aura_radius = 150.0
+	var aura_speed = 0.5
+	var drain_rate = 10.0
+
+	func _init():
+		super._init()
+		self.name = "Slow Drain Aura"
+		self.description = "A slow-moving aura circles the arena. Any player caught inside has their stamina slowly drained, forcing them to rely on base movement speed."
+
+	func tick(world, balls, delta = 0.016):
+		super.tick(world, balls, delta)
+
+		self.aura_angle += self.aura_speed * delta
+
+		var arena_w = 1000.0
+		var arena_h = 1000.0
+		if typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			var arena = world.arena
+			if typeof(arena) == TYPE_DICTIONARY:
+				if arena.has("width"): arena_w = float(arena.width)
+				if arena.has("height"): arena_h = float(arena.height)
+			elif typeof(arena) == TYPE_OBJECT:
+				if "width" in arena: arena_w = float(arena.width)
+				if "height" in arena: arena_h = float(arena.height)
+		elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+			var arena = world.arena
+			if typeof(arena) == TYPE_DICTIONARY:
+				if arena.has("width"): arena_w = float(arena.width)
+				if arena.has("height"): arena_h = float(arena.height)
+			elif typeof(arena) == TYPE_OBJECT:
+				if "width" in arena: arena_w = float(arena.width)
+				if "height" in arena: arena_h = float(arena.height)
+
+		var center_x = arena_w / 2.0
+		var center_y = arena_h / 2.0
+
+		var aura_x = center_x + cos(self.aura_angle) * self.aura_orbit_radius
+		var aura_y = center_y + sin(self.aura_angle) * self.aura_orbit_radius
+
+		for b in balls:
+			var is_alive = false
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.has("alive"): is_alive = b.alive
+				if b.has("ball_type"): b_type = b.ball_type
+			elif typeof(b) == TYPE_OBJECT:
+				if "alive" in b: is_alive = b.alive
+				if "ball_type" in b: b_type = b.ball_type
+
+			if not is_alive or b_type == "spectator":
+				continue
+
+			var bx = 0.0
+			var by = 0.0
+			var stamina = 0.0
+
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.has("x"): bx = float(b.x)
+				if b.has("y"): by = float(b.y)
+				if b.has("stamina"): stamina = float(b.stamina)
+			elif typeof(b) == TYPE_OBJECT:
+				if "x" in b: bx = float(b.x)
+				if "y" in b: by = float(b.y)
+				if "stamina" in b: stamina = float(b.stamina)
+
+			var dx = bx - aura_x
+			var dy = by - aura_y
+			var dist = sqrt(dx*dx + dy*dy)
+
+			if dist <= self.aura_radius:
+				var new_stamina = max(0.0, stamina - self.drain_rate * delta)
+				if typeof(b) == TYPE_DICTIONARY:
+					b["stamina"] = new_stamina
+				elif typeof(b) == TYPE_OBJECT and "stamina" in b:
+					b.stamina = new_stamina
+
+GAME_MODES["slow_drain_aura"] = SlowDrainAuraMode.new()
