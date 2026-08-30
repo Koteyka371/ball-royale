@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2120] Time Stop Powerup — *2026-08-30 13:35:03 UTC*
+
+Freezes all other players for 3 seconds.
+
+---
+
 ## [idea-2108] Stamina Drain Aura — *2026-08-30 01:38:40 UTC*
 
 An event where a slow-moving aura circles the arena. Any player caught inside the aura has their stamina slowly drained, forcing them to rely on base movement speed.
