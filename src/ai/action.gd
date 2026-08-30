@@ -38052,12 +38052,12 @@ func _collect_booster(delta: float):
                 if "duration" in nearest: fduration = nearest.duration
                 if self.world != null and "balls" in self.world:
                     for other_ball in self.world.balls:
-                        var same_team = false
-                        if "team" in other_ball and "team" in self.ball and other_ball.team == self.ball.team:
-                            same_team = true
+                        var same_ball = false
+                        if "id" in other_ball and "id" in self.ball and other_ball.id == self.ball.id:
+                            same_ball = true
                         var alive = true
                         if "alive" in other_ball: alive = other_ball.alive
-                        if not same_team and alive:
+                        if not same_ball and alive:
                             var current_stun = 0.0
                             if "stun_timer" in other_ball: current_stun = other_ball.stun_timer
                             elif other_ball.has_method("get_meta") and other_ball.has_meta("stun_timer"): current_stun = other_ball.get_meta("stun_timer")
