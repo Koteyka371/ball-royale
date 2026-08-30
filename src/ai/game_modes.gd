@@ -50848,6 +50848,25 @@ class PositionSwapMode extends GameMode:
 									ball_b.x = ax
 									ball_b.y = ay
 
+								var avx = ball_a.get("vx", 0.0) if typeof(ball_a) == TYPE_DICTIONARY else ball_a.vx
+								var avy = ball_a.get("vy", 0.0) if typeof(ball_a) == TYPE_DICTIONARY else ball_a.vy
+								var bvx = ball_b.get("vx", 0.0) if typeof(ball_b) == TYPE_DICTIONARY else ball_b.vx
+								var bvy = ball_b.get("vy", 0.0) if typeof(ball_b) == TYPE_DICTIONARY else ball_b.vy
+
+								if typeof(ball_a) == TYPE_DICTIONARY:
+									ball_a["vx"] = bvx
+									ball_a["vy"] = bvy
+								else:
+									ball_a.vx = bvx
+									ball_a.vy = bvy
+
+								if typeof(ball_b) == TYPE_DICTIONARY:
+									ball_b["vx"] = avx
+									ball_b["vy"] = avy
+								else:
+									ball_b.vx = avx
+									ball_b.vy = avy
+
 								if typeof(world) == TYPE_DICTIONARY and world.has("events"):
 									world["events"].append({
 										"type": "position_swapped",
