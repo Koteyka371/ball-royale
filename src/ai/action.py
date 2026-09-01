@@ -13410,6 +13410,28 @@ class Action:
                                             self.world.balls.append(clone)
                                     hazard.duration = 0.0 # Destroy trap
 
+                                elif trap_variant == "warp_mine":
+                                    import random, math
+                                    my_radius = getattr(self.ball, "radius", 10.0)
+                                    arena_w = 1000.0
+                                    arena_h = 1000.0
+                                    if hasattr(self.world, "arena"):
+                                        arena_w = getattr(self.world.arena, "width", 1000.0)
+                                        arena_h = getattr(self.world.arena, "height", 1000.0)
+                                    angle = random.uniform(0, 2 * math.pi)
+                                    dist = random.uniform(0, 500.0)
+                                    target_x = self.ball.x + math.cos(angle) * dist
+                                    target_y = self.ball.y + math.sin(angle) * dist
+                                    clamped_x, clamped_y = target_x, target_y
+                                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "clamp_position"):
+                                        clamped_x, clamped_y, _ = self.world.arena.clamp_position(target_x, target_y, my_radius)
+                                    self.ball.x = clamped_x
+                                    self.ball.y = clamped_y
+                                    if hasattr(self.world, "_deal_damage"):
+                                        self.world._deal_damage(None, self.ball, 15.0, "trap")
+                                    if hasattr(self.world, "events"):
+                                        self.world.events.append({"type": "teleport", "data": {"x": self.ball.x, "y": self.ball.y}})
+                                    hazard.duration = 0.0
                                 elif trap_variant == "warp":
                                     # Warp trap: teleport the ball to a random location in the arena
                                     import random

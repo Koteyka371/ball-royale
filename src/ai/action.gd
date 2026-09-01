@@ -24308,6 +24308,38 @@ func execute(strategy: String, delta: float):
                                 elif "duration" in hazard:
                                     hazard.duration = 0.0
 
+                            elif trap_variant == "warp_mine":
+                                var my_radius = 10.0
+                                if "radius" in self.ball:
+                                    my_radius = self.ball.radius
+                                var arena_w = 1000.0
+                                var arena_h = 1000.0
+                                if "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT:
+                                    if "width" in self.world.arena:
+                                        arena_w = self.world.arena.width
+                                    if "height" in self.world.arena:
+                                        arena_h = self.world.arena.height
+                                var angle = randf_range(0, 2 * PI)
+                                var dist = randf_range(0, 500.0)
+                                var target_x = self.ball.x + cos(angle) * dist
+                                var target_y = self.ball.y + sin(angle) * dist
+                                var clamped_x = target_x
+                                var clamped_y = target_y
+                                if "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT and self.world.arena.has_method("clamp_position"):
+                                    var result = self.world.arena.clamp_position(target_x, target_y, my_radius)
+                                    if typeof(result) == TYPE_ARRAY and result.size() >= 2:
+                                        clamped_x = result[0]
+                                        clamped_y = result[1]
+                                self.ball.x = clamped_x
+                                self.ball.y = clamped_y
+                                if self.world.has_method("_deal_damage"):
+                                    self.world._deal_damage(null, self.ball, 15.0, "trap")
+                                if "events" in self.world:
+                                    self.world.events.append({"type": "teleport", "data": {"x": self.ball.x, "y": self.ball.y}})
+                                if hazard.has_method("set_meta"):
+                                    hazard.set_meta("duration", 0.0)
+                                elif "duration" in hazard:
+                                    hazard.duration = 0.0
                             elif trap_variant == "warp":
                                 var my_radius = 10.0
                                 if "radius" in self.ball:
