@@ -58734,4 +58734,108 @@ class SlowDrainAuraMode(GameMode):
                 else:
                     setattr(b, "stamina", new_stamina)
 
+
+class GravityVortexHazardMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Gravity Vortex Hazard"
+        self.description = "A stationary hazard that slowly drags players to its center, heavily reducing their movement speed the closer they get."
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if hasattr(world, "arena"):
+            if not hasattr(world.arena, "hazards"):
+                world.arena.hazards = []
+
+            class FallbackHazard:
+                def __init__(self, id, x, y, radius, kind, damage):
+                    self.id = id
+                    self.x = x
+                    self.y = y
+                    self.radius = radius
+                    self.kind = kind
+                    self.damage = damage
+                    self.active = True
+                    self.target_radius = 0.0
+
+            center_x = getattr(world.arena, "width", 1000.0) / 2
+            center_y = getattr(world.arena, "height", 1000.0) / 2
+
+            vortex = FallbackHazard(
+                id=999901,
+                x=center_x,
+                y=center_y,
+                radius=150.0,
+                kind="gravity_vortex",
+                damage=0.0
+            )
+            world.arena.hazards.append(vortex)
+
+    def tick(self, world, balls, delta: float = 0.016):
+        super().tick(world, balls, delta)
+
+        if not hasattr(world, "arena") or not hasattr(world.arena, "hazards"):
+            return
+
+        vortices = [h for h in world.arena.hazards if getattr(h, "kind", "") == "gravity_vortex" and getattr(h, "active", True)]
+        if not vortices:
+            return
+
+        import math
+
+        for ball in balls:
+            is_dict = isinstance(ball, dict)
+            alive = ball.get("alive", True) if is_dict else getattr(ball, "alive", True)
+            if not alive:
+                continue
+
+            bx = ball.get("x", 0.0) if is_dict else getattr(ball, "x", 0.0)
+            by = ball.get("y", 0.0) if is_dict else getattr(ball, "y", 0.0)
+
+            base_speed = ball.get("base_speed", 100.0) if is_dict else getattr(ball, "base_speed", 100.0)
+            base_max_speed = ball.get("base_max_speed", base_speed) if is_dict else getattr(ball, "base_max_speed", base_speed)
+
+            if is_dict:
+                ball["speed"] = base_speed
+                ball["max_speed"] = base_max_speed
+            else:
+                setattr(ball, "speed", base_speed)
+                setattr(ball, "max_speed", base_max_speed)
+
+            for vortex in vortices:
+                vx = getattr(vortex, "x", 0.0)
+                vy = getattr(vortex, "y", 0.0)
+                radius = getattr(vortex, "radius", 150.0)
+
+                dx = vx - bx
+                dy = vy - by
+                dist = math.hypot(dx, dy)
+
+                if dist < radius and dist > 0:
+                    pull_strength = 60.0 * (1.0 - (dist / radius))
+
+                    dir_x = dx / dist
+                    dir_y = dy / dist
+
+                    new_x = bx + dir_x * pull_strength * delta
+                    new_y = by + dir_y * pull_strength * delta
+
+                    if is_dict:
+                        ball["x"] = new_x
+                        ball["y"] = new_y
+                    else:
+                        setattr(ball, "x", new_x)
+                        setattr(ball, "y", new_y)
+
+                    speed_multiplier = max(0.1, dist / radius)
+
+                    if is_dict:
+                        ball["speed"] = base_speed * speed_multiplier
+                        ball["max_speed"] = base_max_speed * speed_multiplier
+                    else:
+                        setattr(ball, "speed", base_speed * speed_multiplier)
+                        setattr(ball, "max_speed", base_max_speed * speed_multiplier)
+
+GAME_MODES["gravity_vortex_hazard"] = GravityVortexHazardMode()
+
 GAME_MODES["slow_drain_aura"] = SlowDrainAuraMode()
