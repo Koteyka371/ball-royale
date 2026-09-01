@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2110] Whirlpool Pull Mutator — *2026-09-01 00:08:16 UTC*
+
+In water-themed maps, small whirlpools spawn sporadically which draw in nearby entities, forcing them into deep water or hazard zones.
+
+---
+
 ## [idea-2121] Vampiric Leech Mode — *2026-08-30 23:35:42 UTC*
 
 A mutator where all balls slowly lose health over time, and the only way to regain health is by dealing damage to enemies, encouraging highly aggressive playstyles.
