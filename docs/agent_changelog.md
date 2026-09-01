@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2106] Quicksand Pit — *2026-09-01 11:57:14 UTC*
+
+A stationary hazard that slowly drags players to its center, heavily reducing their movement speed the closer they get.
+
+---
+
 ## [idea-2111] Stamina Syphon Hazard — *2026-09-01 11:57:09 UTC*
 
 A field that directly targets a player's stamina reserve instead of health, acting as an anti-mobility trap.
