@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1837] Gravity Swap Mines — *2026-09-01 19:04:59 UTC*
+
+Deployable mines that, upon detonation, swap the gravity orientation and friction physics for all entities caught in the blast radius for 5 seconds.
+
+---
+
 ## [idea-2106] Quicksand Pit — *2026-09-01 11:57:14 UTC*
 
 A stationary hazard that slowly drags players to its center, heavily reducing their movement speed the closer they get.
