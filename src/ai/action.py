@@ -2212,6 +2212,18 @@ class Action:
             self.ball.artifact_dmg_buffed = (dmg_mult != 1.0)
 
     def execute(self, strategy: str, delta: float) -> None:
+        if getattr(self.ball, "gravity_swapped_timer", 0.0) > 0.0:
+            self.ball.gravity_swapped_timer -= delta
+            # Reverse gravity manually
+            if hasattr(self.world, "arena") and getattr(self.world.arena, "gravity_y", 0.0) != 0.0:
+                self.ball.vy -= self.world.arena.gravity_y * delta * 2.0 # negate and reverse
+
+            if self.ball.gravity_swapped_timer <= 0.0:
+                self.ball.gravity_swapped_timer = 0.0
+                if hasattr(self.ball, "was_frictionless"):
+                    self.ball.is_frictionless = self.ball.was_frictionless
+                    delattr(self.ball, "was_frictionless")
+
         if getattr(self.ball, "emp_trap_disabled_timer", 0.0) > 0.0:
             self.ball.emp_trap_disabled_timer -= delta
             self.ball.in_aura_nullifier_zone = True
@@ -5903,6 +5915,16 @@ class Action:
                     self.world.arena.hazards.append(trap)
                 except ImportError:
                     pass
+
+        if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "deployable_gravity_mine" in self.ball.inventory:
+            self.ball.inventory.remove("deployable_gravity_mine")
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                from arena.procedural_arena import Hazard
+                trap_id = f"gravity_mine_{self.ball.id}_{getattr(self.world, 'tick', 0)}"
+                trap = Hazard(trap_id, self.ball.x, self.ball.y, 60.0, "deployable_gravity_mine", 0.0)
+                trap.owner_id = self.ball.id
+                trap.duration = 10.0
+                self.world.arena.hazards.append(trap)
 
         if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "deployable_pull_trap" in self.ball.inventory:
             self.ball.inventory.remove("deployable_pull_trap")
@@ -29033,6 +29055,21 @@ class Action:
                                         'target_y': hazard.y,
                                         'color': 'blue'
                                     })
+
+                if getattr(hazard, "kind", "") == "deployable_gravity_mine":
+                    if getattr(hazard, "owner_id", None) != getattr(self.ball, "id", None):
+                        dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
+                        if dist_sq < getattr(hazard, "radius", 60.0)**2: # Inside pull radius
+                            hazard.duration = 0.0 # Explode
+                            if hasattr(self.world, "balls"):
+                                for b in getattr(self.world, "balls", []):
+                                    if getattr(b, "alive", True):
+                                        b_dist_sq = (hazard.x - b.x)**2 + (hazard.y - b.y)**2
+                                        if b_dist_sq < getattr(hazard, "radius", 60.0)**2:
+                                            b.gravity_swapped_timer = 5.0
+                                            if not hasattr(b, "was_frictionless"):
+                                                b.was_frictionless = getattr(b, "is_frictionless", False)
+                                            b.is_frictionless = not b.was_frictionless
 
                 if getattr(hazard, "kind", "") == "deployable_pull_trap":
                     if getattr(hazard, "owner_id", None) != getattr(self.ball, "id", None):
