@@ -7493,6 +7493,60 @@ func execute(strategy: String, delta: float):
                         if "y" in b: b.y = by + ny * pull_strength
                         elif b.has_method("set_meta"): b.set_meta("y", by + ny * pull_strength)
 
+    var vacuum_booster_timer = 0.0
+    if typeof(self.ball) == TYPE_OBJECT:
+        if "vacuum_booster_timer" in self.ball: vacuum_booster_timer = self.ball.vacuum_booster_timer
+        elif self.ball.has_method("has_meta") and self.ball.has_meta("vacuum_booster_timer"): vacuum_booster_timer = self.ball.get_meta("vacuum_booster_timer")
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("vacuum_booster_timer"):
+        vacuum_booster_timer = self.ball["vacuum_booster_timer"]
+
+    if vacuum_booster_timer > 0.0:
+        vacuum_booster_timer -= delta
+        if vacuum_booster_timer < 0.0:
+            vacuum_booster_timer = 0.0
+        if typeof(self.ball) == TYPE_OBJECT:
+            if "vacuum_booster_timer" in self.ball: self.ball.vacuum_booster_timer = vacuum_booster_timer
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("vacuum_booster_timer", vacuum_booster_timer)
+        elif typeof(self.ball) == TYPE_DICTIONARY:
+            self.ball["vacuum_booster_timer"] = vacuum_booster_timer
+
+        var pull_radius = 300.0
+        var pull_strength = 200.0 * delta
+
+        var boosters_and_items = []
+        if self.world != null and "boosters" in self.world:
+            boosters_and_items.append_array(self.world.boosters)
+        if self.world != null and "arena" in self.world and self.world.arena != null and "items" in self.world.arena:
+            boosters_and_items.append_array(self.world.arena.items)
+
+        for b in boosters_and_items:
+            var bx = 0.0
+            var by = 0.0
+            if typeof(b) == TYPE_DICTIONARY:
+                bx = b.get("x", 0.0)
+                by = b.get("y", 0.0)
+            elif typeof(b) == TYPE_OBJECT:
+                if "x" in b: bx = b.x
+                elif b.has_method("get_meta") and b.has_meta("x"): bx = b.get_meta("x")
+                if "y" in b: by = b.y
+                elif b.has_method("get_meta") and b.has_meta("y"): by = b.get_meta("y")
+
+            var dx = self.ball.x - bx
+            var dy = self.ball.y - by
+            var dist_sq = dx*dx + dy*dy
+            if dist_sq > 0.0001 and dist_sq <= pull_radius*pull_radius:
+                var dist = sqrt(dist_sq)
+                var nx = dx / dist
+                var ny = dy / dist
+                if typeof(b) == TYPE_DICTIONARY:
+                    b["x"] = bx + nx * pull_strength
+                    b["y"] = by + ny * pull_strength
+                elif typeof(b) == TYPE_OBJECT:
+                    if "x" in b: b.x = bx + nx * pull_strength
+                    elif b.has_method("set_meta"): b.set_meta("x", bx + nx * pull_strength)
+                    if "y" in b: b.y = by + ny * pull_strength
+                    elif b.has_method("set_meta"): b.set_meta("y", by + ny * pull_strength)
+
     var t_timer = 0.0
     if typeof(self.ball) == TYPE_OBJECT:
         if "tracker_booster_timer" in self.ball: t_timer = self.ball.tracker_booster_timer
@@ -35030,6 +35084,36 @@ func _collect_booster(delta: float):
                         var h_idx = self.world.arena.hazards.find(b)
                         if h_idx != -1:
                             self.world.arena.hazards.remove_at(h_idx)
+            elif b_kind == "vacuum_booster":
+                var dx = get_bx(b) - self.ball.x
+                var dy = get_by(b) - self.ball.y
+                var dist = sqrt(dx*dx + dy*dy)
+                var brad = 15.0
+                if typeof(b) == TYPE_OBJECT and "radius" in b: brad = b.radius
+                elif typeof(b) == TYPE_DICTIONARY and b.has("radius"): brad = b["radius"]
+                var myrad = 10.0
+                if "radius" in self.ball: myrad = self.ball.radius
+                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("radius"): myrad = self.ball["radius"]
+                if dist <= myrad + brad + 5.0:
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["vacuum_booster_timer"] = 15.0
+                    elif typeof(self.ball) == TYPE_OBJECT:
+                        if "vacuum_booster_timer" in self.ball:
+                            self.ball.vacuum_booster_timer = 15.0
+                        elif self.ball.has_method("set_meta"):
+                            self.ball.set_meta("vacuum_booster_timer", 15.0)
+
+                    if typeof(b) == TYPE_OBJECT and "active" in b:
+                        b.active = false
+                    elif typeof(b) == TYPE_DICTIONARY:
+                        b["active"] = false
+
+                    if self.world != null and "boosters" in self.world:
+                        var idx = self.world.boosters.find(b)
+                        if idx != -1: self.world.boosters.remove_at(idx)
+                    if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                        var idx = self.world.arena.hazards.find(b)
+                        if idx != -1: self.world.arena.hazards.remove_at(idx)
             elif b_kind == "magnetic_field_booster":
                 var bx = 0.0
                 var by = 0.0
