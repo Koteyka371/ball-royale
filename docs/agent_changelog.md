@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2111] Stamina Syphon Hazard — *2026-09-01 11:57:09 UTC*
+
+A field that directly targets a player's stamina reserve instead of health, acting as an anti-mobility trap.
+
+---
+
 ## [idea-2110] Whirlpool Pull Mutator — *2026-09-01 00:08:16 UTC*
 
 In water-themed maps, small whirlpools spawn sporadically which draw in nearby entities, forcing them into deep water or hazard zones.
