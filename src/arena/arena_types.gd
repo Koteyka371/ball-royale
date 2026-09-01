@@ -873,8 +873,35 @@ class SummerArena extends ProceduralArena:
 
 class WaterArena extends ProceduralArena:
 	var is_water_theme = true
+	var sporadic_whirlpool_timer = 0.0
+	var sporadic_whirlpool_interval = 6.0
+
 	func _init(arena_size: float = 2000.0, seed_val = null):
 		super(arena_size, 5, seed_val)
+
+	func update_zone(current_tick: int, delta: float) -> void:
+		super.update_zone(current_tick, delta)
+		sporadic_whirlpool_timer += delta
+		if sporadic_whirlpool_timer >= sporadic_whirlpool_interval:
+			sporadic_whirlpool_timer = 0.0
+			var x = randf_range(100, width - 100)
+			var y = randf_range(100, height - 100)
+			var h_id = 9000 + hazards.size() + (randi() % 1000)
+			var whirlpool = ProceduralArena.Hazard.new(h_id, x, y, randf_range(30.0, 60.0), "whirlpool", 10.0)
+			whirlpool.set_meta("duration", 4.0)
+			hazards.append(whirlpool)
+
+		var surviving_hazards = []
+		for h in hazards:
+			if h.kind == "whirlpool" and h.has_meta("duration"):
+				var duration = h.get_meta("duration")
+				if duration > 0:
+					h.set_meta("duration", duration - delta)
+					surviving_hazards.append(h)
+			else:
+				surviving_hazards.append(h)
+		hazards = surviving_hazards
+
 	func generate():
 		super.generate()
 		# Add whirlpools
