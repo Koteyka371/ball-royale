@@ -92164,4 +92164,149 @@ class BloodThirstMode extends GameMode:
 						if world.has_method("add_event"):
 							world.add_event("death", {"id": b.get("id"), "reason": "blood_thirst_drain"})
 
+
+class GravityVortexHazardMode extends GameMode:
+	func _init().():
+		name = "Gravity Vortex Hazard"
+		description = "A stationary hazard that slowly drags players to its center, heavily reducing their movement speed the closer they get."
+
+	func setup(world, balls: Array) -> void:
+		.setup(world, balls)
+		if world != null and ("arena" in world) and world.arena != null:
+			if not ("hazards" in world.arena):
+				world.arena.hazards = []
+
+			var center_x = 500.0
+			var center_y = 500.0
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				center_x = world.arena.get("width", 1000.0) / 2.0
+				center_y = world.arena.get("height", 1000.0) / 2.0
+			else:
+				if "width" in world.arena:
+					center_x = world.arena.width / 2.0
+				if "height" in world.arena:
+					center_y = world.arena.height / 2.0
+
+			var vortex = {
+				"id": 999901,
+				"x": center_x,
+				"y": center_y,
+				"radius": 150.0,
+				"kind": "gravity_vortex",
+				"damage": 0.0,
+				"active": true,
+				"target_radius": 0.0
+			}
+			if typeof(world.arena.hazards) == TYPE_ARRAY:
+				world.arena.hazards.append(vortex)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		.tick(world, balls, delta)
+
+		if world == null or not ("arena" in world) or world.arena == null or not ("hazards" in world.arena):
+			return
+
+		var hazards = world.arena.hazards
+		if typeof(hazards) != TYPE_ARRAY:
+			return
+
+		var vortices = []
+		for h in hazards:
+			var h_kind = ""
+			var h_active = true
+			if typeof(h) == TYPE_DICTIONARY:
+				h_kind = h.get("kind", "")
+				h_active = h.get("active", true)
+			elif typeof(h) == TYPE_OBJECT:
+				h_kind = h.get("kind") if h.has_method("get") else h.kind if "kind" in h else ""
+				h_active = h.get("active") if h.has_method("get") else h.active if "active" in h else true
+
+			if h_kind == "gravity_vortex" and h_active:
+				vortices.append(h)
+
+		if vortices.size() == 0:
+			return
+
+		for b in balls:
+			var is_dict = typeof(b) == TYPE_DICTIONARY
+			var alive = true
+			if is_dict:
+				alive = b.get("alive", true)
+			else:
+				alive = b.get("alive") if b.has_method("get") else b.alive if "alive" in b else true
+
+			if not alive:
+				continue
+
+			var bx = 0.0
+			var by = 0.0
+			var base_speed = 100.0
+			var base_max_speed = 100.0
+
+			if is_dict:
+				bx = b.get("x", 0.0)
+				by = b.get("y", 0.0)
+				base_speed = b.get("base_speed", 100.0)
+				base_max_speed = b.get("base_max_speed", base_speed)
+				b["speed"] = base_speed
+				b["max_speed"] = base_max_speed
+			else:
+				bx = b.get("x") if b.has_method("get") else b.x if "x" in b else 0.0
+				by = b.get("y") if b.has_method("get") else b.y if "y" in b else 0.0
+				base_speed = b.get("base_speed") if b.has_method("get") else b.base_speed if "base_speed" in b else 100.0
+
+				if b.has_method("get"):
+					var bms = b.get("base_max_speed")
+					if bms != null:
+						base_max_speed = bms
+					else:
+						base_max_speed = base_speed
+				elif "base_max_speed" in b:
+					base_max_speed = b.base_max_speed
+				else:
+					base_max_speed = base_speed
+
+				b.set("speed", base_speed)
+				b.set("max_speed", base_max_speed)
+
+			for vortex in vortices:
+				var vx = 0.0
+				var vy = 0.0
+				var v_radius = 150.0
+
+				if typeof(vortex) == TYPE_DICTIONARY:
+					vx = vortex.get("x", 0.0)
+					vy = vortex.get("y", 0.0)
+					v_radius = vortex.get("radius", 150.0)
+				else:
+					vx = vortex.get("x") if vortex.has_method("get") else vortex.x if "x" in vortex else 0.0
+					vy = vortex.get("y") if vortex.has_method("get") else vortex.y if "y" in vortex else 0.0
+					v_radius = vortex.get("radius") if vortex.has_method("get") else vortex.radius if "radius" in vortex else 150.0
+
+				var dx = vx - bx
+				var dy = vy - by
+				var dist = sqrt(dx * dx + dy * dy)
+
+				if dist < v_radius and dist > 0:
+					var pull_strength = 60.0 * (1.0 - (dist / v_radius))
+					var dir_x = dx / dist
+					var dir_y = dy / dist
+
+					var new_x = bx + dir_x * pull_strength * delta
+					var new_y = by + dir_y * pull_strength * delta
+					var speed_multiplier = max(0.1, dist / v_radius)
+
+					if is_dict:
+						b["x"] = new_x
+						b["y"] = new_y
+						b["speed"] = base_speed * speed_multiplier
+						b["max_speed"] = base_max_speed * speed_multiplier
+					else:
+						b.set("x", new_x)
+						b.set("y", new_y)
+						b.set("speed", base_speed * speed_multiplier)
+						b.set("max_speed", base_max_speed * speed_multiplier)
+
+GAME_MODES["gravity_vortex_hazard"] = GravityVortexHazardMode.new()
+
 GAME_MODES["blood_thirst"] = BloodThirstMode.new()
