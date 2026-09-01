@@ -384,7 +384,7 @@ func generate():
         elif kind == "link_booster":
             radius = 15.0
             damage = 0.0
-        elif kind in ["stamina_booster", "weather_booster", "magnet_booster", "material_magnet_booster", "clone_booster", "flashbang_booster", "invert_booster", "freeze_booster", "reverse_gravity_booster", "grapple_booster", "shuffle_booster", "forecast_booster", "exploding_booster", "debuff_booster", "cursed_booster", "half_reflect_shield_booster", "hookshot_booster", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "mirage_booster", "heroism_booster", "echolocation_booster", "orbital_emp_strike_item", "phantom_artifact_item", "blood_pact_artifact_item", "aura_overcharge_booster", "contract_item"]:
+        elif kind in ["stamina_booster", "weather_booster", "magnet_booster", "vacuum_booster", "material_magnet_booster", "clone_booster", "flashbang_booster", "invert_booster", "freeze_booster", "reverse_gravity_booster", "grapple_booster", "shuffle_booster", "forecast_booster", "exploding_booster", "debuff_booster", "cursed_booster", "half_reflect_shield_booster", "hookshot_booster", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "mirage_booster", "heroism_booster", "echolocation_booster", "orbital_emp_strike_item", "phantom_artifact_item", "blood_pact_artifact_item", "aura_overcharge_booster", "contract_item"]:
             radius = 15.0
             damage = 0.0
         elif kind == "stealth_zone":
