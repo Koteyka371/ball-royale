@@ -1729,6 +1729,31 @@ class WaterArena(ProceduralArena):
     def __init__(self, arena_size: float = 2000.0, seed: int | None = None):
         super().__init__(arena_size, 5, seed)
         self.is_water_theme = True
+        self.sporadic_whirlpool_timer = 0.0
+        self.sporadic_whirlpool_interval = 6.0
+
+    def update_zone(self, current_tick: int, delta: float):
+        super().update_zone(current_tick, delta)
+        self.sporadic_whirlpool_timer += delta
+
+        if self.sporadic_whirlpool_timer >= self.sporadic_whirlpool_interval:
+            self.sporadic_whirlpool_timer = 0.0
+            x = random.uniform(100, self.width - 100)
+            y = random.uniform(100, self.height - 100)
+            h_id = 9000 + len(self.hazards) + random.randint(0, 1000)
+            whirlpool = Hazard(id=h_id, x=x, y=y, radius=random.uniform(30.0, 60.0), kind="whirlpool", damage=10.0)
+            setattr(whirlpool, "duration", 4.0)
+            self.hazards.append(whirlpool)
+
+        surviving_hazards = []
+        for h in self.hazards:
+            if getattr(h, "kind", "") == "whirlpool" and hasattr(h, "duration"):
+                h.duration -= delta
+                if h.duration > 0:
+                    surviving_hazards.append(h)
+            else:
+                surviving_hazards.append(h)
+        self.hazards = surviving_hazards
 
     def generate(self):
         super().generate()

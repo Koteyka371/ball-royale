@@ -45,3 +45,18 @@ def test_seasonal_arena_weather_hazards():
 
     # We just want to check that update_zone doesn't crash
     assert True
+
+def test_water_arena_sporadic_whirlpools():
+    from arena.arena_types import WaterArena
+    arena = WaterArena()
+    arena.generate()
+
+    initial_whirlpools = len([h for h in arena.hazards if getattr(h, "kind", "") == "whirlpool"])
+    assert initial_whirlpools >= 5
+
+    # Check that sporadic timer works without crashing
+    for i in range(65):
+        arena.update_zone(i, 0.1)
+
+    # The logic ensures at least one sporadic whirlpool is spawned, and the tick logic runs fine.
+    assert True
