@@ -22214,6 +22214,51 @@ func execute(strategy: String, delta: float):
                             if "vx" in self.ball and "vy" in self.ball:
                                 self.ball.vx = self.ball.vx * max(0.0, 1.0 - 5.0 * delta)
                                 self.ball.vy = self.ball.vy * max(0.0, 1.0 - 5.0 * delta)
+                elif hazard.kind == "stamina_drain_trap":
+                    var owner_id = null
+                    if "owner_id" in hazard: owner_id = hazard.owner_id
+                    elif hazard.has_method("get_meta") and hazard.has_meta("owner_id"): owner_id = hazard.get_meta("owner_id")
+
+                    var b_id = null
+                    if "id" in self.ball: b_id = self.ball.id
+                    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): b_id = self.ball["id"]
+
+                    if owner_id == null or owner_id != b_id:
+                        var b_rad = 10.0
+                        if "radius" in self.ball: b_rad = self.ball.radius
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("radius"): b_rad = self.ball.get_meta("radius")
+
+                        var h_x = hazard.x if "x" in hazard else (hazard.get_meta("x") if hazard.has_method("get_meta") and hazard.has_meta("x") else 0.0)
+                        var h_y = hazard.y if "y" in hazard else (hazard.get_meta("y") if hazard.has_method("get_meta") and hazard.has_meta("y") else 0.0)
+                        var h_rad = hazard.radius if "radius" in hazard else (hazard.get_meta("radius") if hazard.has_method("get_meta") and hazard.has_meta("radius") else 50.0)
+
+                        var b_x = self.ball.x if "x" in self.ball else (self.ball["x"] if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("x") else 0.0)
+                        var b_y = self.ball.y if "y" in self.ball else (self.ball["y"] if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("y") else 0.0)
+
+                        var dist = sqrt((b_x - h_x)*(b_x - h_x) + (b_y - h_y)*(b_y - h_y))
+                        if dist < h_rad + b_rad:
+                            var drain_rate = 50.0
+                            if "drain_rate" in hazard: drain_rate = hazard.drain_rate
+                            elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("drain_rate"): drain_rate = hazard["drain_rate"]
+
+                            var current_stamina = 0.0
+                            if "stamina" in self.ball: current_stamina = self.ball.stamina
+                            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("stamina"): current_stamina = self.ball["stamina"]
+
+                            var new_stamina = max(0.0, current_stamina - drain_rate * delta)
+
+                            if typeof(self.ball) == TYPE_DICTIONARY:
+                                self.ball["stamina"] = new_stamina
+                            else:
+                                self.ball.stamina = new_stamina
+
+                            var h_dur = 0.0
+                            if "duration" in hazard: h_dur = hazard.duration
+                            elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("duration"): h_dur = hazard["duration"]
+
+                            if h_dur > 0.0:
+                                if typeof(hazard) == TYPE_DICTIONARY: hazard["duration"] = h_dur - delta
+                                elif typeof(hazard) == TYPE_OBJECT: hazard.duration = h_dur - delta
                 elif hazard.kind == "low_gravity":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y
