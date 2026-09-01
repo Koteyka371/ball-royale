@@ -29510,6 +29510,15 @@ class Action:
                             elif effect == "stun":
                                 self.ball.stun_timer = max(getattr(self.ball, "stun_timer", 0.0), 3.0)
                             hazard.duration = 0.0
+                if getattr(hazard, "kind", "") == "stamina_drain_trap":
+                    if getattr(hazard, "owner_id", None) != getattr(self.ball, "id", None):
+                        import math
+                        dist = math.hypot(self.ball.x - hazard.x, self.ball.y - hazard.y)
+                        if dist < getattr(hazard, "radius", 50.0) + getattr(self.ball, "radius", 10.0):
+                            drain_amount = getattr(hazard, "drain_rate", 50.0) * delta
+                            self.ball.stamina = max(0.0, getattr(self.ball, "stamina", 0.0) - drain_amount)
+                            if hasattr(hazard, "duration") and getattr(hazard, "duration", 0.0) > 0.0:
+                                hazard.duration -= delta
                 if getattr(hazard, "kind", "") == "low_gravity":
                     dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                     if dist_sq < getattr(hazard, "radius", 60.0)**2:

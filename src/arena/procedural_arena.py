@@ -1416,6 +1416,9 @@ class ProceduralArena:
                 elif random.random() < 0.05:
                     kind = "portal_gun_item"
                     damage = 0.0
+                elif random.random() < 0.05:
+                    kind = "stamina_drain_trap"
+                    damage = 0.0
                 elif random.random() < 0.15:
                     kind = "quicksand"
                     damage = 0.0
