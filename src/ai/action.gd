@@ -852,6 +852,25 @@ func _attempt_damage_internal(attacker, target) -> void:
 					is_fire = true
 					break
 
+		var is_electric = att_element == "electric" or att_element == "lightning" or att_type.find("electric") != -1 or att_type.find("lightning") != -1 or att_type.find("emp") != -1
+		if not is_electric:
+			for t in att_traits:
+				var ts = str(t).to_lower()
+				if ts == "electric" or ts == "lightning":
+					is_electric = true
+					break
+
+		var target_soaked = 0.0
+		if typeof(target) == TYPE_DICTIONARY and target.has("soaked_timer"):
+			target_soaked = target.get("soaked_timer")
+		elif typeof(target) == TYPE_OBJECT and "soaked_timer" in target:
+			target_soaked = target.soaked_timer
+		elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("soaked_timer"):
+			target_soaked = target.get_meta("soaked_timer")
+
+		if is_electric and target_soaked > 0.0:
+			original_damage_pre *= 2.0
+
 		var target_burn = 0.0
 		if typeof(target) == TYPE_DICTIONARY and target.has("burn_timer"):
 			target_burn = target.get("burn_timer")
@@ -4124,6 +4143,42 @@ func _apply_artifact_set_bonuses():
 				self.ball.set_meta("artifact_dmg_buffed", dmg_mult != 1.0)
 
 func execute(strategy: String, delta: float):
+
+	var soaked_timer = 0.0
+	if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("soaked_timer"): soaked_timer = self.ball.soaked_timer
+	elif typeof(self.ball) == TYPE_OBJECT and "soaked_timer" in self.ball: soaked_timer = self.ball.soaked_timer
+	elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("soaked_timer"): soaked_timer = self.ball.get_meta("soaked_timer")
+
+	if soaked_timer > 0.0:
+		soaked_timer -= delta
+		if soaked_timer <= 0.0:
+			soaked_timer = 0.0
+		else:
+			if typeof(self.ball) == TYPE_DICTIONARY:
+				self.ball["burn_timer"] = 0.0
+				self.ball["fire_attachment_timer"] = 0.0
+				if self.ball.has("elemental_aura") and self.ball.elemental_aura == "fire_aura":
+					self.ball["elemental_aura"] = ""
+			else:
+				if "burn_timer" in self.ball: self.ball.burn_timer = 0.0
+				elif self.ball.has_method("set_meta"): self.ball.set_meta("burn_timer", 0.0)
+
+				if "fire_attachment_timer" in self.ball: self.ball.fire_attachment_timer = 0.0
+				elif self.ball.has_method("set_meta"): self.ball.set_meta("fire_attachment_timer", 0.0)
+
+				var aura = ""
+				if "elemental_aura" in self.ball: aura = self.ball.elemental_aura
+				elif self.ball.has_method("get_meta") and self.ball.has_meta("elemental_aura"): aura = self.ball.get_meta("elemental_aura")
+				if aura == "fire_aura":
+					if "elemental_aura" in self.ball: self.ball.elemental_aura = ""
+					elif self.ball.has_method("set_meta"): self.ball.set_meta("elemental_aura", "")
+
+		if typeof(self.ball) == TYPE_DICTIONARY:
+			self.ball["soaked_timer"] = soaked_timer
+		else:
+			if "soaked_timer" in self.ball: self.ball.soaked_timer = soaked_timer
+			elif self.ball.has_method("set_meta"): self.ball.set_meta("soaked_timer", soaked_timer)
+
 	var emp_trap_timer = 0.0
 	if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("emp_trap_disabled_timer"): emp_trap_timer = self.ball.emp_trap_disabled_timer
 	elif typeof(self.ball) == TYPE_OBJECT and "emp_trap_disabled_timer" in self.ball: emp_trap_timer = self.ball.emp_trap_disabled_timer
