@@ -62,7 +62,18 @@ func tick(world, balls, delta = 0.016):
 		var py = portal["y"]
 		var pr = portal["radius"]
 
+		var entities = []
 		for b in balls:
+			entities.append(b)
+		var projectiles = []
+		if typeof(world) == TYPE_DICTIONARY and "projectiles" in world:
+			projectiles = world.projectiles
+		elif typeof(world) != TYPE_DICTIONARY and "projectiles" in world:
+			projectiles = world.projectiles
+		for p in projectiles:
+			entities.append(p)
+
+		for b in entities:
 			var alive = false
 			var bx = 0.0
 			var by = 0.0
