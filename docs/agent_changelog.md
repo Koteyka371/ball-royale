@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2092] Kinetic Feedback Booster — *2026-09-02 20:05:09 UTC*
+
+A booster that allows the ball to accumulate potential energy as they move. When they collide with an enemy, the stored energy is released as a burst of bonus damage and knockback.
+
+---
+
 ## [idea-1837] Gravity Swap Mines — *2026-09-01 19:04:59 UTC*
 
 Deployable mines that, upon detonation, swap the gravity orientation and friction physics for all entities caught in the blast radius for 5 seconds.
