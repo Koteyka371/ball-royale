@@ -460,6 +460,51 @@ func _attempt_damage_internal(attacker, target) -> void:
 									original_damage_pre *= 2.0
 								break
 
+	var kb_timer = 0.0
+	if typeof(attacker) == TYPE_DICTIONARY and attacker.has("kinetic_battery_timer"): kb_timer = float(attacker.kinetic_battery_timer)
+	elif typeof(attacker) == TYPE_OBJECT and "kinetic_battery_timer" in attacker: kb_timer = float(attacker.kinetic_battery_timer)
+	elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("get_meta") and attacker.has_meta("kinetic_battery_timer"): kb_timer = float(attacker.get_meta("kinetic_battery_timer"))
+
+	var kb_energy = 0.0
+	if typeof(attacker) == TYPE_DICTIONARY and attacker.has("kinetic_battery_energy"): kb_energy = float(attacker.kinetic_battery_energy)
+	elif typeof(attacker) == TYPE_OBJECT and "kinetic_battery_energy" in attacker: kb_energy = float(attacker.kinetic_battery_energy)
+	elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("get_meta") and attacker.has_meta("kinetic_battery_energy"): kb_energy = float(attacker.get_meta("kinetic_battery_energy"))
+
+	if kb_timer > 0.0 and kb_energy > 0.0:
+		original_damage_pre += kb_energy * 0.1
+		var force = kb_energy * 2.0
+
+		if typeof(attacker) == TYPE_DICTIONARY:
+			attacker["kinetic_battery_energy"] = 0.0
+		else:
+			if "kinetic_battery_energy" in attacker:
+				attacker.kinetic_battery_energy = 0.0
+			elif attacker.has_method("set_meta"):
+				attacker.set_meta("kinetic_battery_energy", 0.0)
+
+		var w_events = world.get("events") if typeof(world) == TYPE_OBJECT else world["events"] if typeof(world) == TYPE_DICTIONARY and world.has("events") else null
+		if w_events != null and typeof(w_events) == TYPE_ARRAY:
+			var a_x = attacker.x if typeof(attacker) == TYPE_OBJECT and "x" in attacker else attacker["x"] if typeof(attacker) == TYPE_DICTIONARY and attacker.has("x") else attacker.get_meta("x") if typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta") and attacker.has_meta("x") else 0.0
+			var a_y = attacker.y if typeof(attacker) == TYPE_OBJECT and "y" in attacker else attacker["y"] if typeof(attacker) == TYPE_DICTIONARY and attacker.has("y") else attacker.get_meta("y") if typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta") and attacker.has_meta("y") else 0.0
+			w_events.append({"type": "visual_effect", "data": {"type": "kinetic_battery_burst", "x": t_x, "y": t_y}})
+
+			var dist_t = sqrt((t_x - a_x)*(t_x - a_x) + (t_y - a_y)*(t_y - a_y))
+			if dist_t > 0.0001:
+				var nx = (t_x - a_x) / dist_t
+				var ny = (t_y - a_y) / dist_t
+				var t_vx = target.vx if typeof(target) == TYPE_OBJECT and "vx" in target else target["vx"] if typeof(target) == TYPE_DICTIONARY and target.has("vx") else target.get_meta("vx") if typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("vx") else 0.0
+				var t_vy = target.vy if typeof(target) == TYPE_OBJECT and "vy" in target else target["vy"] if typeof(target) == TYPE_DICTIONARY and target.has("vy") else target.get_meta("vy") if typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("vy") else 0.0
+				t_vx += nx * force
+				t_vy += ny * force
+				if typeof(target) == TYPE_DICTIONARY:
+					target["vx"] = t_vx
+					target["vy"] = t_vy
+				else:
+					if "vx" in target: target.vx = t_vx
+					elif target.has_method("set_meta"): target.set_meta("vx", t_vx)
+					if "vy" in target: target.vy = t_vy
+					elif target.has_method("set_meta"): target.set_meta("vy", t_vy)
+
 	if t_in_dilation:
 		var new_dmg = original_damage_pre * 0.5
 		if "damage" in attacker:
@@ -31652,6 +31697,43 @@ func execute(strategy: String, delta: float):
                         self.ball.y = old_y + dy
 
         var act_dist = sqrt(dx*dx + dy*dy)
+
+        var kb_timer = 0.0
+        if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("kinetic_battery_timer"): kb_timer = float(self.ball.kinetic_battery_timer)
+        elif typeof(self.ball) == TYPE_OBJECT and "kinetic_battery_timer" in self.ball: kb_timer = float(self.ball.kinetic_battery_timer)
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("kinetic_battery_timer"): kb_timer = float(self.ball.get_meta("kinetic_battery_timer"))
+
+        if kb_timer > 0.0:
+            kb_timer -= delta
+            if kb_timer <= 0.0:
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["kinetic_battery_timer"] = 0.0
+                    self.ball["kinetic_battery_energy"] = 0.0
+                else:
+                    if "kinetic_battery_timer" in self.ball:
+                        self.ball.kinetic_battery_timer = 0.0
+                        self.ball.kinetic_battery_energy = 0.0
+                    elif self.ball.has_method("set_meta"):
+                        self.ball.set_meta("kinetic_battery_timer", 0.0)
+                        self.ball.set_meta("kinetic_battery_energy", 0.0)
+            else:
+                var curr_energy = 0.0
+                if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("kinetic_battery_energy"): curr_energy = float(self.ball.kinetic_battery_energy)
+                elif typeof(self.ball) == TYPE_OBJECT and "kinetic_battery_energy" in self.ball: curr_energy = float(self.ball.kinetic_battery_energy)
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("kinetic_battery_energy"): curr_energy = float(self.ball.get_meta("kinetic_battery_energy"))
+
+                curr_energy = min(500.0, curr_energy + act_dist)
+
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["kinetic_battery_timer"] = kb_timer
+                    self.ball["kinetic_battery_energy"] = curr_energy
+                else:
+                    if "kinetic_battery_timer" in self.ball:
+                        self.ball.kinetic_battery_timer = kb_timer
+                        self.ball.kinetic_battery_energy = curr_energy
+                    elif self.ball.has_method("set_meta"):
+                        self.ball.set_meta("kinetic_battery_timer", kb_timer)
+                        self.ball.set_meta("kinetic_battery_energy", curr_energy)
         var act_stamina = 100.0
         var act_max_stamina = 100.0
         if my_ball.has_meta("stamina"): act_stamina = my_ball.get_meta("stamina")
@@ -34857,6 +34939,25 @@ func _collect_booster(delta: float):
                     if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena and typeof(self.world.arena.hazards) == TYPE_ARRAY:
                         self.world.arena.hazards.erase(b)
 
+            elif b_kind == "kinetic_battery_booster":
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["kinetic_battery_timer"] = 15.0
+                    self.ball["kinetic_battery_energy"] = 0.0
+                else:
+                    if "kinetic_battery_timer" in self.ball:
+                        self.ball.kinetic_battery_timer = 15.0
+                        self.ball.kinetic_battery_energy = 0.0
+                    elif self.ball.has_method("set_meta"):
+                        self.ball.set_meta("kinetic_battery_timer", 15.0)
+                        self.ball.set_meta("kinetic_battery_energy", 0.0)
+                if typeof(b) == TYPE_DICTIONARY: b["active"] = false
+                else:
+                    if "active" in b: b.active = false
+                    elif b.has_method("set_meta"): b.set_meta("active", false)
+                if self.world != null and "boosters" in self.world and typeof(self.world.boosters) == TYPE_ARRAY:
+                    self.world.boosters.erase(b)
+                if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena and typeof(self.world.arena.hazards) == TYPE_ARRAY:
+                    self.world.arena.hazards.erase(b)
             elif b_kind == "heroism_booster":
                 var dx = get_bx(b) - my_x
                 var dy = get_by(b) - my_y
