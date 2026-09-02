@@ -54526,6 +54526,65 @@ func _update_skill_timer(delta: float):
         elif self.ball.has_method("set_meta"):
             self.ball.set_meta("material_magnet_timer", mat_magnet_timer)
 
+
+    var traits_list = []
+    if "traits" in self.ball: traits_list = self.ball.traits
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("traits"): traits_list = self.ball.get_meta("traits")
+    if traits_list.has("storm_chaser"):
+        if self.world != null and "arena" in self.world and "items" in self.world.arena:
+            for item in self.world.arena.items:
+                var i_x = 0.0
+                var i_y = 0.0
+                if typeof(item) == TYPE_DICTIONARY and item.has("x"): i_x = item["x"]
+                elif typeof(item) == TYPE_OBJECT and "x" in item: i_x = item.x
+                if typeof(item) == TYPE_DICTIONARY and item.has("y"): i_y = item["y"]
+                elif typeof(item) == TYPE_OBJECT and "y" in item: i_y = item.y
+
+                var dx = self.ball.x - i_x
+                var dy = self.ball.y - i_y
+                var dist_sq = dx*dx + dy*dy
+                if dist_sq < 90000:
+                    var dist = sqrt(dist_sq)
+                    if dist > 0.0001:
+                        var nx = dx / dist
+                        var ny = dy / dist
+                        var pull_strength = 300.0 * delta
+                        if typeof(item) == TYPE_DICTIONARY:
+                            item["x"] = i_x + nx * pull_strength
+                            item["y"] = i_y + ny * pull_strength
+                        elif typeof(item) == TYPE_OBJECT:
+                            if "x" in item: item.x += nx * pull_strength
+                            elif item.has_method("set_meta") and item.has_meta("x"): item.set_meta("x", item.get_meta("x") + nx * pull_strength)
+                            if "y" in item: item.y += ny * pull_strength
+                            elif item.has_method("set_meta") and item.has_meta("y"): item.set_meta("y", item.get_meta("y") + ny * pull_strength)
+
+        if self.world != null and "boosters" in self.world:
+            for booster in self.world.boosters:
+                var i_x = 0.0
+                var i_y = 0.0
+                if typeof(booster) == TYPE_DICTIONARY and booster.has("x"): i_x = booster["x"]
+                elif typeof(booster) == TYPE_OBJECT and "x" in booster: i_x = booster.x
+                if typeof(booster) == TYPE_DICTIONARY and booster.has("y"): i_y = booster["y"]
+                elif typeof(booster) == TYPE_OBJECT and "y" in booster: i_y = booster.y
+
+                var dx = self.ball.x - i_x
+                var dy = self.ball.y - i_y
+                var dist_sq = dx*dx + dy*dy
+                if dist_sq < 90000:
+                    var dist = sqrt(dist_sq)
+                    if dist > 0.0001:
+                        var nx = dx / dist
+                        var ny = dy / dist
+                        var pull_strength = 300.0 * delta
+                        if typeof(booster) == TYPE_DICTIONARY:
+                            booster["x"] = i_x + nx * pull_strength
+                            booster["y"] = i_y + ny * pull_strength
+                        elif typeof(booster) == TYPE_OBJECT:
+                            if "x" in booster: booster.x += nx * pull_strength
+                            elif booster.has_method("set_meta") and booster.has_meta("x"): booster.set_meta("x", booster.get_meta("x") + nx * pull_strength)
+                            if "y" in booster: booster.y += ny * pull_strength
+                            elif booster.has_method("set_meta") and booster.has_meta("y"): booster.set_meta("y", booster.get_meta("y") + ny * pull_strength)
+
         if self.world != null and "arena" in self.world and "items" in self.world.arena:
             for item in self.world.arena.items:
                 var i_kind = ""
