@@ -25194,6 +25194,32 @@ func execute(strategy: String, delta: float):
                                     hazard.set_meta("duration", 0.0)
                                 elif "duration" in hazard:
                                     hazard.duration = 0.0
+                            elif trap_variant == "water_blast":
+                                var dx = self.ball.x - hazard.x
+                                var dy = self.ball.y - hazard.y
+                                var dist = sqrt(dx*dx + dy*dy)
+                                if dist < 0.0001:
+                                    dx = 1.0
+                                    dy = 0.0
+                                    dist = 1.0
+
+                                var push_strength = 2000.0
+                                if "vx" in self.ball: self.ball.vx += (dx / dist) * push_strength
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("vx", self.ball.get_meta("vx") + (dx / dist) * push_strength if self.ball.has_meta("vx") else (dx / dist) * push_strength)
+
+                                if "vy" in self.ball: self.ball.vy += (dy / dist) * push_strength
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("vy", self.ball.get_meta("vy") + (dy / dist) * push_strength if self.ball.has_meta("vy") else (dy / dist) * push_strength)
+
+                                if "soaked_timer" in self.ball: self.ball.soaked_timer = 8.0
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("soaked_timer", 8.0)
+
+                                if world != null and world.has_method("add_event"):
+                                    world.add_event("visual_effect", {"type": "water_blast", "x": hazard.x, "y": hazard.y})
+
+                                if hazard.has_method("set_meta"):
+                                    hazard.set_meta("duration", 0.0)
+                                elif "duration" in hazard:
+                                    hazard.duration = 0.0
                             elif trap_variant == "tar":
                                 if "speed_multiplier" in self.ball:
                                     self.ball.speed_multiplier *= 0.2

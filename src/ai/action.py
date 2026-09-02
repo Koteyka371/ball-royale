@@ -443,6 +443,11 @@ class Action:
 
             is_water = att_element == "water" or "water" in att_type or "swamp" in att_type or "puddle" in att_type or any(t in ["water", "swamp"] for t in att_traits)
             is_fire = att_element == "fire" or "fire" in att_type or "lava" in att_type or "flare" in att_type or any(t in ["fire", "lava"] for t in att_traits)
+            is_electric = att_element == "electric" or att_element == "lightning" or "electric" in att_type or "lightning" in att_type or "emp" in att_type or any(t in ["electric", "lightning"] for t in att_traits)
+
+            # Soaked vulnerability to electricity
+            if is_electric and getattr(target, "soaked_timer", 0.0) > 0.0:
+                actual_damage *= 2.0
 
             # Hitting a burning ball with a water attack
             if is_water and getattr(target, "burn_timer", 0.0) > 0:
@@ -2212,6 +2217,22 @@ class Action:
             self.ball.artifact_dmg_buffed = (dmg_mult != 1.0)
 
     def execute(self, strategy: str, delta: float) -> None:
+        # Decrement soaked timer and nullify fire traits
+        if getattr(self.ball, "soaked_timer", 0.0) > 0.0:
+            self.ball.soaked_timer -= delta
+            if self.ball.soaked_timer <= 0.0:
+                self.ball.soaked_timer = 0.0
+            else:
+                # Nullify fire timers/buffs
+                self.ball.burn_timer = 0.0
+                self.ball.fire_attachment_timer = 0.0
+                if hasattr(self.ball, "elemental_aura") and self.ball.elemental_aura == "fire_aura":
+                    self.ball.elemental_aura = None
+                    self.ball.elemental_aura_timer = 0.0
+                # Block fireball usage
+                if self.ball.skill == "fireball":
+                    self.ball.skill_timer = max(getattr(self.ball, "skill_timer", 0.0), 5.0) # prevent firing
+
         if getattr(self.ball, "gravity_swapped_timer", 0.0) > 0.0:
             self.ball.gravity_swapped_timer -= delta
             # Reverse gravity manually
@@ -13126,6 +13147,27 @@ class Action:
                                         spider_web = Hazard(spider_web_id, hazard.x, hazard.y, 60.0, "spider_web", 0.0)
                                         spider_web.duration = 8.0
                                         self.world.arena.hazards.append(spider_web)
+
+                                    hazard.duration = 0.0 # Destroy trap
+                                elif trap_variant == "water_blast":
+                                    import math
+                                    # Water blast: knockback, soaked status, destroy trap
+                                    dx = self.ball.x - hazard.x
+                                    dy = self.ball.y - hazard.y
+                                    dist = math.sqrt(dx*dx + dy*dy)
+                                    if dist < 0.0001:
+                                        dx, dy, dist = 1.0, 0.0, 1.0
+
+                                    # Violent knockback
+                                    push_strength = 2000.0
+                                    self.ball.vx = getattr(self.ball, "vx", 0.0) + (dx / dist) * push_strength
+                                    self.ball.vy = getattr(self.ball, "vy", 0.0) + (dy / dist) * push_strength
+
+                                    # Apply Soaked status effect (duration 8.0s)
+                                    self.ball.soaked_timer = 8.0
+
+                                    if hasattr(self.world, "events"):
+                                        self.world.events.append({"type": "visual_effect", "data": {"type": "water_blast", "x": hazard.x, "y": hazard.y}})
 
                                     hazard.duration = 0.0 # Destroy trap
                                 elif trap_variant == "tar":
