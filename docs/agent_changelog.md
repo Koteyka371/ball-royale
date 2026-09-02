@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2115] Magnetize Buff — *2026-09-02 20:54:45 UTC*
+
+A buff that allows a player to pull in all nearby boosters and items automatically without having to touch them, increasing their item pickup efficiency.
+
+---
+
 ## [idea-2092] Kinetic Feedback Booster — *2026-09-02 20:05:09 UTC*
 
 A booster that allows the ball to accumulate potential energy as they move. When they collide with an enemy, the stored energy is released as a burst of bonus damage and knockback.
