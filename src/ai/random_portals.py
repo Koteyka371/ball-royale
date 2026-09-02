@@ -46,7 +46,8 @@ class RandomPortalsMode(GameMode):
         # Process collisions with balls
         for portal in self.portals:
             px, py, pr = portal["x"], portal["y"], portal["radius"]
-            for b in balls:
+            entities = balls + getattr(world, 'projectiles', [])
+            for b in entities:
                 if not getattr(b, "alive", False):
                     continue
 
