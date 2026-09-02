@@ -27956,6 +27956,43 @@ class Action:
             if self.ball.material_magnet_timer < 0:
                 self.ball.material_magnet_timer = 0.0
 
+
+        traits_list = getattr(self.ball, "traits", [])
+        if "storm_chaser" in traits_list:
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "items"):
+                for item in self.world.arena.items:
+                    item_x = getattr(item, "x", item.get("x", 0.0) if isinstance(item, dict) else 0.0)
+                    item_y = getattr(item, "y", item.get("y", 0.0) if isinstance(item, dict) else 0.0)
+                    dist_sq = (item_x - self.ball.x)**2 + (item_y - self.ball.y)**2
+                    if dist_sq < 90000: # 300 range
+                        import math
+                        dist = math.sqrt(dist_sq)
+                        if dist > 0.0001:
+                            nx, ny = (self.ball.x - item_x) / dist, (self.ball.y - item_y) / dist
+                            pull_strength = 300.0 * delta
+                            if isinstance(item, dict):
+                                item["x"] = item_x + nx * pull_strength
+                                item["y"] = item_y + ny * pull_strength
+                            else:
+                                if hasattr(item, "x"): item.x += nx * pull_strength
+                                if hasattr(item, "y"): item.y += ny * pull_strength
+            if hasattr(self.world, "boosters"):
+                for booster in self.world.boosters:
+                    item_x = getattr(booster, "x", booster.get("x", 0.0) if isinstance(booster, dict) else 0.0)
+                    item_y = getattr(booster, "y", booster.get("y", 0.0) if isinstance(booster, dict) else 0.0)
+                    dist_sq = (item_x - self.ball.x)**2 + (item_y - self.ball.y)**2
+                    if dist_sq < 90000: # 300 range
+                        import math
+                        dist = math.sqrt(dist_sq)
+                        if dist > 0.0001:
+                            nx, ny = (self.ball.x - item_x) / dist, (self.ball.y - item_y) / dist
+                            pull_strength = 300.0 * delta
+                            if isinstance(booster, dict):
+                                booster["x"] = item_x + nx * pull_strength
+                                booster["y"] = item_y + ny * pull_strength
+                            else:
+                                if hasattr(booster, "x"): booster.x += nx * pull_strength
+                                if hasattr(booster, "y"): booster.y += ny * pull_strength
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "items"):
                 for item in self.world.arena.items:
                     if getattr(item, "kind", item.get("kind", "") if isinstance(item, dict) else "") == "material":
