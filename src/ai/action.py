@@ -279,6 +279,21 @@ class Action:
                                 original_damage *= 2.0
                                 break
 
+        kb_timer = getattr(attacker, "kinetic_battery_timer", 0.0)
+        kb_energy = getattr(attacker, "kinetic_battery_energy", 0.0)
+        if kb_timer > 0.0 and kb_energy > 0.0:
+            original_damage += kb_energy * 0.1
+            force = kb_energy * 2.0
+            attacker.kinetic_battery_energy = 0.0
+            if hasattr(self.world, "events"):
+                self.world.events.append({'type': 'visual_effect', 'data': {'type': 'kinetic_battery_burst', 'x': target.x, 'y': target.y}})
+            dist_t = ((target.x - attacker.x)**2 + (target.y - attacker.y)**2)**0.5
+            if dist_t > 0.0001:
+                nx = (target.x - attacker.x) / dist_t
+                ny = (target.y - attacker.y) / dist_t
+                target.vx = getattr(target, "vx", 0.0) + nx * force
+                target.vy = getattr(target, "vy", 0.0) + ny * force
+
         if getattr(target, "in_time_dilation_zone", False):
             original_damage *= 0.5
             # Apply to attacker temporarily
@@ -19238,6 +19253,13 @@ class Action:
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
                         self.world.arena.hazards.remove(nearest)
 
+                elif getattr(nearest, "kind", None) == "kinetic_battery_booster":
+                    self.ball.kinetic_battery_timer = 15.0
+                    self.ball.kinetic_battery_energy = 0.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
+                        self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "teleport_booster":
                     # Store original position BEFORE teleporting and BEFORE moving towards the booster
                     old_x = getattr(self.ball, "_pre_teleport_x", self.ball.x)
@@ -31077,6 +31099,14 @@ class Action:
 
         # Regen/Drain Stamina at end of execution
         dist = math.sqrt((getattr(self.ball, "x", 0) - old_x)**2 + (getattr(self.ball, "y", 0) - old_y)**2)
+        if getattr(self.ball, "kinetic_battery_timer", 0.0) > 0.0:
+            self.ball.kinetic_battery_timer -= delta
+            if self.ball.kinetic_battery_timer <= 0.0:
+                self.ball.kinetic_battery_timer = 0.0
+                self.ball.kinetic_battery_energy = 0.0
+            else:
+                current_energy = getattr(self.ball, "kinetic_battery_energy", 0.0)
+                self.ball.kinetic_battery_energy = min(500.0, current_energy + dist)
         arena = getattr(self.world, 'arena', None)
         is_heatwave = getattr(arena, 'is_heatwave', False) if arena else False
         is_snowing = getattr(arena, 'is_snowing', False) if arena else False
