@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2114] Decaying Orbits mutator — *2026-09-03 22:13:51 UTC*
+
+The safe zone isn't a shrinking circle, but instead is a rapidly orbiting spotlight that gets faster and smaller as the game progresses.
+
+---
+
 ## [idea-2096] Echo Strike — *2026-09-03 20:23:47 UTC*
 
 A follow up attack where an echo repeats a smaller percentage of damage 1 second after original strike.
