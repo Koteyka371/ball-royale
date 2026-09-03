@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2107] Starlight Celestial Event — *2026-09-03 17:43:28 UTC*
+
+An extremely rare mid-game event during nighttime modes where a large Starlight Nexus drops into the center of the arena. When destroyed, it grants a 'Celestial Aura' to the team that dealt the most damage, turning all of their shadow-based traits into 'radiant' variations, dramatically altering their playstyles and counters for the rest of the match.
+
+---
+
 ## [idea-2115] Magnetize Buff — *2026-09-02 20:54:45 UTC*
 
 A buff that allows a player to pull in all nearby boosters and items automatically without having to touch them, increasing their item pickup efficiency.
