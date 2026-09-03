@@ -4189,6 +4189,59 @@ func _apply_artifact_set_bonuses():
 
 func execute(strategy: String, delta: float):
 
+	var cosmetic = ""
+	if "cosmetic" in self.ball: cosmetic = self.ball.cosmetic.to_lower().replace(" ", "_")
+	elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("cosmetic"): cosmetic = self.ball["cosmetic"].to_lower().replace(" ", "_")
+	elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("cosmetic"): cosmetic = self.ball.get_meta("cosmetic").to_lower().replace(" ", "_")
+
+	if cosmetic == "aura_drain_pet":
+		var has_pet = false
+		if "has_pet" in self.ball: has_pet = self.ball.has_pet
+		elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("has_pet"): has_pet = self.ball["has_pet"]
+		elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("has_pet"): has_pet = self.ball.get_meta("has_pet")
+
+		var pet_type_str = ""
+		if "pet_type" in self.ball: pet_type_str = self.ball.pet_type
+		elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("pet_type"): pet_type_str = self.ball["pet_type"]
+		elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("pet_type"): pet_type_str = self.ball.get_meta("pet_type")
+
+		if not has_pet or pet_type_str != "aura_drain":
+			if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+				self.ball.set_meta("has_pet", true)
+				self.ball.set_meta("pet_type", "aura_drain")
+			elif typeof(self.ball) == TYPE_DICTIONARY:
+				self.ball["has_pet"] = true
+				self.ball["pet_type"] = "aura_drain"
+			else:
+				self.ball.has_pet = true
+				self.ball.pet_type = "aura_drain"
+
+			if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+				var pet_exists = false
+				var b_id = null
+				if "id" in self.ball: b_id = self.ball.id
+				elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): b_id = self.ball["id"]
+				elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get"): b_id = self.ball.get("id")
+
+				for h in self.world.arena.hazards:
+					var hk = h.get("kind", h.kind if "kind" in h else "")
+					var ho = h.get("owner_id", h.owner_id if "owner_id" in h else null)
+					if hk == "pet" and ho == b_id:
+						pet_exists = true
+						break
+				if not pet_exists:
+					var bx = 0.0
+					if "x" in self.ball: bx = self.ball.x
+					elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("x"): bx = self.ball["x"]
+					elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get"): bx = self.ball.get("x", 0.0)
+					var by = 0.0
+					if "y" in self.ball: by = self.ball.y
+					elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("y"): by = self.ball["y"]
+					elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get"): by = self.ball.get("y", 0.0)
+					var new_pet = {"id": 999000 + self.world.arena.hazards.size() + randi() % 10000, "x": bx, "y": by, "radius": 8.0, "kind": "pet", "damage": 0.0, "owner_id": b_id}
+					self.world.arena.hazards.append(new_pet)
+
+
 	var soaked_timer = 0.0
 	if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("soaked_timer"): soaked_timer = self.ball.soaked_timer
 	elif typeof(self.ball) == TYPE_OBJECT and "soaked_timer" in self.ball: soaked_timer = self.ball.soaked_timer
