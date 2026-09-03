@@ -50957,12 +50957,17 @@ func _clamp_position() -> bool:
             elif self.ball.has_method("set_meta"):
                 self.ball.set_meta("elastic_bounce_timer", 2.0)
 
-        if bounced and (("game_mode" in self.world and self.world.game_mode != null and "name" in self.world.game_mode and self.world.game_mode.name in ["Ricochet Arena", "Extreme Bounciness", "Super Bouncy Arena", "Chaotic Pinball Machine", "Jump Pad Boundaries", "Giant Bouncy Royale"]) or is_lunar_eclipse_bounce):
+        if bounced and (("game_mode" in self.world and self.world.game_mode != null and "name" in self.world.game_mode and self.world.game_mode.name in ["Ricochet Arena", "Extreme Bounciness", "Super Bouncy Arena", "Chaotic Pinball Machine", "Jump Pad Boundaries", "Giant Bouncy Royale", "Slippery Ricochet"]) or is_lunar_eclipse_bounce):
             var mult = 2.0
             if self.world.game_mode.name == "Ricochet Arena":
                 mult = 3.0
                 if "velocity_multiplier" in self.world.game_mode:
                     mult = self.world.game_mode.velocity_multiplier
+            elif self.world.game_mode.name == "Slippery Ricochet":
+                if "velocity_multiplier" in self.world.game_mode:
+                    mult = self.world.game_mode.velocity_multiplier
+                else:
+                    mult = 2.0
             elif self.world.game_mode.name == "Jump Pad Boundaries":
                 mult = 3.0
 
