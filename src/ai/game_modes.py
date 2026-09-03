@@ -17036,6 +17036,15 @@ class ScorchingSunMode(GameMode):
                     if b.stamina < 0:
                         b.stamina = 0.0
 
+class StarlightNexus:
+    def __init__(self, id, x, y, radius, kind, damage):
+        self.id = id
+        self.x = x
+        self.y = y
+        self.radius = radius
+        self.kind = kind
+        self.damage = damage
+
 class DayNightMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -17330,6 +17339,77 @@ class DayNightMode(GameMode):
 
             # Manage shadow monsters during night
             if is_night:
+                if self.timer >= self.phase_duration / 2.0 and not getattr(self, "starlight_nexus_spawned", False):
+                    self.starlight_nexus_spawned = True
+                    if random.random() < 0.05:
+                        arena_w = getattr(world.arena, "width", 1000)
+                        arena_h = getattr(world.arena, "height", 1000)
+
+                        if hasattr(world.arena, "hazards"):
+                            nexus = StarlightNexus(
+                                id=30000 + len(world.arena.hazards),
+                                x=arena_w / 2.0,
+                                y=arena_h / 2.0,
+                                radius=60.0,
+                                kind="starlight_nexus",
+                                damage=0.0
+                            )
+                            setattr(nexus, "hp", 1000.0)
+                            setattr(nexus, "max_hp", 1000.0)
+                            setattr(nexus, "previous_hp", 1000.0)
+                            setattr(nexus, "team_damage", {})
+                            world.arena.hazards.append(nexus)
+                            if hasattr(world, "add_event"):
+                                world.add_event("visual_effect", {"type": "starlight_nexus_spawn"})
+
+                if hasattr(world.arena, "hazards"):
+                    for h in list(world.arena.hazards):
+                        if getattr(h, "kind", "") == "starlight_nexus":
+                            hp = getattr(h, "hp", 1000.0)
+                            prev_hp = getattr(h, "previous_hp", 1000.0)
+                            if hp < prev_hp:
+                                damage_taken = prev_hp - hp
+                                nearest = None
+                                min_d = float('inf')
+                                for b in balls:
+                                    if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                                        d = (b.x - h.x)**2 + (b.y - h.y)**2
+                                        if d < min_d:
+                                            min_d = d
+                                            nearest = b
+                                if nearest and hasattr(nearest, "team"):
+                                    td = getattr(h, "team_damage", {})
+                                    td[nearest.team] = td.get(nearest.team, 0.0) + damage_taken
+                                    setattr(h, "team_damage", td)
+                            setattr(h, "previous_hp", hp)
+                            if hp <= 0:
+                                td = getattr(h, "team_damage", {})
+                                winning_team = None
+                                max_dmg = -1
+                                for team, dmg in td.items():
+                                    if dmg > max_dmg:
+                                        max_dmg = dmg
+                                        winning_team = team
+                                if winning_team is not None:
+                                    world.celestial_aura_team = winning_team
+                                    if hasattr(world, "add_event"):
+                                        world.add_event("celestial_aura_granted", {"team": winning_team})
+                                    for b in balls:
+                                        if getattr(b, "team", None) == winning_team:
+                                            if hasattr(b, "traits"):
+                                                new_traits = []
+                                                for t in b.traits:
+                                                    if t == "shadow": new_traits.append("radiant")
+                                                    elif t == "vampire": new_traits.append("radiant_vampire")
+                                                    elif t == "stealth": new_traits.append("radiant_stealth")
+                                                    else: new_traits.append(t)
+                                                if "celestial_aura" not in new_traits: new_traits.append("celestial_aura")
+                                                b.traits = new_traits
+                                            if hasattr(b, "ball_type") and isinstance(b.ball_type, str):
+                                                bt = b.ball_type
+                                                bt = bt.replace("shadow", "radiant")
+                                                b.ball_type = bt
+                                world.arena.hazards.remove(h)
                 # Count current shadow monsters in balls
                 shadow_monsters = [b for b in balls if getattr(b, "ball_type", "") == "shadow_monster" and getattr(b, "alive", False)]
 
