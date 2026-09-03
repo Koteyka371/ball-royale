@@ -26726,6 +26726,128 @@ class DayNightMode extends GameMode:
 									world.arena.hazards.append(mirage)
 
 			if is_night:
+				if timer >= phase_duration / 2.0 and not get("starlight_nexus_spawned", false):
+					self.set("starlight_nexus_spawned", true)
+					if randf() < 0.05:
+						var arena_w = 1000.0
+						var arena_h = 1000.0
+						if typeof(world.arena) == TYPE_OBJECT and "width" in world.arena: arena_w = world.arena.width
+						elif typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("width"): arena_w = world.arena.width
+						if typeof(world.arena) == TYPE_OBJECT and "height" in world.arena: arena_h = world.arena.height
+						elif typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("height"): arena_h = world.arena.height
+						var nexus = {
+							"id": 30000 + world.arena.hazards.size(),
+							"x": arena_w / 2.0,
+							"y": arena_h / 2.0,
+							"radius": 60.0,
+							"kind": "starlight_nexus",
+							"damage": 0.0,
+							"hp": 1000.0,
+							"max_hp": 1000.0,
+							"previous_hp": 1000.0,
+							"team_damage": {}
+						}
+						if typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+							world.arena.hazards.append(nexus)
+						elif typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+							world.arena.hazards.append(nexus)
+						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+							world.add_event("visual_effect", {"type": "starlight_nexus_spawn"})
+						elif typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+							world.call("add_event", "visual_effect", {"type": "starlight_nexus_spawn"})
+				var hazards_list = []
+				if typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+					hazards_list = world.arena.hazards
+				elif typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+					hazards_list = world.arena.hazards
+				var nexus_to_remove = null
+				for h in hazards_list:
+					var hk = ""
+					if typeof(h) == TYPE_DICTIONARY: hk = h.get("kind", "")
+					else: hk = h.get("kind", "") if "kind" in h else ""
+					if hk == "starlight_nexus":
+						var cur_hp = h.get("hp", 1000.0) if typeof(h) == TYPE_DICTIONARY else (h.get("hp") if "hp" in h else 1000.0)
+						var prev_hp = h.get("previous_hp", 1000.0) if typeof(h) == TYPE_DICTIONARY else (h.get("previous_hp") if "previous_hp" in h else 1000.0)
+						if cur_hp < prev_hp:
+							var damage_taken = prev_hp - cur_hp
+							var nearest = null
+							var min_d = INF
+							var hx = h.get("x", 0.0) if typeof(h) == TYPE_DICTIONARY else (h.get("x") if "x" in h else 0.0)
+							var hy = h.get("y", 0.0) if typeof(h) == TYPE_DICTIONARY else (h.get("y") if "y" in h else 0.0)
+							for b in balls:
+								var balive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else (b.get("alive") if "alive" in b else false)
+								var btype = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else (b.get("ball_type") if "ball_type" in b else "")
+								if balive and btype != "spectator":
+									var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get("x") if "x" in b else 0.0)
+									var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get("y") if "y" in b else 0.0)
+									var d = (bx - hx)*(bx - hx) + (by - hy)*(by - hy)
+									if d < min_d:
+										min_d = d
+										nearest = b
+							if nearest != null:
+								var bteam = nearest.get("team", "") if typeof(nearest) == TYPE_DICTIONARY else (nearest.get("team") if "team" in nearest else "")
+								if bteam != "":
+									var td = h.get("team_damage", {}) if typeof(h) == TYPE_DICTIONARY else (h.get("team_damage") if "team_damage" in h else {})
+									if td.has(bteam):
+										td[bteam] += damage_taken
+									else:
+										td[bteam] = damage_taken
+									if typeof(h) == TYPE_DICTIONARY:
+										h["team_damage"] = td
+									else:
+										h.team_damage = td
+							if typeof(h) == TYPE_DICTIONARY:
+								h["previous_hp"] = cur_hp
+							else:
+								h.previous_hp = cur_hp
+							if cur_hp <= 0.0:
+								var td = h.get("team_damage", {}) if typeof(h) == TYPE_DICTIONARY else (h.get("team_damage") if "team_damage" in h else {})
+								var winning_team = ""
+								var max_dmg = -1.0
+								for team in td.keys():
+									if td[team] > max_dmg:
+										max_dmg = td[team]
+										winning_team = team
+								if winning_team != "":
+									if typeof(world) == TYPE_DICTIONARY:
+										world["celestial_aura_team"] = winning_team
+										if world.has("add_event"):
+											world.call("add_event", "celestial_aura_granted", {"team": winning_team})
+									else:
+										if "celestial_aura_team" in world: world.celestial_aura_team = winning_team
+										elif world.has_method("set_meta"): world.set_meta("celestial_aura_team", winning_team)
+										if world.has_method("add_event"):
+											world.add_event("celestial_aura_granted", {"team": winning_team})
+									for b in balls:
+										var bteam = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else (b.get("team") if "team" in b else "")
+										if bteam == winning_team:
+											var b_traits = b.get("traits", []) if typeof(b) == TYPE_DICTIONARY else (b.get("traits") if "traits" in b else [])
+											var new_traits = []
+											for t in b_traits:
+												if t == "shadow": new_traits.append("radiant")
+												elif t == "vampire": new_traits.append("radiant_vampire")
+												elif t == "stealth": new_traits.append("radiant_stealth")
+												else: new_traits.append(t)
+											if not new_traits.has("celestial_aura"):
+												new_traits.append("celestial_aura")
+											if typeof(b) == TYPE_DICTIONARY:
+												b["traits"] = new_traits
+											else:
+												if "traits" in b: b.traits = new_traits
+											var btype2 = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else (b.get("ball_type") if "ball_type" in b else "")
+											if typeof(btype2) == TYPE_STRING:
+												btype2 = btype2.replace("shadow", "radiant")
+												if typeof(b) == TYPE_DICTIONARY:
+													b["ball_type"] = btype2
+												else:
+													if "ball_type" in b: b.ball_type = btype2
+								nexus_to_remove = h
+					if nexus_to_remove != null:
+						if typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+							world.arena.hazards.erase(nexus_to_remove)
+						elif typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+							world.arena.hazards.erase(nexus_to_remove)
+			if is_night:
 				var shadow_monsters = []
 				for b in balls:
 					var balive = false
