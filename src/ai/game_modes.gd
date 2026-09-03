@@ -55721,6 +55721,31 @@ class FakeBountyMutatorMode extends GameMode:
 				world.add_event("explosion", {"x": b_x, "y": b_y, "radius": 100.0, "damage": 10.0})
 
 
+class SlipperyRicochetMode extends GameMode:
+	var velocity_multiplier = 2.5
+	func _init():
+		self.name = "Slippery Ricochet"
+		self.description = "Balls have significantly less friction and bounce around with higher velocity, making it harder to control movement but enabling interesting ricochet plays."
+		self.velocity_multiplier = 2.5
+	func tick(world, balls, delta=0.016):
+		super.tick(world, balls, delta)
+		for b in balls:
+			var active = true
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.has("alive"):
+					active = b["alive"]
+				elif b.has("active"):
+					active = b["active"]
+				if active:
+					b["is_frictionless"] = true
+			elif typeof(b) == TYPE_OBJECT:
+				if "alive" in b:
+					active = b.alive
+				elif "active" in b:
+					active = b.active
+				if active:
+					b.is_frictionless = true
+
 class RicochetArenaMode extends GameMode:
 	var velocity_multiplier = 3.0
 	func _init():
@@ -65644,6 +65669,7 @@ var GAME_MODES = {
 	"mirror_arena": MirrorArenaMode.new(),
 	"chain_lightning_event": ChainLightningEventMode.new(),
 	"chain_lightning_mutator": ChainLightningMutatorMode.new(),
+	"slippery_ricochet": SlipperyRicochetMode.new(),
 	"ricochet_arena": RicochetArenaMode.new(),
 	"fake_bounties_mutator": FakeBountyMutatorMode.new(),
 	"kinetic_momentum_mutator": KineticMomentumMutatorMode.new(),

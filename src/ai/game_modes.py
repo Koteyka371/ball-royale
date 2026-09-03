@@ -34236,6 +34236,20 @@ class FakeBountyMutatorMode(GameMode):
                     world.add_event("explosion", {"x": float(b.x), "y": float(b.y), "radius": 100.0, "damage": 10.0})
 
 
+
+class SlipperyRicochetMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Slippery Ricochet"
+        self.description = "Balls have significantly less friction and bounce around with higher velocity, making it harder to control movement but enabling interesting ricochet plays."
+        self.velocity_multiplier = 2.5
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        for b in balls:
+            if getattr(b, "alive", getattr(b, "active", True)):
+                b.is_frictionless = True
+
 class RicochetArenaMode(GameMode):
     """
     An arena mode where walls apply a massive multiplying force to balls when they bounce off them,
@@ -40893,6 +40907,7 @@ GAME_MODES = {
     "hazard_lines": HazardLinesMode(),
     'periodic_gravity_flip': PeriodicGravityFlipMode(),
     'chain_lightning_event': ChainLightningEventMode(),
+    "slippery_ricochet": SlipperyRicochetMode(),
     "ricochet_arena": RicochetArenaMode(),
     "fake_bounties_mutator": FakeBountyMutatorMode(),
     "kinetic_momentum_mutator": KineticMomentumMutatorMode(),
