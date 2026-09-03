@@ -40776,8 +40776,54 @@ class BloodThirstMode(GameMode):
                     if hasattr(world, "add_event"):
                         world.add_event("death", {"id": getattr(b, "id", None), "reason": "blood_thirst_drain"})
 
+
+class OrbitingSpotlightMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Orbiting Spotlight"
+        self.description = "The safe zone isn't a shrinking circle, but instead is a rapidly orbiting spotlight that gets faster and smaller as the game progresses."
+        self.orbit_angle = 0.0
+        self.initial_radius = 1400.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if hasattr(world, "arena"):
+            self.initial_radius = getattr(world.arena, "safe_zone_radius", 1400.0)
+            self.orbit_angle = 0.0
+
+    def tick(self, world, balls, delta: float) -> None:
+        super().tick(world, balls, delta)
+        if not hasattr(world, "arena"):
+            return
+
+        import math
+        current_radius = getattr(world.arena, "safe_zone_radius", self.initial_radius)
+        if self.initial_radius > 0:
+            progress = max(0.0, min(1.0, 1.0 - (current_radius / self.initial_radius)))
+        else:
+            progress = 0.0
+
+        base_speed = 0.5
+        max_speed = 3.0
+        orbit_speed = base_speed + (max_speed - base_speed) * progress
+
+        self.orbit_angle += orbit_speed * delta
+
+        width = getattr(world.arena, "width", 2000.0)
+        height = getattr(world.arena, "height", 2000.0)
+        cx = width / 2.0
+        cy = height / 2.0
+
+        orbit_radius = width * 0.3
+
+        spotlight_x = cx + math.cos(self.orbit_angle) * orbit_radius
+        spotlight_y = cy + math.sin(self.orbit_angle) * orbit_radius
+
+        world.arena.safe_zone_center = (spotlight_x, spotlight_y)
+
 GAME_MODES = {
     'blood_thirst': BloodThirstMode(),
+    'orbiting_spotlight': OrbitingSpotlightMode(),
     'abyssal_fog_event': AbyssalFogEventMode(),
     'phantom_graveyard': PhantomGraveyardMode(),
     'random_teleport_event': RandomTeleportEventMode(),
