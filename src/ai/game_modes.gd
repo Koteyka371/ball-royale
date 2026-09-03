@@ -28037,167 +28037,167 @@ class ZeroGravityMode extends GameMode:
 
 
 class ToxicSludgeMutatorMode extends GameMode:
-    var replaced = false
+	var replaced = false
 
-    func _init():
-        name = "Toxic Sludge Mutator"
-        description = "Replaces all ground hazards with toxic sludge that applies the Radiation debuff for 10 seconds, increasing damage taken from all sources, and slows movement speed."
-        replaced = false
+	func _init():
+		name = "Toxic Sludge Mutator"
+		description = "Replaces all ground hazards with toxic sludge that applies the Radiation debuff for 10 seconds, increasing damage taken from all sources, and slows movement speed."
+		replaced = false
 
-    func setup(world, balls):
-        super.setup(world, balls)
-        replaced = false
+	func setup(world, balls):
+		super.setup(world, balls)
+		replaced = false
 
-    func tick(world, balls, delta):
-        super.tick(world, balls, delta)
+	func tick(world, balls, delta):
+		super.tick(world, balls, delta)
 
-        if not ("arena" in world) or world.arena == null or not ("hazards" in world.arena):
-            return
+		if not ("arena" in world) or world.arena == null or not ("hazards" in world.arena):
+			return
 
-        if not replaced:
-            var ground_hazards = ["spikes", "puddle", "ice_patch", "lava", "quicksand", "mud_puddle", "molten_rock"]
-            for h in world.arena.hazards:
-                var h_kind = ""
-                if typeof(h) == TYPE_DICTIONARY:
-                    if h.has("kind"):
-                        h_kind = h["kind"]
-                else:
-                    if "kind" in h:
-                        h_kind = h.kind
+		if not replaced:
+			var ground_hazards = ["spikes", "puddle", "ice_patch", "lava", "quicksand", "mud_puddle", "molten_rock"]
+			for h in world.arena.hazards:
+				var h_kind = ""
+				if typeof(h) == TYPE_DICTIONARY:
+					if h.has("kind"):
+						h_kind = h["kind"]
+				else:
+					if "kind" in h:
+						h_kind = h.kind
 
-                if h_kind in ground_hazards:
-                    if typeof(h) == TYPE_DICTIONARY:
-                        h["kind"] = "poison_cloud"
-                        h["is_toxic_sludge"] = true
-                    else:
-                        h.kind = "poison_cloud"
-                        if h.has_method("set_meta"):
-                            h.set_meta("is_toxic_sludge", true)
-            replaced = true
+				if h_kind in ground_hazards:
+					if typeof(h) == TYPE_DICTIONARY:
+						h["kind"] = "poison_cloud"
+						h["is_toxic_sludge"] = true
+					else:
+						h.kind = "poison_cloud"
+						if h.has_method("set_meta"):
+							h.set_meta("is_toxic_sludge", true)
+			replaced = true
 
-        for b in balls:
-            var alive = true
-            if typeof(b) == TYPE_DICTIONARY:
-                if b.has("alive"):
-                    alive = b["alive"]
-            else:
-                if "alive" in b:
-                    alive = b.alive
-            if not alive:
-                continue
+		for b in balls:
+			var alive = true
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.has("alive"):
+					alive = b["alive"]
+			else:
+				if "alive" in b:
+					alive = b.alive
+			if not alive:
+				continue
 
-            var b_type = ""
-            if typeof(b) == TYPE_DICTIONARY:
-                if b.has("ball_type"):
-                    b_type = b["ball_type"]
-            else:
-                if "ball_type" in b:
-                    b_type = b.ball_type
-            if b_type == "spectator":
-                continue
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.has("ball_type"):
+					b_type = b["ball_type"]
+			else:
+				if "ball_type" in b:
+					b_type = b.ball_type
+			if b_type == "spectator":
+				continue
 
-            var bx = 0.0
-            var by = 0.0
-            var bradius = 15.0
+			var bx = 0.0
+			var by = 0.0
+			var bradius = 15.0
 
-            if typeof(b) == TYPE_DICTIONARY:
-                if b.has("x"): bx = b["x"]
-                if b.has("y"): by = b["y"]
-                if b.has("radius"): bradius = b["radius"]
-            else:
-                if "x" in b: bx = b.x
-                if "y" in b: by = b.y
-                if "radius" in b: bradius = b.radius
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.has("x"): bx = b["x"]
+				if b.has("y"): by = b["y"]
+				if b.has("radius"): bradius = b["radius"]
+			else:
+				if "x" in b: bx = b.x
+				if "y" in b: by = b.y
+				if "radius" in b: bradius = b.radius
 
-            var in_sludge = false
-            for h in world.arena.hazards:
-                var h_active = true
-                var h_is_sludge = false
-                var hx = 0.0
-                var hy = 0.0
-                var hradius = 30.0
+			var in_sludge = false
+			for h in world.arena.hazards:
+				var h_active = true
+				var h_is_sludge = false
+				var hx = 0.0
+				var hy = 0.0
+				var hradius = 30.0
 
-                if typeof(h) == TYPE_DICTIONARY:
-                    if h.has("active"): h_active = h["active"]
-                    if h.has("is_toxic_sludge"): h_is_sludge = h["is_toxic_sludge"]
-                    if h.has("x"): hx = h["x"]
-                    if h.has("y"): hy = h["y"]
-                    if h.has("radius"): hradius = h["radius"]
-                else:
-                    if "active" in h: h_active = h.active
-                    if h.has_method("has_meta") and h.has_meta("is_toxic_sludge"):
-                        h_is_sludge = h.get_meta("is_toxic_sludge")
-                    elif "is_toxic_sludge" in h:
-                        h_is_sludge = h.is_toxic_sludge
-                    if "x" in h: hx = h.x
-                    if "y" in h: hy = h.y
-                    if "radius" in h: hradius = h.radius
+				if typeof(h) == TYPE_DICTIONARY:
+					if h.has("active"): h_active = h["active"]
+					if h.has("is_toxic_sludge"): h_is_sludge = h["is_toxic_sludge"]
+					if h.has("x"): hx = h["x"]
+					if h.has("y"): hy = h["y"]
+					if h.has("radius"): hradius = h["radius"]
+				else:
+					if "active" in h: h_active = h.active
+					if h.has_method("has_meta") and h.has_meta("is_toxic_sludge"):
+						h_is_sludge = h.get_meta("is_toxic_sludge")
+					elif "is_toxic_sludge" in h:
+						h_is_sludge = h.is_toxic_sludge
+					if "x" in h: hx = h.x
+					if "y" in h: hy = h.y
+					if "radius" in h: hradius = h.radius
 
-                if h_active and h_is_sludge:
-                    var dx = bx - hx
-                    var dy = by - hy
-                    var dist = sqrt(dx * dx + dy * dy)
-                    if dist < bradius + hradius:
-                        in_sludge = true
-                        break
+				if h_active and h_is_sludge:
+					var dx = bx - hx
+					var dy = by - hy
+					var dist = sqrt(dx * dx + dy * dy)
+					if dist < bradius + hradius:
+						in_sludge = true
+						break
 
-            if in_sludge:
-                if typeof(b) == TYPE_DICTIONARY:
-                    b["radiation_duration"] = 10.0
-                    b["radiation_multiplier"] = 1.5
-                    if b.has("speed"):
-                        if not b.has("base_speed"):
-                            b["base_speed"] = b["speed"]
-                        b["speed"] = b["base_speed"] * 0.5
-                        b["toxic_slow_applied"] = true
-                else:
-                    if "radiation_duration" in b: b.radiation_duration = 10.0
-                    elif b.has_method("set_meta"): b.set_meta("radiation_duration", 10.0)
-                    if "radiation_multiplier" in b: b.radiation_multiplier = 1.5
-                    elif b.has_method("set_meta"): b.set_meta("radiation_multiplier", 1.5)
+			if in_sludge:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["radiation_duration"] = 10.0
+					b["radiation_multiplier"] = 1.5
+					if b.has("speed"):
+						if not b.has("base_speed"):
+							b["base_speed"] = b["speed"]
+						b["speed"] = b["base_speed"] * 0.5
+						b["toxic_slow_applied"] = true
+				else:
+					if "radiation_duration" in b: b.radiation_duration = 10.0
+					elif b.has_method("set_meta"): b.set_meta("radiation_duration", 10.0)
+					if "radiation_multiplier" in b: b.radiation_multiplier = 1.5
+					elif b.has_method("set_meta"): b.set_meta("radiation_multiplier", 1.5)
 
-                    if "speed" in b:
-                        var b_base = null
-                        if "base_speed" in b:
-                            b_base = b.base_speed
-                        elif b.has_method("has_meta") and b.has_meta("base_speed"):
-                            b_base = b.get_meta("base_speed")
-                        else:
-                            b_base = b.speed
-                            if "base_speed" in b:
-                                b.base_speed = b_base
-                            elif b.has_method("set_meta"):
-                                b.set_meta("base_speed", b_base)
-                        b.speed = b_base * 0.5
-                        if "toxic_slow_applied" in b:
-                            b.toxic_slow_applied = true
-                        elif b.has_method("set_meta"):
-                            b.set_meta("toxic_slow_applied", true)
-            else:
-                if typeof(b) == TYPE_DICTIONARY:
-                    if b.has("toxic_slow_applied") and b["toxic_slow_applied"]:
-                        if b.has("base_speed"):
-                            b["speed"] = b["base_speed"]
-                        b["toxic_slow_applied"] = false
-                else:
-                    var slow_applied = false
-                    if "toxic_slow_applied" in b:
-                        slow_applied = b.toxic_slow_applied
-                    elif b.has_method("has_meta") and b.has_meta("toxic_slow_applied"):
-                        slow_applied = b.get_meta("toxic_slow_applied")
+					if "speed" in b:
+						var b_base = null
+						if "base_speed" in b:
+							b_base = b.base_speed
+						elif b.has_method("has_meta") and b.has_meta("base_speed"):
+							b_base = b.get_meta("base_speed")
+						else:
+							b_base = b.speed
+							if "base_speed" in b:
+								b.base_speed = b_base
+							elif b.has_method("set_meta"):
+								b.set_meta("base_speed", b_base)
+						b.speed = b_base * 0.5
+						if "toxic_slow_applied" in b:
+							b.toxic_slow_applied = true
+						elif b.has_method("set_meta"):
+							b.set_meta("toxic_slow_applied", true)
+			else:
+				if typeof(b) == TYPE_DICTIONARY:
+					if b.has("toxic_slow_applied") and b["toxic_slow_applied"]:
+						if b.has("base_speed"):
+							b["speed"] = b["base_speed"]
+						b["toxic_slow_applied"] = false
+				else:
+					var slow_applied = false
+					if "toxic_slow_applied" in b:
+						slow_applied = b.toxic_slow_applied
+					elif b.has_method("has_meta") and b.has_meta("toxic_slow_applied"):
+						slow_applied = b.get_meta("toxic_slow_applied")
 
-                    if slow_applied:
-                        var b_base = null
-                        if "base_speed" in b:
-                            b_base = b.base_speed
-                        elif b.has_method("has_meta") and b.has_meta("base_speed"):
-                            b_base = b.get_meta("base_speed")
-                        if b_base != null and "speed" in b:
-                            b.speed = b_base
-                        if "toxic_slow_applied" in b:
-                            b.toxic_slow_applied = false
-                        elif b.has_method("set_meta"):
-                            b.set_meta("toxic_slow_applied", false)
+					if slow_applied:
+						var b_base = null
+						if "base_speed" in b:
+							b_base = b.base_speed
+						elif b.has_method("has_meta") and b.has_meta("base_speed"):
+							b_base = b.get_meta("base_speed")
+						if b_base != null and "speed" in b:
+							b.speed = b_base
+						if "toxic_slow_applied" in b:
+							b.toxic_slow_applied = false
+						elif b.has_method("set_meta"):
+							b.set_meta("toxic_slow_applied", false)
 
 
 class ChainLightningMutatorMode extends GameMode:
@@ -41798,7 +41798,7 @@ class WeaponCollectionMode extends GameMode:
 							"explosion",
 							"deployable_thumper",
 							"deployable_thin_hazard_line",
-                            "deployable_gravity_line",
+							"deployable_gravity_line",
 							"laser_tripwire",
 							"mind_control",
 							"ground_pound",
@@ -51144,31 +51144,31 @@ class SpectatorHologramsMode extends GameMode:
 
 
 class BounceLaserMode extends GameMode:
-    func tick(world, balls: Array, delta: float) -> void:
-        super.tick(world, balls, delta)
+	func tick(world, balls: Array, delta: float) -> void:
+		super.tick(world, balls, delta)
 
-        if not "arena" in world or world.arena == null:
-            return
+		if not "arena" in world or world.arena == null:
+			return
 
-        if "tick" in world and world.tick % 100 == 0:
-            var w = 2000.0
-            if "width" in world.arena: w = world.arena.width
-            var h = 2000.0
-            if "height" in world.arena: h = world.arena.height
-            var x = randf_range(200, w - 200)
-            var y = randf_range(200, h - 200)
+		if "tick" in world and world.tick % 100 == 0:
+			var w = 2000.0
+			if "width" in world.arena: w = world.arena.width
+			var h = 2000.0
+			if "height" in world.arena: h = world.arena.height
+			var x = randf_range(200, w - 200)
+			var y = randf_range(200, h - 200)
 
-            var next_id = 9000
-            if "next_id" in world:
-                next_id = world.next_id
-                world.next_id += 1
+			var next_id = 9000
+			if "next_id" in world:
+				next_id = world.next_id
+				world.next_id += 1
 
-            var ProceduralArena = load("res://src/arena/procedural_arena.gd")
-            var laser = ProceduralArena.Hazard.new(next_id, x, y, 20.0, "bounce_laser", 25.0)
-            laser.set_meta("speed", 300.0)
+			var ProceduralArena = load("res://src/arena/procedural_arena.gd")
+			var laser = ProceduralArena.Hazard.new(next_id, x, y, 20.0, "bounce_laser", 25.0)
+			laser.set_meta("speed", 300.0)
 
-            if "hazards" in world.arena:
-                world.arena.hazards.append(laser)
+			if "hazards" in world.arena:
+				world.arena.hazards.append(laser)
 
 
 class DynamicWindCurrentsMode extends GameMode:
@@ -55467,136 +55467,136 @@ class KineticMomentumMutatorMode extends GameMode:
 
 
 class FakeBountyMutatorMode extends GameMode:
-    var spawn_timer = 0.0
-    var spawn_interval = 15.0
+	var spawn_timer = 0.0
+	var spawn_interval = 15.0
 
-    func _init().():
-        self.name = "Fake Bounties"
-        self.description = "Fake bounty targets randomly spawn. They explode into a poison cloud when destroyed."
+	func _init().():
+		self.name = "Fake Bounties"
+		self.description = "Fake bounty targets randomly spawn. They explode into a poison cloud when destroyed."
 
-    func tick(world, balls, delta=0.016):
-        self.spawn_timer += delta
-        var arena_width = 1000.0
-        var arena_height = 1000.0
-        if typeof(world) == TYPE_DICTIONARY and "arena" in world:
-            if typeof(world["arena"]) == TYPE_DICTIONARY:
-                if "width" in world["arena"]:
-                    arena_width = world["arena"]["width"]
-                if "height" in world["arena"]:
-                    arena_height = world["arena"]["height"]
-            elif typeof(world["arena"]) == TYPE_OBJECT:
-                if world["arena"].get("width") != null:
-                    arena_width = world["arena"].width
-                if world["arena"].get("height") != null:
-                    arena_height = world["arena"].height
-        elif typeof(world) == TYPE_OBJECT and world.get("arena") != null:
-            if typeof(world.arena) == TYPE_DICTIONARY:
-                if "width" in world.arena:
-                    arena_width = world.arena.width
-                if "height" in world.arena:
-                    arena_height = world.arena.height
-            elif typeof(world.arena) == TYPE_OBJECT:
-                if world.arena.get("width") != null:
-                    arena_width = world.arena.width
-                if world.arena.get("height") != null:
-                    arena_height = world.arena.height
+	func tick(world, balls, delta=0.016):
+		self.spawn_timer += delta
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+			if typeof(world["arena"]) == TYPE_DICTIONARY:
+				if "width" in world["arena"]:
+					arena_width = world["arena"]["width"]
+				if "height" in world["arena"]:
+					arena_height = world["arena"]["height"]
+			elif typeof(world["arena"]) == TYPE_OBJECT:
+				if world["arena"].get("width") != null:
+					arena_width = world["arena"].width
+				if world["arena"].get("height") != null:
+					arena_height = world["arena"].height
+		elif typeof(world) == TYPE_OBJECT and world.get("arena") != null:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				if "width" in world.arena:
+					arena_width = world.arena.width
+				if "height" in world.arena:
+					arena_height = world.arena.height
+			elif typeof(world.arena) == TYPE_OBJECT:
+				if world.arena.get("width") != null:
+					arena_width = world.arena.width
+				if world.arena.get("height") != null:
+					arena_height = world.arena.height
 
-        if self.spawn_timer >= self.spawn_interval:
-            self.spawn_timer = 0.0
-            var spawn_x = randf_range(100.0, arena_width - 100.0)
-            var spawn_y = randf_range(100.0, arena_height - 100.0)
+		if self.spawn_timer >= self.spawn_interval:
+			self.spawn_timer = 0.0
+			var spawn_x = randf_range(100.0, arena_width - 100.0)
+			var spawn_y = randf_range(100.0, arena_height - 100.0)
 
-            var fb_id = randi() % 900000 + 100000
-            if typeof(world) == TYPE_DICTIONARY and "next_id" in world:
-                fb_id = world["next_id"]
-                world["next_id"] += 1
-            elif typeof(world) == TYPE_OBJECT and world.get("next_id") != null:
-                fb_id = world.next_id
-                world.next_id += 1
+			var fb_id = randi() % 900000 + 100000
+			if typeof(world) == TYPE_DICTIONARY and "next_id" in world:
+				fb_id = world["next_id"]
+				world["next_id"] += 1
+			elif typeof(world) == TYPE_OBJECT and world.get("next_id") != null:
+				fb_id = world.next_id
+				world.next_id += 1
 
-            var fake_bounty = FakeBountyBall.new(fb_id, spawn_x, spawn_y)
-            if typeof(world) == TYPE_DICTIONARY and "balls" in world:
-                world["balls"].append(fake_bounty)
-            elif typeof(world) == TYPE_OBJECT and world.get("balls") != null:
-                world.balls.append(fake_bounty)
+			var fake_bounty = FakeBountyBall.new(fb_id, spawn_x, spawn_y)
+			if typeof(world) == TYPE_DICTIONARY and "balls" in world:
+				world["balls"].append(fake_bounty)
+			elif typeof(world) == TYPE_OBJECT and world.get("balls") != null:
+				world.balls.append(fake_bounty)
 
-            # Emit ping
-            if typeof(world) == TYPE_DICTIONARY and "events" in world:
-                world["events"].append(["bounty_compass", {"target_x": float(spawn_x), "target_y": float(spawn_y), "owner_id": fb_id}])
-            elif typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
-                world.add_event("bounty_compass", {"target_x": float(spawn_x), "target_y": float(spawn_y), "owner_id": fb_id})
+			# Emit ping
+			if typeof(world) == TYPE_DICTIONARY and "events" in world:
+				world["events"].append(["bounty_compass", {"target_x": float(spawn_x), "target_y": float(spawn_y), "owner_id": fb_id}])
+			elif typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("bounty_compass", {"target_x": float(spawn_x), "target_y": float(spawn_y), "owner_id": fb_id})
 
-        var to_remove = []
-        for b in balls:
-            var is_fb = false
-            var is_alive = true
+		var to_remove = []
+		for b in balls:
+			var is_fb = false
+			var is_alive = true
 
-            if typeof(b) == TYPE_DICTIONARY:
-                if "is_fake_bounty" in b and b["is_fake_bounty"]:
-                    is_fb = true
-                if "alive" in b:
-                    is_alive = b["alive"]
-            elif typeof(b) == TYPE_OBJECT:
-                if b.get("is_fake_bounty") != null and b.is_fake_bounty:
-                    is_fb = true
-                if b.get("alive") != null:
-                    is_alive = b.alive
+			if typeof(b) == TYPE_DICTIONARY:
+				if "is_fake_bounty" in b and b["is_fake_bounty"]:
+					is_fb = true
+				if "alive" in b:
+					is_alive = b["alive"]
+			elif typeof(b) == TYPE_OBJECT:
+				if b.get("is_fake_bounty") != null and b.is_fake_bounty:
+					is_fb = true
+				if b.get("alive") != null:
+					is_alive = b.alive
 
-            if is_fb:
-                if is_alive:
-                    if typeof(b) == TYPE_DICTIONARY and b.has("update"):
-                        # GDScript dictionaries dont have methods but just in case
-                        pass
-                    elif typeof(b) == TYPE_OBJECT and b.has_method("update"):
-                        b.update(delta, arena_width, arena_height)
-                else:
-                    to_remove.append(b)
+			if is_fb:
+				if is_alive:
+					if typeof(b) == TYPE_DICTIONARY and b.has("update"):
+						# GDScript dictionaries dont have methods but just in case
+						pass
+					elif typeof(b) == TYPE_OBJECT and b.has_method("update"):
+						b.update(delta, arena_width, arena_height)
+				else:
+					to_remove.append(b)
 
-        for b in to_remove:
-            if typeof(world) == TYPE_DICTIONARY and "balls" in world:
-                world["balls"].erase(b)
-            elif typeof(world) == TYPE_OBJECT and world.get("balls") != null:
-                world.balls.erase(b)
+		for b in to_remove:
+			if typeof(world) == TYPE_DICTIONARY and "balls" in world:
+				world["balls"].erase(b)
+			elif typeof(world) == TYPE_OBJECT and world.get("balls") != null:
+				world.balls.erase(b)
 
-            var b_x = 0.0
-            var b_y = 0.0
-            if typeof(b) == TYPE_DICTIONARY:
-                b_x = float(b.get("x", 0.0))
-                b_y = float(b.get("y", 0.0))
-            elif typeof(b) == TYPE_OBJECT:
-                b_x = float(b.get("x"))
-                b_y = float(b.get("y"))
+			var b_x = 0.0
+			var b_y = 0.0
+			if typeof(b) == TYPE_DICTIONARY:
+				b_x = float(b.get("x", 0.0))
+				b_y = float(b.get("y", 0.0))
+			elif typeof(b) == TYPE_OBJECT:
+				b_x = float(b.get("x"))
+				b_y = float(b.get("y"))
 
-            # Spawn hazard
-            var hazard = {
-                "kind": "acid_puddle",
-                "x": b_x,
-                "y": b_y,
-                "radius": 100.0,
-                "duration": 10.0,
-                "active": true,
-                "damage": 10.0
-            }
+			# Spawn hazard
+			var hazard = {
+				"kind": "acid_puddle",
+				"x": b_x,
+				"y": b_y,
+				"radius": 100.0,
+				"duration": 10.0,
+				"active": true,
+				"damage": 10.0
+			}
 
-            if typeof(world) == TYPE_DICTIONARY and "arena" in world and typeof(world["arena"]) == TYPE_DICTIONARY:
-                if not "hazards" in world["arena"]:
-                    world["arena"]["hazards"] = []
-                world["arena"]["hazards"].append(hazard)
-            elif typeof(world) == TYPE_OBJECT and world.get("arena") != null:
-                if typeof(world.arena) == TYPE_DICTIONARY:
-                    if not "hazards" in world.arena:
-                        world.arena["hazards"] = []
-                    world.arena["hazards"].append(hazard)
-                elif typeof(world.arena) == TYPE_OBJECT:
-                    if world.arena.get("hazards") == null:
-                        world.arena.hazards = []
-                    world.arena.hazards.append(hazard)
+			if typeof(world) == TYPE_DICTIONARY and "arena" in world and typeof(world["arena"]) == TYPE_DICTIONARY:
+				if not "hazards" in world["arena"]:
+					world["arena"]["hazards"] = []
+				world["arena"]["hazards"].append(hazard)
+			elif typeof(world) == TYPE_OBJECT and world.get("arena") != null:
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					if not "hazards" in world.arena:
+						world.arena["hazards"] = []
+					world.arena["hazards"].append(hazard)
+				elif typeof(world.arena) == TYPE_OBJECT:
+					if world.arena.get("hazards") == null:
+						world.arena.hazards = []
+					world.arena.hazards.append(hazard)
 
-            # Explosion event
-            if typeof(world) == TYPE_DICTIONARY and "events" in world:
-                world["events"].append(["explosion", {"x": b_x, "y": b_y, "radius": 100.0, "damage": 10.0}])
-            elif typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
-                world.add_event("explosion", {"x": b_x, "y": b_y, "radius": 100.0, "damage": 10.0})
+			# Explosion event
+			if typeof(world) == TYPE_DICTIONARY and "events" in world:
+				world["events"].append(["explosion", {"x": b_x, "y": b_y, "radius": 100.0, "damage": 10.0}])
+			elif typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("explosion", {"x": b_x, "y": b_y, "radius": 100.0, "damage": 10.0})
 
 
 class RicochetArenaMode extends GameMode:
@@ -57054,89 +57054,89 @@ class ContinuousShrinkSafeZoneMode extends SafeZoneMode:
 		super.tick(world, balls, delta)
 
 class ReverseTimePenaltyMode extends GameMode:
-    var timer = 0.0
-    var history = {}
+	var timer = 0.0
+	var history = {}
 
-    func _init():
-        name = "Reverse Time Penalty"
-        description = "Every 60 seconds, all balls are forcefully rewound to their positions 10 seconds ago. However, their health and cooldowns remain at current levels, leading to unpredictable resets and repositioning plays."
+	func _init():
+		name = "Reverse Time Penalty"
+		description = "Every 60 seconds, all balls are forcefully rewound to their positions 10 seconds ago. However, their health and cooldowns remain at current levels, leading to unpredictable resets and repositioning plays."
 
-    func tick(world, balls, delta=0.016):
-        super(world, balls, delta)
-        timer += delta
+	func tick(world, balls, delta=0.016):
+		super(world, balls, delta)
+		timer += delta
 
-        # Record position history
-        for b in balls:
-            if typeof(b) == TYPE_DICTIONARY and b.get("ball_type", "") == "spectator":
-                continue
-            elif typeof(b) != TYPE_DICTIONARY and b.get("ball_type") == "spectator":
-                continue
+		# Record position history
+		for b in balls:
+			if typeof(b) == TYPE_DICTIONARY and b.get("ball_type", "") == "spectator":
+				continue
+			elif typeof(b) != TYPE_DICTIONARY and b.get("ball_type") == "spectator":
+				continue
 
-            var b_id
-            if typeof(b) == TYPE_DICTIONARY:
-                if not b.has("id"):
-                    continue
-                b_id = b.id
-            else:
-                if not "id" in b:
-                    continue
-                b_id = b.id
+			var b_id
+			if typeof(b) == TYPE_DICTIONARY:
+				if not b.has("id"):
+					continue
+				b_id = b.id
+			else:
+				if not "id" in b:
+					continue
+				b_id = b.id
 
-            if not history.has(b_id):
-                history[b_id] = []
+			if not history.has(b_id):
+				history[b_id] = []
 
-            var bx = 0.0
-            var by = 0.0
-            if typeof(b) == TYPE_DICTIONARY:
-                bx = b.x
-                by = b.y
-            else:
-                bx = b.x
-                by = b.y
+			var bx = 0.0
+			var by = 0.0
+			if typeof(b) == TYPE_DICTIONARY:
+				bx = b.x
+				by = b.y
+			else:
+				bx = b.x
+				by = b.y
 
-            history[b_id].append([timer, bx, by])
+			history[b_id].append([timer, bx, by])
 
-            while history[b_id].size() > 0 and timer - history[b_id][0][0] > 10.0:
-                history[b_id].pop_front()
+			while history[b_id].size() > 0 and timer - history[b_id][0][0] > 10.0:
+				history[b_id].pop_front()
 
-        if timer >= 60.0:
-            for b in balls:
-                var is_alive = false
-                var b_type = ""
-                var b_id = null
-                var has_id = false
+		if timer >= 60.0:
+			for b in balls:
+				var is_alive = false
+				var b_type = ""
+				var b_id = null
+				var has_id = false
 
-                if typeof(b) == TYPE_DICTIONARY:
-                    if b.has("alive"):
-                        is_alive = b.alive
-                    if b.has("ball_type"):
-                        b_type = b.ball_type
-                    if b.has("id"):
-                        b_id = b.id
-                        has_id = true
-                else:
-                    if "alive" in b:
-                        is_alive = b.alive
-                    if "ball_type" in b:
-                        b_type = b.ball_type
-                    if "id" in b:
-                        b_id = b.id
-                        has_id = true
+				if typeof(b) == TYPE_DICTIONARY:
+					if b.has("alive"):
+						is_alive = b.alive
+					if b.has("ball_type"):
+						b_type = b.ball_type
+					if b.has("id"):
+						b_id = b.id
+						has_id = true
+				else:
+					if "alive" in b:
+						is_alive = b.alive
+					if "ball_type" in b:
+						b_type = b.ball_type
+					if "id" in b:
+						b_id = b.id
+						has_id = true
 
-                if not is_alive or b_type == "spectator" or not has_id:
-                    continue
+				if not is_alive or b_type == "spectator" or not has_id:
+					continue
 
-                if history.has(b_id) and history[b_id].size() > 0:
-                    var oldest_state = history[b_id][0]
-                    if typeof(b) == TYPE_DICTIONARY:
-                        b.x = oldest_state[1]
-                        b.y = oldest_state[2]
-                    else:
-                        b.x = oldest_state[1]
-                        b.y = oldest_state[2]
+				if history.has(b_id) and history[b_id].size() > 0:
+					var oldest_state = history[b_id][0]
+					if typeof(b) == TYPE_DICTIONARY:
+						b.x = oldest_state[1]
+						b.y = oldest_state[2]
+					else:
+						b.x = oldest_state[1]
+						b.y = oldest_state[2]
 
-            timer = 0.0
-            history = {}
+			timer = 0.0
+			history = {}
 
 
 
@@ -60642,191 +60642,191 @@ class TimeLoopMode extends GameMode:
 
 
 class DecoySwapMode extends GameMode:
-    var timer: float = 0.0
-    var swap_interval: float = 12.0
-    var pre_spawn_time: float = 11.5
-    var pre_spawn_triggered: bool = false
+	var timer: float = 0.0
+	var swap_interval: float = 12.0
+	var pre_spawn_time: float = 11.5
+	var pre_spawn_triggered: bool = false
 
-    class ChaosSwapDecoy:
-        var id = 0
-        var owner_id = 0
-        var x = 0.0
-        var y = 0.0
-        var vx = 0.0
-        var vy = 0.0
-        var radius = 15.0
-        var hp = 10.0
-        var max_hp = 10.0
-        var alive = true
-        var team = "neutral"
-        var is_decoy = true
-        var decoy_type = "chaos_swap"
-        var kind = "chaos_swap_decoy"
-        var decoy_timer = 5.0
+	class ChaosSwapDecoy:
+		var id = 0
+		var owner_id = 0
+		var x = 0.0
+		var y = 0.0
+		var vx = 0.0
+		var vy = 0.0
+		var radius = 15.0
+		var hp = 10.0
+		var max_hp = 10.0
+		var alive = true
+		var team = "neutral"
+		var is_decoy = true
+		var decoy_type = "chaos_swap"
+		var kind = "chaos_swap_decoy"
+		var decoy_timer = 5.0
 
-    func _init():
-        name = "Decoy Swap"
-        description = "Periodically swaps every player's position with their nearest active decoy or clone. If a player lacks one, a decoy is spawned at their location moments before the swap."
+	func _init():
+		name = "Decoy Swap"
+		description = "Periodically swaps every player's position with their nearest active decoy or clone. If a player lacks one, a decoy is spawned at their location moments before the swap."
 
-    func tick(world, balls, delta=0.016):
-        timer += delta
+	func tick(world, balls, delta=0.016):
+		timer += delta
 
-        if timer >= pre_spawn_time and not pre_spawn_triggered:
-            pre_spawn_triggered = true
-            if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
-                world.add_event("chaos_swap_warning", {"message": "Chaos Swap imminent!"})
-            elif typeof(world) == TYPE_DICTIONARY and "events" in world:
-                world["events"].append({"type": "chaos_swap_warning", "message": "Chaos Swap imminent!"})
+		if timer >= pre_spawn_time and not pre_spawn_triggered:
+			pre_spawn_triggered = true
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("chaos_swap_warning", {"message": "Chaos Swap imminent!"})
+			elif typeof(world) == TYPE_DICTIONARY and "events" in world:
+				world["events"].append({"type": "chaos_swap_warning", "message": "Chaos Swap imminent!"})
 
-            for b in balls:
-                var b_alive = b.alive if typeof(b) == TYPE_OBJECT else b.get("alive", false)
-                var b_is_decoy = b.is_decoy if typeof(b) == TYPE_OBJECT else b.get("is_decoy", false)
-                var b_is_decoy_clone = b.get("is_decoy_clone") if typeof(b) == TYPE_OBJECT else b.get("is_decoy_clone", false)
-                var b_is_illusion = b.get("is_illusion") if typeof(b) == TYPE_OBJECT else b.get("is_illusion", false)
-                var b_ball_type = b.get("ball_type") if typeof(b) == TYPE_OBJECT else b.get("ball_type", "")
+			for b in balls:
+				var b_alive = b.alive if typeof(b) == TYPE_OBJECT else b.get("alive", false)
+				var b_is_decoy = b.is_decoy if typeof(b) == TYPE_OBJECT else b.get("is_decoy", false)
+				var b_is_decoy_clone = b.get("is_decoy_clone") if typeof(b) == TYPE_OBJECT else b.get("is_decoy_clone", false)
+				var b_is_illusion = b.get("is_illusion") if typeof(b) == TYPE_OBJECT else b.get("is_illusion", false)
+				var b_ball_type = b.get("ball_type") if typeof(b) == TYPE_OBJECT else b.get("ball_type", "")
 
-                if b_alive and not b_is_decoy and not b_is_decoy_clone and not b_is_illusion and b_ball_type != "spectator":
-                    var b_id = b.id if typeof(b) == TYPE_OBJECT else b.get("id")
-                    var has_decoy = false
-                    for other in balls:
-                        var other_alive = other.alive if typeof(other) == TYPE_OBJECT else other.get("alive", false)
-                        var other_is_decoy = other.is_decoy if typeof(other) == TYPE_OBJECT else other.get("is_decoy", false)
-                        var other_is_decoy_clone = other.get("is_decoy_clone") if typeof(other) == TYPE_OBJECT else other.get("is_decoy_clone", false)
-                        var other_is_illusion = other.get("is_illusion") if typeof(other) == TYPE_OBJECT else other.get("is_illusion", false)
-                        var other_owner_id = other.get("owner_id") if typeof(other) == TYPE_OBJECT else other.get("owner_id")
+				if b_alive and not b_is_decoy and not b_is_decoy_clone and not b_is_illusion and b_ball_type != "spectator":
+					var b_id = b.id if typeof(b) == TYPE_OBJECT else b.get("id")
+					var has_decoy = false
+					for other in balls:
+						var other_alive = other.alive if typeof(other) == TYPE_OBJECT else other.get("alive", false)
+						var other_is_decoy = other.is_decoy if typeof(other) == TYPE_OBJECT else other.get("is_decoy", false)
+						var other_is_decoy_clone = other.get("is_decoy_clone") if typeof(other) == TYPE_OBJECT else other.get("is_decoy_clone", false)
+						var other_is_illusion = other.get("is_illusion") if typeof(other) == TYPE_OBJECT else other.get("is_illusion", false)
+						var other_owner_id = other.get("owner_id") if typeof(other) == TYPE_OBJECT else other.get("owner_id")
 
-                        if other_alive and (other_is_decoy or other_is_decoy_clone or other_is_illusion):
-                            if other_owner_id == b_id:
-                                has_decoy = true
-                                break
+						if other_alive and (other_is_decoy or other_is_decoy_clone or other_is_illusion):
+							if other_owner_id == b_id:
+								has_decoy = true
+								break
 
-                    if not has_decoy:
-                        var b_x = b.x if typeof(b) == TYPE_OBJECT else b.get("x", 0.0)
-                        var b_y = b.y if typeof(b) == TYPE_OBJECT else b.get("y", 0.0)
-                        var b_vx = b.get("vx") if typeof(b) == TYPE_OBJECT else b.get("vx", 0.0)
-                        var b_vy = b.get("vy") if typeof(b) == TYPE_OBJECT else b.get("vy", 0.0)
-                        var b_radius = b.radius if typeof(b) == TYPE_OBJECT else b.get("radius", 15.0)
-                        var b_team = b.team if typeof(b) == TYPE_OBJECT else b.get("team", "neutral")
+					if not has_decoy:
+						var b_x = b.x if typeof(b) == TYPE_OBJECT else b.get("x", 0.0)
+						var b_y = b.y if typeof(b) == TYPE_OBJECT else b.get("y", 0.0)
+						var b_vx = b.get("vx") if typeof(b) == TYPE_OBJECT else b.get("vx", 0.0)
+						var b_vy = b.get("vy") if typeof(b) == TYPE_OBJECT else b.get("vy", 0.0)
+						var b_radius = b.radius if typeof(b) == TYPE_OBJECT else b.get("radius", 15.0)
+						var b_team = b.team if typeof(b) == TYPE_OBJECT else b.get("team", "neutral")
 
-                        var next_id = 99999 + b_id
-                        if typeof(world) == TYPE_OBJECT and "next_id" in world:
-                            next_id = world.next_id
-                            world.next_id += 1
-                        elif typeof(world) == TYPE_DICTIONARY and "next_id" in world:
-                            next_id = world["next_id"]
-                            world["next_id"] += 1
+						var next_id = 99999 + b_id
+						if typeof(world) == TYPE_OBJECT and "next_id" in world:
+							next_id = world.next_id
+							world.next_id += 1
+						elif typeof(world) == TYPE_DICTIONARY and "next_id" in world:
+							next_id = world["next_id"]
+							world["next_id"] += 1
 
-                        if typeof(world) == TYPE_OBJECT:
-                            var decoy = ChaosSwapDecoy.new()
-                            decoy.id = next_id
-                            decoy.owner_id = b_id
-                            decoy.x = b_x
-                            decoy.y = b_y
-                            decoy.vx = b_vx
-                            decoy.vy = b_vy
-                            decoy.radius = b_radius
-                            decoy.team = b_team
+						if typeof(world) == TYPE_OBJECT:
+							var decoy = ChaosSwapDecoy.new()
+							decoy.id = next_id
+							decoy.owner_id = b_id
+							decoy.x = b_x
+							decoy.y = b_y
+							decoy.vx = b_vx
+							decoy.vy = b_vy
+							decoy.radius = b_radius
+							decoy.team = b_team
 
-                            if "balls" in world:
-                                world.balls.append(decoy)
-                            if "entities" in world and world.entities != world.balls:
-                                world.entities.append(decoy)
-                        else:
-                            var decoy = {
-                                "id": next_id,
-                                "owner_id": b_id,
-                                "x": b_x,
-                                "y": b_y,
-                                "vx": b_vx,
-                                "vy": b_vy,
-                                "radius": b_radius,
-                                "hp": 10.0,
-                                "max_hp": 10.0,
-                                "alive": true,
-                                "team": b_team,
-                                "is_decoy": true,
-                                "decoy_type": "chaos_swap",
-                                "kind": "chaos_swap_decoy",
-                                "decoy_timer": 5.0
-                            }
-                            if "balls" in world:
-                                world["balls"].append(decoy)
-                            if "entities" in world and world["entities"] != world["balls"]:
-                                world["entities"].append(decoy)
+							if "balls" in world:
+								world.balls.append(decoy)
+							if "entities" in world and world.entities != world.balls:
+								world.entities.append(decoy)
+						else:
+							var decoy = {
+								"id": next_id,
+								"owner_id": b_id,
+								"x": b_x,
+								"y": b_y,
+								"vx": b_vx,
+								"vy": b_vy,
+								"radius": b_radius,
+								"hp": 10.0,
+								"max_hp": 10.0,
+								"alive": true,
+								"team": b_team,
+								"is_decoy": true,
+								"decoy_type": "chaos_swap",
+								"kind": "chaos_swap_decoy",
+								"decoy_timer": 5.0
+							}
+							if "balls" in world:
+								world["balls"].append(decoy)
+							if "entities" in world and world["entities"] != world["balls"]:
+								world["entities"].append(decoy)
 
-        if timer >= swap_interval:
-            timer = 0.0
-            pre_spawn_triggered = false
+		if timer >= swap_interval:
+			timer = 0.0
+			pre_spawn_triggered = false
 
-            if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
-                world.add_event("chaos_swap_execute", {"message": "Swapped!"})
-            elif typeof(world) == TYPE_DICTIONARY and "events" in world:
-                world["events"].append({"type": "chaos_swap_execute", "message": "Swapped!"})
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("chaos_swap_execute", {"message": "Swapped!"})
+			elif typeof(world) == TYPE_DICTIONARY and "events" in world:
+				world["events"].append({"type": "chaos_swap_execute", "message": "Swapped!"})
 
-            for b in balls:
-                var b_alive = b.alive if typeof(b) == TYPE_OBJECT else b.get("alive", false)
-                var b_is_decoy = b.is_decoy if typeof(b) == TYPE_OBJECT else b.get("is_decoy", false)
-                var b_is_decoy_clone = b.get("is_decoy_clone") if typeof(b) == TYPE_OBJECT else b.get("is_decoy_clone", false)
-                var b_is_illusion = b.get("is_illusion") if typeof(b) == TYPE_OBJECT else b.get("is_illusion", false)
-                var b_ball_type = b.get("ball_type") if typeof(b) == TYPE_OBJECT else b.get("ball_type", "")
+			for b in balls:
+				var b_alive = b.alive if typeof(b) == TYPE_OBJECT else b.get("alive", false)
+				var b_is_decoy = b.is_decoy if typeof(b) == TYPE_OBJECT else b.get("is_decoy", false)
+				var b_is_decoy_clone = b.get("is_decoy_clone") if typeof(b) == TYPE_OBJECT else b.get("is_decoy_clone", false)
+				var b_is_illusion = b.get("is_illusion") if typeof(b) == TYPE_OBJECT else b.get("is_illusion", false)
+				var b_ball_type = b.get("ball_type") if typeof(b) == TYPE_OBJECT else b.get("ball_type", "")
 
-                if b_alive and not b_is_decoy and not b_is_decoy_clone and not b_is_illusion and b_ball_type != "spectator":
-                    var b_id = b.id if typeof(b) == TYPE_OBJECT else b.get("id")
-                    var b_x = b.x if typeof(b) == TYPE_OBJECT else b.get("x", 0.0)
-                    var b_y = b.y if typeof(b) == TYPE_OBJECT else b.get("y", 0.0)
+				if b_alive and not b_is_decoy and not b_is_decoy_clone and not b_is_illusion and b_ball_type != "spectator":
+					var b_id = b.id if typeof(b) == TYPE_OBJECT else b.get("id")
+					var b_x = b.x if typeof(b) == TYPE_OBJECT else b.get("x", 0.0)
+					var b_y = b.y if typeof(b) == TYPE_OBJECT else b.get("y", 0.0)
 
-                    var nearest_decoy = null
-                    var min_dist = 9999999.0
+					var nearest_decoy = null
+					var min_dist = 9999999.0
 
-                    for other in balls:
-                        var other_alive = other.alive if typeof(other) == TYPE_OBJECT else other.get("alive", false)
-                        var other_is_decoy = other.is_decoy if typeof(other) == TYPE_OBJECT else other.get("is_decoy", false)
-                        var other_is_decoy_clone = other.get("is_decoy_clone") if typeof(other) == TYPE_OBJECT else other.get("is_decoy_clone", false)
-                        var other_is_illusion = other.get("is_illusion") if typeof(other) == TYPE_OBJECT else other.get("is_illusion", false)
-                        var other_owner_id = other.get("owner_id") if typeof(other) == TYPE_OBJECT else other.get("owner_id")
+					for other in balls:
+						var other_alive = other.alive if typeof(other) == TYPE_OBJECT else other.get("alive", false)
+						var other_is_decoy = other.is_decoy if typeof(other) == TYPE_OBJECT else other.get("is_decoy", false)
+						var other_is_decoy_clone = other.get("is_decoy_clone") if typeof(other) == TYPE_OBJECT else other.get("is_decoy_clone", false)
+						var other_is_illusion = other.get("is_illusion") if typeof(other) == TYPE_OBJECT else other.get("is_illusion", false)
+						var other_owner_id = other.get("owner_id") if typeof(other) == TYPE_OBJECT else other.get("owner_id")
 
-                        if other_alive and (other_is_decoy or other_is_decoy_clone or other_is_illusion):
-                            if other_owner_id == b_id:
-                                var other_x = other.x if typeof(other) == TYPE_OBJECT else other.get("x", 0.0)
-                                var other_y = other.y if typeof(other) == TYPE_OBJECT else other.get("y", 0.0)
-                                var dist = sqrt(pow(b_x - other_x, 2) + pow(b_y - other_y, 2))
-                                if dist < min_dist:
-                                    min_dist = dist
-                                    nearest_decoy = other
+						if other_alive and (other_is_decoy or other_is_decoy_clone or other_is_illusion):
+							if other_owner_id == b_id:
+								var other_x = other.x if typeof(other) == TYPE_OBJECT else other.get("x", 0.0)
+								var other_y = other.y if typeof(other) == TYPE_OBJECT else other.get("y", 0.0)
+								var dist = sqrt(pow(b_x - other_x, 2) + pow(b_y - other_y, 2))
+								if dist < min_dist:
+									min_dist = dist
+									nearest_decoy = other
 
-                    if nearest_decoy != null:
-                        var other_x = nearest_decoy.x if typeof(nearest_decoy) == TYPE_OBJECT else nearest_decoy.get("x", 0.0)
-                        var other_y = nearest_decoy.y if typeof(nearest_decoy) == TYPE_OBJECT else nearest_decoy.get("y", 0.0)
+					if nearest_decoy != null:
+						var other_x = nearest_decoy.x if typeof(nearest_decoy) == TYPE_OBJECT else nearest_decoy.get("x", 0.0)
+						var other_y = nearest_decoy.y if typeof(nearest_decoy) == TYPE_OBJECT else nearest_decoy.get("y", 0.0)
 
-                        if typeof(b) == TYPE_OBJECT:
-                            b.x = other_x
-                            b.y = other_y
-                        else:
-                            b["x"] = other_x
-                            b["y"] = other_y
+						if typeof(b) == TYPE_OBJECT:
+							b.x = other_x
+							b.y = other_y
+						else:
+							b["x"] = other_x
+							b["y"] = other_y
 
-                        if typeof(nearest_decoy) == TYPE_OBJECT:
-                            nearest_decoy.x = b_x
-                            nearest_decoy.y = b_y
-                        else:
-                            nearest_decoy["x"] = b_x
-                            nearest_decoy["y"] = b_y
+						if typeof(nearest_decoy) == TYPE_OBJECT:
+							nearest_decoy.x = b_x
+							nearest_decoy.y = b_y
+						else:
+							nearest_decoy["x"] = b_x
+							nearest_decoy["y"] = b_y
 
-                        var v_event = {
-                            "type": "visual_effect",
-                            "data": {
-                                "type": "teleport_swap",
-                                "x1": b_x,
-                                "y1": b_y,
-                                "x2": other_x,
-                                "y2": other_y
-                            }
-                        }
+						var v_event = {
+							"type": "visual_effect",
+							"data": {
+								"type": "teleport_swap",
+								"x1": b_x,
+								"y1": b_y,
+								"x2": other_x,
+								"y2": other_y
+							}
+						}
 
-                        if typeof(world) == TYPE_OBJECT and "events" in world:
-                            world.events.append(v_event)
-                        elif typeof(world) == TYPE_DICTIONARY and "events" in world:
-                            world["events"].append(v_event)
+						if typeof(world) == TYPE_OBJECT and "events" in world:
+							world.events.append(v_event)
+						elif typeof(world) == TYPE_DICTIONARY and "events" in world:
+							world["events"].append(v_event)
 
 
 
@@ -62523,95 +62523,95 @@ class CrumblingArenaMode extends GameMode:
 
 
 class NullificationZoneMode extends GameMode:
-    var zone_x: float = 500.0
-    var zone_y: float = 500.0
-    var zone_radius: float = 200.0
-    var drain_rate: float = 15.0
-    var hazard_obj = null
+	var zone_x: float = 500.0
+	var zone_y: float = 500.0
+	var zone_radius: float = 200.0
+	var drain_rate: float = 15.0
+	var hazard_obj = null
 
-    func _init():
-        name = "Nullification Zone"
-        description = "An area that disables all entity abilities and drains stamina over time."
+	func _init():
+		name = "Nullification Zone"
+		description = "An area that disables all entity abilities and drains stamina over time."
 
-    func setup(world, balls: Array) -> void:
-        super.setup(world, balls)
-        var arena_width = 1000.0
-        var arena_height = 1000.0
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		var arena_width = 1000.0
+		var arena_height = 1000.0
 
-        if typeof(world) == TYPE_OBJECT and world.get("arena") != null:
-            var arena = world.arena
-            if typeof(arena) == TYPE_OBJECT:
-                arena_width = arena.get("width", 1000.0)
-                arena_height = arena.get("height", 1000.0)
-            elif typeof(arena) == TYPE_DICTIONARY:
-                arena_width = arena.get("width", 1000.0)
-                arena_height = arena.get("height", 1000.0)
-        elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
-            var arena = world["arena"]
-            if typeof(arena) == TYPE_OBJECT:
-                arena_width = arena.get("width", 1000.0)
-                arena_height = arena.get("height", 1000.0)
-            elif typeof(arena) == TYPE_DICTIONARY:
-                arena_width = arena.get("width", 1000.0)
-                arena_height = arena.get("height", 1000.0)
+		if typeof(world) == TYPE_OBJECT and world.get("arena") != null:
+			var arena = world.arena
+			if typeof(arena) == TYPE_OBJECT:
+				arena_width = arena.get("width", 1000.0)
+				arena_height = arena.get("height", 1000.0)
+			elif typeof(arena) == TYPE_DICTIONARY:
+				arena_width = arena.get("width", 1000.0)
+				arena_height = arena.get("height", 1000.0)
+		elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			var arena = world["arena"]
+			if typeof(arena) == TYPE_OBJECT:
+				arena_width = arena.get("width", 1000.0)
+				arena_height = arena.get("height", 1000.0)
+			elif typeof(arena) == TYPE_DICTIONARY:
+				arena_width = arena.get("width", 1000.0)
+				arena_height = arena.get("height", 1000.0)
 
-        zone_x = arena_width / 2.0
-        zone_y = arena_height / 2.0
+		zone_x = arena_width / 2.0
+		zone_y = arena_height / 2.0
 
-        if typeof(world) == TYPE_OBJECT and world.get("arena") != null:
-            var arena = world.arena
-            if typeof(arena) == TYPE_OBJECT and arena.get("hazards") != null:
-                hazard_obj = {"id": "nullification_zone", "x": zone_x, "y": zone_y, "radius": zone_radius, "kind": "nullification_zone", "damage": 0.0}
-                arena.hazards.append(hazard_obj)
-            elif typeof(arena) == TYPE_DICTIONARY and arena.has("hazards"):
-                hazard_obj = {"id": "nullification_zone", "x": zone_x, "y": zone_y, "radius": zone_radius, "kind": "nullification_zone", "damage": 0.0}
-                arena["hazards"].append(hazard_obj)
-        elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
-            var arena = world["arena"]
-            if typeof(arena) == TYPE_OBJECT and arena.get("hazards") != null:
-                hazard_obj = {"id": "nullification_zone", "x": zone_x, "y": zone_y, "radius": zone_radius, "kind": "nullification_zone", "damage": 0.0}
-                arena.hazards.append(hazard_obj)
-            elif typeof(arena) == TYPE_DICTIONARY and arena.has("hazards"):
-                hazard_obj = {"id": "nullification_zone", "x": zone_x, "y": zone_y, "radius": zone_radius, "kind": "nullification_zone", "damage": 0.0}
-                arena["hazards"].append(hazard_obj)
+		if typeof(world) == TYPE_OBJECT and world.get("arena") != null:
+			var arena = world.arena
+			if typeof(arena) == TYPE_OBJECT and arena.get("hazards") != null:
+				hazard_obj = {"id": "nullification_zone", "x": zone_x, "y": zone_y, "radius": zone_radius, "kind": "nullification_zone", "damage": 0.0}
+				arena.hazards.append(hazard_obj)
+			elif typeof(arena) == TYPE_DICTIONARY and arena.has("hazards"):
+				hazard_obj = {"id": "nullification_zone", "x": zone_x, "y": zone_y, "radius": zone_radius, "kind": "nullification_zone", "damage": 0.0}
+				arena["hazards"].append(hazard_obj)
+		elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			var arena = world["arena"]
+			if typeof(arena) == TYPE_OBJECT and arena.get("hazards") != null:
+				hazard_obj = {"id": "nullification_zone", "x": zone_x, "y": zone_y, "radius": zone_radius, "kind": "nullification_zone", "damage": 0.0}
+				arena.hazards.append(hazard_obj)
+			elif typeof(arena) == TYPE_DICTIONARY and arena.has("hazards"):
+				hazard_obj = {"id": "nullification_zone", "x": zone_x, "y": zone_y, "radius": zone_radius, "kind": "nullification_zone", "damage": 0.0}
+				arena["hazards"].append(hazard_obj)
 
-    func tick(world, balls: Array, delta: float = 0.016) -> void:
-        super.tick(world, balls, delta)
-        for b in balls:
-            var is_alive = true
-            if typeof(b) == TYPE_OBJECT:
-                is_alive = b.alive
-            elif typeof(b) == TYPE_DICTIONARY:
-                is_alive = b.alive
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+		for b in balls:
+			var is_alive = true
+			if typeof(b) == TYPE_OBJECT:
+				is_alive = b.alive
+			elif typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.alive
 
-            if is_alive:
-                var b_x = 0.0
-                var b_y = 0.0
-                if typeof(b) == TYPE_OBJECT:
-                    if "x" in b and "y" in b:
-                        b_x = b.x
-                        b_y = b.y
-                elif typeof(b) == TYPE_DICTIONARY:
-                    if b.has("x") and b.has("y"):
-                        b_x = b["x"]
-                        b_y = b["y"]
+			if is_alive:
+				var b_x = 0.0
+				var b_y = 0.0
+				if typeof(b) == TYPE_OBJECT:
+					if "x" in b and "y" in b:
+						b_x = b.x
+						b_y = b.y
+				elif typeof(b) == TYPE_DICTIONARY:
+					if b.has("x") and b.has("y"):
+						b_x = b["x"]
+						b_y = b["y"]
 
-                var dist_sq = (b_x - zone_x) * (b_x - zone_x) + (b_y - zone_y) * (b_y - zone_y)
-                if dist_sq <= zone_radius * zone_radius:
-                    if typeof(b) == TYPE_OBJECT:
-                        if "stamina" in b:
-                            b.stamina = max(0.0, b.stamina - drain_rate * delta)
-                        if "silence_timer" in b:
-                            b.silence_timer = max(b.silence_timer, 0.5)
-                        else:
-                            b.set("silence_timer", 0.5)
-                    elif typeof(b) == TYPE_DICTIONARY:
-                        if b.has("stamina"):
-                            b["stamina"] = max(0.0, b["stamina"] - drain_rate * delta)
-                        if b.has("silence_timer"):
-                            b["silence_timer"] = max(b["silence_timer"], 0.5)
-                        else:
-                            b["silence_timer"] = 0.5
+				var dist_sq = (b_x - zone_x) * (b_x - zone_x) + (b_y - zone_y) * (b_y - zone_y)
+				if dist_sq <= zone_radius * zone_radius:
+					if typeof(b) == TYPE_OBJECT:
+						if "stamina" in b:
+							b.stamina = max(0.0, b.stamina - drain_rate * delta)
+						if "silence_timer" in b:
+							b.silence_timer = max(b.silence_timer, 0.5)
+						else:
+							b.set("silence_timer", 0.5)
+					elif typeof(b) == TYPE_DICTIONARY:
+						if b.has("stamina"):
+							b["stamina"] = max(0.0, b["stamina"] - drain_rate * delta)
+						if b.has("silence_timer"):
+							b["silence_timer"] = max(b["silence_timer"], 0.5)
+						else:
+							b["silence_timer"] = 0.5
 
 
 class CrimsonFogEventMode extends GameMode:
@@ -62830,138 +62830,138 @@ class BoundaryBuilderMode extends ShrinkingBoundaryMode:
 
 
 class AuraLinkRoyaleMode extends GameMode:
-    func _init():
-        name = "Aura Link Royale"
-        description = "Players with matching auras cannot damage each other and form energy links that damage non-matching players caught between them."
+	func _init():
+		name = "Aura Link Royale"
+		description = "Players with matching auras cannot damage each other and form energy links that damage non-matching players caught between them."
 
-    func setup(world, balls):
-        super.setup(world, balls)
-        var colors = ["Red", "Blue", "Green"]
-        for b in balls:
-            if typeof(b) == TYPE_DICTIONARY:
-                if b.get("ball_type") != "spectator" and b.alive:
-                    var color = colors[randi() % colors.size()]
-                    b["aura_color"] = color
-                    b["team"] = "Aura " + color
-            else:
-                if b.get("ball_type") != "spectator" and b.get("alive"):
-                    var color = colors[randi() % colors.size()]
-                    b.set_meta("aura_color", color)
-                    if "team" in b:
-                        b.team = "Aura " + color
+	func setup(world, balls):
+		super.setup(world, balls)
+		var colors = ["Red", "Blue", "Green"]
+		for b in balls:
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.get("ball_type") != "spectator" and b.alive:
+					var color = colors[randi() % colors.size()]
+					b["aura_color"] = color
+					b["team"] = "Aura " + color
+			else:
+				if b.get("ball_type") != "spectator" and b.get("alive"):
+					var color = colors[randi() % colors.size()]
+					b.set_meta("aura_color", color)
+					if "team" in b:
+						b.team = "Aura " + color
 
-    func point_line_distance(px, py, x1, y1, x2, y2):
-        var dx = x2 - x1
-        var dy = y2 - y1
-        if dx == 0 and dy == 0:
-            return sqrt(pow(px - x1, 2) + pow(py - y1, 2))
-        var t = ((px - x1) * dx + (py - y1) * dy) / (dx * dx + dy * dy)
-        t = max(0.0, min(1.0, t))
-        var cx = x1 + t * dx
-        var cy = y1 + t * dy
-        return sqrt(pow(px - cx, 2) + pow(py - cy, 2))
+	func point_line_distance(px, py, x1, y1, x2, y2):
+		var dx = x2 - x1
+		var dy = y2 - y1
+		if dx == 0 and dy == 0:
+			return sqrt(pow(px - x1, 2) + pow(py - y1, 2))
+		var t = ((px - x1) * dx + (py - y1) * dy) / (dx * dx + dy * dy)
+		t = max(0.0, min(1.0, t))
+		var cx = x1 + t * dx
+		var cy = y1 + t * dy
+		return sqrt(pow(px - cx, 2) + pow(py - cy, 2))
 
-    func tick(world, balls, delta: float = 0.016):
-        var alive_balls = []
-        for b in balls:
-            var alive = true
-            var is_spec = false
-            if typeof(b) == TYPE_DICTIONARY:
-                alive = b.alive
-                is_spec = b.get("ball_type") == "spectator"
-                if alive and not is_spec:
-                    if b.has("aura_color"):
-                        b["team"] = "Aura " + b["aura_color"]
-                    alive_balls.append(b)
-            else:
-                alive = b.get("alive")
-                is_spec = b.get("ball_type") == "spectator"
-                if alive and not is_spec:
-                    if b.has_meta("aura_color"):
-                        var color = b.get_meta("aura_color")
-                        if "team" in b:
-                            b.team = "Aura " + color
-                    alive_balls.append(b)
+	func tick(world, balls, delta: float = 0.016):
+		var alive_balls = []
+		for b in balls:
+			var alive = true
+			var is_spec = false
+			if typeof(b) == TYPE_DICTIONARY:
+				alive = b.alive
+				is_spec = b.get("ball_type") == "spectator"
+				if alive and not is_spec:
+					if b.has("aura_color"):
+						b["team"] = "Aura " + b["aura_color"]
+					alive_balls.append(b)
+			else:
+				alive = b.get("alive")
+				is_spec = b.get("ball_type") == "spectator"
+				if alive and not is_spec:
+					if b.has_meta("aura_color"):
+						var color = b.get_meta("aura_color")
+						if "team" in b:
+							b.team = "Aura " + color
+					alive_balls.append(b)
 
-        for i in range(alive_balls.size()):
-            var b1 = alive_balls[i]
-            var c1 = null
-            var b1_x = 0
-            var b1_y = 0
-            var b1_id = null
+		for i in range(alive_balls.size()):
+			var b1 = alive_balls[i]
+			var c1 = null
+			var b1_x = 0
+			var b1_y = 0
+			var b1_id = null
 
-            if typeof(b1) == TYPE_DICTIONARY:
-                c1 = b1.get("aura_color")
-                b1_x = b1.get("x", 0)
-                b1_y = b1.get("y", 0)
-                b1_id = b1.get("id")
-            else:
-                c1 = b1.get_meta("aura_color") if b1.has_meta("aura_color") else null
-                b1_x = b1.get("x") if "x" in b1 else 0
-                b1_y = b1.get("y") if "y" in b1 else 0
-                b1_id = b1.get("id") if "id" in b1 else null
+			if typeof(b1) == TYPE_DICTIONARY:
+				c1 = b1.get("aura_color")
+				b1_x = b1.get("x", 0)
+				b1_y = b1.get("y", 0)
+				b1_id = b1.get("id")
+			else:
+				c1 = b1.get_meta("aura_color") if b1.has_meta("aura_color") else null
+				b1_x = b1.get("x") if "x" in b1 else 0
+				b1_y = b1.get("y") if "y" in b1 else 0
+				b1_id = b1.get("id") if "id" in b1 else null
 
-            if c1 == null:
-                continue
+			if c1 == null:
+				continue
 
-            for j in range(i + 1, alive_balls.size()):
-                var b2 = alive_balls[j]
-                var c2 = null
-                var b2_x = 0
-                var b2_y = 0
+			for j in range(i + 1, alive_balls.size()):
+				var b2 = alive_balls[j]
+				var c2 = null
+				var b2_x = 0
+				var b2_y = 0
 
-                if typeof(b2) == TYPE_DICTIONARY:
-                    c2 = b2.get("aura_color")
-                    b2_x = b2.get("x", 0)
-                    b2_y = b2.get("y", 0)
-                else:
-                    c2 = b2.get_meta("aura_color") if b2.has_meta("aura_color") else null
-                    b2_x = b2.get("x") if "x" in b2 else 0
-                    b2_y = b2.get("y") if "y" in b2 else 0
+				if typeof(b2) == TYPE_DICTIONARY:
+					c2 = b2.get("aura_color")
+					b2_x = b2.get("x", 0)
+					b2_y = b2.get("y", 0)
+				else:
+					c2 = b2.get_meta("aura_color") if b2.has_meta("aura_color") else null
+					b2_x = b2.get("x") if "x" in b2 else 0
+					b2_y = b2.get("y") if "y" in b2 else 0
 
-                if c2 == c1:
-                    for target in alive_balls:
-                        if typeof(target) == TYPE_DICTIONARY and typeof(b1) == TYPE_DICTIONARY and target.get("id") == b1.get("id"):
-                            continue
-                        elif typeof(target) != TYPE_DICTIONARY and typeof(b1) != TYPE_DICTIONARY and target == b1:
-                            continue
+				if c2 == c1:
+					for target in alive_balls:
+						if typeof(target) == TYPE_DICTIONARY and typeof(b1) == TYPE_DICTIONARY and target.get("id") == b1.get("id"):
+							continue
+						elif typeof(target) != TYPE_DICTIONARY and typeof(b1) != TYPE_DICTIONARY and target == b1:
+							continue
 
-                        if typeof(target) == TYPE_DICTIONARY and typeof(b2) == TYPE_DICTIONARY and target.get("id") == b2.get("id"):
-                            continue
-                        elif typeof(target) != TYPE_DICTIONARY and typeof(b2) != TYPE_DICTIONARY and target == b2:
-                            continue
+						if typeof(target) == TYPE_DICTIONARY and typeof(b2) == TYPE_DICTIONARY and target.get("id") == b2.get("id"):
+							continue
+						elif typeof(target) != TYPE_DICTIONARY and typeof(b2) != TYPE_DICTIONARY and target == b2:
+							continue
 
-                        var target_c = null
-                        var target_x = 0
-                        var target_y = 0
-                        var target_radius = 20.0
+						var target_c = null
+						var target_x = 0
+						var target_y = 0
+						var target_radius = 20.0
 
-                        if typeof(target) == TYPE_DICTIONARY:
-                            target_c = target.get("aura_color")
-                            target_x = target.get("x", 0)
-                            target_y = target.get("y", 0)
-                            target_radius = target.get("radius", 20.0)
-                        else:
-                            target_c = target.get_meta("aura_color") if target.has_meta("aura_color") else null
-                            target_x = target.get("x") if "x" in target else 0
-                            target_y = target.get("y") if "y" in target else 0
-                            target_radius = target.get("radius") if "radius" in target else 20.0
+						if typeof(target) == TYPE_DICTIONARY:
+							target_c = target.get("aura_color")
+							target_x = target.get("x", 0)
+							target_y = target.get("y", 0)
+							target_radius = target.get("radius", 20.0)
+						else:
+							target_c = target.get_meta("aura_color") if target.has_meta("aura_color") else null
+							target_x = target.get("x") if "x" in target else 0
+							target_y = target.get("y") if "y" in target else 0
+							target_radius = target.get("radius") if "radius" in target else 20.0
 
-                        if target_c == c1:
-                            continue
+						if target_c == c1:
+							continue
 
-                        var dist = point_line_distance(target_x, target_y, b1_x, b1_y, b2_x, b2_y)
-                        var tether_width = 10.0
+						var dist = point_line_distance(target_x, target_y, b1_x, b1_y, b2_x, b2_y)
+						var tether_width = 10.0
 
-                        if dist < target_radius + tether_width:
-                            if typeof(target) == TYPE_DICTIONARY:
-                                target["hp"] = target.get("hp", 100) - (50.0 * delta)
-                                target["killer"] = b1_id
-                            else:
-                                if "hp" in target:
-                                    target.hp = target.hp - (50.0 * delta)
-                                if "killer" in target:
-                                    target.killer = b1_id
+						if dist < target_radius + tether_width:
+							if typeof(target) == TYPE_DICTIONARY:
+								target["hp"] = target.get("hp", 100) - (50.0 * delta)
+								target["killer"] = b1_id
+							else:
+								if "hp" in target:
+									target.hp = target.hp - (50.0 * delta)
+								if "killer" in target:
+									target.killer = b1_id
 
 
 class DashAuraTrailMode extends GameMode:
@@ -63968,128 +63968,128 @@ class VolcanoBossMode extends GameMode:
 				world.add_event("boss_defeated", {"message": "The Volcano Boss has been extinguished!"})
 
 class QuantumAnomalyFieldMode extends GameMode:
-    var anomaly_spawn_timer = 0.0
-    var anomaly_spawn_interval = 5.0
-    var anomaly_duration = 10.0
-    var anomalies = []
+	var anomaly_spawn_timer = 0.0
+	var anomaly_spawn_interval = 5.0
+	var anomaly_duration = 10.0
+	var anomalies = []
 
-    func _init():
-        name = "Quantum Anomaly Field"
-        description = "Randomly spawning quantum anomalies create unstable regions on the field. Entering these regions scrambles a ball's stats momentarily (randomizing speed, size, and damage) and occasionally teleports them to a linked anomaly on the other side of the map, adding chaos and unpredictable repositioning."
-        anomaly_spawn_timer = 0.0
-        anomaly_spawn_interval = 5.0
-        anomaly_duration = 10.0
-        anomalies = []
+	func _init():
+		name = "Quantum Anomaly Field"
+		description = "Randomly spawning quantum anomalies create unstable regions on the field. Entering these regions scrambles a ball's stats momentarily (randomizing speed, size, and damage) and occasionally teleports them to a linked anomaly on the other side of the map, adding chaos and unpredictable repositioning."
+		anomaly_spawn_timer = 0.0
+		anomaly_spawn_interval = 5.0
+		anomaly_duration = 10.0
+		anomalies = []
 
-    func tick(world, balls, delta = 0.016):
-        anomaly_spawn_timer -= delta
-        if anomaly_spawn_timer <= 0:
-            anomaly_spawn_timer = anomaly_spawn_interval
-            var arena_w = 800.0
-            var arena_h = 600.0
+	func tick(world, balls, delta = 0.016):
+		anomaly_spawn_timer -= delta
+		if anomaly_spawn_timer <= 0:
+			anomaly_spawn_timer = anomaly_spawn_interval
+			var arena_w = 800.0
+			var arena_h = 600.0
 
-            if world != null and typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("arena") != null:
-                var w = world.arena.get("width")
-                if w != null: arena_w = w
-                var h = world.arena.get("height")
-                if h != null: arena_h = h
+			if world != null and typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("arena") != null:
+				var w = world.arena.get("width")
+				if w != null: arena_w = w
+				var h = world.arena.get("height")
+				if h != null: arena_h = h
 
-            var x1 = rand_range(50, arena_w - 50)
-            var y1 = rand_range(50, arena_h - 50)
-            var x2 = rand_range(50, arena_w - 50)
-            var y2 = rand_range(50, arena_h - 50)
+			var x1 = rand_range(50, arena_w - 50)
+			var y1 = rand_range(50, arena_h - 50)
+			var x2 = rand_range(50, arena_w - 50)
+			var y2 = rand_range(50, arena_h - 50)
 
-            var anomaly1 = {"x": x1, "y": y1, "radius": 80.0, "timer": anomaly_duration, "linked": null}
-            var anomaly2 = {"x": x2, "y": y2, "radius": 80.0, "timer": anomaly_duration, "linked": anomaly1}
-            anomaly1["linked"] = anomaly2
+			var anomaly1 = {"x": x1, "y": y1, "radius": 80.0, "timer": anomaly_duration, "linked": null}
+			var anomaly2 = {"x": x2, "y": y2, "radius": 80.0, "timer": anomaly_duration, "linked": anomaly1}
+			anomaly1["linked"] = anomaly2
 
-            anomalies.append(anomaly1)
-            anomalies.append(anomaly2)
+			anomalies.append(anomaly1)
+			anomalies.append(anomaly2)
 
-        var active_anomalies = []
-        for anomaly in anomalies:
-            anomaly["timer"] -= delta
-            if anomaly["timer"] > 0:
-                active_anomalies.append(anomaly)
-        anomalies = active_anomalies
+		var active_anomalies = []
+		for anomaly in anomalies:
+			anomaly["timer"] -= delta
+			if anomaly["timer"] > 0:
+				active_anomalies.append(anomaly)
+		anomalies = active_anomalies
 
-        for b in balls:
-            if typeof(b) == TYPE_OBJECT:
-                if not b.get("alive") or b.get("ball_type") == "spectator":
-                    continue
+		for b in balls:
+			if typeof(b) == TYPE_OBJECT:
+				if not b.get("alive") or b.get("ball_type") == "spectator":
+					continue
 
-                var in_anomaly = false
-                var linked_anomaly = null
+				var in_anomaly = false
+				var linked_anomaly = null
 
-                for anomaly in anomalies:
-                    var dx = b.x - anomaly["x"]
-                    var dy = b.y - anomaly["y"]
-                    var dist = sqrt(dx*dx + dy*dy)
+				for anomaly in anomalies:
+					var dx = b.x - anomaly["x"]
+					var dy = b.y - anomaly["y"]
+					var dist = sqrt(dx*dx + dy*dy)
 
-                    if dist < anomaly["radius"]:
-                        in_anomaly = true
-                        linked_anomaly = anomaly["linked"]
-                        break
+					if dist < anomaly["radius"]:
+						in_anomaly = true
+						linked_anomaly = anomaly["linked"]
+						break
 
-                if in_anomaly:
-                    var in_q_anomaly = b.get_meta("in_quantum_anomaly") if b.has_meta("in_quantum_anomaly") else false
-                    if not in_q_anomaly:
-                        b.set_meta("in_quantum_anomaly", true)
-                        b.set_meta("original_speed_multiplier", b.get("base_speed_multiplier"))
-                        b.set_meta("original_damage_multiplier", b.get("base_damage_multiplier"))
-                        b.set_meta("original_mass", b.get("base_mass"))
+				if in_anomaly:
+					var in_q_anomaly = b.get_meta("in_quantum_anomaly") if b.has_meta("in_quantum_anomaly") else false
+					if not in_q_anomaly:
+						b.set_meta("in_quantum_anomaly", true)
+						b.set_meta("original_speed_multiplier", b.get("base_speed_multiplier"))
+						b.set_meta("original_damage_multiplier", b.get("base_damage_multiplier"))
+						b.set_meta("original_mass", b.get("base_mass"))
 
-                        b.base_speed_multiplier = rand_range(0.5, 2.0)
-                        b.base_damage_multiplier = rand_range(0.5, 2.0)
-                        b.base_mass = rand_range(0.5, 2.0)
+						b.base_speed_multiplier = rand_range(0.5, 2.0)
+						b.base_damage_multiplier = rand_range(0.5, 2.0)
+						b.base_mass = rand_range(0.5, 2.0)
 
-                    if linked_anomaly != null and randf() < 0.2 * delta:
-                        b.x = linked_anomaly["x"]
-                        b.y = linked_anomaly["y"]
-                else:
-                    var in_q_anomaly = b.get_meta("in_quantum_anomaly") if b.has_meta("in_quantum_anomaly") else false
-                    if in_q_anomaly:
-                        b.set_meta("in_quantum_anomaly", false)
-                        if b.has_meta("original_speed_multiplier"): b.base_speed_multiplier = b.get_meta("original_speed_multiplier")
-                        if b.has_meta("original_damage_multiplier"): b.base_damage_multiplier = b.get_meta("original_damage_multiplier")
-                        if b.has_meta("original_mass"): b.base_mass = b.get_meta("original_mass")
-            elif typeof(b) == TYPE_DICTIONARY:
-                if not b.get("alive", true) or b.get("ball_type", "") == "spectator":
-                    continue
+					if linked_anomaly != null and randf() < 0.2 * delta:
+						b.x = linked_anomaly["x"]
+						b.y = linked_anomaly["y"]
+				else:
+					var in_q_anomaly = b.get_meta("in_quantum_anomaly") if b.has_meta("in_quantum_anomaly") else false
+					if in_q_anomaly:
+						b.set_meta("in_quantum_anomaly", false)
+						if b.has_meta("original_speed_multiplier"): b.base_speed_multiplier = b.get_meta("original_speed_multiplier")
+						if b.has_meta("original_damage_multiplier"): b.base_damage_multiplier = b.get_meta("original_damage_multiplier")
+						if b.has_meta("original_mass"): b.base_mass = b.get_meta("original_mass")
+			elif typeof(b) == TYPE_DICTIONARY:
+				if not b.get("alive", true) or b.get("ball_type", "") == "spectator":
+					continue
 
-                var in_anomaly = false
-                var linked_anomaly = null
+				var in_anomaly = false
+				var linked_anomaly = null
 
-                for anomaly in anomalies:
-                    var dx = b.get("x", 0) - anomaly["x"]
-                    var dy = b.get("y", 0) - anomaly["y"]
-                    var dist = sqrt(dx*dx + dy*dy)
+				for anomaly in anomalies:
+					var dx = b.get("x", 0) - anomaly["x"]
+					var dy = b.get("y", 0) - anomaly["y"]
+					var dist = sqrt(dx*dx + dy*dy)
 
-                    if dist < anomaly["radius"]:
-                        in_anomaly = true
-                        linked_anomaly = anomaly["linked"]
-                        break
+					if dist < anomaly["radius"]:
+						in_anomaly = true
+						linked_anomaly = anomaly["linked"]
+						break
 
-                if in_anomaly:
-                    if not b.get("in_quantum_anomaly", false):
-                        b["in_quantum_anomaly"] = true
-                        b["original_speed_multiplier"] = b.get("base_speed_multiplier", 1.0)
-                        b["original_damage_multiplier"] = b.get("base_damage_multiplier", 1.0)
-                        b["original_mass"] = b.get("base_mass", 1.0)
+				if in_anomaly:
+					if not b.get("in_quantum_anomaly", false):
+						b["in_quantum_anomaly"] = true
+						b["original_speed_multiplier"] = b.get("base_speed_multiplier", 1.0)
+						b["original_damage_multiplier"] = b.get("base_damage_multiplier", 1.0)
+						b["original_mass"] = b.get("base_mass", 1.0)
 
-                        b["base_speed_multiplier"] = rand_range(0.5, 2.0)
-                        b["base_damage_multiplier"] = rand_range(0.5, 2.0)
-                        b["base_mass"] = rand_range(0.5, 2.0)
+						b["base_speed_multiplier"] = rand_range(0.5, 2.0)
+						b["base_damage_multiplier"] = rand_range(0.5, 2.0)
+						b["base_mass"] = rand_range(0.5, 2.0)
 
-                    if linked_anomaly != null and randf() < 0.2 * delta:
-                        b["x"] = linked_anomaly["x"]
-                        b["y"] = linked_anomaly["y"]
-                else:
-                    if b.get("in_quantum_anomaly", false):
-                        b["in_quantum_anomaly"] = false
-                        if b.has("original_speed_multiplier"): b["base_speed_multiplier"] = b["original_speed_multiplier"]
-                        if b.has("original_damage_multiplier"): b["base_damage_multiplier"] = b["original_damage_multiplier"]
-                        if b.has("original_mass"): b["base_mass"] = b["original_mass"]
+					if linked_anomaly != null and randf() < 0.2 * delta:
+						b["x"] = linked_anomaly["x"]
+						b["y"] = linked_anomaly["y"]
+				else:
+					if b.get("in_quantum_anomaly", false):
+						b["in_quantum_anomaly"] = false
+						if b.has("original_speed_multiplier"): b["base_speed_multiplier"] = b["original_speed_multiplier"]
+						if b.has("original_damage_multiplier"): b["base_damage_multiplier"] = b["original_damage_multiplier"]
+						if b.has("original_mass"): b["base_mass"] = b["original_mass"]
 
 
 
@@ -64190,160 +64190,160 @@ class GiantBouncyRoyaleMode extends GameMode:
 
 
 class FrostbiteMode extends GameMode:
-    var heat_vents = []
-    var vent_spawn_timer = 0.0
-    var vent_spawn_interval = 5.0
-    var vent_duration = 10.0
+	var heat_vents = []
+	var vent_spawn_timer = 0.0
+	var vent_spawn_interval = 5.0
+	var vent_duration = 10.0
 
-    func _init():
-        super._init()
-        name = "Frostbite"
-        description = "Players must keep moving or stay near heat vents to avoid freezing to death."
+	func _init():
+		super._init()
+		name = "Frostbite"
+		description = "Players must keep moving or stay near heat vents to avoid freezing to death."
 
-    func setup(world, balls):
-        super.setup(world, balls)
-        heat_vents = []
-        vent_spawn_timer = 0.0
+	func setup(world, balls):
+		super.setup(world, balls)
+		heat_vents = []
+		vent_spawn_timer = 0.0
 
-    func tick(world, balls, delta = 0.016):
-        super.tick(world, balls, delta)
+	func tick(world, balls, delta = 0.016):
+		super.tick(world, balls, delta)
 
-        var arena_w = 1000
-        var arena_h = 1000
-        if typeof(world) == TYPE_OBJECT and world.get("arena") != null:
-            arena_w = world.arena.get("width", 1000)
-            arena_h = world.arena.get("height", 1000)
-        elif typeof(world) == TYPE_DICTIONARY and world.has("arena") and world.arena != null:
-            arena_w = world.arena.get("width", 1000)
-            arena_h = world.arena.get("height", 1000)
+		var arena_w = 1000
+		var arena_h = 1000
+		if typeof(world) == TYPE_OBJECT and world.get("arena") != null:
+			arena_w = world.arena.get("width", 1000)
+			arena_h = world.arena.get("height", 1000)
+		elif typeof(world) == TYPE_DICTIONARY and world.has("arena") and world.arena != null:
+			arena_w = world.arena.get("width", 1000)
+			arena_h = world.arena.get("height", 1000)
 
-        vent_spawn_timer += delta
-        if vent_spawn_timer >= vent_spawn_interval:
-            vent_spawn_timer = 0.0
-            heat_vents.append({
-                "x": randf_range(100, arena_w - 100),
-                "y": randf_range(100, arena_h - 100),
-                "radius": 150.0,
-                "timer": vent_duration
-            })
+		vent_spawn_timer += delta
+		if vent_spawn_timer >= vent_spawn_interval:
+			vent_spawn_timer = 0.0
+			heat_vents.append({
+				"x": randf_range(100, arena_w - 100),
+				"y": randf_range(100, arena_h - 100),
+				"radius": 150.0,
+				"timer": vent_duration
+			})
 
-        var active_vents = []
-        for vent in heat_vents:
-            vent["timer"] -= delta
-            if vent["timer"] > 0:
-                active_vents.append(vent)
-        heat_vents = active_vents
+		var active_vents = []
+		for vent in heat_vents:
+			vent["timer"] -= delta
+			if vent["timer"] > 0:
+				active_vents.append(vent)
+		heat_vents = active_vents
 
-        for b in balls:
-            var alive = false
-            if typeof(b) == TYPE_OBJECT:
-                alive = b.get("alive")
-            elif typeof(b) == TYPE_DICTIONARY:
-                alive = b.get("alive", false)
+		for b in balls:
+			var alive = false
+			if typeof(b) == TYPE_OBJECT:
+				alive = b.get("alive")
+			elif typeof(b) == TYPE_DICTIONARY:
+				alive = b.get("alive", false)
 
-            if not alive:
-                continue
+			if not alive:
+				continue
 
-            var is_spectator = false
-            if typeof(b) == TYPE_OBJECT:
-                is_spectator = b.get("ball_type") == "spectator"
-            elif typeof(b) == TYPE_DICTIONARY:
-                is_spectator = b.get("ball_type") == "spectator"
+			var is_spectator = false
+			if typeof(b) == TYPE_OBJECT:
+				is_spectator = b.get("ball_type") == "spectator"
+			elif typeof(b) == TYPE_DICTIONARY:
+				is_spectator = b.get("ball_type") == "spectator"
 
-            if is_spectator:
-                continue
+			if is_spectator:
+				continue
 
-            var near_vent = false
-            var bx = 0.0
-            var by = 0.0
-            if typeof(b) == TYPE_OBJECT:
-                bx = b.get("x")
-                by = b.get("y")
-            elif typeof(b) == TYPE_DICTIONARY:
-                bx = b.get("x", 0.0)
-                by = b.get("y", 0.0)
+			var near_vent = false
+			var bx = 0.0
+			var by = 0.0
+			if typeof(b) == TYPE_OBJECT:
+				bx = b.get("x")
+				by = b.get("y")
+			elif typeof(b) == TYPE_DICTIONARY:
+				bx = b.get("x", 0.0)
+				by = b.get("y", 0.0)
 
-            for vent in heat_vents:
-                var dist_sq = pow(bx - vent["x"], 2) + pow(by - vent["y"], 2)
-                if dist_sq <= pow(vent["radius"], 2):
-                    near_vent = true
-                    break
+			for vent in heat_vents:
+				var dist_sq = pow(bx - vent["x"], 2) + pow(by - vent["y"], 2)
+				if dist_sq <= pow(vent["radius"], 2):
+					near_vent = true
+					break
 
-            var vx = 0.0
-            var vy = 0.0
-            if typeof(b) == TYPE_OBJECT:
-                vx = b.get("vx")
-                vy = b.get("vy")
-            elif typeof(b) == TYPE_DICTIONARY:
-                vx = b.get("vx", 0.0)
-                vy = b.get("vy", 0.0)
+			var vx = 0.0
+			var vy = 0.0
+			if typeof(b) == TYPE_OBJECT:
+				vx = b.get("vx")
+				vy = b.get("vy")
+			elif typeof(b) == TYPE_DICTIONARY:
+				vx = b.get("vx", 0.0)
+				vy = b.get("vy", 0.0)
 
-            var speed = sqrt(vx * vx + vy * vy)
+			var speed = sqrt(vx * vx + vy * vy)
 
-            var frostbite_stack = 0.0
-            if typeof(b) == TYPE_OBJECT:
-                if b.has_meta("frostbite_stack"):
-                    frostbite_stack = b.get_meta("frostbite_stack")
-                else:
-                    frostbite_stack = b.get("frostbite_stack")
-            elif typeof(b) == TYPE_DICTIONARY:
-                frostbite_stack = b.get("frostbite_stack", 0.0)
+			var frostbite_stack = 0.0
+			if typeof(b) == TYPE_OBJECT:
+				if b.has_meta("frostbite_stack"):
+					frostbite_stack = b.get_meta("frostbite_stack")
+				else:
+					frostbite_stack = b.get("frostbite_stack")
+			elif typeof(b) == TYPE_DICTIONARY:
+				frostbite_stack = b.get("frostbite_stack", 0.0)
 
-            if frostbite_stack == null:
-                frostbite_stack = 0.0
+			if frostbite_stack == null:
+				frostbite_stack = 0.0
 
-            if near_vent:
-                frostbite_stack = max(0.0, frostbite_stack - 20.0 * delta)
-            elif speed < 50.0:
-                frostbite_stack = min(100.0, frostbite_stack + 10.0 * delta)
-            else:
-                frostbite_stack = max(0.0, frostbite_stack - 5.0 * delta)
+			if near_vent:
+				frostbite_stack = max(0.0, frostbite_stack - 20.0 * delta)
+			elif speed < 50.0:
+				frostbite_stack = min(100.0, frostbite_stack + 10.0 * delta)
+			else:
+				frostbite_stack = max(0.0, frostbite_stack - 5.0 * delta)
 
-            if typeof(b) == TYPE_OBJECT:
-                b.set("frostbite_stack", frostbite_stack)
-                b.set_meta("frostbite_stack", frostbite_stack)
-            elif typeof(b) == TYPE_DICTIONARY:
-                b["frostbite_stack"] = frostbite_stack
+			if typeof(b) == TYPE_OBJECT:
+				b.set("frostbite_stack", frostbite_stack)
+				b.set_meta("frostbite_stack", frostbite_stack)
+			elif typeof(b) == TYPE_DICTIONARY:
+				b["frostbite_stack"] = frostbite_stack
 
-            if frostbite_stack > 50.0:
-                var curr_speed_debuff_timer = 0.0
-                var curr_speed_debuff_multiplier = 1.0
-                if typeof(b) == TYPE_OBJECT:
-                    curr_speed_debuff_timer = b.get("speed_debuff_timer")
-                    curr_speed_debuff_multiplier = b.get("speed_debuff_multiplier")
-                elif typeof(b) == TYPE_DICTIONARY:
-                    curr_speed_debuff_timer = b.get("speed_debuff_timer", 0.0)
-                    curr_speed_debuff_multiplier = b.get("speed_debuff_multiplier", 1.0)
-                if curr_speed_debuff_timer == null: curr_speed_debuff_timer = 0.0
-                if curr_speed_debuff_multiplier == null: curr_speed_debuff_multiplier = 1.0
+			if frostbite_stack > 50.0:
+				var curr_speed_debuff_timer = 0.0
+				var curr_speed_debuff_multiplier = 1.0
+				if typeof(b) == TYPE_OBJECT:
+					curr_speed_debuff_timer = b.get("speed_debuff_timer")
+					curr_speed_debuff_multiplier = b.get("speed_debuff_multiplier")
+				elif typeof(b) == TYPE_DICTIONARY:
+					curr_speed_debuff_timer = b.get("speed_debuff_timer", 0.0)
+					curr_speed_debuff_multiplier = b.get("speed_debuff_multiplier", 1.0)
+				if curr_speed_debuff_timer == null: curr_speed_debuff_timer = 0.0
+				if curr_speed_debuff_multiplier == null: curr_speed_debuff_multiplier = 1.0
 
-                var new_timer = max(curr_speed_debuff_timer, 0.1)
-                var new_multiplier = min(curr_speed_debuff_multiplier, max(0.2, 1.0 - (frostbite_stack - 50.0) / 50.0 * 0.8))
+				var new_timer = max(curr_speed_debuff_timer, 0.1)
+				var new_multiplier = min(curr_speed_debuff_multiplier, max(0.2, 1.0 - (frostbite_stack - 50.0) / 50.0 * 0.8))
 
-                if typeof(b) == TYPE_OBJECT:
-                    b.set("speed_debuff_timer", new_timer)
-                    b.set("speed_debuff_multiplier", new_multiplier)
-                elif typeof(b) == TYPE_DICTIONARY:
-                    b["speed_debuff_timer"] = new_timer
-                    b["speed_debuff_multiplier"] = new_multiplier
+				if typeof(b) == TYPE_OBJECT:
+					b.set("speed_debuff_timer", new_timer)
+					b.set("speed_debuff_multiplier", new_multiplier)
+				elif typeof(b) == TYPE_DICTIONARY:
+					b["speed_debuff_timer"] = new_timer
+					b["speed_debuff_multiplier"] = new_multiplier
 
-                if frostbite_stack >= 100.0:
-                    var hp = 0.0
-                    if typeof(b) == TYPE_OBJECT:
-                        hp = b.get("hp")
-                    elif typeof(b) == TYPE_DICTIONARY:
-                        hp = b.get("hp", 0.0)
+				if frostbite_stack >= 100.0:
+					var hp = 0.0
+					if typeof(b) == TYPE_OBJECT:
+						hp = b.get("hp")
+					elif typeof(b) == TYPE_DICTIONARY:
+						hp = b.get("hp", 0.0)
 
-                    hp -= 5.0 * delta
+					hp -= 5.0 * delta
 
-                    if typeof(b) == TYPE_OBJECT:
-                        b.set("hp", hp)
-                        if hp <= 0:
-                            b.set("alive", false)
-                    elif typeof(b) == TYPE_DICTIONARY:
-                        b["hp"] = hp
-                        if hp <= 0:
-                            b["alive"] = false
+					if typeof(b) == TYPE_OBJECT:
+						b.set("hp", hp)
+						if hp <= 0:
+							b.set("alive", false)
+					elif typeof(b) == TYPE_DICTIONARY:
+						b["hp"] = hp
+						if hp <= 0:
+							b["alive"] = false
 
 var _frostbite_mode_inst = FrostbiteMode.new()
 
@@ -64516,102 +64516,102 @@ class CurrencyBountyMode extends GameMode:
 
 
 class IrradiationSurvivalMode extends GameMode:
-    var irradiation_zones = []
-    var zone_timer = 0.0
-    var booster_timer = 0.0
+	var irradiation_zones = []
+	var zone_timer = 0.0
+	var booster_timer = 0.0
 
-    func _init():
-        super._init()
-        irradiation_zones = []
-        zone_timer = 0.0
-        booster_timer = 0.0
+	func _init():
+		super._init()
+		irradiation_zones = []
+		zone_timer = 0.0
+		booster_timer = 0.0
 
-    func setup(world, balls):
-        super.setup(world, balls)
-        irradiation_zones = []
-        zone_timer = 5.0
-        booster_timer = 10.0
+	func setup(world, balls):
+		super.setup(world, balls)
+		irradiation_zones = []
+		zone_timer = 5.0
+		booster_timer = 10.0
 
-    func tick(world, balls, delta = 0.016):
-        zone_timer -= delta
-        if zone_timer <= 0:
-            zone_timer = randf_range(8.0, 15.0)
-            var x = randf_range(50.0, 950.0)
-            var y = randf_range(50.0, 950.0)
-            var z_id = 0
-            if "next_id" in world:
-                if typeof(world.next_id) == TYPE_CALLABLE:
-                    z_id = world.next_id.call()
-                else:
-                    z_id = world.next_id
-            else:
-                z_id = randi() % 900000 + 100000
+	func tick(world, balls, delta = 0.016):
+		zone_timer -= delta
+		if zone_timer <= 0:
+			zone_timer = randf_range(8.0, 15.0)
+			var x = randf_range(50.0, 950.0)
+			var y = randf_range(50.0, 950.0)
+			var z_id = 0
+			if "next_id" in world:
+				if typeof(world.next_id) == TYPE_CALLABLE:
+					z_id = world.next_id.call()
+				else:
+					z_id = world.next_id
+			else:
+				z_id = randi() % 900000 + 100000
 
-            var zone = {
-                "id": z_id,
-                "x": x,
-                "y": y,
-                "radius": 30.0,
-                "kind": "irradiation_zone",
-                "active": true
-            }
-            irradiation_zones.append(zone)
+			var zone = {
+				"id": z_id,
+				"x": x,
+				"y": y,
+				"radius": 30.0,
+				"kind": "irradiation_zone",
+				"active": true
+			}
+			irradiation_zones.append(zone)
 
-        booster_timer -= delta
-        if booster_timer <= 0:
-            booster_timer = randf_range(10.0, 20.0)
-            if "boosters" in world and "arena" in world and "hazards" in world.arena:
-                var b_id = 0
-                if "next_id" in world:
-                    if typeof(world.next_id) == TYPE_CALLABLE:
-                        b_id = world.next_id.call()
-                    else:
-                        b_id = world.next_id
-                else:
-                    b_id = randi() % 900000 + 100000
+		booster_timer -= delta
+		if booster_timer <= 0:
+			booster_timer = randf_range(10.0, 20.0)
+			if "boosters" in world and "arena" in world and "hazards" in world.arena:
+				var b_id = 0
+				if "next_id" in world:
+					if typeof(world.next_id) == TYPE_CALLABLE:
+						b_id = world.next_id.call()
+					else:
+						b_id = world.next_id
+				else:
+					b_id = randi() % 900000 + 100000
 
-                var booster = {
-                    "id": b_id,
-                    "x": randf_range(50.0, 950.0),
-                    "y": randf_range(50.0, 950.0),
-                    "radius": 15.0,
-                    "kind": "anti_radiation_booster",
-                    "damage": 0.0,
-                    "active": true
-                }
-                world.boosters.append(booster)
-                world.arena.hazards.append(booster)
+				var booster = {
+					"id": b_id,
+					"x": randf_range(50.0, 950.0),
+					"y": randf_range(50.0, 950.0),
+					"radius": 15.0,
+					"kind": "anti_radiation_booster",
+					"damage": 0.0,
+					"active": true
+				}
+				world.boosters.append(booster)
+				world.arena.hazards.append(booster)
 
-        for z in irradiation_zones:
-            if not z.get("active", true):
-                continue
-            z["radius"] = min(250.0, z["radius"] + 4.0 * delta)
+		for z in irradiation_zones:
+			if not z.get("active", true):
+				continue
+			z["radius"] = min(250.0, z["radius"] + 4.0 * delta)
 
-            for b in balls:
-                if (typeof(b) == TYPE_OBJECT and not b.get("alive")) or (typeof(b) == TYPE_DICTIONARY and not b.get("alive", true)):
-                    continue
-                var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
-                if b_type == "spectator":
-                    continue
-                var b_x = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get_meta("x") if typeof(b) == TYPE_OBJECT and b.has_meta("x") else b.get("x"))
-                var b_y = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get_meta("y") if typeof(b) == TYPE_OBJECT and b.has_meta("y") else b.get("y"))
-                var dx = b_x - z["x"]
-                var dy = b_y - z["y"]
-                var dist = sqrt(dx * dx + dy * dy)
-                var b_rad = b.get("radius", 15.0) if typeof(b) == TYPE_DICTIONARY else b.get("radius")
-                if dist < z["radius"] + b_rad:
-                    if typeof(b) == TYPE_OBJECT:
-                        var mut_lvl = b.get_meta("mutation_level") if b.has_meta("mutation_level") else 0.0
-                        b.set_meta("mutation_level", mut_lvl + 1.0 * delta)
-                        var max_stam = b.get_meta("max_stamina") if b.has_meta("max_stamina") else 100.0
-                        b.set_meta("max_stamina", max(20.0, max_stam - 2.0 * delta))
-                        if b.get_meta("mutation_level") > 5.0:
-                            b.set_meta("mutant", true)
-                    else:
-                        b["mutation_level"] = b.get("mutation_level", 0.0) + 1.0 * delta
-                        b["max_stamina"] = max(20.0, b.get("max_stamina", 100.0) - 2.0 * delta)
-                        if b["mutation_level"] > 5.0:
-                            b["mutant"] = true
+			for b in balls:
+				if (typeof(b) == TYPE_OBJECT and not b.get("alive")) or (typeof(b) == TYPE_DICTIONARY and not b.get("alive", true)):
+					continue
+				var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+				if b_type == "spectator":
+					continue
+				var b_x = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get_meta("x") if typeof(b) == TYPE_OBJECT and b.has_meta("x") else b.get("x"))
+				var b_y = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get_meta("y") if typeof(b) == TYPE_OBJECT and b.has_meta("y") else b.get("y"))
+				var dx = b_x - z["x"]
+				var dy = b_y - z["y"]
+				var dist = sqrt(dx * dx + dy * dy)
+				var b_rad = b.get("radius", 15.0) if typeof(b) == TYPE_DICTIONARY else b.get("radius")
+				if dist < z["radius"] + b_rad:
+					if typeof(b) == TYPE_OBJECT:
+						var mut_lvl = b.get_meta("mutation_level") if b.has_meta("mutation_level") else 0.0
+						b.set_meta("mutation_level", mut_lvl + 1.0 * delta)
+						var max_stam = b.get_meta("max_stamina") if b.has_meta("max_stamina") else 100.0
+						b.set_meta("max_stamina", max(20.0, max_stam - 2.0 * delta))
+						if b.get_meta("mutation_level") > 5.0:
+							b.set_meta("mutant", true)
+					else:
+						b["mutation_level"] = b.get("mutation_level", 0.0) + 1.0 * delta
+						b["max_stamina"] = max(20.0, b.get("max_stamina", 100.0) - 2.0 * delta)
+						if b["mutation_level"] > 5.0:
+							b["mutant"] = true
 
 
 class CursedRelicsMode extends GameMode:
@@ -65001,350 +65001,350 @@ class ToxicBubblesMode extends GameMode:
 
 
 class DeepFreezeMutatorMode extends GameMode:
-    var ice_expansion_rate = 10.0
-    var freeze_damage_rate = 5.0
-    var max_speed_penalty = 0.5
-    var thaw_rate = 5.0
-    var freeze_rate = 15.0
+	var ice_expansion_rate = 10.0
+	var freeze_damage_rate = 5.0
+	var max_speed_penalty = 0.5
+	var thaw_rate = 5.0
+	var freeze_rate = 15.0
 
-    func _init():
-        super._init()
-        name = "Deep Freeze Mutator"
-        description = "The arena slowly freezes! Ice patches expand continuously. Stay near thermal vents to thaw your movement speed penalty, or take gradual freezing damage."
+	func _init():
+		super._init()
+		name = "Deep Freeze Mutator"
+		description = "The arena slowly freezes! Ice patches expand continuously. Stay near thermal vents to thaw your movement speed penalty, or take gradual freezing damage."
 
-    func setup(world, balls):
-        super.setup(world, balls)
+	func setup(world, balls):
+		super.setup(world, balls)
 
-        # Initialize freeze level for balls
-        for b in balls:
-            if b.has_method("set_meta"):
-                b.set_meta("freeze_level", 0.0)
-            elif typeof(b) == TYPE_DICTIONARY:
-                b["freeze_level"] = 0.0
-            else:
-                b.freeze_level = 0.0
+		# Initialize freeze level for balls
+		for b in balls:
+			if b.has_method("set_meta"):
+				b.set_meta("freeze_level", 0.0)
+			elif typeof(b) == TYPE_DICTIONARY:
+				b["freeze_level"] = 0.0
+			else:
+				b.freeze_level = 0.0
 
-        # Spawn some initial ice patches and thermal vents
-        if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
-            var max_id = 80000
-            for h in world.arena.hazards:
-                var h_id = h.get("id", 0) if typeof(h) == TYPE_DICTIONARY else (h.id if "id" in h else 0)
-                if h_id > max_id:
-                    max_id = h_id
+		# Spawn some initial ice patches and thermal vents
+		if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
+			var max_id = 80000
+			for h in world.arena.hazards:
+				var h_id = h.get("id", 0) if typeof(h) == TYPE_DICTIONARY else (h.id if "id" in h else 0)
+				if h_id > max_id:
+					max_id = h_id
 
-            var HazardObj = load("res://src/arena/procedural_arena.gd").Hazard
+			var HazardObj = load("res://src/arena/procedural_arena.gd").Hazard
 
-            # Add thermal vents
-            for i in range(5):
-                var vent_id = max_id + i + 1
-                var x = randf_range(100, world.arena.width - 100)
-                var y = randf_range(100, world.arena.height - 100)
-                var vent = HazardObj.new(vent_id, x, y, 150.0, "thermal_vent", 0.0)
-                world.arena.hazards.append(vent)
+			# Add thermal vents
+			for i in range(5):
+				var vent_id = max_id + i + 1
+				var x = randf_range(100, world.arena.width - 100)
+				var y = randf_range(100, world.arena.height - 100)
+				var vent = HazardObj.new(vent_id, x, y, 150.0, "thermal_vent", 0.0)
+				world.arena.hazards.append(vent)
 
-            # Add ice patches
-            for i in range(5):
-                var ice_id = max_id + i + 6
-                var x = randf_range(100, world.arena.width - 100)
-                var y = randf_range(100, world.arena.height - 100)
-                var ice = HazardObj.new(ice_id, x, y, 50.0, "ice_patches", 0.0)
-                world.arena.hazards.append(ice)
+			# Add ice patches
+			for i in range(5):
+				var ice_id = max_id + i + 6
+				var x = randf_range(100, world.arena.width - 100)
+				var y = randf_range(100, world.arena.height - 100)
+				var ice = HazardObj.new(ice_id, x, y, 50.0, "ice_patches", 0.0)
+				world.arena.hazards.append(ice)
 
-    func tick(world, balls, delta):
-        # Expand ice patches
-        if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
-            for h in world.arena.hazards:
-                var kind = h.get("kind", "") if typeof(h) == TYPE_DICTIONARY else (h.kind if "kind" in h else "")
-                if kind == "ice_patches" or kind == "ice_patch":
-                    var current_rad = h.get("radius", 30.0) if typeof(h) == TYPE_DICTIONARY else (h.radius if "radius" in h else 30.0)
-                    var new_rad = current_rad + ice_expansion_rate * delta
-                    if new_rad > 800.0:
-                        new_rad = 800.0
+	func tick(world, balls, delta):
+		# Expand ice patches
+		if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
+			for h in world.arena.hazards:
+				var kind = h.get("kind", "") if typeof(h) == TYPE_DICTIONARY else (h.kind if "kind" in h else "")
+				if kind == "ice_patches" or kind == "ice_patch":
+					var current_rad = h.get("radius", 30.0) if typeof(h) == TYPE_DICTIONARY else (h.radius if "radius" in h else 30.0)
+					var new_rad = current_rad + ice_expansion_rate * delta
+					if new_rad > 800.0:
+						new_rad = 800.0
 
-                    if typeof(h) == TYPE_DICTIONARY:
-                        h["radius"] = new_rad
-                    else:
-                        h.radius = new_rad
+					if typeof(h) == TYPE_DICTIONARY:
+						h["radius"] = new_rad
+					else:
+						h.radius = new_rad
 
-        for b in balls:
-            var alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else false)
-            if not alive:
-                continue
+		for b in balls:
+			var alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else false)
+			if not alive:
+				continue
 
-            var bx = b.get("x", 0) if typeof(b) == TYPE_DICTIONARY else (b.x if "x" in b else 0)
-            var by = b.get("y", 0) if typeof(b) == TYPE_DICTIONARY else (b.y if "y" in b else 0)
-            var brad = b.get("radius", 0) if typeof(b) == TYPE_DICTIONARY else (b.radius if "radius" in b else 0)
+			var bx = b.get("x", 0) if typeof(b) == TYPE_DICTIONARY else (b.x if "x" in b else 0)
+			var by = b.get("y", 0) if typeof(b) == TYPE_DICTIONARY else (b.y if "y" in b else 0)
+			var brad = b.get("radius", 0) if typeof(b) == TYPE_DICTIONARY else (b.radius if "radius" in b else 0)
 
-            # Check proximity to thermal vents
-            var near_vent = false
-            if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
-                for h in world.arena.hazards:
-                    var kind = h.get("kind", "") if typeof(h) == TYPE_DICTIONARY else (h.kind if "kind" in h else "")
-                    if kind == "thermal_vent":
-                        var hx = h.get("x", 0) if typeof(h) == TYPE_DICTIONARY else (h.x if "x" in h else 0)
-                        var hy = h.get("y", 0) if typeof(h) == TYPE_DICTIONARY else (h.y if "y" in h else 0)
-                        var hrad = h.get("radius", 0) if typeof(h) == TYPE_DICTIONARY else (h.radius if "radius" in h else 0)
+			# Check proximity to thermal vents
+			var near_vent = false
+			if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
+				for h in world.arena.hazards:
+					var kind = h.get("kind", "") if typeof(h) == TYPE_DICTIONARY else (h.kind if "kind" in h else "")
+					if kind == "thermal_vent":
+						var hx = h.get("x", 0) if typeof(h) == TYPE_DICTIONARY else (h.x if "x" in h else 0)
+						var hy = h.get("y", 0) if typeof(h) == TYPE_DICTIONARY else (h.y if "y" in h else 0)
+						var hrad = h.get("radius", 0) if typeof(h) == TYPE_DICTIONARY else (h.radius if "radius" in h else 0)
 
-                        var dist_sq = (bx - hx) * (bx - hx) + (by - hy) * (by - hy)
-                        if dist_sq <= (hrad + brad) * (hrad + brad):
-                            near_vent = true
-                            break
+						var dist_sq = (bx - hx) * (bx - hx) + (by - hy) * (by - hy)
+						if dist_sq <= (hrad + brad) * (hrad + brad):
+							near_vent = true
+							break
 
-            var current_freeze = 0.0
-            if b.has_method("get_meta") and b.has_meta("freeze_level"):
-                current_freeze = b.get_meta("freeze_level")
-            elif typeof(b) == TYPE_DICTIONARY:
-                current_freeze = b.get("freeze_level", 0.0)
-            elif "freeze_level" in b:
-                current_freeze = b.freeze_level
+			var current_freeze = 0.0
+			if b.has_method("get_meta") and b.has_meta("freeze_level"):
+				current_freeze = b.get_meta("freeze_level")
+			elif typeof(b) == TYPE_DICTIONARY:
+				current_freeze = b.get("freeze_level", 0.0)
+			elif "freeze_level" in b:
+				current_freeze = b.freeze_level
 
-            if near_vent:
-                # Thaw
-                current_freeze -= (1.0 / thaw_rate) * delta
-                if current_freeze < 0.0:
-                    current_freeze = 0.0
-            else:
-                # Freeze
-                current_freeze += (1.0 / freeze_rate) * delta
-                if current_freeze > 1.0:
-                    current_freeze = 1.0
+			if near_vent:
+				# Thaw
+				current_freeze -= (1.0 / thaw_rate) * delta
+				if current_freeze < 0.0:
+					current_freeze = 0.0
+			else:
+				# Freeze
+				current_freeze += (1.0 / freeze_rate) * delta
+				if current_freeze > 1.0:
+					current_freeze = 1.0
 
-            if b.has_method("set_meta"):
-                b.set_meta("freeze_level", current_freeze)
-            elif typeof(b) == TYPE_DICTIONARY:
-                b["freeze_level"] = current_freeze
-            else:
-                b.freeze_level = current_freeze
+			if b.has_method("set_meta"):
+				b.set_meta("freeze_level", current_freeze)
+			elif typeof(b) == TYPE_DICTIONARY:
+				b["freeze_level"] = current_freeze
+			else:
+				b.freeze_level = current_freeze
 
-            # Apply speed penalty and damage
-            if current_freeze > 0:
-                var current_speed = b.get("speed", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.speed if "speed" in b else 0.0)
-                if current_speed > 0:
-                    var base_speed = b.get("base_speed", 100.0) if typeof(b) == TYPE_DICTIONARY else (b.base_speed if "base_speed" in b else 100.0)
-                    var speed_mult = 1.0 - (current_freeze * max_speed_penalty)
-                    if typeof(b) == TYPE_DICTIONARY:
-                        b["speed"] = base_speed * speed_mult
-                    else:
-                        b.speed = base_speed * speed_mult
+			# Apply speed penalty and damage
+			if current_freeze > 0:
+				var current_speed = b.get("speed", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.speed if "speed" in b else 0.0)
+				if current_speed > 0:
+					var base_speed = b.get("base_speed", 100.0) if typeof(b) == TYPE_DICTIONARY else (b.base_speed if "base_speed" in b else 100.0)
+					var speed_mult = 1.0 - (current_freeze * max_speed_penalty)
+					if typeof(b) == TYPE_DICTIONARY:
+						b["speed"] = base_speed * speed_mult
+					else:
+						b.speed = base_speed * speed_mult
 
-                if current_freeze >= 1.0:
-                    var hp = b.get("hp", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.hp if "hp" in b else 0.0)
-                    hp -= freeze_damage_rate * delta
-                    if hp <= 0:
-                        hp = 0
-                        if typeof(b) == TYPE_DICTIONARY:
-                            b["alive"] = false
-                        else:
-                            b.alive = false
-                        if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
-                            var b_id = b.get("id", null) if typeof(b) == TYPE_DICTIONARY else (b.id if "id" in b else null)
-                            world.add_event("death", {"id": b_id, "reason": "frozen"})
+				if current_freeze >= 1.0:
+					var hp = b.get("hp", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.hp if "hp" in b else 0.0)
+					hp -= freeze_damage_rate * delta
+					if hp <= 0:
+						hp = 0
+						if typeof(b) == TYPE_DICTIONARY:
+							b["alive"] = false
+						else:
+							b.alive = false
+						if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+							var b_id = b.get("id", null) if typeof(b) == TYPE_DICTIONARY else (b.id if "id" in b else null)
+							world.add_event("death", {"id": b_id, "reason": "frozen"})
 
-                    if typeof(b) == TYPE_DICTIONARY:
-                        b["hp"] = hp
-                    else:
-                        b.hp = hp
+					if typeof(b) == TYPE_DICTIONARY:
+						b["hp"] = hp
+					else:
+						b.hp = hp
 
 
 
 class RandomTeleportEventMode extends GameMode:
-    var active_swap = null
-    var trigger_timer = 15.0
+	var active_swap = null
+	var trigger_timer = 15.0
 
-    func _init():
-        name = "Random Teleport Event"
-        description = "A random event that selects two random alive balls from different teams, displays a visual indicator, and swaps their positions after a short delay."
+	func _init():
+		name = "Random Teleport Event"
+		description = "A random event that selects two random alive balls from different teams, displays a visual indicator, and swaps their positions after a short delay."
 
-    func setup(world, balls):
-        super.setup(world, balls)
-        trigger_timer = 15.0
-        active_swap = null
+	func setup(world, balls):
+		super.setup(world, balls)
+		trigger_timer = 15.0
+		active_swap = null
 
-    func tick(world, balls, delta=0.016):
-        super.tick(world, balls, delta)
+	func tick(world, balls, delta=0.016):
+		super.tick(world, balls, delta)
 
-        if active_swap != null:
-            active_swap['timer'] -= delta
-            if active_swap['timer'] <= 0:
-                var b1 = active_swap['b1']
-                var b2 = active_swap['b2']
+		if active_swap != null:
+			active_swap['timer'] -= delta
+			if active_swap['timer'] <= 0:
+				var b1 = active_swap['b1']
+				var b2 = active_swap['b2']
 
-                var b1_alive = false
-                if typeof(b1) == TYPE_OBJECT and b1.has_method("get"):
-                    b1_alive = b1.get("alive")
-                elif typeof(b1) == TYPE_DICTIONARY and b1.has("alive"):
-                    b1_alive = b1["alive"]
-                else:
-                    b1_alive = b1.alive if "alive" in b1 else false
+				var b1_alive = false
+				if typeof(b1) == TYPE_OBJECT and b1.has_method("get"):
+					b1_alive = b1.get("alive")
+				elif typeof(b1) == TYPE_DICTIONARY and b1.has("alive"):
+					b1_alive = b1["alive"]
+				else:
+					b1_alive = b1.alive if "alive" in b1 else false
 
-                var b2_alive = false
-                if typeof(b2) == TYPE_OBJECT and b2.has_method("get"):
-                    b2_alive = b2.get("alive")
-                elif typeof(b2) == TYPE_DICTIONARY and b2.has("alive"):
-                    b2_alive = b2["alive"]
-                else:
-                    b2_alive = b2.alive if "alive" in b2 else false
+				var b2_alive = false
+				if typeof(b2) == TYPE_OBJECT and b2.has_method("get"):
+					b2_alive = b2.get("alive")
+				elif typeof(b2) == TYPE_DICTIONARY and b2.has("alive"):
+					b2_alive = b2["alive"]
+				else:
+					b2_alive = b2.alive if "alive" in b2 else false
 
-                if b1_alive and b2_alive:
-                    var temp_x = 0.0
-                    var temp_y = 0.0
+				if b1_alive and b2_alive:
+					var temp_x = 0.0
+					var temp_y = 0.0
 
-                    if typeof(b1) == TYPE_OBJECT and b1.has_method("get"):
-                        temp_x = b1.get("x")
-                        temp_y = b1.get("y")
-                    elif typeof(b1) == TYPE_DICTIONARY and b1.has("x"):
-                        temp_x = b1["x"]
-                        temp_y = b1["y"]
-                    else:
-                        temp_x = b1.x
-                        temp_y = b1.y
+					if typeof(b1) == TYPE_OBJECT and b1.has_method("get"):
+						temp_x = b1.get("x")
+						temp_y = b1.get("y")
+					elif typeof(b1) == TYPE_DICTIONARY and b1.has("x"):
+						temp_x = b1["x"]
+						temp_y = b1["y"]
+					else:
+						temp_x = b1.x
+						temp_y = b1.y
 
-                    var b2_x = 0.0
-                    var b2_y = 0.0
-                    if typeof(b2) == TYPE_OBJECT and b2.has_method("get"):
-                        b2_x = b2.get("x")
-                        b2_y = b2.get("y")
-                    elif typeof(b2) == TYPE_DICTIONARY and b2.has("x"):
-                        b2_x = b2["x"]
-                        b2_y = b2["y"]
-                    else:
-                        b2_x = b2.x
-                        b2_y = b2.y
+					var b2_x = 0.0
+					var b2_y = 0.0
+					if typeof(b2) == TYPE_OBJECT and b2.has_method("get"):
+						b2_x = b2.get("x")
+						b2_y = b2.get("y")
+					elif typeof(b2) == TYPE_DICTIONARY and b2.has("x"):
+						b2_x = b2["x"]
+						b2_y = b2["y"]
+					else:
+						b2_x = b2.x
+						b2_y = b2.y
 
-                    if typeof(b1) == TYPE_OBJECT and b1.has_method("set"):
-                        b1.set("x", b2_x)
-                        b1.set("y", b2_y)
-                    elif typeof(b1) == TYPE_DICTIONARY:
-                        b1["x"] = b2_x
-                        b1["y"] = b2_y
-                    else:
-                        b1.x = b2_x
-                        b1.y = b2_y
+					if typeof(b1) == TYPE_OBJECT and b1.has_method("set"):
+						b1.set("x", b2_x)
+						b1.set("y", b2_y)
+					elif typeof(b1) == TYPE_DICTIONARY:
+						b1["x"] = b2_x
+						b1["y"] = b2_y
+					else:
+						b1.x = b2_x
+						b1.y = b2_y
 
-                    if typeof(b2) == TYPE_OBJECT and b2.has_method("set"):
-                        b2.set("x", temp_x)
-                        b2.set("y", temp_y)
-                    elif typeof(b2) == TYPE_DICTIONARY:
-                        b2["x"] = temp_x
-                        b2["y"] = temp_y
-                    else:
-                        b2.x = temp_x
-                        b2.y = temp_y
+					if typeof(b2) == TYPE_OBJECT and b2.has_method("set"):
+						b2.set("x", temp_x)
+						b2.set("y", temp_y)
+					elif typeof(b2) == TYPE_DICTIONARY:
+						b2["x"] = temp_x
+						b2["y"] = temp_y
+					else:
+						b2.x = temp_x
+						b2.y = temp_y
 
-                    if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
-                        var b1_id = "unknown"
-                        if typeof(b1) == TYPE_OBJECT and b1.has_method("get"):
-                            b1_id = b1.get("id")
-                        elif typeof(b1) == TYPE_DICTIONARY and b1.has("id"):
-                            b1_id = b1["id"]
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						var b1_id = "unknown"
+						if typeof(b1) == TYPE_OBJECT and b1.has_method("get"):
+							b1_id = b1.get("id")
+						elif typeof(b1) == TYPE_DICTIONARY and b1.has("id"):
+							b1_id = b1["id"]
 
-                        var b2_id = "unknown"
-                        if typeof(b2) == TYPE_OBJECT and b2.has_method("get"):
-                            b2_id = b2.get("id")
-                        elif typeof(b2) == TYPE_DICTIONARY and b2.has("id"):
-                            b2_id = b2["id"]
+						var b2_id = "unknown"
+						if typeof(b2) == TYPE_OBJECT and b2.has_method("get"):
+							b2_id = b2.get("id")
+						elif typeof(b2) == TYPE_DICTIONARY and b2.has("id"):
+							b2_id = b2["id"]
 
-                        world.add_event("teleport_swap_complete", {
-                            "b1_id": b1_id,
-                            "b2_id": b2_id,
-                            "message": "Players swapped positions!"
-                        })
-                active_swap = null
-            return
+						world.add_event("teleport_swap_complete", {
+							"b1_id": b1_id,
+							"b2_id": b2_id,
+							"message": "Players swapped positions!"
+						})
+				active_swap = null
+			return
 
-        trigger_timer -= delta
-        if trigger_timer <= 0:
-            trigger_timer = randf_range(20.0, 40.0)
+		trigger_timer -= delta
+		if trigger_timer <= 0:
+			trigger_timer = randf_range(20.0, 40.0)
 
-            var alive_balls = []
-            for b in balls:
-                var alive = false
-                var btype = ""
+			var alive_balls = []
+			for b in balls:
+				var alive = false
+				var btype = ""
 
-                if typeof(b) == TYPE_OBJECT and b.has_method("get"):
-                    alive = b.get("alive")
-                    btype = b.get("ball_type")
-                elif typeof(b) == TYPE_DICTIONARY:
-                    alive = b.get("alive", false)
-                    btype = b.get("ball_type", "")
-                else:
-                    alive = b.alive if "alive" in b else false
-                    btype = b.ball_type if "ball_type" in b else ""
+				if typeof(b) == TYPE_OBJECT and b.has_method("get"):
+					alive = b.get("alive")
+					btype = b.get("ball_type")
+				elif typeof(b) == TYPE_DICTIONARY:
+					alive = b.get("alive", false)
+					btype = b.get("ball_type", "")
+				else:
+					alive = b.alive if "alive" in b else false
+					btype = b.ball_type if "ball_type" in b else ""
 
-                if alive and btype != "spectator":
-                    alive_balls.append(b)
+				if alive and btype != "spectator":
+					alive_balls.append(b)
 
-            if alive_balls.size() >= 2:
-                var teams = []
-                for b in alive_balls:
-                    var t = "none"
-                    if typeof(b) == TYPE_OBJECT and b.has_method("get"):
-                        t = b.get("team")
-                    elif typeof(b) == TYPE_DICTIONARY:
-                        t = b.get("team", "none")
-                    else:
-                        t = b.team if "team" in b else "none"
-                    if not t in teams:
-                        teams.append(t)
+			if alive_balls.size() >= 2:
+				var teams = []
+				for b in alive_balls:
+					var t = "none"
+					if typeof(b) == TYPE_OBJECT and b.has_method("get"):
+						t = b.get("team")
+					elif typeof(b) == TYPE_DICTIONARY:
+						t = b.get("team", "none")
+					else:
+						t = b.team if "team" in b else "none"
+					if not t in teams:
+						teams.append(t)
 
-                var b1 = null
-                var b2 = null
+				var b1 = null
+				var b2 = null
 
-                if teams.size() >= 2:
-                    var team_idx1 = randi() % teams.size()
-                    var team1 = teams[team_idx1]
-                    teams.remove_at(team_idx1)
-                    var team2 = teams[randi() % teams.size()]
+				if teams.size() >= 2:
+					var team_idx1 = randi() % teams.size()
+					var team1 = teams[team_idx1]
+					teams.remove_at(team_idx1)
+					var team2 = teams[randi() % teams.size()]
 
-                    var team1_balls = []
-                    var team2_balls = []
-                    for b in alive_balls:
-                        var t = "none"
-                        if typeof(b) == TYPE_OBJECT and b.has_method("get"):
-                            t = b.get("team")
-                        elif typeof(b) == TYPE_DICTIONARY:
-                            t = b.get("team", "none")
-                        else:
-                            t = b.team if "team" in b else "none"
+					var team1_balls = []
+					var team2_balls = []
+					for b in alive_balls:
+						var t = "none"
+						if typeof(b) == TYPE_OBJECT and b.has_method("get"):
+							t = b.get("team")
+						elif typeof(b) == TYPE_DICTIONARY:
+							t = b.get("team", "none")
+						else:
+							t = b.team if "team" in b else "none"
 
-                        if t == team1:
-                            team1_balls.append(b)
-                        elif t == team2:
-                            team2_balls.append(b)
+						if t == team1:
+							team1_balls.append(b)
+						elif t == team2:
+							team2_balls.append(b)
 
-                    b1 = team1_balls[randi() % team1_balls.size()]
-                    b2 = team2_balls[randi() % team2_balls.size()]
-                else:
-                    var idx1 = randi() % alive_balls.size()
-                    b1 = alive_balls[idx1]
-                    alive_balls.remove_at(idx1)
-                    b2 = alive_balls[randi() % alive_balls.size()]
+					b1 = team1_balls[randi() % team1_balls.size()]
+					b2 = team2_balls[randi() % team2_balls.size()]
+				else:
+					var idx1 = randi() % alive_balls.size()
+					b1 = alive_balls[idx1]
+					alive_balls.remove_at(idx1)
+					b2 = alive_balls[randi() % alive_balls.size()]
 
-                active_swap = {
-                    "timer": 3.0,
-                    "b1": b1,
-                    "b2": b2
-                }
+				active_swap = {
+					"timer": 3.0,
+					"b1": b1,
+					"b2": b2
+				}
 
-                if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
-                    var b1_id = "unknown"
-                    if typeof(b1) == TYPE_OBJECT and b1.has_method("get"):
-                        b1_id = b1.get("id")
-                    elif typeof(b1) == TYPE_DICTIONARY and b1.has("id"):
-                        b1_id = b1["id"]
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					var b1_id = "unknown"
+					if typeof(b1) == TYPE_OBJECT and b1.has_method("get"):
+						b1_id = b1.get("id")
+					elif typeof(b1) == TYPE_DICTIONARY and b1.has("id"):
+						b1_id = b1["id"]
 
-                    var b2_id = "unknown"
-                    if typeof(b2) == TYPE_OBJECT and b2.has_method("get"):
-                        b2_id = b2.get("id")
-                    elif typeof(b2) == TYPE_DICTIONARY and b2.has("id"):
-                        b2_id = b2["id"]
+					var b2_id = "unknown"
+					if typeof(b2) == TYPE_OBJECT and b2.has_method("get"):
+						b2_id = b2.get("id")
+					elif typeof(b2) == TYPE_DICTIONARY and b2.has("id"):
+						b2_id = b2["id"]
 
-                    world.add_event("teleport_swap_warning", {
-                        "b1_id": b1_id,
-                        "b2_id": b2_id,
-                        "duration": 3.0,
-                        "message": "Two players are about to swap positions!"
-                    })
+					world.add_event("teleport_swap_warning", {
+						"b1_id": b1_id,
+						"b2_id": b2_id,
+						"duration": 3.0,
+						"message": "Two players are about to swap positions!"
+					})
 
 class FatigueAuraMode extends GameMode:
 	var aura_x = 500.0
@@ -65390,17 +65390,76 @@ class FatigueAuraMode extends GameMode:
 				elif not is_dict and "stamina" in b:
 					b.stamina = max(0.0, b.stamina - drain_rate * delta)
 
+
+class OrbitingSpotlightMode extends GameMode:
+	var orbit_angle: float = 0.0
+	var initial_radius: float = 1400.0
+
+	func _init():
+		super._init()
+		name = "Orbiting Spotlight"
+		description = "The safe zone isn't a shrinking circle, but instead is a rapidly orbiting spotlight that gets faster and smaller as the game progresses."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if world != null and "arena" in world:
+			if "safe_zone_radius" in world.arena:
+				initial_radius = world.arena.safe_zone_radius
+			else:
+				initial_radius = 1400.0
+		orbit_angle = 0.0
+
+	func tick(world, balls: Array, delta: float) -> void:
+		super.tick(world, balls, delta)
+		if world == null or not ("arena" in world):
+			return
+
+		var current_radius = initial_radius
+		if "safe_zone_radius" in world.arena:
+			current_radius = world.arena.safe_zone_radius
+
+		var progress: float = 0.0
+		if initial_radius > 0.0:
+			progress = clamp(1.0 - (current_radius / initial_radius), 0.0, 1.0)
+
+		var base_speed: float = 0.5
+		var max_speed: float = 3.0
+		var orbit_speed: float = base_speed + (max_speed - base_speed) * progress
+
+		orbit_angle += orbit_speed * delta
+
+		var width: float = 2000.0
+		var height: float = 2000.0
+		if "width" in world.arena: width = world.arena.width
+		if "height" in world.arena: height = world.arena.height
+
+		var cx: float = width / 2.0
+		var cy: float = height / 2.0
+
+		var orbit_radius: float = width * 0.3
+
+		var spotlight_x: float = cx + cos(orbit_angle) * orbit_radius
+		var spotlight_y: float = cy + sin(orbit_angle) * orbit_radius
+
+		if "safe_zone_center" in world.arena:
+			if typeof(world.arena.safe_zone_center) == TYPE_ARRAY:
+				world.arena.safe_zone_center = [spotlight_x, spotlight_y]
+			elif typeof(world.arena.safe_zone_center) == TYPE_VECTOR2:
+				world.arena.safe_zone_center = Vector2(spotlight_x, spotlight_y)
+			else:
+				world.arena.safe_zone_center = [spotlight_x, spotlight_y]
+
 var GAME_MODES = {
 	"abyssal_fog_event": AbyssalFogEventMode.new(),
-    'random_teleport_event': RandomTeleportEventMode.new(),
-    "cursed_relics": CursedRelicsMode.new(),
-    "irradiation_survival": IrradiationSurvivalMode.new(),
+	'random_teleport_event': RandomTeleportEventMode.new(),
+	"cursed_relics": CursedRelicsMode.new(),
+	"irradiation_survival": IrradiationSurvivalMode.new(),
 	"currency_bounty": CurrencyBountyMode.new(),
-    "frostbite": _frostbite_mode_inst,
+	"frostbite": _frostbite_mode_inst,
 	"giant_bouncy_royale": GiantBouncyRoyaleMode.new(),
 	"tethered_royale": TetheredRoyaleMode.new(),
 	"conveyor_belt_arena": ConveyorBeltArenaMode.new(),
-    "quantum_anomaly_field": QuantumAnomalyFieldMode.new(),
+	"quantum_anomaly_field": QuantumAnomalyFieldMode.new(),
 	"volcano_boss_mode": VolcanoBossMode.new(),
 
 	"bone_prison_trap": preload("res://src/ai/bone_prison_trap.gd").new(),
@@ -65408,10 +65467,10 @@ var GAME_MODES = {
 	"dash_aura_trail": DashAuraTrailMode.new(),
 	"expanding_aura_event": ExpandingAuraEventMode.new(),
 	"aura_well_hazard": AuraWellHazardMode.new(),
-    "aura_link_royale": AuraLinkRoyaleMode.new(),
+	"aura_link_royale": AuraLinkRoyaleMode.new(),
 	"boundary_builder": BoundaryBuilderMode.new(),
-    "crimson_fog_event": CrimsonFogEventMode.new(),
-    "nullification_zone": NullificationZoneMode.new(),
+	"crimson_fog_event": CrimsonFogEventMode.new(),
+	"nullification_zone": NullificationZoneMode.new(),
 	"clan_hub": ClanHubMode.new(),
 	"crumbling_arena": CrumblingArenaMode.new(),
 	"cursed_altar": CursedAltarMode.new(),
@@ -65429,7 +65488,7 @@ var GAME_MODES = {
 	"white_hole": WhiteHoleMode.new(),
 	"hot_potato": HotPotatoMode.new(),
 
-    "decoy_swap": DecoySwapMode.new(),
+	"decoy_swap": DecoySwapMode.new(),
 	"time_loop": TimeLoopMode.new(),
 	'dormant_decoys': DormantDecoysMode.new(),
 	'orbital_debris': OrbitalDebrisMode.new(),
@@ -65463,11 +65522,11 @@ var GAME_MODES = {
 	"mirror_arena": MirrorArenaMode.new(),
 	"chain_lightning_event": ChainLightningEventMode.new(),
 	"chain_lightning_mutator": ChainLightningMutatorMode.new(),
-    "ricochet_arena": RicochetArenaMode.new(),
-    "fake_bounties_mutator": FakeBountyMutatorMode.new(),
+	"ricochet_arena": RicochetArenaMode.new(),
+	"fake_bounties_mutator": FakeBountyMutatorMode.new(),
 	"kinetic_momentum_mutator": KineticMomentumMutatorMode.new(),
 	"snake_safe_zone": SnakeSafeZoneMode.new(),
-    "lava_eruption_event": LavaEruptionEventMode.new(),
+	"lava_eruption_event": LavaEruptionEventMode.new(),
 	"expanding_lava_royale": ExpandingLavaRoyaleMode.new(),
 	"freezing_edges_royale": FreezingEdgesRoyaleMode.new(),
 	"massive_pinball_arena": MassivePinballArenaMode.new(),
@@ -65488,7 +65547,7 @@ var GAME_MODES = {
 	"personal_doppelganger": PersonalDoppelgangerMode.new(),
 	"dense_region": DenseRegionMode.new(),
 	"solar_radiation_storm": SolarRadiationStormMode.new(),
-    "orbital_strike_event": OrbitalStrikeEventMode.new(),
+	"orbital_strike_event": OrbitalStrikeEventMode.new(),
 }
 
 class PersonalDoppelgangerMode extends GameMode:
@@ -65913,7 +65972,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"explosive_meteors": ExplosiveMeteorsMode.new(),
 	"void_tiles": VoidTilesMode.new(),
 	"chronosphere_event": ChronosphereEventMode.new(),
-    "bounce_laser": BounceLaserMode.new(),
+	"bounce_laser": BounceLaserMode.new(),
 	"spectator_holograms": SpectatorHologramsMode.new(),
 
 	"position_swap": PositionSwapMode.new(),
@@ -72923,777 +72982,777 @@ class BountyContractEventMode extends GameMode:
 
 
 class DecoyNetworkMode extends GameMode:
-    var timer: float = 0.0
-    var spawn_interval: float = 8.0
+	var timer: float = 0.0
+	var spawn_interval: float = 8.0
 
-    class HologramDecoy:
-        var id: int
-        var owner_id: int
-        var x: float
-        var y: float
-        var radius: float = 15.0
-        var hp: float = 100.0
-        var max_hp: float = 100.0
-        var _prev_hp: float = 100.0
-        var alive: bool = true
-        var kind: String = "hologram_decoy"
-        var duration: float = 10.0
-        var is_hologram_decoy: bool = true
-        var team: String = "neutral"
-        var ball_type: String = "basic"
-        var damage: float = 0.0
-        var base_damage: float = 0.0
-        var speed: float = 0.0
+	class HologramDecoy:
+		var id: int
+		var owner_id: int
+		var x: float
+		var y: float
+		var radius: float = 15.0
+		var hp: float = 100.0
+		var max_hp: float = 100.0
+		var _prev_hp: float = 100.0
+		var alive: bool = true
+		var kind: String = "hologram_decoy"
+		var duration: float = 10.0
+		var is_hologram_decoy: bool = true
+		var team: String = "neutral"
+		var ball_type: String = "basic"
+		var damage: float = 0.0
+		var base_damage: float = 0.0
+		var speed: float = 0.0
 
-        func _init(target_ball):
-            self.owner_id = target_ball.id if "id" in target_ball else 0
-            self.x = target_ball.x if "x" in target_ball else 0.0
-            self.y = target_ball.y if "y" in target_ball else 0.0
-            self.team = target_ball.team if "team" in target_ball else "neutral"
+		func _init(target_ball):
+			self.owner_id = target_ball.id if "id" in target_ball else 0
+			self.x = target_ball.x if "x" in target_ball else 0.0
+			self.y = target_ball.y if "y" in target_ball else 0.0
+			self.team = target_ball.team if "team" in target_ball else "neutral"
 
-        func update(delta):
-            self.duration -= delta
-            if self.duration <= 0.0:
-                self.alive = false
+		func update(delta):
+			self.duration -= delta
+			if self.duration <= 0.0:
+				self.alive = false
 
-        func take_damage(amount, source=null):
-            self.hp -= amount
-            if self.hp <= 0:
-                self.alive = false
+		func take_damage(amount, source=null):
+			self.hp -= amount
+			if self.hp <= 0:
+				self.alive = false
 
-    func _init():
-        self.name = "Decoy Network"
-        self.description = "Players occasionally deploy interconnected holograms. Enemies hitting one decoy take damage that ripples across the entire network, punishing aggressive, untargeted playstyles."
+	func _init():
+		self.name = "Decoy Network"
+		self.description = "Players occasionally deploy interconnected holograms. Enemies hitting one decoy take damage that ripples across the entire network, punishing aggressive, untargeted playstyles."
 
-    func setup(world, balls):
-        super.setup(world, balls)
-        self.timer = 0.0
+	func setup(world, balls):
+		super.setup(world, balls)
+		self.timer = 0.0
 
-    func tick(world, balls, delta=0.016):
-        self.timer += delta
+	func tick(world, balls, delta=0.016):
+		self.timer += delta
 
-        for b in balls:
-            var is_holo = b.is_hologram_decoy if "is_hologram_decoy" in b else false
-            var b_alive = b.alive if "alive" in b else false
-            if is_holo and b_alive:
-                if typeof(b) == TYPE_OBJECT and b.has_method("update"):
-                    b.update(delta)
+		for b in balls:
+			var is_holo = b.is_hologram_decoy if "is_hologram_decoy" in b else false
+			var b_alive = b.alive if "alive" in b else false
+			if is_holo and b_alive:
+				if typeof(b) == TYPE_OBJECT and b.has_method("update"):
+					b.update(delta)
 
-                var cur_hp = b.hp if "hp" in b else 0.0
-                var prev_hp = b._prev_hp if "_prev_hp" in b else cur_hp
-                if cur_hp < prev_hp:
-                    var damage_taken = prev_hp - cur_hp
-                    if typeof(b) == TYPE_OBJECT and "set_meta" in b:
-                        b._prev_hp = cur_hp
-                    elif typeof(b) == TYPE_DICTIONARY:
-                        b["_prev_hp"] = cur_hp
-                    else:
-                        b._prev_hp = cur_hp
+				var cur_hp = b.hp if "hp" in b else 0.0
+				var prev_hp = b._prev_hp if "_prev_hp" in b else cur_hp
+				if cur_hp < prev_hp:
+					var damage_taken = prev_hp - cur_hp
+					if typeof(b) == TYPE_OBJECT and "set_meta" in b:
+						b._prev_hp = cur_hp
+					elif typeof(b) == TYPE_DICTIONARY:
+						b["_prev_hp"] = cur_hp
+					else:
+						b._prev_hp = cur_hp
 
-                    var network_owner = b.owner_id if "owner_id" in b else -1
-                    if network_owner != -1:
-                        for h in balls:
-                            var h_is_holo = h.is_hologram_decoy if "is_hologram_decoy" in h else false
-                            var h_alive = h.alive if "alive" in h else false
-                            var h_owner = h.owner_id if "owner_id" in h else -1
-                            if h_is_holo and h_alive and h_owner == network_owner:
-                                var nearest_enemy = null
-                                var nearest_dist = 62500.0 # 250^2
-                                var h_x = h.x if "x" in h else 0.0
-                                var h_y = h.y if "y" in h else 0.0
-                                var h_team = h.team if "team" in h else ""
+					var network_owner = b.owner_id if "owner_id" in b else -1
+					if network_owner != -1:
+						for h in balls:
+							var h_is_holo = h.is_hologram_decoy if "is_hologram_decoy" in h else false
+							var h_alive = h.alive if "alive" in h else false
+							var h_owner = h.owner_id if "owner_id" in h else -1
+							if h_is_holo and h_alive and h_owner == network_owner:
+								var nearest_enemy = null
+								var nearest_dist = 62500.0 # 250^2
+								var h_x = h.x if "x" in h else 0.0
+								var h_y = h.y if "y" in h else 0.0
+								var h_team = h.team if "team" in h else ""
 
-                                for e in balls:
-                                    var e_alive = e.alive if "alive" in e else false
-                                    var e_is_decoy = e.is_decoy if "is_decoy" in e else false
-                                    var e_is_holo = e.is_hologram_decoy if "is_hologram_decoy" in e else false
-                                    if e_alive and not e_is_decoy and not e_is_holo:
-                                        var e_team = e.team if "team" in e else ""
-                                        if e_team != h_team:
-                                            var e_x = e.x if "x" in e else 0.0
-                                            var e_y = e.y if "y" in e else 0.0
-                                            var dx = e_x - h_x
-                                            var dy = e_y - h_y
-                                            var dist_sq = dx*dx + dy*dy
-                                            if dist_sq < nearest_dist:
-                                                nearest_dist = dist_sq
-                                                nearest_enemy = e
+								for e in balls:
+									var e_alive = e.alive if "alive" in e else false
+									var e_is_decoy = e.is_decoy if "is_decoy" in e else false
+									var e_is_holo = e.is_hologram_decoy if "is_hologram_decoy" in e else false
+									if e_alive and not e_is_decoy and not e_is_holo:
+										var e_team = e.team if "team" in e else ""
+										if e_team != h_team:
+											var e_x = e.x if "x" in e else 0.0
+											var e_y = e.y if "y" in e else 0.0
+											var dx = e_x - h_x
+											var dy = e_y - h_y
+											var dist_sq = dx*dx + dy*dy
+											if dist_sq < nearest_dist:
+												nearest_dist = dist_sq
+												nearest_enemy = e
 
-                                if nearest_enemy != null:
-                                    if typeof(nearest_enemy) == TYPE_OBJECT and "hp" in nearest_enemy:
-                                        nearest_enemy.hp -= damage_taken
-                                    elif typeof(nearest_enemy) == TYPE_DICTIONARY:
-                                        nearest_enemy["hp"] -= damage_taken
+								if nearest_enemy != null:
+									if typeof(nearest_enemy) == TYPE_OBJECT and "hp" in nearest_enemy:
+										nearest_enemy.hp -= damage_taken
+									elif typeof(nearest_enemy) == TYPE_DICTIONARY:
+										nearest_enemy["hp"] -= damage_taken
 
-        if self.timer >= self.spawn_interval:
-            self.timer = 0.0
-            var new_holograms = []
-            for b in balls:
-                var b_alive = b.alive if "alive" in b else false
-                var is_decoy = b.is_decoy if "is_decoy" in b else false
-                var is_holo = b.is_hologram_decoy if "is_hologram_decoy" in b else false
-                if b_alive and not is_decoy and not is_holo:
-                    var decoy = HologramDecoy.new(b)
-                    if "next_id" in world:
-                        decoy.id = world.next_id
-                        world.next_id += 1
-                    new_holograms.append(decoy)
+		if self.timer >= self.spawn_interval:
+			self.timer = 0.0
+			var new_holograms = []
+			for b in balls:
+				var b_alive = b.alive if "alive" in b else false
+				var is_decoy = b.is_decoy if "is_decoy" in b else false
+				var is_holo = b.is_hologram_decoy if "is_hologram_decoy" in b else false
+				if b_alive and not is_decoy and not is_holo:
+					var decoy = HologramDecoy.new(b)
+					if "next_id" in world:
+						decoy.id = world.next_id
+						world.next_id += 1
+					new_holograms.append(decoy)
 
-            for d in new_holograms:
-                balls.append(d)
+			for d in new_holograms:
+				balls.append(d)
 
 class VengefulDecoysMode extends GameMode:
-    var timer: float = 0.0
-    var decoy_interval: float = 10.0
-    var recordings: Dictionary = {}
+	var timer: float = 0.0
+	var decoy_interval: float = 10.0
+	var recordings: Dictionary = {}
 
-    class VengefulDecoy:
-        var id: int
-        var owner_id: int
-        var path: Array
-        var timer: float = 0.0
-        var x: float
-        var y: float
-        var radius: float = 15.0
-        var hp: float = 100.0
-        var max_hp: float = 100.0
-        var alive: bool = true
-        var kind: String = "vengeful_decoy"
-        var duration: float = 5.0
-        var is_decoy: bool = true
-        var team: String = "neutral"
-        var half_reflect_shield_active: bool = true
-        var ball_type: String = "basic"
-        var damage: float = 0.0
-        var base_damage: float = 0.0
-        var speed: float = 0.0
-        var speed_buff_timer: float = 0.0
-        var damage_buff_timer: float = 0.0
-        var attack_speed_buff_timer: float = 0.0
+	class VengefulDecoy:
+		var id: int
+		var owner_id: int
+		var path: Array
+		var timer: float = 0.0
+		var x: float
+		var y: float
+		var radius: float = 15.0
+		var hp: float = 100.0
+		var max_hp: float = 100.0
+		var alive: bool = true
+		var kind: String = "vengeful_decoy"
+		var duration: float = 5.0
+		var is_decoy: bool = true
+		var team: String = "neutral"
+		var half_reflect_shield_active: bool = true
+		var ball_type: String = "basic"
+		var damage: float = 0.0
+		var base_damage: float = 0.0
+		var speed: float = 0.0
+		var speed_buff_timer: float = 0.0
+		var damage_buff_timer: float = 0.0
+		var attack_speed_buff_timer: float = 0.0
 
-        func _init(target_ball, p_path: Array):
-            self.owner_id = target_ball.id if "id" in target_ball else 0
-            self.path = p_path
-            self.timer = 0.0
+		func _init(target_ball, p_path: Array):
+			self.owner_id = target_ball.id if "id" in target_ball else 0
+			self.path = p_path
+			self.timer = 0.0
 
-            if self.path.size() > 0:
-                self.x = self.path[0][1]
-                self.y = self.path[0][2]
-            else:
-                self.x = target_ball.x if "x" in target_ball else 0.0
-                self.y = target_ball.y if "y" in target_ball else 0.0
+			if self.path.size() > 0:
+				self.x = self.path[0][1]
+				self.y = self.path[0][2]
+			else:
+				self.x = target_ball.x if "x" in target_ball else 0.0
+				self.y = target_ball.y if "y" in target_ball else 0.0
 
-            if "radius" in target_ball: self.radius = target_ball.radius
-            if "hp" in target_ball: self.hp = target_ball.hp
-            if "max_hp" in target_ball: self.max_hp = target_ball.max_hp
-            if "team" in target_ball: self.team = target_ball.team
-            if "ball_type" in target_ball: self.ball_type = target_ball.ball_type
+			if "radius" in target_ball: self.radius = target_ball.radius
+			if "hp" in target_ball: self.hp = target_ball.hp
+			if "max_hp" in target_ball: self.max_hp = target_ball.max_hp
+			if "team" in target_ball: self.team = target_ball.team
+			if "ball_type" in target_ball: self.ball_type = target_ball.ball_type
 
-        func update(delta: float):
-            self.timer += delta
-            self.duration -= delta
-            if self.duration <= 0.0 or self.path.size() == 0:
-                self.alive = false
-                return
-            if self.timer >= self.path[self.path.size() - 1][0]:
-                self.x = self.path[self.path.size() - 1][1]
-                self.y = self.path[self.path.size() - 1][2]
-                return
-            for i in range(self.path.size() - 1):
-                var t1 = self.path[i][0]
-                var x1 = self.path[i][1]
-                var y1 = self.path[i][2]
-                var t2 = self.path[i+1][0]
-                var x2 = self.path[i+1][1]
-                var y2 = self.path[i+1][2]
-                if t1 <= self.timer and self.timer <= t2:
-                    if t2 == t1:
-                        self.x = x1
-                        self.y = y1
-                    else:
-                        var ratio = (self.timer - t1) / (t2 - t1)
-                        self.x = x1 + (x2 - x1) * ratio
-                        self.y = y1 + (y2 - y1) * ratio
-                    break
+		func update(delta: float):
+			self.timer += delta
+			self.duration -= delta
+			if self.duration <= 0.0 or self.path.size() == 0:
+				self.alive = false
+				return
+			if self.timer >= self.path[self.path.size() - 1][0]:
+				self.x = self.path[self.path.size() - 1][1]
+				self.y = self.path[self.path.size() - 1][2]
+				return
+			for i in range(self.path.size() - 1):
+				var t1 = self.path[i][0]
+				var x1 = self.path[i][1]
+				var y1 = self.path[i][2]
+				var t2 = self.path[i+1][0]
+				var x2 = self.path[i+1][1]
+				var y2 = self.path[i+1][2]
+				if t1 <= self.timer and self.timer <= t2:
+					if t2 == t1:
+						self.x = x1
+						self.y = y1
+					else:
+						var ratio = (self.timer - t1) / (t2 - t1)
+						self.x = x1 + (x2 - x1) * ratio
+						self.y = y1 + (y2 - y1) * ratio
+					break
 
-        func take_damage(amount: float):
-            self.hp -= amount
-            if self.hp <= 0:
-                self.alive = false
+		func take_damage(amount: float):
+			self.hp -= amount
+			if self.hp <= 0:
+				self.alive = false
 
-    func _init():
-        self.name = "Vengeful Decoys"
-        self.description = "All players occasionally leave behind a decoy that perfectly replicates their health and movement history for 5 seconds. Attacking a decoy reflects 50% of the damage back to the attacker."
+	func _init():
+		self.name = "Vengeful Decoys"
+		self.description = "All players occasionally leave behind a decoy that perfectly replicates their health and movement history for 5 seconds. Attacking a decoy reflects 50% of the damage back to the attacker."
 
-    func setup(world, balls: Array):
-        super.setup(world, balls)
-        self.timer = 0.0
-        self.recordings.clear()
+	func setup(world, balls: Array):
+		super.setup(world, balls)
+		self.timer = 0.0
+		self.recordings.clear()
 
-    func tick(world, balls: Array, delta: float = 0.016):
-        self.timer += delta
+	func tick(world, balls: Array, delta: float = 0.016):
+		self.timer += delta
 
-        for b in balls:
-            var alive = true
-            if typeof(b) == TYPE_DICTIONARY:
-                alive = b.get("alive", false)
-            else:
-                alive = b.alive if "alive" in b else false
+		for b in balls:
+			var alive = true
+			if typeof(b) == TYPE_DICTIONARY:
+				alive = b.get("alive", false)
+			else:
+				alive = b.alive if "alive" in b else false
 
-            var is_decoy = false
-            if typeof(b) == TYPE_DICTIONARY:
-                is_decoy = b.get("is_decoy", false)
-            else:
-                is_decoy = b.is_decoy if "is_decoy" in b else false
+			var is_decoy = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_decoy = b.get("is_decoy", false)
+			else:
+				is_decoy = b.is_decoy if "is_decoy" in b else false
 
-            if alive and not is_decoy:
-                var bid = b.id if "id" in b else (b.get("id", 0) if typeof(b) == TYPE_DICTIONARY else 0)
-                if not self.recordings.has(bid):
-                    self.recordings[bid] = []
+			if alive and not is_decoy:
+				var bid = b.id if "id" in b else (b.get("id", 0) if typeof(b) == TYPE_DICTIONARY else 0)
+				if not self.recordings.has(bid):
+					self.recordings[bid] = []
 
-                var bx = b.x if "x" in b else (b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else 0.0)
-                var by = b.y if "y" in b else (b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else 0.0)
+				var bx = b.x if "x" in b else (b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else 0.0)
+				var by = b.y if "y" in b else (b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else 0.0)
 
-                self.recordings[bid].append([self.timer, bx, by])
+				self.recordings[bid].append([self.timer, bx, by])
 
-                while self.recordings[bid].size() > 0 and self.timer - self.recordings[bid][0][0] > 5.0:
-                    self.recordings[bid].pop_front()
+				while self.recordings[bid].size() > 0 and self.timer - self.recordings[bid][0][0] > 5.0:
+					self.recordings[bid].pop_front()
 
-        for b in balls:
-            if typeof(b) == TYPE_OBJECT and b.has_method("update") and "kind" in b and b.kind == "vengeful_decoy" and ("alive" in b and b.alive):
-                b.update(delta)
+		for b in balls:
+			if typeof(b) == TYPE_OBJECT and b.has_method("update") and "kind" in b and b.kind == "vengeful_decoy" and ("alive" in b and b.alive):
+				b.update(delta)
 
-        if self.timer >= self.decoy_interval:
-            self.timer = 0.0
-            for b in balls:
-                var alive = true
-                if typeof(b) == TYPE_DICTIONARY:
-                    alive = b.get("alive", false)
-                else:
-                    alive = b.alive if "alive" in b else false
+		if self.timer >= self.decoy_interval:
+			self.timer = 0.0
+			for b in balls:
+				var alive = true
+				if typeof(b) == TYPE_DICTIONARY:
+					alive = b.get("alive", false)
+				else:
+					alive = b.alive if "alive" in b else false
 
-                var is_decoy = false
-                if typeof(b) == TYPE_DICTIONARY:
-                    is_decoy = b.get("is_decoy", false)
-                else:
-                    is_decoy = b.is_decoy if "is_decoy" in b else false
+				var is_decoy = false
+				if typeof(b) == TYPE_DICTIONARY:
+					is_decoy = b.get("is_decoy", false)
+				else:
+					is_decoy = b.is_decoy if "is_decoy" in b else false
 
-                if alive and not is_decoy:
-                    var bid = b.id if "id" in b else (b.get("id", 0) if typeof(b) == TYPE_DICTIONARY else 0)
-                    if self.recordings.has(bid) and self.recordings[bid].size() > 0:
-                        var start_time = self.recordings[bid][0][0]
-                        var path = []
-                        for rec in self.recordings[bid]:
-                            path.append([rec[0] - start_time, rec[1], rec[2]])
+				if alive and not is_decoy:
+					var bid = b.id if "id" in b else (b.get("id", 0) if typeof(b) == TYPE_DICTIONARY else 0)
+					if self.recordings.has(bid) and self.recordings[bid].size() > 0:
+						var start_time = self.recordings[bid][0][0]
+						var path = []
+						for rec in self.recordings[bid]:
+							path.append([rec[0] - start_time, rec[1], rec[2]])
 
-                        var decoy = VengefulDecoy.new(b, path)
+						var decoy = VengefulDecoy.new(b, path)
 
-                        if typeof(world) == TYPE_OBJECT and "next_id" in world:
-                            decoy.id = world.next_id
-                            world.next_id += 1
-                        else:
-                            decoy.id = randi() % 900000 + 100000
+						if typeof(world) == TYPE_OBJECT and "next_id" in world:
+							decoy.id = world.next_id
+							world.next_id += 1
+						else:
+							decoy.id = randi() % 900000 + 100000
 
-                        balls.append(decoy)
+						balls.append(decoy)
 
-            self.recordings.clear()
+			self.recordings.clear()
 
 GAME_MODES["decoy_network"] = DecoyNetworkMode.new()
 GAME_MODES["vengeful_decoys"] = VengefulDecoysMode.new()
 
 class SponsorDropBox:
-    var id = 0
-    var x = 0.0
-    var y = 0.0
-    var vx = 0.0
-    var vy = 0.0
-    var radius = 25.0
-    var hp = 100.0
-    var max_hp = 100.0
-    var alive = true
-    var ball_type = "sponsor_drop_box"
-    var team = "neutral"
-    var speed = 0.0
-    var base_speed = 0.0
-    var damage = 0.0
-    var base_damage = 0.0
-    var perception_radius = 0.0
-    var base_perception_radius = 0.0
+	var id = 0
+	var x = 0.0
+	var y = 0.0
+	var vx = 0.0
+	var vy = 0.0
+	var radius = 25.0
+	var hp = 100.0
+	var max_hp = 100.0
+	var alive = true
+	var ball_type = "sponsor_drop_box"
+	var team = "neutral"
+	var speed = 0.0
+	var base_speed = 0.0
+	var damage = 0.0
+	var base_damage = 0.0
+	var perception_radius = 0.0
+	var base_perception_radius = 0.0
 
-    func _init(id_val, start_x, start_y):
-        self.id = id_val
-        self.x = start_x
-        self.y = start_y
+	func _init(id_val, start_x, start_y):
+		self.id = id_val
+		self.x = start_x
+		self.y = start_y
 
-    func take_damage(amount, source=null):
-        self.hp -= amount
-        if self.hp <= 0:
-            self.alive = false
+	func take_damage(amount, source=null):
+		self.hp -= amount
+		if self.hp <= 0:
+			self.alive = false
 
 class SponsorDropMode extends GameMode:
-    var drop_timer = 0.0
-    var drop_interval = 15.0
+	var drop_timer = 0.0
+	var drop_interval = 15.0
 
-    func _init():
-        name = "Sponsor Drop"
-        description = "During the match, special drop boxes appear periodically. Destroying them grants a permanent sponsor buff to the ball that lands the final hit."
+	func _init():
+		name = "Sponsor Drop"
+		description = "During the match, special drop boxes appear periodically. Destroying them grants a permanent sponsor buff to the ball that lands the final hit."
 
-    func setup(world, balls):
-        super.setup(world, balls)
-        drop_timer = 0.0
+	func setup(world, balls):
+		super.setup(world, balls)
+		drop_timer = 0.0
 
-    func tick(world, balls, delta):
-        drop_timer += delta
-        if drop_timer >= drop_interval:
-            drop_timer = 0.0
-            var arena_width = 1000.0
-            var arena_height = 1000.0
-            if typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("arena"):
-                arena_width = float(world.arena.width)
-                arena_height = float(world.arena.height)
-            elif typeof(world) == TYPE_DICTIONARY and ("arena" in world):
-                arena_width = float(world.arena.width)
-                arena_height = float(world.arena.height)
+	func tick(world, balls, delta):
+		drop_timer += delta
+		if drop_timer >= drop_interval:
+			drop_timer = 0.0
+			var arena_width = 1000.0
+			var arena_height = 1000.0
+			if typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("arena"):
+				arena_width = float(world.arena.width)
+				arena_height = float(world.arena.height)
+			elif typeof(world) == TYPE_DICTIONARY and ("arena" in world):
+				arena_width = float(world.arena.width)
+				arena_height = float(world.arena.height)
 
-            var drop_x = randf_range(100.0, arena_width - 100.0)
-            var drop_y = randf_range(100.0, arena_height - 100.0)
-            var box_id = randi() % 900000 + 100000
-            if typeof(world) == TYPE_OBJECT and "next_id" in world:
-                box_id = world.next_id
-                world.next_id += 1
-            elif typeof(world) == TYPE_DICTIONARY and world.has("next_id"):
-                box_id = world["next_id"]
-                world["next_id"] += 1
+			var drop_x = randf_range(100.0, arena_width - 100.0)
+			var drop_y = randf_range(100.0, arena_height - 100.0)
+			var box_id = randi() % 900000 + 100000
+			if typeof(world) == TYPE_OBJECT and "next_id" in world:
+				box_id = world.next_id
+				world.next_id += 1
+			elif typeof(world) == TYPE_DICTIONARY and world.has("next_id"):
+				box_id = world["next_id"]
+				world["next_id"] += 1
 
-            var box = SponsorDropBox.new(box_id, drop_x, drop_y)
-            if typeof(world) == TYPE_OBJECT and "balls" in world:
-                world.balls.append(box)
-            elif typeof(world) == TYPE_DICTIONARY and world.has("balls"):
-                world.balls.append(box)
+			var box = SponsorDropBox.new(box_id, drop_x, drop_y)
+			if typeof(world) == TYPE_OBJECT and "balls" in world:
+				world.balls.append(box)
+			elif typeof(world) == TYPE_DICTIONARY and world.has("balls"):
+				world.balls.append(box)
 
-            if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
-                world.add_event("drop_box_spawned", {"message": "A Sponsor Drop Box has landed!"})
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("drop_box_spawned", {"message": "A Sponsor Drop Box has landed!"})
 
-        var to_remove = []
-        for b in balls:
-            if typeof(b) == TYPE_OBJECT and b.get("ball_type") == "sponsor_drop_box" and not b.get("alive"):
-                var last_hit_id = null
-                if b.has_meta("_last_hit_by_id"):
-                    last_hit_id = b.get_meta("_last_hit_by_id")
-                elif "_last_hit_by_id" in b:
-                    last_hit_id = b.get("_last_hit_by_id")
+		var to_remove = []
+		for b in balls:
+			if typeof(b) == TYPE_OBJECT and b.get("ball_type") == "sponsor_drop_box" and not b.get("alive"):
+				var last_hit_id = null
+				if b.has_meta("_last_hit_by_id"):
+					last_hit_id = b.get_meta("_last_hit_by_id")
+				elif "_last_hit_by_id" in b:
+					last_hit_id = b.get("_last_hit_by_id")
 
-                if last_hit_id != null:
-                    for ball in balls:
-                        var ball_id = null
-                        if typeof(ball) == TYPE_OBJECT and "id" in ball:
-                            ball_id = ball.id
-                        elif typeof(ball) == TYPE_DICTIONARY and ball.has("id"):
-                            ball_id = ball.id
+				if last_hit_id != null:
+					for ball in balls:
+						var ball_id = null
+						if typeof(ball) == TYPE_OBJECT and "id" in ball:
+							ball_id = ball.id
+						elif typeof(ball) == TYPE_DICTIONARY and ball.has("id"):
+							ball_id = ball.id
 
-                        if ball_id == last_hit_id:
-                            if typeof(ball) == TYPE_OBJECT:
-                                ball.set("has_sponsor_buff", true)
-                                if "base_speed" in ball: ball.base_speed *= 1.2
-                                if "speed" in ball: ball.speed *= 1.2
-                                if "base_damage" in ball: ball.base_damage *= 1.2
-                                if "damage" in ball: ball.damage *= 1.2
-                            elif typeof(ball) == TYPE_DICTIONARY:
-                                ball["has_sponsor_buff"] = true
-                                if ball.has("base_speed"): ball["base_speed"] *= 1.2
-                                if ball.has("speed"): ball["speed"] *= 1.2
-                                if ball.has("base_damage"): ball["base_damage"] *= 1.2
-                                if ball.has("damage"): ball["damage"] *= 1.2
+						if ball_id == last_hit_id:
+							if typeof(ball) == TYPE_OBJECT:
+								ball.set("has_sponsor_buff", true)
+								if "base_speed" in ball: ball.base_speed *= 1.2
+								if "speed" in ball: ball.speed *= 1.2
+								if "base_damage" in ball: ball.base_damage *= 1.2
+								if "damage" in ball: ball.damage *= 1.2
+							elif typeof(ball) == TYPE_DICTIONARY:
+								ball["has_sponsor_buff"] = true
+								if ball.has("base_speed"): ball["base_speed"] *= 1.2
+								if ball.has("speed"): ball["speed"] *= 1.2
+								if ball.has("base_damage"): ball["base_damage"] *= 1.2
+								if ball.has("damage"): ball["damage"] *= 1.2
 
-                            if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
-                                world.add_event("sponsor_buff", {"message": "A player claimed the Sponsor Buff!"})
-                            break
-                to_remove.append(b)
+							if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+								world.add_event("sponsor_buff", {"message": "A player claimed the Sponsor Buff!"})
+							break
+				to_remove.append(b)
 
-        if typeof(world) == TYPE_OBJECT and "balls" in world:
-            for b in to_remove:
-                if world.balls.has(b):
-                    world.balls.erase(b)
-        elif typeof(world) == TYPE_DICTIONARY and world.has("balls"):
-            for b in to_remove:
-                if world.balls.has(b):
-                    world.balls.erase(b)
+		if typeof(world) == TYPE_OBJECT and "balls" in world:
+			for b in to_remove:
+				if world.balls.has(b):
+					world.balls.erase(b)
+		elif typeof(world) == TYPE_DICTIONARY and world.has("balls"):
+			for b in to_remove:
+				if world.balls.has(b):
+					world.balls.erase(b)
 
 GAME_MODES["sponsor_drop"] = SponsorDropMode.new()
 
 
 class HealingZoneMode extends GameMode:
-    var zone_x: float = 500.0
-    var zone_y: float = 500.0
-    var zone_radius: float = 50.0
-    var expand_rate: float = 10.0
-    var heal_rate: float = 20.0
-    var zone_target_x: float = 500.0
-    var zone_target_y: float = 500.0
+	var zone_x: float = 500.0
+	var zone_y: float = 500.0
+	var zone_radius: float = 50.0
+	var expand_rate: float = 10.0
+	var heal_rate: float = 20.0
+	var zone_target_x: float = 500.0
+	var zone_target_y: float = 500.0
 
-    func _init() -> void:
-        super._init()
-        name = "Healing Zone"
-        description = "A battle royale variation where instead of a shrinking danger zone, there's a slow-moving expanding healing zone. Being inside heals players but makes them more visible to enemies."
+	func _init() -> void:
+		super._init()
+		name = "Healing Zone"
+		description = "A battle royale variation where instead of a shrinking danger zone, there's a slow-moving expanding healing zone. Being inside heals players but makes them more visible to enemies."
 
-    func setup(world, balls: Array) -> void:
-        super.setup(world, balls)
-        var arena_width = 1000.0
-        var arena_height = 1000.0
-        if typeof(world) == TYPE_DICTIONARY and ("arena" in world):
-            var arena = world.get("arena")
-            if typeof(arena) == TYPE_DICTIONARY:
-                arena_width = float(arena.get("width", 1000.0))
-                arena_height = float(arena.get("height", 1000.0))
-            elif typeof(arena) == TYPE_OBJECT:
-                arena_width = float(arena.get("width") if "width" in arena else 1000.0)
-                arena_height = float(arena.get("height") if "height" in arena else 1000.0)
-        elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
-            if typeof(world.arena) == TYPE_DICTIONARY:
-                arena_width = float(world.arena.get("width", 1000.0))
-                arena_height = float(world.arena.get("height", 1000.0))
-            else:
-                arena_width = float(world.arena.get("width") if "width" in world.arena else 1000.0)
-                arena_height = float(world.arena.get("height") if "height" in world.arena else 1000.0)
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if typeof(world) == TYPE_DICTIONARY and ("arena" in world):
+			var arena = world.get("arena")
+			if typeof(arena) == TYPE_DICTIONARY:
+				arena_width = float(arena.get("width", 1000.0))
+				arena_height = float(arena.get("height", 1000.0))
+			elif typeof(arena) == TYPE_OBJECT:
+				arena_width = float(arena.get("width") if "width" in arena else 1000.0)
+				arena_height = float(arena.get("height") if "height" in arena else 1000.0)
+		elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				arena_width = float(world.arena.get("width", 1000.0))
+				arena_height = float(world.arena.get("height", 1000.0))
+			else:
+				arena_width = float(world.arena.get("width") if "width" in world.arena else 1000.0)
+				arena_height = float(world.arena.get("height") if "height" in world.arena else 1000.0)
 
-        zone_x = arena_width / 2.0
-        zone_y = arena_height / 2.0
-        zone_target_x = zone_x
-        zone_target_y = zone_y
-        zone_radius = 50.0
+		zone_x = arena_width / 2.0
+		zone_y = arena_height / 2.0
+		zone_target_x = zone_x
+		zone_target_y = zone_y
+		zone_radius = 50.0
 
-    func tick(world, balls: Array, delta: float = 0.016) -> void:
-        super.tick(world, balls, delta)
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
 
-        zone_radius += expand_rate * delta
+		zone_radius += expand_rate * delta
 
-        for b in balls:
-            if typeof(b) == TYPE_OBJECT and b.get("alive") and b.get("ball_type") != "spectator":
-                var b_x = b.get("x")
-                var b_y = b.get("y")
-                var dist_to_center = sqrt(pow(b_x - zone_x, 2) + pow(b_y - zone_y, 2))
+		for b in balls:
+			if typeof(b) == TYPE_OBJECT and b.get("alive") and b.get("ball_type") != "spectator":
+				var b_x = b.get("x")
+				var b_y = b.get("y")
+				var dist_to_center = sqrt(pow(b_x - zone_x, 2) + pow(b_y - zone_y, 2))
 
-                if dist_to_center <= zone_radius:
-                    var max_hp = float(b.get("max_hp") if b.get("max_hp") != null else 100.0)
-                    b.hp = min(float(b.get("hp")) + heal_rate * delta, max_hp)
-                    if b.has_method("set_meta"):
-                        b.set_meta("in_healing_zone", true)
-                    else:
-                        b.in_healing_zone = true
-                else:
-                    if b.has_method("set_meta"):
-                        b.set_meta("in_healing_zone", false)
-                    else:
-                        b.in_healing_zone = false
-            elif typeof(b) == TYPE_DICTIONARY and b.get("alive", false) and b.get("ball_type", "") != "spectator":
-                var b_x = float(b.get("x", 0.0))
-                var b_y = float(b.get("y", 0.0))
-                var dist_to_center = sqrt(pow(b_x - zone_x, 2) + pow(b_y - zone_y, 2))
+				if dist_to_center <= zone_radius:
+					var max_hp = float(b.get("max_hp") if b.get("max_hp") != null else 100.0)
+					b.hp = min(float(b.get("hp")) + heal_rate * delta, max_hp)
+					if b.has_method("set_meta"):
+						b.set_meta("in_healing_zone", true)
+					else:
+						b.in_healing_zone = true
+				else:
+					if b.has_method("set_meta"):
+						b.set_meta("in_healing_zone", false)
+					else:
+						b.in_healing_zone = false
+			elif typeof(b) == TYPE_DICTIONARY and b.get("alive", false) and b.get("ball_type", "") != "spectator":
+				var b_x = float(b.get("x", 0.0))
+				var b_y = float(b.get("y", 0.0))
+				var dist_to_center = sqrt(pow(b_x - zone_x, 2) + pow(b_y - zone_y, 2))
 
-                if dist_to_center <= zone_radius:
-                    var max_hp = float(b.get("max_hp", 100.0))
-                    b["hp"] = min(float(b.get("hp", 100.0)) + heal_rate * delta, max_hp)
-                    b["in_healing_zone"] = true
-                else:
-                    b["in_healing_zone"] = false
+				if dist_to_center <= zone_radius:
+					var max_hp = float(b.get("max_hp", 100.0))
+					b["hp"] = min(float(b.get("hp", 100.0)) + heal_rate * delta, max_hp)
+					b["in_healing_zone"] = true
+				else:
+					b["in_healing_zone"] = false
 
 
 class EyeOfTheStormMode extends SafeZoneMode:
-    var eye_x: float = 500.0
-    var eye_y: float = 500.0
-    var eye_target_x: float = 500.0
-    var eye_target_y: float = 500.0
-    var eye_radius: float = 100.0
-    var eye_speed: float = 100.0
-    var heal_rate: float = 50.0
+	var eye_x: float = 500.0
+	var eye_y: float = 500.0
+	var eye_target_x: float = 500.0
+	var eye_target_y: float = 500.0
+	var eye_radius: float = 100.0
+	var eye_speed: float = 100.0
+	var heal_rate: float = 50.0
 
-    func _init() -> void:
-        super._init()
-        name = "Eye of the Storm"
-        description = "The safe zone has a fast-moving 'eye'. Inside the eye, health regenerates rapidly, but the outer safe zone acts normally. This encourages high-risk fights for the very center."
+	func _init() -> void:
+		super._init()
+		name = "Eye of the Storm"
+		description = "The safe zone has a fast-moving 'eye'. Inside the eye, health regenerates rapidly, but the outer safe zone acts normally. This encourages high-risk fights for the very center."
 
-    func setup(world, balls: Array) -> void:
-        super.setup(world, balls)
-        eye_x = zone_x
-        eye_y = zone_y
-        eye_target_x = zone_x
-        eye_target_y = zone_y
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		eye_x = zone_x
+		eye_y = zone_y
+		eye_target_x = zone_x
+		eye_target_y = zone_y
 
-    func tick(world, balls: Array, delta: float = 0.016) -> void:
-        super.tick(world, balls, delta)
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
 
-        var dx = eye_target_x - eye_x
-        var dy = eye_target_y - eye_y
-        var dist = sqrt(dx*dx + dy*dy)
+		var dx = eye_target_x - eye_x
+		var dy = eye_target_y - eye_y
+		var dist = sqrt(dx*dx + dy*dy)
 
-        if dist > 5.0:
-            eye_x += (dx / dist) * eye_speed * delta
-            eye_y += (dy / dist) * eye_speed * delta
-        else:
-            var angle = randf() * PI * 2.0
-            var r = randf() * (max(0.0, zone_radius * 0.8))
-            eye_target_x = zone_x + cos(angle) * r
-            eye_target_y = zone_y + sin(angle) * r
+		if dist > 5.0:
+			eye_x += (dx / dist) * eye_speed * delta
+			eye_y += (dy / dist) * eye_speed * delta
+		else:
+			var angle = randf() * PI * 2.0
+			var r = randf() * (max(0.0, zone_radius * 0.8))
+			eye_target_x = zone_x + cos(angle) * r
+			eye_target_y = zone_y + sin(angle) * r
 
-        for b in balls:
-            if typeof(b) == TYPE_OBJECT and b.get("alive") and b.get("ball_type") != "spectator":
-                var b_x = b.get("x")
-                var b_y = b.get("y")
-                var dist_to_eye = sqrt(pow(b_x - eye_x, 2) + pow(b_y - eye_y, 2))
+		for b in balls:
+			if typeof(b) == TYPE_OBJECT and b.get("alive") and b.get("ball_type") != "spectator":
+				var b_x = b.get("x")
+				var b_y = b.get("y")
+				var dist_to_eye = sqrt(pow(b_x - eye_x, 2) + pow(b_y - eye_y, 2))
 
-                if dist_to_eye <= eye_radius:
-                    var max_hp = b.get("max_hp") if b.get("max_hp") != null else 100.0
-                    b.hp = min(b.hp + heal_rate * delta, max_hp)
-            elif typeof(b) == TYPE_DICTIONARY and b.get("alive", false) and b.get("ball_type", "") != "spectator":
-                var b_x = float(b.get("x", 0.0))
-                var b_y = float(b.get("y", 0.0))
-                var dist_to_eye = sqrt(pow(b_x - eye_x, 2) + pow(b_y - eye_y, 2))
+				if dist_to_eye <= eye_radius:
+					var max_hp = b.get("max_hp") if b.get("max_hp") != null else 100.0
+					b.hp = min(b.hp + heal_rate * delta, max_hp)
+			elif typeof(b) == TYPE_DICTIONARY and b.get("alive", false) and b.get("ball_type", "") != "spectator":
+				var b_x = float(b.get("x", 0.0))
+				var b_y = float(b.get("y", 0.0))
+				var dist_to_eye = sqrt(pow(b_x - eye_x, 2) + pow(b_y - eye_y, 2))
 
-                if dist_to_eye <= eye_radius:
-                    var max_hp = float(b.get("max_hp", 100.0))
-                    b["hp"] = min(float(b.get("hp", 100.0)) + heal_rate * delta, max_hp)
+				if dist_to_eye <= eye_radius:
+					var max_hp = float(b.get("max_hp", 100.0))
+					b["hp"] = min(float(b.get("hp", 100.0)) + heal_rate * delta, max_hp)
 
 GAME_MODES["eye_of_the_storm"] = EyeOfTheStormMode.new()
 GAME_MODES["healing_zone"] = HealingZoneMode.new()
 
 
 class FakeBall:
-    var id = 0
-    var x = 0.0
-    var y = 0.0
-    var vx = 0.0
-    var vy = 0.0
-    var radius = 15.0
-    var hp = 1.0
-    var max_hp = 1.0
-    var alive = true
-    var ball_type = "basic"
-    var team = "neutral"
-    var speed = 150.0
-    var base_speed = 150.0
-    var damage = 0.0
-    var base_damage = 0.0
-    var perception_radius = 0.0
-    var base_perception_radius = 0.0
-    var is_fake = true
-    var target_x = 0.0
-    var target_y = 0.0
-    var move_timer = 0.0
+	var id = 0
+	var x = 0.0
+	var y = 0.0
+	var vx = 0.0
+	var vy = 0.0
+	var radius = 15.0
+	var hp = 1.0
+	var max_hp = 1.0
+	var alive = true
+	var ball_type = "basic"
+	var team = "neutral"
+	var speed = 150.0
+	var base_speed = 150.0
+	var damage = 0.0
+	var base_damage = 0.0
+	var perception_radius = 0.0
+	var base_perception_radius = 0.0
+	var is_fake = true
+	var target_x = 0.0
+	var target_y = 0.0
+	var move_timer = 0.0
 
-    func _init(id_val, start_x, start_y):
-        self.id = id_val
-        self.x = start_x
-        self.y = start_y
-        self.target_x = start_x
-        self.target_y = start_y
+	func _init(id_val, start_x, start_y):
+		self.id = id_val
+		self.x = start_x
+		self.y = start_y
+		self.target_x = start_x
+		self.target_y = start_y
 
-    func update(delta, arena_width, arena_height):
-        self.move_timer -= delta
-        if self.move_timer <= 0.0:
-            self.move_timer = randf_range(1.0, 3.0)
-            self.target_x = self.x + randf_range(-200.0, 200.0)
-            self.target_y = self.y + randf_range(-200.0, 200.0)
-            self.target_x = max(15.0, min(arena_width - 15.0, self.target_x))
-            self.target_y = max(15.0, min(arena_height - 15.0, self.target_y))
+	func update(delta, arena_width, arena_height):
+		self.move_timer -= delta
+		if self.move_timer <= 0.0:
+			self.move_timer = randf_range(1.0, 3.0)
+			self.target_x = self.x + randf_range(-200.0, 200.0)
+			self.target_y = self.y + randf_range(-200.0, 200.0)
+			self.target_x = max(15.0, min(arena_width - 15.0, self.target_x))
+			self.target_y = max(15.0, min(arena_height - 15.0, self.target_y))
 
-        var dx = self.target_x - self.x
-        var dy = self.target_y - self.y
-        var dist = sqrt(dx*dx + dy*dy)
-        if dist > 5.0:
-            self.vx = (dx / dist) * self.speed
-            self.vy = (dy / dist) * self.speed
-        else:
-            self.vx = 0.0
-            self.vy = 0.0
+		var dx = self.target_x - self.x
+		var dy = self.target_y - self.y
+		var dist = sqrt(dx*dx + dy*dy)
+		if dist > 5.0:
+			self.vx = (dx / dist) * self.speed
+			self.vy = (dy / dist) * self.speed
+		else:
+			self.vx = 0.0
+			self.vy = 0.0
 
-        self.x += self.vx * delta
-        self.y += self.vy * delta
-        self.x = max(15.0, min(arena_width - 15.0, self.x))
-        self.y = max(15.0, min(arena_height - 15.0, self.y))
+		self.x += self.vx * delta
+		self.y += self.vy * delta
+		self.x = max(15.0, min(arena_width - 15.0, self.x))
+		self.y = max(15.0, min(arena_height - 15.0, self.y))
 
-    func take_damage(amount, source=null):
-        self.hp -= amount
-        if self.hp <= 0:
-            self.alive = false
+	func take_damage(amount, source=null):
+		self.hp -= amount
+		if self.hp <= 0:
+			self.alive = false
 
 
 class FakeBountyBall extends FakeBall:
-    func _init(id_val, start_x, start_y).(id_val, start_x, start_y):
-        self.is_bounty = true
-        self.is_fake_bounty = true
-        self.is_bounty_target = true
+	func _init(id_val, start_x, start_y).(id_val, start_x, start_y):
+		self.is_bounty = true
+		self.is_fake_bounty = true
+		self.is_bounty_target = true
 
 class MassDecoyEventMode extends GameMode:
-    var spawn_timer = 0.0
-    var spawn_interval = 15.0
+	var spawn_timer = 0.0
+	var spawn_interval = 15.0
 
-    func _init():
-        name = "Mass Decoy Event"
-        description = "Randomly spawns stationary decoys of every alive ball on the map that mimics their current appearance to cause confusion during team fights."
+	func _init():
+		name = "Mass Decoy Event"
+		description = "Randomly spawns stationary decoys of every alive ball on the map that mimics their current appearance to cause confusion during team fights."
 
-    func tick(world, balls, delta):
-        spawn_timer += delta
+	func tick(world, balls, delta):
+		spawn_timer += delta
 
-        if spawn_timer >= spawn_interval:
-            spawn_timer = 0.0
+		if spawn_timer >= spawn_interval:
+			spawn_timer = 0.0
 
-            if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
-                world.add_event("mass_decoy_spawn", {"message": "Mass Decoils Deployed!"})
-            elif typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
-                world.add_event.call("mass_decoy_spawn", {"message": "Mass Decoils Deployed!"})
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("mass_decoy_spawn", {"message": "Mass Decoils Deployed!"})
+			elif typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+				world.add_event.call("mass_decoy_spawn", {"message": "Mass Decoils Deployed!"})
 
-            var arena_w = 1000.0
-            var arena_h = 1000.0
-            if typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("arena"):
-                arena_w = float(world.arena.width)
-                arena_h = float(world.arena.height)
-            elif typeof(world) == TYPE_DICTIONARY and ("arena" in world):
-                arena_w = float(world.arena.width)
-                arena_h = float(world.arena.height)
+			var arena_w = 1000.0
+			var arena_h = 1000.0
+			if typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("arena"):
+				arena_w = float(world.arena.width)
+				arena_h = float(world.arena.height)
+			elif typeof(world) == TYPE_DICTIONARY and ("arena" in world):
+				arena_w = float(world.arena.width)
+				arena_h = float(world.arena.height)
 
-            var new_decoys = []
-            for b in balls:
-                var alive = false
-                if typeof(b) == TYPE_OBJECT and "alive" in b: alive = b.alive
-                elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): alive = b.alive
+			var new_decoys = []
+			for b in balls:
+				var alive = false
+				if typeof(b) == TYPE_OBJECT and "alive" in b: alive = b.alive
+				elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): alive = b.alive
 
-                var is_decoy = false
-                if typeof(b) == TYPE_OBJECT and "is_decoy" in b: is_decoy = b.is_decoy
-                elif typeof(b) == TYPE_DICTIONARY and b.has("is_decoy"): is_decoy = b.is_decoy
+				var is_decoy = false
+				if typeof(b) == TYPE_OBJECT and "is_decoy" in b: is_decoy = b.is_decoy
+				elif typeof(b) == TYPE_DICTIONARY and b.has("is_decoy"): is_decoy = b.is_decoy
 
-                var b_type = null
-                if typeof(b) == TYPE_OBJECT and "ball_type" in b: b_type = b.ball_type
-                elif typeof(b) == TYPE_DICTIONARY and b.has("ball_type"): b_type = b.ball_type
+				var b_type = null
+				if typeof(b) == TYPE_OBJECT and "ball_type" in b: b_type = b.ball_type
+				elif typeof(b) == TYPE_DICTIONARY and b.has("ball_type"): b_type = b.ball_type
 
-                if alive and not is_decoy and b_type != "spectator" and b_type != "mimic_decoy":
-                    var decoy = null
-                    if typeof(b) == TYPE_OBJECT and b.has_method("duplicate"):
-                        decoy = b.duplicate()
-                    elif typeof(b) == TYPE_DICTIONARY:
-                        decoy = b.duplicate()
+				if alive and not is_decoy and b_type != "spectator" and b_type != "mimic_decoy":
+					var decoy = null
+					if typeof(b) == TYPE_OBJECT and b.has_method("duplicate"):
+						decoy = b.duplicate()
+					elif typeof(b) == TYPE_DICTIONARY:
+						decoy = b.duplicate()
 
-                    if decoy:
-                        var new_id = randi() % 900000 + 100000
-                        if typeof(world) == TYPE_OBJECT and "next_id" in world:
-                            new_id = world.next_id
-                            world.next_id += 1
-                        elif typeof(world) == TYPE_DICTIONARY and world.has("next_id"):
-                            new_id = world["next_id"]
-                            world["next_id"] += 1
+					if decoy:
+						var new_id = randi() % 900000 + 100000
+						if typeof(world) == TYPE_OBJECT and "next_id" in world:
+							new_id = world.next_id
+							world.next_id += 1
+						elif typeof(world) == TYPE_DICTIONARY and world.has("next_id"):
+							new_id = world["next_id"]
+							world["next_id"] += 1
 
-                        if typeof(decoy) == TYPE_OBJECT:
-                            if "id" in decoy: decoy.id = new_id
-                            if "is_decoy" in decoy: decoy.is_decoy = true
-                            if "ball_type" in decoy: decoy.ball_type = "mimic_decoy"
-                            if "speed" in decoy: decoy.speed = 0.0
-                            if "damage" in decoy: decoy.damage = 0.0
-                            if decoy.has_method("set_meta"):
-                                decoy.set_meta("base_speed", 0.0)
+						if typeof(decoy) == TYPE_OBJECT:
+							if "id" in decoy: decoy.id = new_id
+							if "is_decoy" in decoy: decoy.is_decoy = true
+							if "ball_type" in decoy: decoy.ball_type = "mimic_decoy"
+							if "speed" in decoy: decoy.speed = 0.0
+							if "damage" in decoy: decoy.damage = 0.0
+							if decoy.has_method("set_meta"):
+								decoy.set_meta("base_speed", 0.0)
 
-                            var bx = 0.0
-                            var by = 0.0
-                            if "x" in b: bx = b.x
-                            if "y" in b: by = b.y
+							var bx = 0.0
+							var by = 0.0
+							if "x" in b: bx = b.x
+							if "y" in b: by = b.y
 
-                            var offset_x = randf_range(-50.0, 50.0)
-                            var offset_y = randf_range(-50.0, 50.0)
+							var offset_x = randf_range(-50.0, 50.0)
+							var offset_y = randf_range(-50.0, 50.0)
 
-                            if "x" in decoy: decoy.x = clamp(bx + offset_x, 50.0, arena_w - 50.0)
-                            if "y" in decoy: decoy.y = clamp(by + offset_y, 50.0, arena_h - 50.0)
+							if "x" in decoy: decoy.x = clamp(bx + offset_x, 50.0, arena_w - 50.0)
+							if "y" in decoy: decoy.y = clamp(by + offset_y, 50.0, arena_h - 50.0)
 
-                            new_decoys.append(decoy)
+							new_decoys.append(decoy)
 
-                        elif typeof(decoy) == TYPE_DICTIONARY:
-                            decoy["id"] = new_id
-                            decoy["is_decoy"] = true
-                            decoy["ball_type"] = "mimic_decoy"
-                            decoy["speed"] = 0.0
-                            decoy["damage"] = 0.0
-                            decoy["base_speed"] = 0.0
+						elif typeof(decoy) == TYPE_DICTIONARY:
+							decoy["id"] = new_id
+							decoy["is_decoy"] = true
+							decoy["ball_type"] = "mimic_decoy"
+							decoy["speed"] = 0.0
+							decoy["damage"] = 0.0
+							decoy["base_speed"] = 0.0
 
-                            var bx = decoy.get("x", 0.0)
-                            var by = decoy.get("y", 0.0)
-                            var offset_x = randf_range(-50.0, 50.0)
-                            var offset_y = randf_range(-50.0, 50.0)
-                            decoy["x"] = clamp(bx + offset_x, 50.0, arena_w - 50.0)
-                            decoy["y"] = clamp(by + offset_y, 50.0, arena_h - 50.0)
+							var bx = decoy.get("x", 0.0)
+							var by = decoy.get("y", 0.0)
+							var offset_x = randf_range(-50.0, 50.0)
+							var offset_y = randf_range(-50.0, 50.0)
+							decoy["x"] = clamp(bx + offset_x, 50.0, arena_w - 50.0)
+							decoy["y"] = clamp(by + offset_y, 50.0, arena_h - 50.0)
 
-                            new_decoys.append(decoy)
+							new_decoys.append(decoy)
 
-            for d in new_decoys:
-                if typeof(world) == TYPE_OBJECT and "balls" in world:
-                    world.balls.append(d)
-                elif typeof(world) == TYPE_DICTIONARY and world.has("balls"):
-                    world.balls.append(d)
+			for d in new_decoys:
+				if typeof(world) == TYPE_OBJECT and "balls" in world:
+					world.balls.append(d)
+				elif typeof(world) == TYPE_DICTIONARY and world.has("balls"):
+					world.balls.append(d)
 
 class FakeBallsMode extends GameMode:
-    var spawn_timer = 0.0
-    var spawn_interval = 10.0
+	var spawn_timer = 0.0
+	var spawn_interval = 10.0
 
-    func _init():
-        name = "Fake Balls"
-        description = "Periodically spawns harmless AI-controlled fake balls around the arena that imitate movement patterns of real players but dissipate instantly when attacked."
+	func _init():
+		name = "Fake Balls"
+		description = "Periodically spawns harmless AI-controlled fake balls around the arena that imitate movement patterns of real players but dissipate instantly when attacked."
 
-    func tick(world, balls, delta):
-        spawn_timer += delta
-        var arena_width = 1000.0
-        var arena_height = 1000.0
+	func tick(world, balls, delta):
+		spawn_timer += delta
+		var arena_width = 1000.0
+		var arena_height = 1000.0
 
-        if typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("arena"):
-            arena_width = float(world.arena.width)
-            arena_height = float(world.arena.height)
-        elif typeof(world) == TYPE_DICTIONARY and ("arena" in world):
-            arena_width = float(world.arena.width)
-            arena_height = float(world.arena.height)
+		if typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("arena"):
+			arena_width = float(world.arena.width)
+			arena_height = float(world.arena.height)
+		elif typeof(world) == TYPE_DICTIONARY and ("arena" in world):
+			arena_width = float(world.arena.width)
+			arena_height = float(world.arena.height)
 
-        if spawn_timer >= spawn_interval:
-            spawn_timer = 0.0
-            var spawn_x = randf_range(100.0, arena_width - 100.0)
-            var spawn_y = randf_range(100.0, arena_height - 100.0)
+		if spawn_timer >= spawn_interval:
+			spawn_timer = 0.0
+			var spawn_x = randf_range(100.0, arena_width - 100.0)
+			var spawn_y = randf_range(100.0, arena_height - 100.0)
 
-            var fb_id = randi() % 900000 + 100000
-            if typeof(world) == TYPE_OBJECT and "next_id" in world:
-                fb_id = world.next_id
-                world.next_id += 1
-            elif typeof(world) == TYPE_DICTIONARY and world.has("next_id"):
-                fb_id = world["next_id"]
-                world["next_id"] += 1
+			var fb_id = randi() % 900000 + 100000
+			if typeof(world) == TYPE_OBJECT and "next_id" in world:
+				fb_id = world.next_id
+				world.next_id += 1
+			elif typeof(world) == TYPE_DICTIONARY and world.has("next_id"):
+				fb_id = world["next_id"]
+				world["next_id"] += 1
 
-            var fake_ball = FakeBall.new(fb_id, spawn_x, spawn_y)
-            if typeof(world) == TYPE_OBJECT and "balls" in world:
-                world.balls.append(fake_ball)
-            elif typeof(world) == TYPE_DICTIONARY and world.has("balls"):
-                world.balls.append(fake_ball)
+			var fake_ball = FakeBall.new(fb_id, spawn_x, spawn_y)
+			if typeof(world) == TYPE_OBJECT and "balls" in world:
+				world.balls.append(fake_ball)
+			elif typeof(world) == TYPE_DICTIONARY and world.has("balls"):
+				world.balls.append(fake_ball)
 
-        var to_remove = []
-        for b in balls:
-            var is_fake = false
-            if typeof(b) == TYPE_OBJECT and "is_fake" in b:
-                is_fake = b.is_fake
-            elif typeof(b) == TYPE_DICTIONARY and b.has("is_fake"):
-                is_fake = b.is_fake
+		var to_remove = []
+		for b in balls:
+			var is_fake = false
+			if typeof(b) == TYPE_OBJECT and "is_fake" in b:
+				is_fake = b.is_fake
+			elif typeof(b) == TYPE_DICTIONARY and b.has("is_fake"):
+				is_fake = b.is_fake
 
-            if is_fake:
-                var alive = true
-                if typeof(b) == TYPE_OBJECT and "alive" in b:
-                    alive = b.alive
-                elif typeof(b) == TYPE_DICTIONARY and b.has("alive"):
-                    alive = b.alive
+			if is_fake:
+				var alive = true
+				if typeof(b) == TYPE_OBJECT and "alive" in b:
+					alive = b.alive
+				elif typeof(b) == TYPE_DICTIONARY and b.has("alive"):
+					alive = b.alive
 
-                if alive:
-                    if typeof(b) == TYPE_OBJECT and b.has_method("update"):
-                        b.update(delta, arena_width, arena_height)
-                else:
-                    to_remove.append(b)
+				if alive:
+					if typeof(b) == TYPE_OBJECT and b.has_method("update"):
+						b.update(delta, arena_width, arena_height)
+				else:
+					to_remove.append(b)
 
-        if typeof(world) == TYPE_OBJECT and "balls" in world:
-            for b in to_remove:
-                if world.balls.has(b):
-                    world.balls.erase(b)
-        elif typeof(world) == TYPE_DICTIONARY and world.has("balls"):
-            for b in to_remove:
-                if world.balls.has(b):
-                    world.balls.erase(b)
+		if typeof(world) == TYPE_OBJECT and "balls" in world:
+			for b in to_remove:
+				if world.balls.has(b):
+					world.balls.erase(b)
+		elif typeof(world) == TYPE_DICTIONARY and world.has("balls"):
+			for b in to_remove:
+				if world.balls.has(b):
+					world.balls.erase(b)
 
 GAME_MODES["fake_balls"] = FakeBallsMode.new()
 
@@ -77381,370 +77440,370 @@ GAME_MODES["invisible_gravity_wells"] = InvisibleGravityWellsMode.new()
 
 
 class IceWallsMode extends GameMode:
-    var regeneration_timer = 0.0
+	var regeneration_timer = 0.0
 
-    func _init():
-        self.name = "Ice Walls"
-        self.description = "The arena is surrounded by fragile ice walls. Hitting them at high speed shatters them, creating an abyss, but they regenerate over time."
-        self.regeneration_timer = 0.0
+	func _init():
+		self.name = "Ice Walls"
+		self.description = "The arena is surrounded by fragile ice walls. Hitting them at high speed shatters them, creating an abyss, but they regenerate over time."
+		self.regeneration_timer = 0.0
 
-    func start(world, balls):
-        if not ("arena" in world) or world.arena == null:
-            return
-        if not ("boundary_states" in world.arena):
-            world.arena.boundary_states = {}
-        if not ("boundary_health" in world.arena):
-            world.arena.boundary_health = {}
-        var walls = ["top", "bottom", "left", "right"]
-        for wall in walls:
-            world.arena.boundary_states[wall] = "ice"
-            world.arena.boundary_health[wall] = 2000.0
+	func start(world, balls):
+		if not ("arena" in world) or world.arena == null:
+			return
+		if not ("boundary_states" in world.arena):
+			world.arena.boundary_states = {}
+		if not ("boundary_health" in world.arena):
+			world.arena.boundary_health = {}
+		var walls = ["top", "bottom", "left", "right"]
+		for wall in walls:
+			world.arena.boundary_states[wall] = "ice"
+			world.arena.boundary_health[wall] = 2000.0
 
-    func tick(world, balls, delta):
-        if not ("arena" in world) or world.arena == null:
-            return
+	func tick(world, balls, delta):
+		if not ("arena" in world) or world.arena == null:
+			return
 
-        self.regeneration_timer += delta
-        if self.regeneration_timer >= 5.0:
-            self.regeneration_timer = 0.0
+		self.regeneration_timer += delta
+		if self.regeneration_timer >= 5.0:
+			self.regeneration_timer = 0.0
 
-            if "boundary_health" in world.arena and "boundary_states" in world.arena:
-                var walls = ["top", "bottom", "left", "right"]
-                for wall in walls:
-                    var current_health = 2000.0
-                    if world.arena.boundary_health.has(wall):
-                        current_health = world.arena.boundary_health[wall]
+			if "boundary_health" in world.arena and "boundary_states" in world.arena:
+				var walls = ["top", "bottom", "left", "right"]
+				for wall in walls:
+					var current_health = 2000.0
+					if world.arena.boundary_health.has(wall):
+						current_health = world.arena.boundary_health[wall]
 
-                    var current_state = "ice"
-                    if world.arena.boundary_states.has(wall):
-                        current_state = world.arena.boundary_states[wall]
+					var current_state = "ice"
+					if world.arena.boundary_states.has(wall):
+						current_state = world.arena.boundary_states[wall]
 
-                    if current_state == "ice":
-                        if current_health < 2000.0:
-                            world.arena.boundary_health[wall] = min(2000.0, current_health + 250.0)
-                    else:
-                        world.arena.boundary_states[wall] = "ice"
-                        world.arena.boundary_health[wall] = 1000.0
+					if current_state == "ice":
+						if current_health < 2000.0:
+							world.arena.boundary_health[wall] = min(2000.0, current_health + 250.0)
+					else:
+						world.arena.boundary_states[wall] = "ice"
+						world.arena.boundary_health[wall] = 1000.0
 
-                        if world.arena.has_meta("boundary_offsets"):
-                            var offsets = world.arena.get_meta("boundary_offsets")
-                            var current_offset = 0.0
-                            if offsets.has(wall):
-                                current_offset = offsets[wall]
-                            offsets[wall] = max(0.0, current_offset - 50.0)
-                            world.arena.set_meta("boundary_offsets", offsets)
+						if world.arena.has_meta("boundary_offsets"):
+							var offsets = world.arena.get_meta("boundary_offsets")
+							var current_offset = 0.0
+							if offsets.has(wall):
+								current_offset = offsets[wall]
+							offsets[wall] = max(0.0, current_offset - 50.0)
+							world.arena.set_meta("boundary_offsets", offsets)
 
 
 class LinkedPortalsMode extends GameMode:
-    var portals = []
-    var spawn_timer = 0.0
-    var spawn_interval = 5.0
+	var portals = []
+	var spawn_timer = 0.0
+	var spawn_interval = 5.0
 
-    func _init():
-        super._init()
-        name = "Linked Portals"
-        description = "Pairs of teleportation pads that can be deployed across the map. Players or hazards passing over them instantly jump to the linked pad, keeping momentum intact for creative ambushes or escapes."
+	func _init():
+		super._init()
+		name = "Linked Portals"
+		description = "Pairs of teleportation pads that can be deployed across the map. Players or hazards passing over them instantly jump to the linked pad, keeping momentum intact for creative ambushes or escapes."
 
-    func tick(world, balls, delta = 0.016):
-        super.tick(world, balls, delta)
+	func tick(world, balls, delta = 0.016):
+		super.tick(world, balls, delta)
 
-        var arena_w = 800.0
-        var arena_h = 600.0
-        if world != null:
-            if typeof(world) == TYPE_DICTIONARY and "arena" in world:
-                var arena = world.get("arena")
-                if typeof(arena) == TYPE_DICTIONARY:
-                    arena_w = arena.get("width", 800.0)
-                    arena_h = arena.get("height", 600.0)
-                elif arena != null:
-                    if "width" in arena: arena_w = arena.width
-                    if "height" in arena: arena_h = arena.height
-            elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
-                if typeof(world.arena) == TYPE_DICTIONARY:
-                    arena_w = world.arena.get("width", 800.0)
-                    arena_h = world.arena.get("height", 600.0)
-                else:
-                    if "width" in world.arena: arena_w = world.arena.width
-                    if "height" in world.arena: arena_h = world.arena.height
+		var arena_w = 800.0
+		var arena_h = 600.0
+		if world != null:
+			if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+				var arena = world.get("arena")
+				if typeof(arena) == TYPE_DICTIONARY:
+					arena_w = arena.get("width", 800.0)
+					arena_h = arena.get("height", 600.0)
+				elif arena != null:
+					if "width" in arena: arena_w = arena.width
+					if "height" in arena: arena_h = arena.height
+			elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					arena_w = world.arena.get("width", 800.0)
+					arena_h = world.arena.get("height", 600.0)
+				else:
+					if "width" in world.arena: arena_w = world.arena.width
+					if "height" in world.arena: arena_h = world.arena.height
 
-        spawn_timer += delta
-        if spawn_timer >= spawn_interval:
-            spawn_timer -= spawn_interval
-            var p_x1 = randf_range(50.0, max(50.0, arena_w - 50.0))
-            var p_y1 = randf_range(50.0, max(50.0, arena_h - 50.0))
-            var p_x2 = randf_range(50.0, max(50.0, arena_w - 50.0))
-            var p_y2 = randf_range(50.0, max(50.0, arena_h - 50.0))
-            var p1 = {
-                "x": p_x1,
-                "y": p_y1,
-                "radius": 30.0,
-                "lifetime": 10.0,
-                "cooldown": 0.0
-            }
-            var p2 = {
-                "x": p_x2,
-                "y": p_y2,
-                "radius": 30.0,
-                "lifetime": 10.0,
-                "cooldown": 0.0
-            }
-            p1["link"] = p2
-            p2["link"] = p1
-            portals.append(p1)
-            portals.append(p2)
+		spawn_timer += delta
+		if spawn_timer >= spawn_interval:
+			spawn_timer -= spawn_interval
+			var p_x1 = randf_range(50.0, max(50.0, arena_w - 50.0))
+			var p_y1 = randf_range(50.0, max(50.0, arena_h - 50.0))
+			var p_x2 = randf_range(50.0, max(50.0, arena_w - 50.0))
+			var p_y2 = randf_range(50.0, max(50.0, arena_h - 50.0))
+			var p1 = {
+				"x": p_x1,
+				"y": p_y1,
+				"radius": 30.0,
+				"lifetime": 10.0,
+				"cooldown": 0.0
+			}
+			var p2 = {
+				"x": p_x2,
+				"y": p_y2,
+				"radius": 30.0,
+				"lifetime": 10.0,
+				"cooldown": 0.0
+			}
+			p1["link"] = p2
+			p2["link"] = p1
+			portals.append(p1)
+			portals.append(p2)
 
-            if typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
-                pass
-            elif typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
-                world.add_event("portal_spawn", {"message": "A linked portal pair appeared!", "x": p_x1, "y": p_y1})
+			if typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+				pass
+			elif typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
+				world.add_event("portal_spawn", {"message": "A linked portal pair appeared!", "x": p_x1, "y": p_y1})
 
-        var active_portals = []
-        for portal in portals:
-            portal["lifetime"] -= delta
-            if portal["lifetime"] > 0:
-                active_portals.append(portal)
-        portals = active_portals
+		var active_portals = []
+		for portal in portals:
+			portal["lifetime"] -= delta
+			if portal["lifetime"] > 0:
+				active_portals.append(portal)
+		portals = active_portals
 
-        for portal in portals:
-            if portal.has("cooldown") and portal["cooldown"] > 0:
-                portal["cooldown"] -= delta
-                continue
+		for portal in portals:
+			if portal.has("cooldown") and portal["cooldown"] > 0:
+				portal["cooldown"] -= delta
+				continue
 
-            var px = portal["x"]
-            var py = portal["y"]
-            var pr = portal["radius"]
+			var px = portal["x"]
+			var py = portal["y"]
+			var pr = portal["radius"]
 
-            var teleported = false
+			var teleported = false
 
-            for b in balls:
-                var alive = false
-                var bx = 0.0
-                var by = 0.0
-                var br = 10.0
+			for b in balls:
+				var alive = false
+				var bx = 0.0
+				var by = 0.0
+				var br = 10.0
 
-                if typeof(b) == TYPE_DICTIONARY:
-                    alive = b.get("alive", false)
-                    bx = b.get("x", 0.0)
-                    by = b.get("y", 0.0)
-                    br = b.get("radius", 10.0)
-                else:
-                    if "alive" in b: alive = b.alive
-                    if "x" in b: bx = b.x
-                    if "y" in b: by = b.y
-                    if "radius" in b: br = b.radius
+				if typeof(b) == TYPE_DICTIONARY:
+					alive = b.get("alive", false)
+					bx = b.get("x", 0.0)
+					by = b.get("y", 0.0)
+					br = b.get("radius", 10.0)
+				else:
+					if "alive" in b: alive = b.alive
+					if "x" in b: bx = b.x
+					if "y" in b: by = b.y
+					if "radius" in b: br = b.radius
 
-                if alive:
-                    var dx = bx - px
-                    var dy = by - py
-                    var dist = sqrt(dx * dx + dy * dy)
-                    if dist < pr + br:
-                        var linked = portal["link"]
+				if alive:
+					var dx = bx - px
+					var dy = by - py
+					var dist = sqrt(dx * dx + dy * dy)
+					if dist < pr + br:
+						var linked = portal["link"]
 
-                        if typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
-                            world.add_event("teleport_out", {"message": "Teleported!", "x": bx, "y": by})
+						if typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
+							world.add_event("teleport_out", {"message": "Teleported!", "x": bx, "y": by})
 
-                        if typeof(b) == TYPE_DICTIONARY:
-                            b["x"] = linked["x"]
-                            b["y"] = linked["y"]
-                        else:
-                            if "x" in b: b.x = linked["x"]
-                            if "y" in b: b.y = linked["y"]
+						if typeof(b) == TYPE_DICTIONARY:
+							b["x"] = linked["x"]
+							b["y"] = linked["y"]
+						else:
+							if "x" in b: b.x = linked["x"]
+							if "y" in b: b.y = linked["y"]
 
-                        portal["cooldown"] = 0.5
-                        linked["cooldown"] = 0.5
-                        teleported = true
+						portal["cooldown"] = 0.5
+						linked["cooldown"] = 0.5
+						teleported = true
 
-                        if typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
-                            world.add_event("teleport_in", {"message": "Arrived!", "x": linked["x"], "y": linked["y"]})
-                        break
+						if typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
+							world.add_event("teleport_in", {"message": "Arrived!", "x": linked["x"], "y": linked["y"]})
+						break
 
-            if teleported:
-                continue
+			if teleported:
+				continue
 
-            # Check hazards
-            var hazards = []
-            if typeof(world) == TYPE_DICTIONARY and "arena" in world:
-                var arena = world.get("arena")
-                if typeof(arena) == TYPE_DICTIONARY and "hazards" in arena:
-                    hazards = arena.get("hazards", [])
-                elif arena != null and "hazards" in arena:
-                    hazards = arena.hazards
-            elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
-                if typeof(world.arena) == TYPE_DICTIONARY and "hazards" in world.arena:
-                    hazards = world.arena.get("hazards", [])
-                elif "hazards" in world.arena:
-                    hazards = world.arena.hazards
+			# Check hazards
+			var hazards = []
+			if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+				var arena = world.get("arena")
+				if typeof(arena) == TYPE_DICTIONARY and "hazards" in arena:
+					hazards = arena.get("hazards", [])
+				elif arena != null and "hazards" in arena:
+					hazards = arena.hazards
+			elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+				if typeof(world.arena) == TYPE_DICTIONARY and "hazards" in world.arena:
+					hazards = world.arena.get("hazards", [])
+				elif "hazards" in world.arena:
+					hazards = world.arena.hazards
 
-            for h in hazards:
-                var hx = 0.0
-                var hy = 0.0
-                var hr = 10.0
+			for h in hazards:
+				var hx = 0.0
+				var hy = 0.0
+				var hr = 10.0
 
-                if typeof(h) == TYPE_DICTIONARY:
-                    hx = h.get("x", 0.0)
-                    hy = h.get("y", 0.0)
-                    hr = h.get("radius", 10.0)
-                else:
-                    if "x" in h: hx = h.x
-                    if "y" in h: hy = h.y
-                    if "radius" in h: hr = h.radius
+				if typeof(h) == TYPE_DICTIONARY:
+					hx = h.get("x", 0.0)
+					hy = h.get("y", 0.0)
+					hr = h.get("radius", 10.0)
+				else:
+					if "x" in h: hx = h.x
+					if "y" in h: hy = h.y
+					if "radius" in h: hr = h.radius
 
-                var dx = hx - px
-                var dy = hy - py
-                var dist = sqrt(dx * dx + dy * dy)
-                if dist < pr + hr:
-                    var linked = portal["link"]
-                    if typeof(h) == TYPE_DICTIONARY:
-                        h["x"] = linked["x"]
-                        h["y"] = linked["y"]
-                    else:
-                        if "x" in h: h.x = linked["x"]
-                        if "y" in h: h.y = linked["y"]
-                    portal["cooldown"] = 0.5
-                    linked["cooldown"] = 0.5
-                    break
+				var dx = hx - px
+				var dy = hy - py
+				var dist = sqrt(dx * dx + dy * dy)
+				if dist < pr + hr:
+					var linked = portal["link"]
+					if typeof(h) == TYPE_DICTIONARY:
+						h["x"] = linked["x"]
+						h["y"] = linked["y"]
+					else:
+						if "x" in h: h.x = linked["x"]
+						if "y" in h: h.y = linked["y"]
+					portal["cooldown"] = 0.5
+					linked["cooldown"] = 0.5
+					break
 
-            var projectiles = []
-            if typeof(world) == TYPE_DICTIONARY and "projectiles" in world:
-                projectiles = world.get("projectiles", [])
-            elif typeof(world) != TYPE_DICTIONARY and "projectiles" in world and world.projectiles != null:
-                projectiles = world.projectiles
+			var projectiles = []
+			if typeof(world) == TYPE_DICTIONARY and "projectiles" in world:
+				projectiles = world.get("projectiles", [])
+			elif typeof(world) != TYPE_DICTIONARY and "projectiles" in world and world.projectiles != null:
+				projectiles = world.projectiles
 
-            for p in projectiles:
-                var is_alive = true
-                if typeof(p) == TYPE_DICTIONARY:
-                    is_alive = p.get("alive", p.get("active", true))
-                else:
-                    if "alive" in p: is_alive = p.alive
-                    elif "active" in p: is_alive = p.active
+			for p in projectiles:
+				var is_alive = true
+				if typeof(p) == TYPE_DICTIONARY:
+					is_alive = p.get("alive", p.get("active", true))
+				else:
+					if "alive" in p: is_alive = p.alive
+					elif "active" in p: is_alive = p.active
 
-                if not is_alive: continue
+				if not is_alive: continue
 
-                var px_proj = 0.0
-                var py_proj = 0.0
-                var pr_proj = 5.0
+				var px_proj = 0.0
+				var py_proj = 0.0
+				var pr_proj = 5.0
 
-                if typeof(p) == TYPE_DICTIONARY:
-                    px_proj = p.get("x", 0.0)
-                    py_proj = p.get("y", 0.0)
-                    pr_proj = p.get("radius", 5.0)
-                else:
-                    if "x" in p: px_proj = p.x
-                    if "y" in p: py_proj = p.y
-                    if "radius" in p: pr_proj = p.radius
+				if typeof(p) == TYPE_DICTIONARY:
+					px_proj = p.get("x", 0.0)
+					py_proj = p.get("y", 0.0)
+					pr_proj = p.get("radius", 5.0)
+				else:
+					if "x" in p: px_proj = p.x
+					if "y" in p: py_proj = p.y
+					if "radius" in p: pr_proj = p.radius
 
-                var dx = px_proj - px
-                var dy = py_proj - py
-                var dist = sqrt(dx * dx + dy * dy)
-                if dist < pr + pr_proj:
-                    var linked = portal["link"]
-                    if typeof(p) == TYPE_DICTIONARY:
-                        p["x"] = linked["x"]
-                        p["y"] = linked["y"]
-                    else:
-                        if "x" in p: p.x = linked["x"]
-                        if "y" in p: p.y = linked["y"]
-                    portal["cooldown"] = 0.5
-                    linked["cooldown"] = 0.5
-                    break
+				var dx = px_proj - px
+				var dy = py_proj - py
+				var dist = sqrt(dx * dx + dy * dy)
+				if dist < pr + pr_proj:
+					var linked = portal["link"]
+					if typeof(p) == TYPE_DICTIONARY:
+						p["x"] = linked["x"]
+						p["y"] = linked["y"]
+					else:
+						if "x" in p: p.x = linked["x"]
+						if "y" in p: p.y = linked["y"]
+					portal["cooldown"] = 0.5
+					linked["cooldown"] = 0.5
+					break
 
 class WeatherCombinationsMode extends GameMode:
-    var altars = []
-    var active_weathers = []
-    var combined_weather = ""
+	var altars = []
+	var active_weathers = []
+	var combined_weather = ""
 
-    func _init():
-        super._init()
-        name = "Weather Combinations"
-        description = "Capturing altars of different weather types combines their effects. E.g. Rain + Heatwave = Steam (obscures vision, drains stamina)."
+	func _init():
+		super._init()
+		name = "Weather Combinations"
+		description = "Capturing altars of different weather types combines their effects. E.g. Rain + Heatwave = Steam (obscures vision, drains stamina)."
 
-    func start(world, balls):
-        super.start(world, balls)
-        var arena_w = 1000.0
-        var arena_h = 1000.0
+	func start(world, balls):
+		super.start(world, balls)
+		var arena_w = 1000.0
+		var arena_h = 1000.0
 
-        if world != null:
-            if typeof(world) == TYPE_DICTIONARY and "arena" in world:
-                var arena = world.get("arena")
-                if typeof(arena) == TYPE_DICTIONARY:
-                    arena_w = arena.get("width", 1000.0)
-                    arena_h = arena.get("height", 1000.0)
-                elif arena != null:
-                    if "width" in arena: arena_w = arena.width
-                    if "height" in arena: arena_h = arena.height
-            elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
-                if typeof(world.arena) == TYPE_DICTIONARY:
-                    arena_w = world.arena.get("width", 1000.0)
-                    arena_h = world.arena.get("height", 1000.0)
-                else:
-                    if "width" in world.arena: arena_w = world.arena.width
-                    if "height" in world.arena: arena_h = world.arena.height
+		if world != null:
+			if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+				var arena = world.get("arena")
+				if typeof(arena) == TYPE_DICTIONARY:
+					arena_w = arena.get("width", 1000.0)
+					arena_h = arena.get("height", 1000.0)
+				elif arena != null:
+					if "width" in arena: arena_w = arena.width
+					if "height" in arena: arena_h = arena.height
+			elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					arena_w = world.arena.get("width", 1000.0)
+					arena_h = world.arena.get("height", 1000.0)
+				else:
+					if "width" in world.arena: arena_w = world.arena.width
+					if "height" in world.arena: arena_h = world.arena.height
 
-        altars = [
-            {"x": arena_w * 0.25, "y": arena_h * 0.25, "radius": 150.0, "capture_progress": 0.0, "weather": "rain", "owner": null},
-            {"x": arena_w * 0.75, "y": arena_h * 0.75, "radius": 150.0, "capture_progress": 0.0, "weather": "heatwave", "owner": null}
-        ]
+		altars = [
+			{"x": arena_w * 0.25, "y": arena_h * 0.25, "radius": 150.0, "capture_progress": 0.0, "weather": "rain", "owner": null},
+			{"x": arena_w * 0.75, "y": arena_h * 0.75, "radius": 150.0, "capture_progress": 0.0, "weather": "heatwave", "owner": null}
+		]
 
-        active_weathers = []
-        combined_weather = ""
+		active_weathers = []
+		combined_weather = ""
 
-        for b in balls:
-            if typeof(b) == TYPE_DICTIONARY:
-                if b.get("ball_type") != "spectator":
-                    if not b.has("base_speed"):
-                        b["base_speed"] = b.get("speed", 100.0)
-                    if not b.has("stamina"):
-                        b["stamina"] = 100.0
-                        b["max_stamina"] = 100.0
-            else:
-                var b_type = null
-                if "ball_type" in b: b_type = b.ball_type
-                if b_type != "spectator":
-                    if not b.has_meta("base_speed"):
-                        var spd = 100.0
-                        if "speed" in b: spd = b.speed
-                        b.set_meta("base_speed", spd)
-                    if not b.has_meta("stamina"):
-                        b.set_meta("stamina", 100.0)
-                        b.set_meta("max_stamina", 100.0)
+		for b in balls:
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.get("ball_type") != "spectator":
+					if not b.has("base_speed"):
+						b["base_speed"] = b.get("speed", 100.0)
+					if not b.has("stamina"):
+						b["stamina"] = 100.0
+						b["max_stamina"] = 100.0
+			else:
+				var b_type = null
+				if "ball_type" in b: b_type = b.ball_type
+				if b_type != "spectator":
+					if not b.has_meta("base_speed"):
+						var spd = 100.0
+						if "speed" in b: spd = b.speed
+						b.set_meta("base_speed", spd)
+					if not b.has_meta("stamina"):
+						b.set_meta("stamina", 100.0)
+						b.set_meta("max_stamina", 100.0)
 
-    func tick(world, balls, delta = 0.016):
-        super.tick(world, balls, delta)
+	func tick(world, balls, delta = 0.016):
+		super.tick(world, balls, delta)
 
-        var current_weathers = []
+		var current_weathers = []
 
-        for altar in altars:
-            var teams_present = {}
-            for b in balls:
-                var alive = false
-                var b_type = null
-                var bx = 0.0
-                var by = 0.0
-                var b_team = "unknown"
+		for altar in altars:
+			var teams_present = {}
+			for b in balls:
+				var alive = false
+				var b_type = null
+				var bx = 0.0
+				var by = 0.0
+				var b_team = "unknown"
 
-                if typeof(b) == TYPE_DICTIONARY:
-                    alive = b.get("alive", false)
-                    b_type = b.get("ball_type", null)
-                    bx = b.get("x", 0.0)
-                    by = b.get("y", 0.0)
-                    b_team = b.get("team", b.get("ball_type", "unknown"))
-                else:
-                    if "alive" in b: alive = b.alive
-                    if "ball_type" in b: b_type = b.ball_type
-                    if "x" in b: bx = b.x
-                    if "y" in b: by = b.y
-                    if "team" in b:
-                        b_team = b.team
-                    elif "ball_type" in b:
-                        b_team = b.ball_type
+				if typeof(b) == TYPE_DICTIONARY:
+					alive = b.get("alive", false)
+					b_type = b.get("ball_type", null)
+					bx = b.get("x", 0.0)
+					by = b.get("y", 0.0)
+					b_team = b.get("team", b.get("ball_type", "unknown"))
+				else:
+					if "alive" in b: alive = b.alive
+					if "ball_type" in b: b_type = b.ball_type
+					if "x" in b: bx = b.x
+					if "y" in b: by = b.y
+					if "team" in b:
+						b_team = b.team
+					elif "ball_type" in b:
+						b_team = b.ball_type
 
-                if alive and b_type != "spectator":
-                    var dist_sq = (bx - altar["x"])*(bx - altar["x"]) + (by - altar["y"])*(by - altar["y"])
-                    if dist_sq <= altar["radius"]*altar["radius"]:
-                        if teams_present.has(b_team):
-                            teams_present[b_team] += 1
-                        else:
-                            teams_present[b_team] = 1
+				if alive and b_type != "spectator":
+					var dist_sq = (bx - altar["x"])*(bx - altar["x"]) + (by - altar["y"])*(by - altar["y"])
+					if dist_sq <= altar["radius"]*altar["radius"]:
+						if teams_present.has(b_team):
+							teams_present[b_team] += 1
+						else:
+							teams_present[b_team] = 1
 						var inv = []
 						if typeof(b) == TYPE_DICTIONARY and b.has("inventory"):
 							inv = b.inventory
@@ -77770,120 +77829,120 @@ class WeatherCombinationsMode extends GameMode:
 							elif typeof(b) != TYPE_DICTIONARY and "hp" in b:
 								b.hp = cur_hp
 
-            if teams_present.size() > 0:
-                var max_team = null
-                var max_val = -1
-                for t in teams_present.keys():
-                    if teams_present[t] > max_val:
-                        max_val = teams_present[t]
-                        max_team = t
+			if teams_present.size() > 0:
+				var max_team = null
+				var max_val = -1
+				for t in teams_present.keys():
+					if teams_present[t] > max_val:
+						max_val = teams_present[t]
+						max_team = t
 
-                var is_tie = false
-                var count = 0
-                for t in teams_present.keys():
-                    if teams_present[t] == max_val:
-                        count += 1
-                if count > 1:
-                    is_tie = true
+				var is_tie = false
+				var count = 0
+				for t in teams_present.keys():
+					if teams_present[t] == max_val:
+						count += 1
+				if count > 1:
+					is_tie = true
 
-                if not is_tie:
-                    if altar["owner"] == max_team:
-                        if altar["capture_progress"] < 100.0:
-                            altar["capture_progress"] = min(100.0, altar["capture_progress"] + 20.0 * delta)
-                    else:
-                        altar["capture_progress"] -= 20.0 * delta
-                        if altar["capture_progress"] <= 0:
-                            altar["owner"] = max_team
-                            altar["capture_progress"] = 0.0
-            else:
-                altar["capture_progress"] = max(0.0, altar["capture_progress"] - 10.0 * delta)
-                if altar["capture_progress"] == 0.0:
-                    altar["owner"] = null
+				if not is_tie:
+					if altar["owner"] == max_team:
+						if altar["capture_progress"] < 100.0:
+							altar["capture_progress"] = min(100.0, altar["capture_progress"] + 20.0 * delta)
+					else:
+						altar["capture_progress"] -= 20.0 * delta
+						if altar["capture_progress"] <= 0:
+							altar["owner"] = max_team
+							altar["capture_progress"] = 0.0
+			else:
+				altar["capture_progress"] = max(0.0, altar["capture_progress"] - 10.0 * delta)
+				if altar["capture_progress"] == 0.0:
+					altar["owner"] = null
 
-            if altar["capture_progress"] >= 100.0:
-                if not current_weathers.has(altar["weather"]):
-                    current_weathers.append(altar["weather"])
+			if altar["capture_progress"] >= 100.0:
+				if not current_weathers.has(altar["weather"]):
+					current_weathers.append(altar["weather"])
 
-        var weathers_changed = false
-        if current_weathers.size() != active_weathers.size():
-            weathers_changed = true
-        else:
-            for w in current_weathers:
-                if not active_weathers.has(w):
-                    weathers_changed = true
-                    break
+		var weathers_changed = false
+		if current_weathers.size() != active_weathers.size():
+			weathers_changed = true
+		else:
+			for w in current_weathers:
+				if not active_weathers.has(w):
+					weathers_changed = true
+					break
 
-        if weathers_changed:
-            active_weathers = current_weathers
+		if weathers_changed:
+			active_weathers = current_weathers
 
-            if active_weathers.has("rain") and active_weathers.has("heatwave"):
-                combined_weather = "steam"
-                if typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
-                    world.add_event("weather_change", {"weather": "steam", "message": "Steam obscures the arena!"})
-            else:
-                combined_weather = ""
+			if active_weathers.has("rain") and active_weathers.has("heatwave"):
+				combined_weather = "steam"
+				if typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
+					world.add_event("weather_change", {"weather": "steam", "message": "Steam obscures the arena!"})
+			else:
+				combined_weather = ""
 
-        for b in balls:
-            var alive = false
-            if typeof(b) == TYPE_DICTIONARY:
-                alive = b.get("alive", false)
-            else:
-                if "alive" in b: alive = b.alive
+		for b in balls:
+			var alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				alive = b.get("alive", false)
+			else:
+				if "alive" in b: alive = b.alive
 
-            if not alive:
-                continue
+			if not alive:
+				continue
 
-            if typeof(b) == TYPE_DICTIONARY:
-                if not b.has("stamina"):
-                    b["stamina"] = 100.0
-                    b["max_stamina"] = 100.0
+			if typeof(b) == TYPE_DICTIONARY:
+				if not b.has("stamina"):
+					b["stamina"] = 100.0
+					b["max_stamina"] = 100.0
 
-                var base_speed = b.get("base_speed", 100.0)
+				var base_speed = b.get("base_speed", 100.0)
 
-                if combined_weather == "steam":
-                    b["stamina"] = max(0.0, b["stamina"] - 5.0 * delta)
-                    if b["stamina"] <= 0.0:
-                        b["speed"] = base_speed * 0.5
-                    else:
-                        b["speed"] = base_speed * 0.8
-                else:
-                    b["stamina"] = min(b["max_stamina"], b["stamina"] + 10.0 * delta)
-                    if active_weathers.has("heatwave") and not active_weathers.has("rain"):
-                        b["speed"] = base_speed * 1.2
-                    elif active_weathers.has("rain") and not active_weathers.has("heatwave"):
-                        b["speed"] = base_speed * 0.9
-                    else:
-                        b["speed"] = base_speed
-            else:
-                if not b.has_meta("stamina"):
-                    b.set_meta("stamina", 100.0)
-                    b.set_meta("max_stamina", 100.0)
+				if combined_weather == "steam":
+					b["stamina"] = max(0.0, b["stamina"] - 5.0 * delta)
+					if b["stamina"] <= 0.0:
+						b["speed"] = base_speed * 0.5
+					else:
+						b["speed"] = base_speed * 0.8
+				else:
+					b["stamina"] = min(b["max_stamina"], b["stamina"] + 10.0 * delta)
+					if active_weathers.has("heatwave") and not active_weathers.has("rain"):
+						b["speed"] = base_speed * 1.2
+					elif active_weathers.has("rain") and not active_weathers.has("heatwave"):
+						b["speed"] = base_speed * 0.9
+					else:
+						b["speed"] = base_speed
+			else:
+				if not b.has_meta("stamina"):
+					b.set_meta("stamina", 100.0)
+					b.set_meta("max_stamina", 100.0)
 
-                var base_speed = 100.0
-                if b.has_meta("base_speed"):
-                    base_speed = b.get_meta("base_speed")
-                elif "speed" in b:
-                    base_speed = b.speed
+				var base_speed = 100.0
+				if b.has_meta("base_speed"):
+					base_speed = b.get_meta("base_speed")
+				elif "speed" in b:
+					base_speed = b.speed
 
-                var stam = b.get_meta("stamina")
-                var max_stam = b.get_meta("max_stamina")
+				var stam = b.get_meta("stamina")
+				var max_stam = b.get_meta("max_stamina")
 
-                if combined_weather == "steam":
-                    stam = max(0.0, stam - 5.0 * delta)
-                    b.set_meta("stamina", stam)
-                    if stam <= 0.0:
-                        if "speed" in b: b.speed = base_speed * 0.5
-                    else:
-                        if "speed" in b: b.speed = base_speed * 0.8
-                else:
-                    stam = min(max_stam, stam + 10.0 * delta)
-                    b.set_meta("stamina", stam)
-                    if active_weathers.has("heatwave") and not active_weathers.has("rain"):
-                        if "speed" in b: b.speed = base_speed * 1.2
-                    elif active_weathers.has("rain") and not active_weathers.has("heatwave"):
-                        if "speed" in b: b.speed = base_speed * 0.9
-                    else:
-                        if "speed" in b: b.speed = base_speed
+				if combined_weather == "steam":
+					stam = max(0.0, stam - 5.0 * delta)
+					b.set_meta("stamina", stam)
+					if stam <= 0.0:
+						if "speed" in b: b.speed = base_speed * 0.5
+					else:
+						if "speed" in b: b.speed = base_speed * 0.8
+				else:
+					stam = min(max_stam, stam + 10.0 * delta)
+					b.set_meta("stamina", stam)
+					if active_weathers.has("heatwave") and not active_weathers.has("rain"):
+						if "speed" in b: b.speed = base_speed * 1.2
+					elif active_weathers.has("rain") and not active_weathers.has("heatwave"):
+						if "speed" in b: b.speed = base_speed * 0.9
+					else:
+						if "speed" in b: b.speed = base_speed
 
 GAME_MODES["mass_decoy_event"] = MassDecoyEventMode.new()
 GAME_MODES["ice_walls"] = IceWallsMode.new()
@@ -78367,181 +78426,181 @@ class QuadrantRoyaleMode extends GameMode:
 							if hp <= 0.0: b.set("alive", false)
 
 class GravityShiftMode extends GameMode:
-    var shift_timer = 0.0
-    var shift_duration = 0.0
-    var shift_type = ""
-    var shift_point = Vector2(0.0, 0.0)
-    var shift_strength = 200.0
-    var anchor_duration = 5.0
-    var anchors = []
-    var random = RandomNumberGenerator.new()
+	var shift_timer = 0.0
+	var shift_duration = 0.0
+	var shift_type = ""
+	var shift_point = Vector2(0.0, 0.0)
+	var shift_strength = 200.0
+	var anchor_duration = 5.0
+	var anchors = []
+	var random = RandomNumberGenerator.new()
 
-    func _init():
-        id = "Gravity Shift"
-        name = "Gravity Shift"
-        description = "Gravity occasionally shifts, pulling balls towards the edges or a random point. High prestige players can deploy anchors."
+	func _init():
+		id = "Gravity Shift"
+		name = "Gravity Shift"
+		description = "Gravity occasionally shifts, pulling balls towards the edges or a random point. High prestige players can deploy anchors."
 
-    func setup(world, balls):
-        super.setup(world, balls)
-        random.randomize()
-        shift_timer = random.randf_range(5.0, 15.0)
+	func setup(world, balls):
+		super.setup(world, balls)
+		random.randomize()
+		shift_timer = random.randf_range(5.0, 15.0)
 
-    func tick(world, balls, delta):
-        super.tick(world, balls, delta)
+	func tick(world, balls, delta):
+		super.tick(world, balls, delta)
 
-        # Manage anchors
-        var new_anchors = []
-        for anchor in anchors:
-            anchor["timer"] -= delta
-            if anchor["timer"] > 0:
-                new_anchors.append(anchor)
-        anchors = new_anchors
+		# Manage anchors
+		var new_anchors = []
+		for anchor in anchors:
+			anchor["timer"] -= delta
+			if anchor["timer"] > 0:
+				new_anchors.append(anchor)
+		anchors = new_anchors
 
-        if shift_duration > 0:
-            shift_duration -= delta
+		if shift_duration > 0:
+			shift_duration -= delta
 
-            for b in balls:
-                var is_alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else b.get_meta("alive") if b.has_meta("alive") else true
-                var is_active = b.get("active") if typeof(b) == TYPE_DICTIONARY else b.get_meta("active") if b.has_meta("active") else true
-                if not is_alive or not is_active:
-                    continue
+			for b in balls:
+				var is_alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else b.get_meta("alive") if b.has_meta("alive") else true
+				var is_active = b.get("active") if typeof(b) == TYPE_DICTIONARY else b.get_meta("active") if b.has_meta("active") else true
+				if not is_alive or not is_active:
+					continue
 
-                var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get_meta("ball_type") if b.has_meta("ball_type") else ""
-                if b_type == "spectator":
-                    continue
+				var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get_meta("ball_type") if b.has_meta("ball_type") else ""
+				if b_type == "spectator":
+					continue
 
-                var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.get_meta("id") if b.has_meta("id") else null
+				var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.get_meta("id") if b.has_meta("id") else null
 
-                # Check for anchor
-                var is_anchored = false
-                for anchor in anchors:
-                    if anchor["owner_id"] == b_id:
-                        is_anchored = true
-                        break
+				# Check for anchor
+				var is_anchored = false
+				for anchor in anchors:
+					if anchor["owner_id"] == b_id:
+						is_anchored = true
+						break
 
-                if is_anchored:
-                    continue
+				if is_anchored:
+					continue
 
-                var b_x = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.get_meta("x") if b.has_meta("x") else 0.0
-                var b_y = b.get("y") if typeof(b) == TYPE_DICTIONARY else b.get_meta("y") if b.has_meta("y") else 0.0
+				var b_x = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.get_meta("x") if b.has_meta("x") else 0.0
+				var b_y = b.get("y") if typeof(b) == TYPE_DICTIONARY else b.get_meta("y") if b.has_meta("y") else 0.0
 
-                # Apply gravity
-                if shift_type == "point":
-                    var dx = shift_point.x - b_x
-                    var dy = shift_point.y - b_y
-                    var dist = sqrt(dx*dx + dy*dy)
-                    if dist > 0:
-                        var vx = b.get("vx") if typeof(b) == TYPE_DICTIONARY else b.get_meta("vx") if b.has_meta("vx") else 0.0
-                        var vy = b.get("vy") if typeof(b) == TYPE_DICTIONARY else b.get_meta("vy") if b.has_meta("vy") else 0.0
-                        var in_rev = false
-                        if typeof(b) == TYPE_DICTIONARY and "in_reverse_physics_zone" in b:
-                            in_rev = b.in_reverse_physics_zone
-                        elif typeof(b) == TYPE_OBJECT and b.has_meta("in_reverse_physics_zone"):
-                            in_rev = b.get_meta("in_reverse_physics_zone")
-                        var gravity_mult = -1.0 if in_rev else 1.0
-                        vx += (dx/dist) * shift_strength * delta * gravity_mult
-                        vy += (dy/dist) * shift_strength * delta * gravity_mult
-                        if typeof(b) == TYPE_DICTIONARY:
-                            b["vx"] = vx
-                            b["vy"] = vy
-                        else:
-                            b.set_meta("vx", vx)
-                            b.set_meta("vy", vy)
-                elif shift_type == "edges":
-                    var dist = sqrt(b_x*b_x + b_y*b_y)
-                    if dist > 0:
-                        var vx = b.get("vx") if typeof(b) == TYPE_DICTIONARY else b.get_meta("vx") if b.has_meta("vx") else 0.0
-                        var vy = b.get("vy") if typeof(b) == TYPE_DICTIONARY else b.get_meta("vy") if b.has_meta("vy") else 0.0
-                        var in_rev = false
-                        if typeof(b) == TYPE_DICTIONARY and "in_reverse_physics_zone" in b:
-                            in_rev = b.in_reverse_physics_zone
-                        elif typeof(b) == TYPE_OBJECT and b.has_meta("in_reverse_physics_zone"):
-                            in_rev = b.get_meta("in_reverse_physics_zone")
-                        var gravity_mult = -1.0 if in_rev else 1.0
-                        vx += (b_x/dist) * shift_strength * delta * gravity_mult
-                        vy += (b_y/dist) * shift_strength * delta * gravity_mult
-                        if typeof(b) == TYPE_DICTIONARY:
-                            b["vx"] = vx
-                            b["vy"] = vy
-                        else:
-                            b.set_meta("vx", vx)
-                            b.set_meta("vy", vy)
-        else:
-            shift_timer -= delta
-            if shift_timer <= 0:
-                shift_duration = random.randf_range(3.0, 8.0)
-                shift_timer = random.randf_range(10.0, 20.0)
-                var choices = ["point", "edges"]
-                shift_type = choices[random.randi() % choices.size()]
-                if shift_type == "point":
-                    shift_point = Vector2(random.randf_range(-200.0, 200.0), random.randf_range(-200.0, 200.0))
+				# Apply gravity
+				if shift_type == "point":
+					var dx = shift_point.x - b_x
+					var dy = shift_point.y - b_y
+					var dist = sqrt(dx*dx + dy*dy)
+					if dist > 0:
+						var vx = b.get("vx") if typeof(b) == TYPE_DICTIONARY else b.get_meta("vx") if b.has_meta("vx") else 0.0
+						var vy = b.get("vy") if typeof(b) == TYPE_DICTIONARY else b.get_meta("vy") if b.has_meta("vy") else 0.0
+						var in_rev = false
+						if typeof(b) == TYPE_DICTIONARY and "in_reverse_physics_zone" in b:
+							in_rev = b.in_reverse_physics_zone
+						elif typeof(b) == TYPE_OBJECT and b.has_meta("in_reverse_physics_zone"):
+							in_rev = b.get_meta("in_reverse_physics_zone")
+						var gravity_mult = -1.0 if in_rev else 1.0
+						vx += (dx/dist) * shift_strength * delta * gravity_mult
+						vy += (dy/dist) * shift_strength * delta * gravity_mult
+						if typeof(b) == TYPE_DICTIONARY:
+							b["vx"] = vx
+							b["vy"] = vy
+						else:
+							b.set_meta("vx", vx)
+							b.set_meta("vy", vy)
+				elif shift_type == "edges":
+					var dist = sqrt(b_x*b_x + b_y*b_y)
+					if dist > 0:
+						var vx = b.get("vx") if typeof(b) == TYPE_DICTIONARY else b.get_meta("vx") if b.has_meta("vx") else 0.0
+						var vy = b.get("vy") if typeof(b) == TYPE_DICTIONARY else b.get_meta("vy") if b.has_meta("vy") else 0.0
+						var in_rev = false
+						if typeof(b) == TYPE_DICTIONARY and "in_reverse_physics_zone" in b:
+							in_rev = b.in_reverse_physics_zone
+						elif typeof(b) == TYPE_OBJECT and b.has_meta("in_reverse_physics_zone"):
+							in_rev = b.get_meta("in_reverse_physics_zone")
+						var gravity_mult = -1.0 if in_rev else 1.0
+						vx += (b_x/dist) * shift_strength * delta * gravity_mult
+						vy += (b_y/dist) * shift_strength * delta * gravity_mult
+						if typeof(b) == TYPE_DICTIONARY:
+							b["vx"] = vx
+							b["vy"] = vy
+						else:
+							b.set_meta("vx", vx)
+							b.set_meta("vy", vy)
+		else:
+			shift_timer -= delta
+			if shift_timer <= 0:
+				shift_duration = random.randf_range(3.0, 8.0)
+				shift_timer = random.randf_range(10.0, 20.0)
+				var choices = ["point", "edges"]
+				shift_type = choices[random.randi() % choices.size()]
+				if shift_type == "point":
+					shift_point = Vector2(random.randf_range(-200.0, 200.0), random.randf_range(-200.0, 200.0))
 
-                var world_has_event = false
-                if typeof(world) == TYPE_DICTIONARY:
-                    if world.has("add_event"):
-                        world_has_event = true
-                else:
-                    if world.has_method("add_event"):
-                        world_has_event = true
+				var world_has_event = false
+				if typeof(world) == TYPE_DICTIONARY:
+					if world.has("add_event"):
+						world_has_event = true
+				else:
+					if world.has_method("add_event"):
+						world_has_event = true
 
-                if world_has_event:
-                    var event_data = {"type": shift_type, "duration": shift_duration}
-                    if typeof(world) == TYPE_DICTIONARY:
-                        world["add_event"].call("gravity_shift", event_data)
-                    else:
-                        world.add_event("gravity_shift", event_data)
+				if world_has_event:
+					var event_data = {"type": shift_type, "duration": shift_duration}
+					if typeof(world) == TYPE_DICTIONARY:
+						world["add_event"].call("gravity_shift", event_data)
+					else:
+						world.add_event("gravity_shift", event_data)
 
-        # Player input for anchor
-        for b in balls:
-            var is_alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else b.get_meta("alive") if b.has_meta("alive") else true
-            var is_active = b.get("active") if typeof(b) == TYPE_DICTIONARY else b.get_meta("active") if b.has_meta("active") else true
-            if not is_alive or not is_active:
-                continue
+		# Player input for anchor
+		for b in balls:
+			var is_alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else b.get_meta("alive") if b.has_meta("alive") else true
+			var is_active = b.get("active") if typeof(b) == TYPE_DICTIONARY else b.get_meta("active") if b.has_meta("active") else true
+			if not is_alive or not is_active:
+				continue
 
-            var prestige = b.get("prestige") if typeof(b) == TYPE_DICTIONARY else b.get_meta("prestige") if b.has_meta("prestige") else 0
-            var deploy_anchor = b.get("action_deploy_anchor") if typeof(b) == TYPE_DICTIONARY else b.get_meta("action_deploy_anchor") if b.has_meta("action_deploy_anchor") else false
+			var prestige = b.get("prestige") if typeof(b) == TYPE_DICTIONARY else b.get_meta("prestige") if b.has_meta("prestige") else 0
+			var deploy_anchor = b.get("action_deploy_anchor") if typeof(b) == TYPE_DICTIONARY else b.get_meta("action_deploy_anchor") if b.has_meta("action_deploy_anchor") else false
 
-            if prestige >= 3 and deploy_anchor:
-                if typeof(b) == TYPE_DICTIONARY:
-                    b["action_deploy_anchor"] = false
-                else:
-                    b.set_meta("action_deploy_anchor", false)
+			if prestige >= 3 and deploy_anchor:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["action_deploy_anchor"] = false
+				else:
+					b.set_meta("action_deploy_anchor", false)
 
-                var cooldown = b.get("anchor_cooldown") if typeof(b) == TYPE_DICTIONARY else b.get_meta("anchor_cooldown") if b.has_meta("anchor_cooldown") else 0.0
+				var cooldown = b.get("anchor_cooldown") if typeof(b) == TYPE_DICTIONARY else b.get_meta("anchor_cooldown") if b.has_meta("anchor_cooldown") else 0.0
 
-                if cooldown <= 0:
-                    if typeof(b) == TYPE_DICTIONARY:
-                        b["anchor_cooldown"] = 15.0
-                    else:
-                        b.set_meta("anchor_cooldown", 15.0)
+				if cooldown <= 0:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["anchor_cooldown"] = 15.0
+					else:
+						b.set_meta("anchor_cooldown", 15.0)
 
-                    var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.get_meta("id") if b.has_meta("id") else null
-                    var b_x = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.get_meta("x") if b.has_meta("x") else 0.0
-                    var b_y = b.get("y") if typeof(b) == TYPE_DICTIONARY else b.get_meta("y") if b.has_meta("y") else 0.0
+					var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.get_meta("id") if b.has_meta("id") else null
+					var b_x = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.get_meta("x") if b.has_meta("x") else 0.0
+					var b_y = b.get("y") if typeof(b) == TYPE_DICTIONARY else b.get_meta("y") if b.has_meta("y") else 0.0
 
-                    anchors.append({"owner_id": b_id, "x": b_x, "y": b_y, "timer": anchor_duration})
+					anchors.append({"owner_id": b_id, "x": b_x, "y": b_y, "timer": anchor_duration})
 
-                    var world_has_event = false
-                    if typeof(world) == TYPE_DICTIONARY:
-                        if world.has("add_event"):
-                            world_has_event = true
-                    else:
-                        if world.has_method("add_event"):
-                            world_has_event = true
+					var world_has_event = false
+					if typeof(world) == TYPE_DICTIONARY:
+						if world.has("add_event"):
+							world_has_event = true
+					else:
+						if world.has_method("add_event"):
+							world_has_event = true
 
-                    if world_has_event:
-                        var event_data = {"owner": b_id}
-                        if typeof(world) == TYPE_DICTIONARY:
-                            world["add_event"].call("anchor_deployed", event_data)
-                        else:
-                            world.add_event("anchor_deployed", event_data)
+					if world_has_event:
+						var event_data = {"owner": b_id}
+						if typeof(world) == TYPE_DICTIONARY:
+							world["add_event"].call("anchor_deployed", event_data)
+						else:
+							world.add_event("anchor_deployed", event_data)
 
-            var cooldown = b.get("anchor_cooldown") if typeof(b) == TYPE_DICTIONARY else b.get_meta("anchor_cooldown") if b.has_meta("anchor_cooldown") else null
-            if cooldown != null:
-                if typeof(b) == TYPE_DICTIONARY:
-                    b["anchor_cooldown"] = max(0.0, cooldown - delta)
-                else:
-                    b.set_meta("anchor_cooldown", max(0.0, cooldown - delta))
+			var cooldown = b.get("anchor_cooldown") if typeof(b) == TYPE_DICTIONARY else b.get_meta("anchor_cooldown") if b.has_meta("anchor_cooldown") else null
+			if cooldown != null:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["anchor_cooldown"] = max(0.0, cooldown - delta)
+				else:
+					b.set_meta("anchor_cooldown", max(0.0, cooldown - delta))
 
 
 class TricksterEventMode extends GameMode:
@@ -81113,95 +81172,95 @@ class TelegraphedSupplyDropMode extends GameMode:
 
 
 class GravityInversionMode extends GameMode:
-    var inversion_timer = 0.0
-    var inversion_duration = 0.0
-    var inversion_strength = 300.0
-    var random = RandomNumberGenerator.new()
+	var inversion_timer = 0.0
+	var inversion_duration = 0.0
+	var inversion_strength = 300.0
+	var random = RandomNumberGenerator.new()
 
-    func _init():
-        id = "Gravity Inversion"
-        name = "Gravity Inversion"
-        description = "Periodically, gravity flips, pulling players to the walls instead of the ground or sending them flying."
+	func _init():
+		id = "Gravity Inversion"
+		name = "Gravity Inversion"
+		description = "Periodically, gravity flips, pulling players to the walls instead of the ground or sending them flying."
 
-    func setup(world, balls):
-        super.setup(world, balls)
-        random.randomize()
-        inversion_timer = random.randf_range(10.0, 20.0)
+	func setup(world, balls):
+		super.setup(world, balls)
+		random.randomize()
+		inversion_timer = random.randf_range(10.0, 20.0)
 
-    func tick(world, balls, delta):
-        super.tick(world, balls, delta)
+	func tick(world, balls, delta):
+		super.tick(world, balls, delta)
 
-        if inversion_duration > 0:
-            inversion_duration -= delta
+		if inversion_duration > 0:
+			inversion_duration -= delta
 
-            for b in balls:
-                var is_alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else b.get_meta("alive") if b.has_meta("alive") else true
-                var is_active = b.get("active") if typeof(b) == TYPE_DICTIONARY else b.get_meta("active") if b.has_meta("active") else true
-                if not is_alive or not is_active:
-                    continue
+			for b in balls:
+				var is_alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else b.get_meta("alive") if b.has_meta("alive") else true
+				var is_active = b.get("active") if typeof(b) == TYPE_DICTIONARY else b.get_meta("active") if b.has_meta("active") else true
+				if not is_alive or not is_active:
+					continue
 
-                var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get_meta("ball_type") if b.has_meta("ball_type") else ""
-                if b_type == "spectator":
-                    continue
+				var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get_meta("ball_type") if b.has_meta("ball_type") else ""
+				if b_type == "spectator":
+					continue
 
-                var b_x = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.get_meta("x") if b.has_meta("x") else 0.0
-                var b_y = b.get("y") if typeof(b) == TYPE_DICTIONARY else b.get_meta("y") if b.has_meta("y") else 0.0
+				var b_x = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.get_meta("x") if b.has_meta("x") else 0.0
+				var b_y = b.get("y") if typeof(b) == TYPE_DICTIONARY else b.get_meta("y") if b.has_meta("y") else 0.0
 
-                var arena_width = 1000.0
-                var arena_height = 1000.0
-                if typeof(world) == TYPE_DICTIONARY:
-                    if world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY:
-                        arena_width = world.arena.get("width", 1000.0)
-                        arena_height = world.arena.get("height", 1000.0)
-                else:
-                    if "arena" in world and world.arena != null:
-                        if "width" in world.arena:
-                            arena_width = world.arena.width
-                        elif world.arena.has_method("get"):
-                            arena_width = world.arena.get("width")
-                        if "height" in world.arena:
-                            arena_height = world.arena.height
-                        elif world.arena.has_method("get"):
-                            arena_height = world.arena.get("height")
-                var cx = arena_width / 2.0
-                var cy = arena_height / 2.0
-                var dx = b_x - cx
-                var dy = b_y - cy
+				var arena_width = 1000.0
+				var arena_height = 1000.0
+				if typeof(world) == TYPE_DICTIONARY:
+					if world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY:
+						arena_width = world.arena.get("width", 1000.0)
+						arena_height = world.arena.get("height", 1000.0)
+				else:
+					if "arena" in world and world.arena != null:
+						if "width" in world.arena:
+							arena_width = world.arena.width
+						elif world.arena.has_method("get"):
+							arena_width = world.arena.get("width")
+						if "height" in world.arena:
+							arena_height = world.arena.height
+						elif world.arena.has_method("get"):
+							arena_height = world.arena.get("height")
+				var cx = arena_width / 2.0
+				var cy = arena_height / 2.0
+				var dx = b_x - cx
+				var dy = b_y - cy
 
-                var dist = sqrt(dx*dx + dy*dy)
-                if dist > 0:
-                    var vx = b.get("vx") if typeof(b) == TYPE_DICTIONARY else b.get_meta("vx") if b.has_meta("vx") else 0.0
-                    var vy = b.get("vy") if typeof(b) == TYPE_DICTIONARY else b.get_meta("vy") if b.has_meta("vy") else 0.0
-                    vx += (dx/dist) * inversion_strength * delta
-                    vy += (dy/dist) * inversion_strength * delta
-                    vy -= inversion_strength * 0.5 * delta
+				var dist = sqrt(dx*dx + dy*dy)
+				if dist > 0:
+					var vx = b.get("vx") if typeof(b) == TYPE_DICTIONARY else b.get_meta("vx") if b.has_meta("vx") else 0.0
+					var vy = b.get("vy") if typeof(b) == TYPE_DICTIONARY else b.get_meta("vy") if b.has_meta("vy") else 0.0
+					vx += (dx/dist) * inversion_strength * delta
+					vy += (dy/dist) * inversion_strength * delta
+					vy -= inversion_strength * 0.5 * delta
 
-                    if typeof(b) == TYPE_DICTIONARY:
-                        b["vx"] = vx
-                        b["vy"] = vy
-                    else:
-                        b.set_meta("vx", vx)
-                        b.set_meta("vy", vy)
-        else:
-            inversion_timer -= delta
-            if inversion_timer <= 0:
-                inversion_duration = random.randf_range(4.0, 8.0)
-                inversion_timer = random.randf_range(15.0, 25.0)
+					if typeof(b) == TYPE_DICTIONARY:
+						b["vx"] = vx
+						b["vy"] = vy
+					else:
+						b.set_meta("vx", vx)
+						b.set_meta("vy", vy)
+		else:
+			inversion_timer -= delta
+			if inversion_timer <= 0:
+				inversion_duration = random.randf_range(4.0, 8.0)
+				inversion_timer = random.randf_range(15.0, 25.0)
 
-                var world_has_event = false
-                if typeof(world) == TYPE_DICTIONARY:
-                    if world.has("add_event"):
-                        world_has_event = true
-                else:
-                    if world.has_method("add_event"):
-                        world_has_event = true
+				var world_has_event = false
+				if typeof(world) == TYPE_DICTIONARY:
+					if world.has("add_event"):
+						world_has_event = true
+				else:
+					if world.has_method("add_event"):
+						world_has_event = true
 
-                if world_has_event:
-                    var event_data = {"duration": inversion_duration}
-                    if typeof(world) == TYPE_DICTIONARY:
-                        world["add_event"].call("gravity_inversion", event_data)
-                    else:
-                        world.add_event("gravity_inversion", event_data)
+				if world_has_event:
+					var event_data = {"duration": inversion_duration}
+					if typeof(world) == TYPE_DICTIONARY:
+						world["add_event"].call("gravity_inversion", event_data)
+					else:
+						world.add_event("gravity_inversion", event_data)
 
 GAME_MODES['gravity_inversion'] = GravityInversionMode.new()
 GAME_MODES['telegraphed_supply_drop'] = TelegraphedSupplyDropMode.new()
@@ -81881,7 +81940,7 @@ GAME_MODES['dynamic_mutators'] = load('res://src/ai/dynamic_mutators.gd').new()
 
 var reflective_walls_script = load("res://src/ai/reflective_walls.gd")
 if reflective_walls_script:
-    GAME_MODES["reflective_walls"] = reflective_walls_script.new()
+	GAME_MODES["reflective_walls"] = reflective_walls_script.new()
 
 class PulsatingCoreMode extends GameMode:
 	var spawn_timer: float = 15.0
@@ -85013,141 +85072,141 @@ class AlternatingZoneMode extends GameMode:
 
 
 class ThermalPayloadMutatorMode extends GameMode:
-    var payload
+	var payload
 
-    func _init():
-        super._init()
-        self.name = "Thermal Payload"
-        self.description = "A payload mutator where the payload's damage aura exponentially increases in radius if it is continuously pushed by players. If the pushers step away for too long, the payload vents the built-up heat in a massive explosion, damaging everyone nearby."
-        self.payload = null
+	func _init():
+		super._init()
+		self.name = "Thermal Payload"
+		self.description = "A payload mutator where the payload's damage aura exponentially increases in radius if it is continuously pushed by players. If the pushers step away for too long, the payload vents the built-up heat in a massive explosion, damaging everyone nearby."
+		self.payload = null
 
-    func setup(world, balls: Array) -> void:
-        super.setup(world, balls)
-        var arena_width = 1000.0
-        var arena_height = 1000.0
-        if typeof(world) == TYPE_OBJECT and 'arena' in world:
-            arena_width = world.arena.width
-            arena_height = world.arena.height
-        elif typeof(world) == TYPE_DICTIONARY and world.has('arena'):
-            arena_width = world.arena.width
-            arena_height = world.arena.height
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if typeof(world) == TYPE_OBJECT and 'arena' in world:
+			arena_width = world.arena.width
+			arena_height = world.arena.height
+		elif typeof(world) == TYPE_DICTIONARY and world.has('arena'):
+			arena_width = world.arena.width
+			arena_height = world.arena.height
 
-        self.payload = {}
-        self.payload["ball_type"] = "payload"
-        self.payload["is_payload"] = true
-        self.payload["is_invulnerable"] = true
-        self.payload["speed"] = 0.0
-        self.payload["vx"] = 0.0
-        self.payload["vy"] = 0.0
-        self.payload["damage"] = 0.0
-        self.payload["max_hp"] = 10000.0
-        self.payload["hp"] = 10000.0
-        self.payload["x"] = arena_width / 2.0
-        self.payload["y"] = arena_height / 2.0
-        self.payload["alive"] = true
-        self.payload["team"] = "Neutral"
-        self.payload["radius"] = 20.0
+		self.payload = {}
+		self.payload["ball_type"] = "payload"
+		self.payload["is_payload"] = true
+		self.payload["is_invulnerable"] = true
+		self.payload["speed"] = 0.0
+		self.payload["vx"] = 0.0
+		self.payload["vy"] = 0.0
+		self.payload["damage"] = 0.0
+		self.payload["max_hp"] = 10000.0
+		self.payload["hp"] = 10000.0
+		self.payload["x"] = arena_width / 2.0
+		self.payload["y"] = arena_height / 2.0
+		self.payload["alive"] = true
+		self.payload["team"] = "Neutral"
+		self.payload["radius"] = 20.0
 
-        self.payload["aura_radius"] = 40.0
-        self.payload["unpushed_timer"] = 0.0
-        self.payload["pushed_this_tick"] = false
+		self.payload["aura_radius"] = 40.0
+		self.payload["unpushed_timer"] = 0.0
+		self.payload["pushed_this_tick"] = false
 
-        balls.append(self.payload)
+		balls.append(self.payload)
 
-    func tick(world, balls: Array, delta: float = 0.016) -> void:
-        super.tick(world, balls, delta)
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
 
-        if not self.payload or not self.payload.get("alive", false):
-            return
+		if not self.payload or not self.payload.get("alive", false):
+			return
 
-        if self.payload.get("hp", 5000.0) < 100.0:
-            self.payload["hp"] = 5000.0
+		if self.payload.get("hp", 5000.0) < 100.0:
+			self.payload["hp"] = 5000.0
 
-        var pushers_count = 0
-        var px = self.payload.get("x", 0.0)
-        var py = self.payload.get("y", 0.0)
-        var pr = self.payload.get("radius", 20.0)
+		var pushers_count = 0
+		var px = self.payload.get("x", 0.0)
+		var py = self.payload.get("y", 0.0)
+		var pr = self.payload.get("radius", 20.0)
 
-        for b in balls:
-            if typeof(b) == TYPE_OBJECT:
-                if b == self.payload or (b.has_method("has_meta") and b.has_meta("ball_type") and b.get_meta("ball_type") == "spectator") or ('ball_type' in b and b.ball_type == "spectator") or (b.has_method("has_meta") and b.has_meta("alive") and not b.get_meta("alive")) or ('alive' in b and not b.alive):
-                    continue
-                var bx = b.get_meta("x") if b.has_method("has_meta") and b.has_meta("x") else (b.x if 'x' in b else 0.0)
-                var by = b.get_meta("y") if b.has_method("has_meta") and b.has_meta("y") else (b.y if 'y' in b else 0.0)
-                var br = b.get_meta("radius") if b.has_method("has_meta") and b.has_meta("radius") else (b.radius if 'radius' in b else 10.0)
-                var dist = sqrt((bx - px)*(bx - px) + (by - py)*(by - py))
-                if dist <= pr + br + 20.0:
-                    pushers_count += 1
-            elif typeof(b) == TYPE_DICTIONARY:
-                if b == self.payload or b.get("ball_type") == "spectator" or not b.get("alive", false):
-                    continue
-                var bx = b.get("x", 0.0)
-                var by = b.get("y", 0.0)
-                var br = b.get("radius", 10.0)
-                var dist = sqrt((bx - px)*(bx - px) + (by - py)*(by - py))
-                if dist <= pr + br + 20.0:
-                    pushers_count += 1
+		for b in balls:
+			if typeof(b) == TYPE_OBJECT:
+				if b == self.payload or (b.has_method("has_meta") and b.has_meta("ball_type") and b.get_meta("ball_type") == "spectator") or ('ball_type' in b and b.ball_type == "spectator") or (b.has_method("has_meta") and b.has_meta("alive") and not b.get_meta("alive")) or ('alive' in b and not b.alive):
+					continue
+				var bx = b.get_meta("x") if b.has_method("has_meta") and b.has_meta("x") else (b.x if 'x' in b else 0.0)
+				var by = b.get_meta("y") if b.has_method("has_meta") and b.has_meta("y") else (b.y if 'y' in b else 0.0)
+				var br = b.get_meta("radius") if b.has_method("has_meta") and b.has_meta("radius") else (b.radius if 'radius' in b else 10.0)
+				var dist = sqrt((bx - px)*(bx - px) + (by - py)*(by - py))
+				if dist <= pr + br + 20.0:
+					pushers_count += 1
+			elif typeof(b) == TYPE_DICTIONARY:
+				if b == self.payload or b.get("ball_type") == "spectator" or not b.get("alive", false):
+					continue
+				var bx = b.get("x", 0.0)
+				var by = b.get("y", 0.0)
+				var br = b.get("radius", 10.0)
+				var dist = sqrt((bx - px)*(bx - px) + (by - py)*(by - py))
+				if dist <= pr + br + 20.0:
+					pushers_count += 1
 
-        if pushers_count > 0:
-            self.payload["pushed_this_tick"] = true
-            self.payload["unpushed_timer"] = 0.0
-            self.payload["aura_radius"] *= (1.0 + 0.1 * delta * pushers_count)
-            if self.payload["aura_radius"] > 400.0:
-                self.payload["aura_radius"] = 400.0
-        else:
-            self.payload["pushed_this_tick"] = false
-            self.payload["unpushed_timer"] += delta
+		if pushers_count > 0:
+			self.payload["pushed_this_tick"] = true
+			self.payload["unpushed_timer"] = 0.0
+			self.payload["aura_radius"] *= (1.0 + 0.1 * delta * pushers_count)
+			if self.payload["aura_radius"] > 400.0:
+				self.payload["aura_radius"] = 400.0
+		else:
+			self.payload["pushed_this_tick"] = false
+			self.payload["unpushed_timer"] += delta
 
-        var aura_rad = self.payload.get("aura_radius", 40.0)
+		var aura_rad = self.payload.get("aura_radius", 40.0)
 
-        for b in balls:
-            if typeof(b) == TYPE_OBJECT:
-                if b == self.payload or (b.has_method("has_meta") and b.has_meta("ball_type") and b.get_meta("ball_type") == "spectator") or ('ball_type' in b and b.ball_type == "spectator") or (b.has_method("has_meta") and b.has_meta("alive") and not b.get_meta("alive")) or ('alive' in b and not b.alive):
-                    continue
-                var bx = b.get_meta("x") if b.has_method("has_meta") and b.has_meta("x") else (b.x if 'x' in b else 0.0)
-                var by = b.get_meta("y") if b.has_method("has_meta") and b.has_meta("y") else (b.y if 'y' in b else 0.0)
-                var dist = sqrt((bx - px)*(bx - px) + (by - py)*(by - py))
-                if dist <= aura_rad:
-                    if b.has_method("take_damage"):
-                        b.take_damage(5.0 * delta)
-            elif typeof(b) == TYPE_DICTIONARY:
-                if b == self.payload or b.get("ball_type") == "spectator" or not b.get("alive", false):
-                    continue
-                var bx = b.get("x", 0.0)
-                var by = b.get("y", 0.0)
-                var dist = sqrt((bx - px)*(bx - px) + (by - py)*(by - py))
-                if dist <= aura_rad:
-                    pass
+		for b in balls:
+			if typeof(b) == TYPE_OBJECT:
+				if b == self.payload or (b.has_method("has_meta") and b.has_meta("ball_type") and b.get_meta("ball_type") == "spectator") or ('ball_type' in b and b.ball_type == "spectator") or (b.has_method("has_meta") and b.has_meta("alive") and not b.get_meta("alive")) or ('alive' in b and not b.alive):
+					continue
+				var bx = b.get_meta("x") if b.has_method("has_meta") and b.has_meta("x") else (b.x if 'x' in b else 0.0)
+				var by = b.get_meta("y") if b.has_method("has_meta") and b.has_meta("y") else (b.y if 'y' in b else 0.0)
+				var dist = sqrt((bx - px)*(bx - px) + (by - py)*(by - py))
+				if dist <= aura_rad:
+					if b.has_method("take_damage"):
+						b.take_damage(5.0 * delta)
+			elif typeof(b) == TYPE_DICTIONARY:
+				if b == self.payload or b.get("ball_type") == "spectator" or not b.get("alive", false):
+					continue
+				var bx = b.get("x", 0.0)
+				var by = b.get("y", 0.0)
+				var dist = sqrt((bx - px)*(bx - px) + (by - py)*(by - py))
+				if dist <= aura_rad:
+					pass
 
-        if self.payload.get("unpushed_timer", 0.0) >= 3.0:
-            var explosion_radius = aura_rad * 1.5
+		if self.payload.get("unpushed_timer", 0.0) >= 3.0:
+			var explosion_radius = aura_rad * 1.5
 
-            if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
-                world.add_event("visual_effect", {"type": "massive_explosion", "x": px, "y": py, "radius": explosion_radius})
-            elif typeof(world) == TYPE_DICTIONARY and world.has("events"):
-                world.events.append({"type": "massive_explosion", "x": px, "y": py, "radius": explosion_radius})
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("visual_effect", {"type": "massive_explosion", "x": px, "y": py, "radius": explosion_radius})
+			elif typeof(world) == TYPE_DICTIONARY and world.has("events"):
+				world.events.append({"type": "massive_explosion", "x": px, "y": py, "radius": explosion_radius})
 
-            for b in balls:
-                if typeof(b) == TYPE_OBJECT:
-                    if b == self.payload or (b.has_method("has_meta") and b.has_meta("ball_type") and b.get_meta("ball_type") == "spectator") or ('ball_type' in b and b.ball_type == "spectator") or (b.has_method("has_meta") and b.has_meta("alive") and not b.get_meta("alive")) or ('alive' in b and not b.alive):
-                        continue
-                    var bx = b.get_meta("x") if b.has_method("has_meta") and b.has_meta("x") else (b.x if 'x' in b else 0.0)
-                    var by = b.get_meta("y") if b.has_method("has_meta") and b.has_meta("y") else (b.y if 'y' in b else 0.0)
-                    var dist = sqrt((bx - px)*(bx - px) + (by - py)*(by - py))
-                    if dist <= explosion_radius:
-                        if b.has_method("take_damage"):
-                            b.take_damage(50.0)
-                elif typeof(b) == TYPE_DICTIONARY:
-                    if b == self.payload or b.get("ball_type") == "spectator" or not b.get("alive", false):
-                        continue
-                    var bx = b.get("x", 0.0)
-                    var by = b.get("y", 0.0)
-                    var dist = sqrt((bx - px)*(bx - px) + (by - py)*(by - py))
-                    if dist <= explosion_radius:
-                        pass
+			for b in balls:
+				if typeof(b) == TYPE_OBJECT:
+					if b == self.payload or (b.has_method("has_meta") and b.has_meta("ball_type") and b.get_meta("ball_type") == "spectator") or ('ball_type' in b and b.ball_type == "spectator") or (b.has_method("has_meta") and b.has_meta("alive") and not b.get_meta("alive")) or ('alive' in b and not b.alive):
+						continue
+					var bx = b.get_meta("x") if b.has_method("has_meta") and b.has_meta("x") else (b.x if 'x' in b else 0.0)
+					var by = b.get_meta("y") if b.has_method("has_meta") and b.has_meta("y") else (b.y if 'y' in b else 0.0)
+					var dist = sqrt((bx - px)*(bx - px) + (by - py)*(by - py))
+					if dist <= explosion_radius:
+						if b.has_method("take_damage"):
+							b.take_damage(50.0)
+				elif typeof(b) == TYPE_DICTIONARY:
+					if b == self.payload or b.get("ball_type") == "spectator" or not b.get("alive", false):
+						continue
+					var bx = b.get("x", 0.0)
+					var by = b.get("y", 0.0)
+					var dist = sqrt((bx - px)*(bx - px) + (by - py)*(by - py))
+					if dist <= explosion_radius:
+						pass
 
-            self.payload["unpushed_timer"] = 0.0
-            self.payload["aura_radius"] = 40.0
+			self.payload["unpushed_timer"] = 0.0
+			self.payload["aura_radius"] = 40.0
 
 class SilentWorldMutatorMode extends GameMode:
 	func _init():
@@ -85514,30 +85573,30 @@ class ExtremeMicroclimateMode extends GameMode:
 							b["alive"] = false
 
 class TrampolineBoundaryMode extends GameMode:
-    func _init():
-        super._init()
-        self.name = "Trampoline Boundary"
-        self.description = "Instead of taking damage or dying, balls that touch the boundary are violently bounced inward with extreme force, potentially knocking them into hazards or other players. The boundary acts as a massive trampoline."
+	func _init():
+		super._init()
+		self.name = "Trampoline Boundary"
+		self.description = "Instead of taking damage or dying, balls that touch the boundary are violently bounced inward with extreme force, potentially knocking them into hazards or other players. The boundary acts as a massive trampoline."
 
-    func setup(world, balls):
-        super.setup(world, balls)
-        var arena = null
-        if typeof(world) == TYPE_DICTIONARY and world.has("arena"):
-            arena = world["arena"]
-        elif typeof(world) == TYPE_OBJECT and "arena" in world:
-            arena = world.arena
+	func setup(world, balls):
+		super.setup(world, balls)
+		var arena = null
+		if typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			arena = world["arena"]
+		elif typeof(world) == TYPE_OBJECT and "arena" in world:
+			arena = world.arena
 
-        if arena != null:
-            if typeof(arena) == TYPE_DICTIONARY:
-                if not arena.has("boundary_states"):
-                    arena["boundary_states"] = {}
-                for wall in ["top", "bottom", "left", "right"]:
-                    arena["boundary_states"][wall] = "trampoline"
-            else:
-                if not "boundary_states" in arena:
-                    arena.boundary_states = {}
-                for wall in ["top", "bottom", "left", "right"]:
-                    arena.boundary_states[wall] = "trampoline"
+		if arena != null:
+			if typeof(arena) == TYPE_DICTIONARY:
+				if not arena.has("boundary_states"):
+					arena["boundary_states"] = {}
+				for wall in ["top", "bottom", "left", "right"]:
+					arena["boundary_states"][wall] = "trampoline"
+			else:
+				if not "boundary_states" in arena:
+					arena.boundary_states = {}
+				for wall in ["top", "bottom", "left", "right"]:
+					arena.boundary_states[wall] = "trampoline"
 
 GAME_MODES['extreme_microclimate'] = ExtremeMicroclimateMode.new()
 GAME_MODES['trampoline_boundary'] = TrampolineBoundaryMode.new()
@@ -85812,131 +85871,131 @@ class TugOfWarMultiplePayloadsMode extends GameMode:
 
 
 class ElectricDecoyLinkMode extends GameMode:
-    func _init():
-        self.name = "Electric Decoy Link"
-        self.description = "Generating more than 5 decoys causes them to link together with electricity, damaging enemies that cross the connections."
+	func _init():
+		self.name = "Electric Decoy Link"
+		self.description = "Generating more than 5 decoys causes them to link together with electricity, damaging enemies that cross the connections."
 
-    func tick(world, balls, delta=0.016):
-        var decoys_by_owner = {}
-        for b in balls:
-            var is_decoy = false
-            var b_alive = false
-            if typeof(b) == TYPE_DICTIONARY:
-                if b.has("is_decoy"): is_decoy = b.is_decoy
-                if b.has("alive"): b_alive = b.alive
-            elif typeof(b) == TYPE_OBJECT:
-                if "is_decoy" in b: is_decoy = b.is_decoy
-                if "alive" in b: b_alive = b.alive
+	func tick(world, balls, delta=0.016):
+		var decoys_by_owner = {}
+		for b in balls:
+			var is_decoy = false
+			var b_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.has("is_decoy"): is_decoy = b.is_decoy
+				if b.has("alive"): b_alive = b.alive
+			elif typeof(b) == TYPE_OBJECT:
+				if "is_decoy" in b: is_decoy = b.is_decoy
+				if "alive" in b: b_alive = b.alive
 
-            if is_decoy and b_alive:
-                var oid = null
-                if typeof(b) == TYPE_DICTIONARY:
-                    if b.has("owner_id"): oid = b.owner_id
-                elif "owner_id" in b:
-                    oid = b.owner_id
+			if is_decoy and b_alive:
+				var oid = null
+				if typeof(b) == TYPE_DICTIONARY:
+					if b.has("owner_id"): oid = b.owner_id
+				elif "owner_id" in b:
+					oid = b.owner_id
 
-                if oid != null:
-                    if not decoys_by_owner.has(oid):
-                        decoys_by_owner[oid] = []
-                    decoys_by_owner[oid].append(b)
+				if oid != null:
+					if not decoys_by_owner.has(oid):
+						decoys_by_owner[oid] = []
+					decoys_by_owner[oid].append(b)
 
-        for oid in decoys_by_owner.keys():
-            var decoys = decoys_by_owner[oid]
-            if decoys.size() > 5:
-                var owner_team = "neutral"
-                if typeof(decoys[0]) == TYPE_DICTIONARY:
-                    if decoys[0].has("team"): owner_team = decoys[0].team
-                elif "team" in decoys[0]:
-                    owner_team = decoys[0].team
+		for oid in decoys_by_owner.keys():
+			var decoys = decoys_by_owner[oid]
+			if decoys.size() > 5:
+				var owner_team = "neutral"
+				if typeof(decoys[0]) == TYPE_DICTIONARY:
+					if decoys[0].has("team"): owner_team = decoys[0].team
+				elif "team" in decoys[0]:
+					owner_team = decoys[0].team
 
-                for i in range(decoys.size()):
-                    for j in range(i + 1, decoys.size()):
-                        var d1 = decoys[i]
-                        var d2 = decoys[j]
+				for i in range(decoys.size()):
+					for j in range(i + 1, decoys.size()):
+						var d1 = decoys[i]
+						var d2 = decoys[j]
 
-                        var ax = 0.0
-                        var ay = 0.0
-                        var bx = 0.0
-                        var by = 0.0
+						var ax = 0.0
+						var ay = 0.0
+						var bx = 0.0
+						var by = 0.0
 
-                        if typeof(d1) == TYPE_DICTIONARY:
-                            if d1.has("x"): ax = d1.x
-                            if d1.has("y"): ay = d1.y
-                        else:
-                            if "x" in d1: ax = d1.x
-                            if "y" in d1: ay = d1.y
+						if typeof(d1) == TYPE_DICTIONARY:
+							if d1.has("x"): ax = d1.x
+							if d1.has("y"): ay = d1.y
+						else:
+							if "x" in d1: ax = d1.x
+							if "y" in d1: ay = d1.y
 
-                        if typeof(d2) == TYPE_DICTIONARY:
-                            if d2.has("x"): bx = d2.x
-                            if d2.has("y"): by = d2.y
-                        else:
-                            if "x" in d2: bx = d2.x
-                            if "y" in d2: by = d2.y
+						if typeof(d2) == TYPE_DICTIONARY:
+							if d2.has("x"): bx = d2.x
+							if d2.has("y"): by = d2.y
+						else:
+							if "x" in d2: bx = d2.x
+							if "y" in d2: by = d2.y
 
-                        var l2 = (bx - ax)*(bx - ax) + (by - ay)*(by - ay)
+						var l2 = (bx - ax)*(bx - ax) + (by - ay)*(by - ay)
 
-                        for enemy in balls:
-                            var e_alive = false
-                            var e_decoy = false
-                            var e_team = "neutral"
-                            var px = 0.0
-                            var py = 0.0
-                            var rad = 10.0
+						for enemy in balls:
+							var e_alive = false
+							var e_decoy = false
+							var e_team = "neutral"
+							var px = 0.0
+							var py = 0.0
+							var rad = 10.0
 
-                            if typeof(enemy) == TYPE_DICTIONARY:
-                                if enemy.has("alive"): e_alive = enemy.alive
-                                if enemy.has("is_decoy"): e_decoy = enemy.is_decoy
-                                if enemy.has("team"): e_team = enemy.team
-                                if enemy.has("x"): px = enemy.x
-                                if enemy.has("y"): py = enemy.y
-                                if enemy.has("radius"): rad = enemy.radius
-                            else:
-                                if "alive" in enemy: e_alive = enemy.alive
-                                if "is_decoy" in enemy: e_decoy = enemy.is_decoy
-                                if "team" in enemy: e_team = enemy.team
-                                if "x" in enemy: px = enemy.x
-                                if "y" in enemy: py = enemy.y
-                                if "radius" in enemy: rad = enemy.radius
+							if typeof(enemy) == TYPE_DICTIONARY:
+								if enemy.has("alive"): e_alive = enemy.alive
+								if enemy.has("is_decoy"): e_decoy = enemy.is_decoy
+								if enemy.has("team"): e_team = enemy.team
+								if enemy.has("x"): px = enemy.x
+								if enemy.has("y"): py = enemy.y
+								if enemy.has("radius"): rad = enemy.radius
+							else:
+								if "alive" in enemy: e_alive = enemy.alive
+								if "is_decoy" in enemy: e_decoy = enemy.is_decoy
+								if "team" in enemy: e_team = enemy.team
+								if "x" in enemy: px = enemy.x
+								if "y" in enemy: py = enemy.y
+								if "radius" in enemy: rad = enemy.radius
 
-                            if not e_alive or e_decoy or e_team == owner_team:
-                                continue
+							if not e_alive or e_decoy or e_team == owner_team:
+								continue
 
-                            var dist = 0.0
-                            if l2 == 0.0:
-                                dist = sqrt((px - ax)*(px - ax) + (py - ay)*(py - ay))
-                            else:
-                                var t = max(0.0, min(1.0, ((px - ax) * (bx - ax) + (py - ay) * (by - ay)) / l2))
-                                var proj_x = ax + t * (bx - ax)
-                                var proj_y = ay + t * (by - ay)
-                                dist = sqrt((px - proj_x)*(px - proj_x) + (py - proj_y)*(py - proj_y))
+							var dist = 0.0
+							if l2 == 0.0:
+								dist = sqrt((px - ax)*(px - ax) + (py - ay)*(py - ay))
+							else:
+								var t = max(0.0, min(1.0, ((px - ax) * (bx - ax) + (py - ay) * (by - ay)) / l2))
+								var proj_x = ax + t * (bx - ax)
+								var proj_y = ay + t * (by - ay)
+								dist = sqrt((px - proj_x)*(px - proj_x) + (py - proj_y)*(py - proj_y))
 
-                            if dist <= rad + 2.0:
-                                var dmg = 25.0 * delta
-                                if typeof(enemy) == TYPE_OBJECT and enemy.has_method("take_damage"):
-                                    enemy.take_damage(dmg)
-                                elif typeof(enemy) == TYPE_DICTIONARY and enemy.has("hp"):
-                                    enemy.hp -= dmg
-                                    if enemy.hp <= 0:
-                                        enemy.alive = false
-                                elif "hp" in enemy:
-                                    enemy.hp -= dmg
-                                    if enemy.hp <= 0:
-                                        enemy.alive = false
+							if dist <= rad + 2.0:
+								var dmg = 25.0 * delta
+								if typeof(enemy) == TYPE_OBJECT and enemy.has_method("take_damage"):
+									enemy.take_damage(dmg)
+								elif typeof(enemy) == TYPE_DICTIONARY and enemy.has("hp"):
+									enemy.hp -= dmg
+									if enemy.hp <= 0:
+										enemy.alive = false
+								elif "hp" in enemy:
+									enemy.hp -= dmg
+									if enemy.hp <= 0:
+										enemy.alive = false
 
-                                var events = null
-                                if typeof(world) == TYPE_DICTIONARY and world.has("events"):
-                                    events = world.events
-                                elif typeof(world) == TYPE_OBJECT and "events" in world:
-                                    events = world.events
+								var events = null
+								if typeof(world) == TYPE_DICTIONARY and world.has("events"):
+									events = world.events
+								elif typeof(world) == TYPE_OBJECT and "events" in world:
+									events = world.events
 
-                                if events != null:
-                                    var has_spark = false
-                                    for ev in events:
-                                        if typeof(ev) == TYPE_DICTIONARY and ev.has("type") and ev.type == "electric_link_spark":
-                                            has_spark = true
-                                            break
-                                    if not has_spark:
-                                        events.append({"type": "electric_link_spark", "data": {"x": px, "y": py, "radius": 5.0}})
+								if events != null:
+									var has_spark = false
+									for ev in events:
+										if typeof(ev) == TYPE_DICTIONARY and ev.has("type") and ev.type == "electric_link_spark":
+											has_spark = true
+											break
+									if not has_spark:
+										events.append({"type": "electric_link_spark", "data": {"x": px, "y": py, "radius": 5.0}})
 
 GAME_MODES["tug_of_war_multiple_payloads"] = TugOfWarMultiplePayloadsMode.new()
 GAME_MODES["electric_decoy_link"] = ElectricDecoyLinkMode.new()
@@ -89955,114 +90014,114 @@ const GoldRushMode = preload("res://src/ai/gold_rush.gd")
 GAME_MODES['gold_rush'] = GoldRushMode.new()
 
 class GuildObstacleCourseMode extends GameMode:
-    var course_active = false
-    var start_x = 0.0
-    var start_y = 0.0
-    var finish_x = 0.0
-    var finish_y = 0.0
-    var player_timers = {}
-    var finished_players = {}
+	var course_active = false
+	var start_x = 0.0
+	var start_y = 0.0
+	var finish_x = 0.0
+	var finish_y = 0.0
+	var player_timers = {}
+	var finished_players = {}
 
-    func _init():
-        name = "Guild Obstacle Course"
-        description = "Players race through a custom obstacle course within their guild HQ layout using unlocked defenses and traps, competing for the best time."
+	func _init():
+		name = "Guild Obstacle Course"
+		description = "Players race through a custom obstacle course within their guild HQ layout using unlocked defenses and traps, competing for the best time."
 
-    func setup(world, balls):
-        super.setup(world, balls)
-        course_active = true
-        player_timers = {}
-        finished_players = {}
+	func setup(world, balls):
+		super.setup(world, balls)
+		course_active = true
+		player_timers = {}
+		finished_players = {}
 
-        var arena_w = 2000.0
-        var arena_h = 2000.0
-        if world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY:
-            if world.arena.has("width"): arena_w = world.arena.width
-            if world.arena.has("height"): arena_h = world.arena.height
+		var arena_w = 2000.0
+		var arena_h = 2000.0
+		if world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY:
+			if world.arena.has("width"): arena_w = world.arena.width
+			if world.arena.has("height"): arena_h = world.arena.height
 
-        start_x = 100.0
-        start_y = 100.0
-        finish_x = arena_w - 100.0
-        finish_y = arena_h - 100.0
+		start_x = 100.0
+		start_y = 100.0
+		finish_x = arena_w - 100.0
+		finish_y = arena_h - 100.0
 
-        if world.has("guild_manager") and world.has("active_guild_name"):
-            var guild_name = world.active_guild_name
-            var layout = {}
-            if world.guild_manager.has_method("get_hq_status"):
-                var status = world.guild_manager.call("get_hq_status", guild_name)
-                if typeof(status) == TYPE_DICTIONARY and status.has("layout"):
-                    layout = status["layout"]
+		if world.has("guild_manager") and world.has("active_guild_name"):
+			var guild_name = world.active_guild_name
+			var layout = {}
+			if world.guild_manager.has_method("get_hq_status"):
+				var status = world.guild_manager.call("get_hq_status", guild_name)
+				if typeof(status) == TYPE_DICTIONARY and status.has("layout"):
+					layout = status["layout"]
 
-            var defenses = {}
-            if layout.has("defenses"):
-                defenses = layout["defenses"]
+			var defenses = {}
+			if layout.has("defenses"):
+				defenses = layout["defenses"]
 
-            for trap_id in defenses.keys():
-                var trap_info = defenses[trap_id]
-                var tx = arena_w / 2.0
-                var ty = arena_h / 2.0
-                if typeof(trap_info) == TYPE_DICTIONARY:
-                    if trap_info.has("x"): tx = trap_info.x
-                    if trap_info.has("y"): ty = trap_info.y
+			for trap_id in defenses.keys():
+				var trap_info = defenses[trap_id]
+				var tx = arena_w / 2.0
+				var ty = arena_h / 2.0
+				if typeof(trap_info) == TYPE_DICTIONARY:
+					if trap_info.has("x"): tx = trap_info.x
+					if trap_info.has("y"): ty = trap_info.y
 
-                var trap_hazard = {
-                    "id": world.get("next_id", 99999) + randi() % 1000,
-                    "x": tx,
-                    "y": ty,
-                    "radius": 30.0,
-                    "kind": "trap",
-                    "damage": 20.0,
-                    "active": true
-                }
-                if world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
-                    world.arena.hazards.append(trap_hazard)
+				var trap_hazard = {
+					"id": world.get("next_id", 99999) + randi() % 1000,
+					"x": tx,
+					"y": ty,
+					"radius": 30.0,
+					"kind": "trap",
+					"damage": 20.0,
+					"active": true
+				}
+				if world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+					world.arena.hazards.append(trap_hazard)
 
-        for b in balls:
-            if typeof(b) == TYPE_DICTIONARY:
-                b.x = start_x
-                b.y = start_y
-                player_timers[str(b.id)] = 0.0
-            else:
-                b.set("x", start_x)
-                b.set("y", start_y)
-                player_timers[str(b.get("id", -1))] = 0.0
+		for b in balls:
+			if typeof(b) == TYPE_DICTIONARY:
+				b.x = start_x
+				b.y = start_y
+				player_timers[str(b.id)] = 0.0
+			else:
+				b.set("x", start_x)
+				b.set("y", start_y)
+				player_timers[str(b.get("id", -1))] = 0.0
 
-    func tick(world, balls, delta):
-        if not course_active:
-            return
+	func tick(world, balls, delta):
+		if not course_active:
+			return
 
-        for b in balls:
-            var b_id = str(-1)
-            var bx = 0.0
-            var by = 0.0
-            if typeof(b) == TYPE_DICTIONARY:
-                b_id = str(b.id)
-                bx = b.x
-                by = b.y
-            else:
-                b_id = str(b.get("id", -1))
-                bx = b.get("x", 0.0)
-                by = b.get("y", 0.0)
+		for b in balls:
+			var b_id = str(-1)
+			var bx = 0.0
+			var by = 0.0
+			if typeof(b) == TYPE_DICTIONARY:
+				b_id = str(b.id)
+				bx = b.x
+				by = b.y
+			else:
+				b_id = str(b.get("id", -1))
+				bx = b.get("x", 0.0)
+				by = b.get("y", 0.0)
 
-            if finished_players.has(b_id):
-                continue
+			if finished_players.has(b_id):
+				continue
 
-            if not player_timers.has(b_id):
-                player_timers[b_id] = 0.0
-            player_timers[b_id] += delta
+			if not player_timers.has(b_id):
+				player_timers[b_id] = 0.0
+			player_timers[b_id] += delta
 
-            var dist_sq = (bx - finish_x) * (bx - finish_x) + (by - finish_y) * (by - finish_y)
-            if dist_sq < 2500.0:
-                finished_players[b_id] = true
-                var completion_time = player_timers[b_id]
+			var dist_sq = (bx - finish_x) * (bx - finish_x) + (by - finish_y) * (by - finish_y)
+			if dist_sq < 2500.0:
+				finished_players[b_id] = true
+				var completion_time = player_timers[b_id]
 
-                if world.has("guild_manager") and world.has("active_guild_name"):
-                    if world.guild_manager.has_method("record_mini_game_score"):
-                        world.guild_manager.call("record_mini_game_score", world.active_guild_name, "obstacle_course", b_id, completion_time)
+				if world.has("guild_manager") and world.has("active_guild_name"):
+					if world.guild_manager.has_method("record_mini_game_score"):
+						world.guild_manager.call("record_mini_game_score", world.active_guild_name, "obstacle_course", b_id, completion_time)
 
-                if typeof(world) == TYPE_DICTIONARY and world.has("events"):
-                    world.events.append({"type": "obstacle_course_finish", "data": {"ball_id": b_id, "time": completion_time}})
-                elif world.has_method("add_event"):
-                    world.call("add_event", "obstacle_course_finish", {"ball_id": b_id, "time": completion_time})
+				if typeof(world) == TYPE_DICTIONARY and world.has("events"):
+					world.events.append({"type": "obstacle_course_finish", "data": {"ball_id": b_id, "time": completion_time}})
+				elif world.has_method("add_event"):
+					world.call("add_event", "obstacle_course_finish", {"ball_id": b_id, "time": completion_time})
 
 GAME_MODES['guild_obstacle_course'] = GuildObstacleCourseMode.new()
 
