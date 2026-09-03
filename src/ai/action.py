@@ -2232,6 +2232,31 @@ class Action:
             self.ball.artifact_dmg_buffed = (dmg_mult != 1.0)
 
     def execute(self, strategy: str, delta: float) -> None:
+        cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+        if cosmetic == "aura_drain_pet":
+            if not getattr(self.ball, "has_pet", False) or getattr(self.ball, "pet_type", "") != "aura_drain":
+                self.ball.has_pet = True
+                self.ball.pet_type = "aura_drain"
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    pet_exists = False
+                    for h in self.world.arena.hazards:
+                        if getattr(h, "kind", "") == "pet" and getattr(h, "owner_id", None) == getattr(self.ball, "id", None):
+                            pet_exists = True
+                            break
+                    if not pet_exists:
+                        class _HazardObj:
+                            pass
+                        import random as _rnd_coll
+                        pet = _HazardObj()
+                        pet.id = 999000 + len(self.world.arena.hazards) + _rnd_coll.randint(0,10000)
+                        pet.x = self.ball.x
+                        pet.y = self.ball.y
+                        pet.radius = 8.0
+                        pet.kind = "pet"
+                        pet.damage = 0.0
+                        pet.owner_id = self.ball.id
+                        self.world.arena.hazards.append(pet)
+
         # Decrement soaked timer and nullify fire traits
         if getattr(self.ball, "soaked_timer", 0.0) > 0.0:
             self.ball.soaked_timer -= delta
@@ -30437,6 +30462,30 @@ class Action:
                                 if hasattr(self.world, "projectiles"):
                                     self.world.projectiles.append(proj)
                                 self.ball.pet_cooldown = 3.0  # Firing rate
+
+
+                if getattr(self.ball, "pet_type", "") == "aura_drain" and hasattr(self.world, "balls"):
+                    pet_x = getattr(pet_hazard, "x", 0.0)
+                    pet_y = getattr(pet_hazard, "y", 0.0)
+                    for b in self.world.balls:
+                        if getattr(b, "id", None) == getattr(self.ball, "id", None) or getattr(b, "team", None) == getattr(self.ball, "team", None) or not getattr(b, "alive", True):
+                            continue
+
+                        dx = getattr(b, "x", 0.0) - pet_x
+                        dy = getattr(b, "y", 0.0) - pet_y
+                        dist_sq = dx**2 + dy**2
+                        if dist_sq < 22500.0:  # Distance 150
+                            b_aura = getattr(b, "aura_intensity", 0.0)
+                            if b_aura > 0.0:
+                                drain_amount = 0.5 * delta # Rate of aura drain
+                                actual_drain = drain_amount if b_aura >= drain_amount else b_aura
+                                b.aura_intensity = max(0.0, b_aura - actual_drain)
+
+                                # Increase base movement speed permanently
+                                if not hasattr(self.ball, "base_speed"):
+                                    self.ball.base_speed = getattr(self.ball, "speed", 100.0)
+                                self.ball.base_speed += actual_drain * 5.0 # Speed multiplier
+                                self.ball.speed = getattr(self.ball, "speed", 100.0) + actual_drain * 5.0
 
                 if getattr(self.ball, "pet_type", "") == "auto_looter" and hasattr(self.world, "arena") and hasattr(self.world.arena, "items"):
                     pet_x = getattr(pet_hazard, "x", 0.0)
