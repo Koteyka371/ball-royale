@@ -400,7 +400,7 @@ func _attempt_damage(attacker, target) -> void:
 		elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("y"): a_y = attacker.y
 
 		var clone_data = {
-			"timer": 2.0,
+			"timer": 1.0,
 			"target": target,
 			"x": a_x,
 			"y": a_y
@@ -5593,15 +5593,20 @@ func execute(strategy: String, delta: float):
 						clone_obj["y"] = cd["y"]
 						clone_obj["is_hologram"] = true
 						clone_obj["hologram_timer"] = 0.5
+						clone_obj["damage"] = float(ball["damage"] if ball.has("damage") else 10.0) * 0.4
 					elif typeof(clone_obj) == TYPE_OBJECT:
 						if "x" in clone_obj: clone_obj.x = cd["x"]
 						if "y" in clone_obj: clone_obj.y = cd["y"]
 						if clone_obj.has_method("set_meta"):
 							clone_obj.set_meta("is_hologram", true)
 							clone_obj.set_meta("hologram_timer", 0.5)
+							var orig_dmg2 = ball.damage if "damage" in ball else ball.get_meta("damage") if ball.has_method("has_meta") and ball.has_meta("damage") else 10.0
+							clone_obj.set_meta("damage", float(orig_dmg2) * 0.4)
 						elif "is_hologram" in clone_obj:
 							clone_obj.is_hologram = true
 							clone_obj.hologram_timer = 0.5
+							var orig_dmg3 = ball.damage if "damage" in ball else ball.get_meta("damage") if typeof(ball) == TYPE_OBJECT and ball.has_method("has_meta") and ball.has_meta("damage") else 10.0
+							clone_obj.damage = float(orig_dmg3) * 0.4
 
 					world.balls.append(clone_obj)
 					var tgt = cd["target"]

@@ -351,7 +351,7 @@ class Action:
             if not hasattr(attacker, "delayed_clones"):
                 attacker.delayed_clones = []
             attacker.delayed_clones.append({
-                "timer": 2.0,
+                "timer": 1.0,
                 "target_id": getattr(target, "id", None),
                 "target": target,
                 "x": getattr(attacker, "x", 0.0),
@@ -3027,6 +3027,7 @@ class Action:
                         clone.y = clone_data["y"]
                         clone.is_hologram = True
                         clone.hologram_timer = 0.5 # disappears quickly
+                        clone.damage = getattr(self.ball, "damage", 10.0) * 0.4
 
                         # Add to world to show up visually
                         self.world.balls.append(clone)

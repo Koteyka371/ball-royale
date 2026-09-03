@@ -45,18 +45,18 @@ def test_delayed_holo_clone():
 
     assert len(getattr(ball, "delayed_clones", [])) == 1
     clone_data = ball.delayed_clones[0]
-    assert clone_data["timer"] == 2.0
+    assert clone_data["timer"] == 1.0
     assert clone_data["x"] == 0.0
     assert clone_data["y"] == 0.0
 
     # Tick before time
-    action.execute("attack", 1.0)
+    action.execute("attack", 0.5)
     assert len(ball.delayed_clones) == 1
-    assert ball.delayed_clones[0]["timer"] == 1.0
+    assert ball.delayed_clones[0]["timer"] == 0.5
     assert len(world.balls) == 2
 
     # Tick past time
-    action.execute("attack", 1.1)
+    action.execute("attack", 0.6)
 
     assert len(getattr(ball, "delayed_clones", [])) == 0
     assert len(world.balls) == 3 # The clone is added
@@ -68,4 +68,4 @@ def test_delayed_holo_clone():
     # verify attack happened
     # base dmg is 10, first attack dropped it to 90
     # second attack from clone should drop it to 80
-    assert enemy.hp == 60.0 # because in this test, _attempt_damage doesn't call world._deal_damage as it assumes it is the 'internal' damage step where we check shields.
+    assert enemy.hp == 76.0 # 100 - (10.0 * 0.4) in this test, _attempt_damage doesn't call world._deal_damage as it assumes it is the 'internal' damage step where we check shields.
