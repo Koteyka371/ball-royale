@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2100] Hydro-Pump Trap Item — *2026-09-04 15:38:14 UTC*
+
+A deployable trap that, when triggered, blasts a powerful cone of high-pressure water. It knocks enemies back violently and inflicts a 'Soaked' status effect, temporarily nullifying fire-based traits and increasing their vulnerability to electricity.
+
+---
+
 ## [idea-2122] Wormhole portals mode — *2026-09-04 11:05:34 UTC*
 
 Portals spawn randomly across the map, allowing players to quickly traverse large distances, or shoot projectiles through them to attack unsuspecting enemies.
