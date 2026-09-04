@@ -61,6 +61,7 @@ class ProceduralArena:
         self.corridors: List[Corridor] = []
         self.platforms: List[Platform] = []
         self.hazards: List[Hazard] = []
+        self.shadow_areas: list[dict[str, float]] = []
         self.wind_dx = 0.0
         self.wind_dy = 0.0
         self.weather = "clear"
@@ -110,6 +111,11 @@ class ProceduralArena:
         # Connect rooms with corridors using closest-neighbor connection
         if not self.rooms:
             return
+
+        self.shadow_areas = []
+        import random as rnd
+        for _ in range(5):
+            self.shadow_areas.append({"x": rnd.uniform(200, self.width - 200), "y": rnd.uniform(200, self.height - 200), "radius": rnd.uniform(150, 300)})
 
         connected = [self.rooms[0]]
         unconnected = self.rooms[1:]

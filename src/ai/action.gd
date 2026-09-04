@@ -17122,6 +17122,33 @@ func execute(strategy: String, delta: float):
                 my_ball.x += my_ball.vx * delta * 0.9
                 my_ball.y += my_ball.vy * delta * 0.9
         if world.arena.get("is_heatwave") == true:
+            var in_shadow = false
+            if "shadow_areas" in world.arena:
+                for s in world.arena.shadow_areas:
+                    if typeof(s) == TYPE_DICTIONARY and s.has("x") and s.has("y") and s.has("radius"):
+                        var dist_sq = (my_ball_x - s.x) * (my_ball_x - s.x) + (my_ball_y - s.y) * (my_ball_y - s.y)
+                        if dist_sq <= s.radius * s.radius:
+                            in_shadow = true
+                            break
+            var ignores_heat = false
+            var cos_slip2 = ""
+            if typeof(my_ball) == TYPE_OBJECT and my_ball.has_method("get"):
+                cos_slip2 = str(my_ball.get("cosmetic")).to_lower().replace(" ", "_")
+            elif typeof(my_ball) == TYPE_DICTIONARY and my_ball.has("cosmetic"):
+                cos_slip2 = str(my_ball["cosmetic"]).to_lower().replace(" ", "_")
+            if cos_slip2 in ["cooling_fan", "ice_crown", "snow_tires", "snow_boots", "spiked_tires", "snowshoes"]:
+                ignores_heat = true
+            if typeof(my_ball) == TYPE_OBJECT and my_ball.has_method("get") and my_ball.get("inventory") != null and typeof(my_ball.get("inventory")) == TYPE_ARRAY and (my_ball.get("inventory").has("thermal_boots") or my_ball.get("inventory").has("snow_boots")):
+                ignores_heat = true
+            elif typeof(my_ball) == TYPE_DICTIONARY and my_ball.has("inventory") and typeof(my_ball["inventory"]) == TYPE_ARRAY and (my_ball["inventory"].has("thermal_boots") or my_ball["inventory"].has("snow_boots")):
+                ignores_heat = true
+
+            if not in_shadow and not ignores_heat:
+                if typeof(my_ball) == TYPE_OBJECT and "hp" in my_ball and my_ball.hp > 1.0:
+                    my_ball.hp -= 2.0 * delta
+                elif typeof(my_ball) == TYPE_DICTIONARY and my_ball.has("hp") and my_ball["hp"] > 1.0:
+                    my_ball["hp"] -= 2.0 * delta
+
             if "vx" in my_ball and "vy" in my_ball:
                 my_ball.vx *= 0.95
                 my_ball.vy *= 0.95
