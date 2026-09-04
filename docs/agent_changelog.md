@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2122] Wormhole portals mode — *2026-09-04 11:05:34 UTC*
+
+Portals spawn randomly across the map, allowing players to quickly traverse large distances, or shoot projectiles through them to attack unsuspecting enemies.
+
+---
+
 ## [idea-2117] Slippery Arena — *2026-09-04 05:49:30 UTC*
 
 A game mode where balls have significantly less friction and bounce around with higher velocity, making it harder to control movement but enabling interesting ricochet plays.
