@@ -1124,3 +1124,44 @@ class GuildManager:
                     self.save()
                     return {"buff": "luck_boost", "duration": 3600}
         return {}
+
+    def arrange_siege_defense(self, guild_name, defense_id, grid_x, grid_y):
+        if guild_name in self.data["guilds"]:
+            guild = self.data["guilds"][guild_name]
+            siege = guild.setdefault("siege_layout", {})
+            # Store by grid coordinates as "x,y" string
+            pos_key = f"{grid_x},{grid_y}"
+            siege[pos_key] = defense_id
+            self.save()
+            return True
+        return False
+
+    def get_siege_layout(self, guild_name):
+        if guild_name in self.data["guilds"]:
+            return self.data["guilds"][guild_name].get("siege_layout", {})
+        return {}
+
+    def calculate_siege_synergy(self, guild_name):
+        layout = self.get_siege_layout(guild_name)
+        bonus = 0.0
+
+        # Check adjacencies
+        positions = {}
+        for pos_key, def_id in layout.items():
+            parts = pos_key.split(",")
+            if len(parts) == 2:
+                try:
+                    x, y = int(parts[0]), int(parts[1])
+                    positions[(x, y)] = def_id
+                except ValueError:
+                    pass
+
+        # Simple adjacency rules: Trap + Trap = +10% synergy bonus per pair
+        for (x, y), def_id in positions.items():
+            if def_id.startswith("trap_"):
+                neighbors = [(x+1, y), (x-1, y), (x, y+1), (x, y-1)]
+                for nx, ny in neighbors:
+                    if (nx, ny) in positions and positions[(nx, ny)].startswith("trap_"):
+                        bonus += 0.05 # Note: pairs are counted twice, so 0.05 gives 10% per full connection
+
+        return min(bonus, 0.5) # Cap at 50%

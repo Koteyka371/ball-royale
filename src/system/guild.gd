@@ -1351,3 +1351,51 @@ func interact_with_pet(guild_name: String, pet_index: int, action: String) -> Di
                     save_guilds()
                     return {"buff": "luck_boost", "duration": 3600}
     return {}
+
+func arrange_siege_defense(guild_name: String, defense_id: String, grid_x: int, grid_y: int) -> bool:
+    if data["guilds"].has(guild_name):
+        var guild = data["guilds"][guild_name]
+        if not guild.has("siege_layout"):
+            guild["siege_layout"] = {}
+
+        var pos_key = str(grid_x) + "," + str(grid_y)
+        guild["siege_layout"][pos_key] = defense_id
+        save_guilds()
+        return true
+    return false
+
+func get_siege_layout(guild_name: String) -> Dictionary:
+    if data["guilds"].has(guild_name) and data["guilds"][guild_name].has("siege_layout"):
+        return data["guilds"][guild_name]["siege_layout"]
+    return {}
+
+func calculate_siege_synergy(guild_name: String) -> float:
+    var layout = get_siege_layout(guild_name)
+    var bonus = 0.0
+    var positions = {}
+
+    for pos_key in layout.keys():
+        var def_id = layout[pos_key]
+        var parts = pos_key.split(",")
+        if parts.size() == 2:
+            var x = parts[0].to_int()
+            var y = parts[1].to_int()
+            # Workaround for Vector2 keying if needed, but string keys are safer in GDScript dicts
+            positions[Vector2(x, y)] = def_id
+
+    for pos in positions.keys():
+        var def_id = positions[pos]
+        if typeof(def_id) == TYPE_STRING and def_id.begins_with("trap_"):
+            var x = int(pos.x)
+            var y = int(pos.y)
+            var neighbors = [
+                Vector2(x+1, y),
+                Vector2(x-1, y),
+                Vector2(x, y+1),
+                Vector2(x, y-1)
+            ]
+            for n in neighbors:
+                if positions.has(n) and typeof(positions[n]) == TYPE_STRING and positions[n].begins_with("trap_"):
+                    bonus += 0.05
+
+    return min(bonus, 0.5)
