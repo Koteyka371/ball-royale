@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2113] Abyssal Fog Mutator — *2026-09-04 17:32:19 UTC*
+
+During the 'Abyssal' season, introducing a random event where dense purple fog covers the arena. The fog limits vision radius to 150 units for 15 seconds, encouraging stealth mechanics and ambushes.
+
+---
+
 ## [idea-2134] Guild Stronghold Layout Editor — *2026-09-04 16:33:09 UTC*
 
 Allow guilds to actively arrange their base layouts (defenses, traps, etc.) on a grid to optimize their stronghold's defensive capability against sieges from rival guilds. Certain combinations of adjacent traps could yield a synergistic bonus.
