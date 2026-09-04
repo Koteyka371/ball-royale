@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2134] Guild Stronghold Layout Editor — *2026-09-04 16:33:09 UTC*
+
+Allow guilds to actively arrange their base layouts (defenses, traps, etc.) on a grid to optimize their stronghold's defensive capability against sieges from rival guilds. Certain combinations of adjacent traps could yield a synergistic bonus.
+
+---
+
 ## [idea-2100] Hydro-Pump Trap Item — *2026-09-04 15:38:14 UTC*
 
 A deployable trap that, when triggered, blasts a powerful cone of high-pressure water. It knocks enemies back violently and inflicts a 'Soaked' status effect, temporarily nullifying fire-based traits and increasing their vulnerability to electricity.
