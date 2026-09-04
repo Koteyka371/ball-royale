@@ -1,1 +1,0 @@
-Add snowball growth mechanic in `src/ai/action.py` and `src/ai/action.gd`. If `ball_type` or `skin` is "snowball" and it is moving over an "ice_patch", increase radius and damage, up to a maximum limit.
