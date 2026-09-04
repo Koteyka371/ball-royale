@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2118] Sunburn Effect — *2026-09-04 23:16:50 UTC*
+
+During extreme heatwaves, staying outside shadow areas (new terrain feature) causes gradual HP drain. Thermal boots or cooling cosmetics can negate the sunburn effect.
+
+---
+
 ## [idea-2113] Abyssal Fog Mutator — *2026-09-04 17:32:19 UTC*
 
 During the 'Abyssal' season, introducing a random event where dense purple fog covers the arena. The fog limits vision radius to 150 units for 15 seconds, encouraging stealth mechanics and ambushes.
