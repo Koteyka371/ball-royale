@@ -8,6 +8,7 @@ var rooms: Array = []
 var corridors: Array = []
 var platforms: Array = []
 var hazards: Array = []
+var shadow_areas: Array = []
 var rng: RandomNumberGenerator
 
 var safe_zone_radius: float
@@ -134,6 +135,10 @@ func generate():
 
     if rooms.size() == 0:
         return
+
+    shadow_areas.clear()
+    for i in range(5):
+        shadow_areas.append({"x": randf_range(200, width - 200), "y": randf_range(200, height - 200), "radius": randf_range(150, 300)})
 
     var connected = [rooms[0]]
     var unconnected = []

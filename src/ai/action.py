@@ -2164,7 +2164,7 @@ class Action:
         pr = float(getattr(self.ball, "perception_radius", 250.0))
 
         # Check for Thermal Goggles loadout item to ignore fog
-        cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+        cosmetic = str(getattr(self.ball, "cosmetic", "") or "").lower().replace(" ", "_")
         ignores_fog = cosmetic == "thermal_goggles"
         ignores_rain = cosmetic in ["rain_goggles", "waterproof_goggles"]
 
@@ -2232,7 +2232,7 @@ class Action:
             self.ball.artifact_dmg_buffed = (dmg_mult != 1.0)
 
     def execute(self, strategy: str, delta: float) -> None:
-        cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+        cosmetic = str(getattr(self.ball, "cosmetic", "") or "").lower().replace(" ", "_")
         if cosmetic == "aura_drain_pet":
             if not getattr(self.ball, "has_pet", False) or getattr(self.ball, "pet_type", "") != "aura_drain":
                 self.ball.has_pet = True
@@ -2589,7 +2589,7 @@ class Action:
                 self.world.arena.hazards.extend(new_shrapnel)
         # --- Ice Wall Logic Ends Here ---
 
-        if getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") == "emp_shield":
+        if str(getattr(self.ball, "cosmetic", "") or "").lower().replace(" ", "_") == "emp_shield":
             self.ball.emp_immunity_timer = max(getattr(self.ball, "emp_immunity_timer", 0.0), 0.1)
             self.ball.gravity_multiplier_timer = max(getattr(self.ball, "gravity_multiplier_timer", 0.0), 0.1)
 
@@ -3260,7 +3260,7 @@ class Action:
                 trail.vx = self.ball.vx
                 trail.vy = self.ball.vy
                 self.world.arena.hazards.append(trail)
-        cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+        cosmetic = str(getattr(self.ball, "cosmetic", "") or "").lower().replace(" ", "_")
         if cosmetic == "wall_grappler" and strategy in ("flee", "attack", "chase"):
             import math
             arena_width = getattr(self.world.arena, "width", 1000) if hasattr(self.world, "arena") and self.world.arena else getattr(self.world, "width", 1000)
@@ -8154,7 +8154,7 @@ class Action:
                     dist = math.sqrt((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)
                     if dist <= hazard.radius + getattr(self.ball, "radius", 10.0):
                         time_scale = getattr(hazard, "time_scale", 0.5)
-                        c = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+                        c = str(getattr(self.ball, "cosmetic", "") or "").lower().replace(" ", "_")
                         if c == "grounded_boots" or c == "rooted_boots":
                             time_scale = 1.0 - (1.0 - time_scale) * 0.1
                         delta *= time_scale
@@ -8879,7 +8879,7 @@ class Action:
 
         # Weather friction
         if hasattr(self.world, "arena") and hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
-            cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+            cosmetic = str(getattr(self.ball, "cosmetic", "") or "").lower().replace(" ", "_")
             ignores_mud = cosmetic in ["mud_tires", "spiked_tires", "rain_boots", "waterproof_boots", "hover_boots"]
             ignores_snow_ice = cosmetic in ["snow_tires", "snow_boots", "spiked_tires", "snowshoes"] or (hasattr(self.ball, "inventory") and "thermal_boots" in getattr(self.ball, "inventory", [])) or (hasattr(self.ball, "inventory") and "snow_boots" in getattr(self.ball, "inventory", []))
             ignores_wind = cosmetic in ["heavy_boots", "lead_boots"] or (hasattr(self.ball, "inventory") and "gravity_boots" in getattr(self.ball, "inventory", []))
@@ -8919,6 +8919,17 @@ class Action:
                 self.ball.y += getattr(self.ball, "vy") * delta * 0.9
 
             if getattr(self.world.arena, "is_heatwave", False):
+                in_shadow = False
+                if hasattr(self.world.arena, 'shadow_areas'):
+                    for s in self.world.arena.shadow_areas:
+                        if ((self.ball.x - s["x"])**2 + (self.ball.y - s["y"])**2)**0.5 <= s["radius"]:
+                            in_shadow = True
+                            break
+                ignores_heat = str(getattr(self.ball, "cosmetic", "") or "").lower().replace(" ", "_") in ["cooling_fan", "ice_crown", "snow_tires", "snow_boots", "spiked_tires", "snowshoes"] or (hasattr(self.ball, "inventory") and "thermal_boots" in getattr(self.ball, "inventory", [])) or (hasattr(self.ball, "inventory") and "snow_boots" in getattr(self.ball, "inventory", []))
+                if not in_shadow and not ignores_heat:
+                    if getattr(self.ball, "hp", 0.0) > 1.0:
+                        self.ball.hp -= 2.0 * delta
+
                 # Heatwave: higher friction, momentum stops faster (counteract vx/vy if any is present, or just decrease speed dynamically)
                 if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
                     self.ball.vx *= 0.95
@@ -8947,7 +8958,7 @@ class Action:
                         self.ball._is_wind_riding = True
                     else:
                         self.ball._is_wind_riding = False
-                elif getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") == "kite":
+                elif str(getattr(self.ball, "cosmetic", "") or "").lower().replace(" ", "_") == "kite":
                     stamina = getattr(self.ball, "stamina", 0.0)
                     if stamina >= 10.0:
                         self.ball.x += wind_dx * delta * 1.2
@@ -9117,7 +9128,7 @@ class Action:
         if not hasattr(self.ball, "_base_speed_set"):
             self.ball.base_speed = getattr(self.ball, "speed", 2.0)
 
-            cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+            cosmetic = str(getattr(self.ball, "cosmetic", "") or "").lower().replace(" ", "_")
             if cosmetic == "magnetic_boots":
                 self.ball.base_speed *= 0.9
             elif cosmetic == "grounded_boots":
@@ -9131,7 +9142,7 @@ class Action:
             is_heatwave = getattr(arena, 'is_heatwave', False) if arena else False
             is_windy = getattr(arena, 'is_windy', False) if arena else False
 
-            ignores_snow_ice = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") in ["snow_tires", "snow_boots", "spiked_tires", "snowshoes"] or (hasattr(self.ball, "inventory") and "thermal_boots" in getattr(self.ball, "inventory", [])) or (hasattr(self.ball, "inventory") and "snow_boots" in getattr(self.ball, "inventory", []))
+            ignores_snow_ice = str(getattr(self.ball, "cosmetic", "") or "").lower().replace(" ", "_") in ["snow_tires", "snow_boots", "spiked_tires", "snowshoes"] or (hasattr(self.ball, "inventory") and "thermal_boots" in getattr(self.ball, "inventory", [])) or (hasattr(self.ball, "inventory") and "snow_boots" in getattr(self.ball, "inventory", []))
             if is_snowing and not ignores_snow_ice:
                 self.ball.base_speed *= 0.8  # Snow slows down
             if is_windy:
@@ -9195,7 +9206,7 @@ class Action:
             self.ball.damage = getattr(self.ball, "base_damage", 10.0)
 
         # Shadow Monster Pet cosmetic speed boost in dark areas
-        cosmetic_val = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+        cosmetic_val = str(getattr(self.ball, "cosmetic", "") or "").lower().replace(" ", "_")
         if cosmetic_val == "shadow_monster_pet":
             is_dark_phase = False
             if hasattr(self.world, "game_mode") and getattr(self.world.game_mode, "is_dark_phase", False):
@@ -11790,7 +11801,7 @@ class Action:
                             dy = hazard.y - self.ball.y
                             dist_sq = dx * dx + dy * dy
                             if dist_sq < hazard.radius * hazard.radius:
-                                if getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") not in ["snowshoes", "snow_boots", "snow_tires", "spiked_tires"] and not (hasattr(self.ball, "inventory") and ("thermal_boots" in getattr(self.ball, "inventory", []) or "snow_boots" in getattr(self.ball, "inventory", []))):
+                                if str(getattr(self.ball, "cosmetic", "") or "").lower().replace(" ", "_") not in ["snowshoes", "snow_boots", "snow_tires", "spiked_tires"] and not (hasattr(self.ball, "inventory") and ("thermal_boots" in getattr(self.ball, "inventory", []) or "snow_boots" in getattr(self.ball, "inventory", []))):
                                     if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
                                         self.ball.x += self.ball.vx * delta
                                         self.ball.y += self.ball.vy * delta
@@ -11803,7 +11814,7 @@ class Action:
                             dy = hazard.y - self.ball.y
                             dist_sq = dx * dx + dy * dy
                             if dist_sq < hazard.radius * hazard.radius:
-                                if getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") not in ["snowshoes", "snow_boots", "snow_tires", "spiked_tires"] and not (hasattr(self.ball, "inventory") and ("thermal_boots" in getattr(self.ball, "inventory", []) or "snow_boots" in getattr(self.ball, "inventory", []))):
+                                if str(getattr(self.ball, "cosmetic", "") or "").lower().replace(" ", "_") not in ["snowshoes", "snow_boots", "snow_tires", "spiked_tires"] and not (hasattr(self.ball, "inventory") and ("thermal_boots" in getattr(self.ball, "inventory", []) or "snow_boots" in getattr(self.ball, "inventory", []))):
                                     self.ball.is_frictionless = True
                                     if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
                                         self.ball.x += self.ball.vx * delta
@@ -11815,7 +11826,7 @@ class Action:
                             dy = hazard.y - self.ball.y
                             dist_sq = dx * dx + dy * dy
                             if dist_sq < hazard.radius * hazard.radius:
-                                if getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") not in ["snowshoes", "snow_boots", "snow_tires", "spiked_tires"] and not (hasattr(self.ball, "inventory") and ("thermal_boots" in getattr(self.ball, "inventory", []) or "snow_boots" in getattr(self.ball, "inventory", []))):
+                                if str(getattr(self.ball, "cosmetic", "") or "").lower().replace(" ", "_") not in ["snowshoes", "snow_boots", "snow_tires", "spiked_tires"] and not (hasattr(self.ball, "inventory") and ("thermal_boots" in getattr(self.ball, "inventory", []) or "snow_boots" in getattr(self.ball, "inventory", []))):
                                     self.ball.is_frictionless = True
                                     if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
                                         self.ball.x += self.ball.vx * delta
@@ -11852,7 +11863,7 @@ class Action:
                         dist_sq = dx * dx + dy * dy
                         if dist_sq < hazard.radius * hazard.radius:
                             # Apply slow effect
-                            if getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") not in ["mud_tires", "spiked_tires", "rain_boots", "waterproof_boots", "hover_boots"]:
+                            if str(getattr(self.ball, "cosmetic", "") or "").lower().replace(" ", "_") not in ["mud_tires", "spiked_tires", "rain_boots", "waterproof_boots", "hover_boots"]:
                                 self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.3
 
                             # Quicksand sucks in players within a certain radius, dealing no damage but making movement very difficult
@@ -11977,7 +11988,7 @@ class Action:
                         dy = hazard.y - self.ball.y
                         dist_sq = dx * dx + dy * dy
                         if dist_sq < hazard.radius * hazard.radius:
-                            if getattr(self.ball, "ball_type", "") == "snow_yeti" or getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") in ["snowshoes", "snow_boots", "snow_tires", "spiked_tires"] or (hasattr(self.ball, "inventory") and ("thermal_boots" in getattr(self.ball, "inventory", []) or "snow_boots" in getattr(self.ball, "inventory", []))):
+                            if getattr(self.ball, "ball_type", "") == "snow_yeti" or str(getattr(self.ball, "cosmetic", "") or "").lower().replace(" ", "_") in ["snowshoes", "snow_boots", "snow_tires", "spiked_tires"] or (hasattr(self.ball, "inventory") and ("thermal_boots" in getattr(self.ball, "inventory", []) or "snow_boots" in getattr(self.ball, "inventory", []))):
                                 self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * (2.0 if getattr(self.ball, "ball_type", "") == "snow_yeti" else 1.0)
                                 if hasattr(self.ball, "is_slipping"):
                                     self.ball.is_slipping = False
@@ -12009,7 +12020,7 @@ class Action:
                         dist_sq = dx * dx + dy * dy
                         if dist_sq < hazard.radius * hazard.radius:
                             # Apply slow effect
-                            if getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") not in ["mud_tires", "spiked_tires", "rain_boots", "waterproof_boots", "hover_boots"]:
+                            if str(getattr(self.ball, "cosmetic", "") or "").lower().replace(" ", "_") not in ["mud_tires", "spiked_tires", "rain_boots", "waterproof_boots", "hover_boots"]:
                                 self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.3
 
                             # Quicksand sucks in players within a certain radius, dealing no damage but making movement very difficult
@@ -12038,7 +12049,7 @@ class Action:
                                             self.ball.quicksand_debuff_timer = 2.0
 
                                     if getattr(self.ball, "quicksand_debuff_timer", 0.0) > 0:
-                                        if getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") not in ["mud_tires", "spiked_tires", "rain_boots", "waterproof_boots", "hover_boots"]:
+                                        if str(getattr(self.ball, "cosmetic", "") or "").lower().replace(" ", "_") not in ["mud_tires", "spiked_tires", "rain_boots", "waterproof_boots", "hover_boots"]:
                                             self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.3
                                         self.ball.quicksand_debuff_timer -= delta
 
@@ -12080,7 +12091,7 @@ class Action:
                                 ny = dy / dist
                                 pull_strength = 80.0 * delta
                                 if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
-                                    c = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+                                    c = str(getattr(self.ball, "cosmetic", "") or "").lower().replace(" ", "_")
                                     mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else 1.0)
                                     self.ball.x += nx * pull_strength * mod
                                     self.ball.y += ny * pull_strength * mod
@@ -12210,7 +12221,7 @@ class Action:
                                 # push AWAY from hazard, direction = ball - hazard = -dx
                                 nx, ny = -dx / dist, -dy / dist
                                 push_strength = (hazard.radius * 2.0 / max(10.0, dist)) * 50.0 * delta
-                                cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+                                cosmetic = str(getattr(self.ball, "cosmetic", "") or "").lower().replace(" ", "_")
                                 if cosmetic == "magnetic_boots":
                                     push_strength *= 0.5
                                 elif cosmetic == "grounded_boots":
@@ -12336,7 +12347,7 @@ class Action:
                                 # We want to push AWAY from hazard, so direction is ball - hazard = -dx
                                 nx, ny = -dx / dist, -dy / dist
                                 push_strength = (hazard.radius * 2.0 / max(10.0, dist)) * 50.0 * delta
-                                cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+                                cosmetic = str(getattr(self.ball, "cosmetic", "") or "").lower().replace(" ", "_")
                                 if cosmetic == "magnetic_boots":
                                     push_strength *= 0.5
                                 elif cosmetic == "grounded_boots":
@@ -12381,7 +12392,7 @@ class Action:
 
                                 # Apply pull
                                 if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
-                                    c = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+                                    c = str(getattr(self.ball, "cosmetic", "") or "").lower().replace(" ", "_")
                                     mod = 0.2 if c == "rooted_boots" else (0.5 if c == "grounded_boots" else 1.0)
 
                                     # Always pull towards the center
@@ -12678,7 +12689,7 @@ class Action:
                                         pull_strength *= 10.0
 
                                 if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0 and not getattr(self.ball, "in_gravity_nullifier_zone", False):
-                                    c = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+                                    c = str(getattr(self.ball, "cosmetic", "") or "").lower().replace(" ", "_")
                                     mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else 1.0)
                                     self.ball.x += nx * pull_strength * mod
                                     self.ball.y += ny * pull_strength * mod
@@ -12696,7 +12707,7 @@ class Action:
                                             effect_nx = self.ball.vx / speed
                                             effect_ny = self.ball.vy / speed
                                             if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
-                                                c = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+                                                c = str(getattr(self.ball, "cosmetic", "") or "").lower().replace(" ", "_")
                                                 mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else 1.0)
                                                 self.ball.vx += effect_nx * slingshot_strength * delta * mod
                                                 self.ball.vy += effect_ny * slingshot_strength * delta * mod
@@ -12705,7 +12716,7 @@ class Action:
                                             dot = nx * self.ball.vx + ny * self.ball.vy
                                             if dot > -speed * 0.8: # If not flying directly into it
                                                 if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
-                                                    c = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+                                                    c = str(getattr(self.ball, "cosmetic", "") or "").lower().replace(" ", "_")
                                                     mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else 1.0)
                                                     self.ball.vx += effect_nx * slingshot_strength * delta * mod
                                                     self.ball.vy += effect_ny * slingshot_strength * delta * mod
@@ -13852,7 +13863,7 @@ class Action:
                                 nx = dx / dist
                                 ny = dy / dist
                                 knockback_force = 1000.0 * delta
-                                cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+                                cosmetic = str(getattr(self.ball, "cosmetic", "") or "").lower().replace(" ", "_")
                                 if cosmetic == "magnetic_boots":
                                     knockback_force *= 0.5
                                 elif cosmetic == "grounded_boots":
@@ -16149,7 +16160,7 @@ class Action:
                 if wall_state in ["bouncy", "damaged_bouncy", "abyss", "ice", "trampoline"] or is_pinball_mutator:
                     pass # Bouncy walls don't deal damage (abyss is already handled)
                 elif wall_state == "spikes":
-                    if getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") != "hover_boots":
+                    if str(getattr(self.ball, "cosmetic", "") or "").lower().replace(" ", "_") != "hover_boots":
                         damage = 250.0
                         if getattr(self.world.arena, "weather", "") in ["snow", "blizzard"]:
                             damage *= 0.5
@@ -25564,7 +25575,7 @@ class Action:
                         if h_dist <= explosion_radius + getattr(hazard, "radius", 0):
                             if hasattr(hazard, "kind"):
                                 if hazard.kind in ["spikes", "fake_booster", "dummy_item", "fake_flare", "fake_healing_orb"]:
-                                    if hazard.kind != "spikes" or getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") != "hover_boots":
+                                    if hazard.kind != "spikes" or str(getattr(self.ball, "cosmetic", "") or "").lower().replace(" ", "_") != "hover_boots":
                                         hazards_to_remove.append(hazard)
                                 elif hazard.kind in ["lava", "poison_cloud"] and getattr(hazard, "active", True):
                                     # Trigger secondary explosion: larger radius, hazard-specific effect
@@ -26104,7 +26115,7 @@ class Action:
                         h_dist = math.sqrt(hx*hx + hy*hy)
                         if h_dist <= pound_radius + getattr(hazard, "radius", 0):
                             if hasattr(hazard, "kind") and hazard.kind in ["spikes", "fake_booster", "dummy_item", "fake_flare", "fake_healing_orb"]:
-                                if hazard.kind != "spikes" or getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") != "hover_boots":
+                                if hazard.kind != "spikes" or str(getattr(self.ball, "cosmetic", "") or "").lower().replace(" ", "_") != "hover_boots":
                                     hazards_to_remove.append(hazard)
                             elif hasattr(hazard, "kind") and hazard.kind in ["lava", "lava_puddle", "lava_pit"]:
                                 hazards_to_remove.append(hazard)
@@ -26361,7 +26372,7 @@ class Action:
                 bounced = True
 
         gm = getattr(self.world, "game_mode", None)
-        cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+        cosmetic = str(getattr(self.ball, "cosmetic", "") or "").lower().replace(" ", "_")
         is_magnetic = getattr(self.ball, "magnetic_boots_timer", 0.0) > 0.0 or cosmetic == "magnetic_boots"
 
         is_lunar_eclipse_bounce = False
@@ -26537,7 +26548,7 @@ class Action:
                         if other.hp <= 0:
                             other.alive = False
 
-                cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+                cosmetic = str(getattr(self.ball, "cosmetic", "") or "").lower().replace(" ", "_")
                 if getattr(self.ball, "magnetic_boots_timer", 0.0) > 0.0 or cosmetic == "magnetic_boots":
                     knockback_multiplier = 0.0
                 elif cosmetic == "grounded_boots":
@@ -29026,7 +29037,7 @@ class Action:
                                 nx, ny = (hazard.x - self.ball.x) / dist, (hazard.y - self.ball.y) / dist
                                 pull_strength = 100.0 * delta
                                 if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
-                                    c = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+                                    c = str(getattr(self.ball, "cosmetic", "") or "").lower().replace(" ", "_")
                                     mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else 1.0)
                                     self.ball.x += nx * pull_strength * mod
                                     self.ball.y += ny * pull_strength * mod
@@ -29201,7 +29212,7 @@ class Action:
                                 nx, ny = (hazard.x - self.ball.x) / dist, (hazard.y - self.ball.y) / dist
                                 pull_strength = 20.0 * delta # Slow pull
                                 if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
-                                    c = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+                                    c = str(getattr(self.ball, "cosmetic", "") or "").lower().replace(" ", "_")
                                     mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else 1.0)
                                     self.ball.x += nx * pull_strength * mod
                                     self.ball.y += ny * pull_strength * mod
@@ -29243,7 +29254,7 @@ class Action:
                                 nx, ny = (hazard.x - self.ball.x) / dist, (hazard.y - self.ball.y) / dist
                                 pull_strength = 150.0 * delta # Fast pull
                                 if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
-                                    c = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+                                    c = str(getattr(self.ball, "cosmetic", "") or "").lower().replace(" ", "_")
                                     mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else 1.0)
                                     self.ball.x += nx * pull_strength * mod
                                     self.ball.y += ny * pull_strength * mod
@@ -29352,7 +29363,7 @@ class Action:
                                 nx, ny = (hazard.x - self.ball.x) / dist, (hazard.y - self.ball.y) / dist
                                 pull_strength = 200.0 * delta # Faster pull than pull_trap
                                 if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
-                                    c = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+                                    c = str(getattr(self.ball, "cosmetic", "") or "").lower().replace(" ", "_")
                                     mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else 1.0)
                                     self.ball.x += nx * pull_strength * mod
                                     self.ball.y += ny * pull_strength * mod
@@ -29634,7 +29645,7 @@ class Action:
                             # Push strength scales with proximity (500 base strength)
                             push_strength = 500.0 * (1.0 - (dist / h_rad)) * delta
 
-                            cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+                            cosmetic = str(getattr(self.ball, "cosmetic", "") or "").lower().replace(" ", "_")
                             if cosmetic == "link_boots":
                                 allies = self._get_allies()
                                 if allies:
@@ -30227,7 +30238,7 @@ class Action:
             cooldown_mult *= 1.5
         if getattr(self.ball, "overdrive_zone_active", False):
             cooldown_mult *= 3.0
-        ignores_snow_ice = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") in ["snow_tires", "snow_boots", "spiked_tires", "snowshoes"] or (hasattr(self.ball, "inventory") and "thermal_boots" in getattr(self.ball, "inventory", [])) or (hasattr(self.ball, "inventory") and "snow_boots" in getattr(self.ball, "inventory", []))
+        ignores_snow_ice = str(getattr(self.ball, "cosmetic", "") or "").lower().replace(" ", "_") in ["snow_tires", "snow_boots", "spiked_tires", "snowshoes"] or (hasattr(self.ball, "inventory") and "thermal_boots" in getattr(self.ball, "inventory", [])) or (hasattr(self.ball, "inventory") and "snow_boots" in getattr(self.ball, "inventory", []))
         if is_snowing and not ignores_snow_ice:
             cooldown_mult *= 0.5  # Snow slows down cooldowns (longer wait)
         elif is_heatwave:
