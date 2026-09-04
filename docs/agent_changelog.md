@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2117] Slippery Arena — *2026-09-04 05:49:30 UTC*
+
+A game mode where balls have significantly less friction and bounce around with higher velocity, making it harder to control movement but enabling interesting ricochet plays.
+
+---
+
 ## [idea-2114] Decaying Orbits mutator — *2026-09-03 22:13:51 UTC*
 
 The safe zone isn't a shrinking circle, but instead is a rapidly orbiting spotlight that gets faster and smaller as the game progresses.
