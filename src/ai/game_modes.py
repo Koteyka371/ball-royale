@@ -58980,3 +58980,52 @@ class GravityVortexHazardMode(GameMode):
 GAME_MODES["gravity_vortex_hazard"] = GravityVortexHazardMode()
 
 GAME_MODES["slow_drain_aura"] = SlowDrainAuraMode()
+
+class GlobalEMPEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Global EMP Event"
+        self.description = "Periodically disables all deployed shields and turrets and slows down all entities momentarily, acting as a global EMP."
+        self.emp_timer = 15.0
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        self.emp_timer -= delta
+        if self.emp_timer <= 0:
+            self.emp_timer = 15.0
+
+            if hasattr(world, "events"):
+                world.events.append({'type': 'global_emp_pulse', 'data': {}})
+
+            for b in balls:
+                if not getattr(b, "alive", True): continue
+
+                # Apply slow
+                b.slow_timer = max(getattr(b, "slow_timer", 0.0), 3.0)
+
+                # Destroy turrets
+                if getattr(b, "is_turret", False):
+                    b.hp = 0
+                    b.alive = False
+
+                # Clear shields
+                shields = ["nemesis_shield_active", "has_aegis_shield", "mirror_shield_active", "directional_shield_active",
+                           "deflector_shield_active", "bounce_shield_active", "kinetic_shield_active", "half_reflect_shield_active",
+                           "surge_shield_active", "energy_shield_active", "reflect_shield_active"]
+                for s in shields:
+                    if hasattr(b, s):
+                        setattr(b, s, False)
+                if hasattr(b, "aegis_shield_active_timer"):
+                    b.aegis_shield_active_timer = 0.0
+
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                surviving_hazards = []
+                for h in world.arena.hazards:
+                    kind = getattr(h, "kind", "")
+                    if kind and ("turret" in kind or "shield" in kind or "deployable" in kind or "stasis" in kind):
+                        continue
+                    surviving_hazards.append(h)
+                world.arena.hazards = surviving_hazards
+
+GAME_MODES["global_emp_event"] = GlobalEMPEventMode()

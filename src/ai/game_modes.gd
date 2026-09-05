@@ -92517,3 +92517,64 @@ class GravityVortexHazardMode extends GameMode:
 GAME_MODES["gravity_vortex_hazard"] = GravityVortexHazardMode.new()
 
 GAME_MODES["blood_thirst"] = BloodThirstMode.new()
+
+class GlobalEMPEventMode extends GameMode:
+	var emp_timer: float = 15.0
+
+	func _init():
+		super._init()
+		self.name = "Global EMP Event"
+		self.description = "Periodically disables all deployed shields and turrets and slows down all entities momentarily, acting as a global EMP."
+
+	func tick(world: Object, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		emp_timer -= delta
+		if emp_timer <= 0:
+			emp_timer = 15.0
+
+			if world.has_method("add_event"):
+				world.add_event("global_emp_pulse", {})
+			elif "events" in world:
+				world.events.append({"type": "global_emp_pulse", "data": {}})
+
+			for b in balls:
+				if typeof(b) == TYPE_DICTIONARY:
+					if b.get("alive", true) == false: continue
+					b["slow_timer"] = max(b.get("slow_timer", 0.0), 3.0)
+					if b.get("is_turret", false):
+						b["hp"] = 0
+						b["alive"] = false
+					var shields = ["nemesis_shield_active", "has_aegis_shield", "mirror_shield_active", "directional_shield_active", "deflector_shield_active", "bounce_shield_active", "kinetic_shield_active", "half_reflect_shield_active", "surge_shield_active", "energy_shield_active", "reflect_shield_active"]
+					for s in shields:
+						if b.has(s):
+							b[s] = false
+					if b.has("aegis_shield_active_timer"):
+						b["aegis_shield_active_timer"] = 0.0
+				else:
+					if b.get("alive") == false: continue
+					b.set("slow_timer", max(b.get("slow_timer", 0.0), 3.0))
+					if b.get("is_turret"):
+						b.set("hp", 0)
+						b.set("alive", false)
+					var shields = ["nemesis_shield_active", "has_aegis_shield", "mirror_shield_active", "directional_shield_active", "deflector_shield_active", "bounce_shield_active", "kinetic_shield_active", "half_reflect_shield_active", "surge_shield_active", "energy_shield_active", "reflect_shield_active"]
+					for s in shields:
+						if s in b or (b.has_method("has_meta") and b.has_meta(s)):
+							b.set(s, false)
+					if "aegis_shield_active_timer" in b or (b.has_method("has_meta") and b.has_meta("aegis_shield_active_timer")):
+						b.set("aegis_shield_active_timer", 0.0)
+
+			if world.get("arena") and world.arena.get("hazards"):
+				var surviving = []
+				for h in world.arena.hazards:
+					var kind = ""
+					if typeof(h) == TYPE_DICTIONARY:
+						kind = h.get("kind", "")
+					else:
+						kind = h.get("kind") if h.get("kind") != null else ""
+					if kind != "" and (kind.find("turret") != -1 or kind.find("shield") != -1 or kind.find("deployable") != -1 or kind.find("stasis") != -1):
+						continue
+					surviving.append(h)
+				world.arena.hazards = surviving
+
+GAME_MODES["global_emp_event"] = GlobalEMPEventMode.new()
