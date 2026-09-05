@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2129] Decoy Flare Item — *2026-09-05 05:25:35 UTC*
+
+An interactable item that, when thrown or deployed, simulates the presence of a high-value player or bounty target, distracting aggressive AI and misleading players attempting to ambush.
+
+---
+
 ## [idea-2015] Necromantic Tether — *2026-09-05 03:37:38 UTC*
 
 A new skill for the Necromancer that creates a dark energy tether between them and their nearest minion. Any damage taken by the Necromancer is split 50/50 with the tethered minion, and the minion's attacks heal the Necromancer for 10% of the damage dealt.
