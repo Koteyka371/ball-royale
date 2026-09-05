@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2133] Solar Flare Mutator — *2026-09-05 05:27:57 UTC*
+
+Periodically disables all deployed shields and turrets and slows down all entities momentarily, acting as a global EMP.
+
+---
+
 ## [idea-2129] Decoy Flare Item — *2026-09-05 05:25:35 UTC*
 
 An interactable item that, when thrown or deployed, simulates the presence of a high-value player or bounty target, distracting aggressive AI and misleading players attempting to ambush.
