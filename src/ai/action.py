@@ -3817,6 +3817,11 @@ class Action:
                             if hasattr(b, "y"): b.y += ny * pull_strength
 
 
+        if getattr(self.ball, "echo_aura_timer", 0.0) > 0.0:
+            self.ball.echo_aura_timer -= delta
+            if self.ball.echo_aura_timer < 0:
+                self.ball.echo_aura_timer = 0.0
+
         if getattr(self.ball, "vacuum_booster_timer", 0.0) > 0.0:
             self.ball.vacuum_booster_timer -= delta
             if self.ball.vacuum_booster_timer < 0.0:
@@ -18304,6 +18309,15 @@ class Action:
                             self.world.boosters.remove(b)
                         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and b in self.world.arena.hazards:
                             self.world.arena.hazards.remove(b)
+                elif getattr(b, "kind", "") == "echo_aura_booster":
+                    dist = __import__("math").sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
+                    if dist <= getattr(self.ball, "radius", 10.0) + getattr(b, "radius", 15.0) + 5.0:
+                        self.ball.echo_aura_timer = 5.0
+                        b.active = False
+                        if hasattr(self.world, "boosters") and b in self.world.boosters:
+                            self.world.boosters.remove(b)
+                        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and b in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(b)
                 elif getattr(b, "kind", "") == "magnetic_aura_booster":
                     dist = __import__("math").sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
                     if dist <= getattr(self.ball, "radius", 10.0) + getattr(b, "radius", 15.0) + 5.0:
@@ -27081,6 +27095,30 @@ class Action:
         if getattr(self.ball, "aura_booster_timer", 0.0) > 0:
             aura_radius = 500.0
             aura_multiplier = 2.0
+
+        # Echo Aura logic
+        if getattr(self.ball, "echo_aura_timer", 0.0) > 0.0:
+            # Find nearest ally
+            nearest_ally = None
+            min_dist = 999999
+            if hasattr(self.world, "balls"):
+                for other in self.world.balls:
+                    if getattr(other, "alive", True) and getattr(other, "id", None) != ball_id and getattr(other, "team", getattr(other, "ball_type", "")) == team:
+                        dist_sq = (self.ball.x - other.x)**2 + (self.ball.y - other.y)**2
+                        if dist_sq <= aura_radius**2 and dist_sq < min_dist:
+                            min_dist = dist_sq
+                            nearest_ally = other
+            if nearest_ally:
+                buffs_to_echo = [
+                    "speed_boost_timer", "damage_booster_timer", "shield_timer", "invisibility_booster_timer",
+                    "aura_booster_timer", "vampiric_aura_timer", "stamina_booster_timer", "ghost_booster_timer",
+                    "mirage_booster_timer", "heroism_booster_timer", "juggernaut_booster_timer", "phase_booster_timer",
+                    "stealth_booster_timer", "hazard_immunity_timer", "emp_immunity_timer"
+                ]
+                for buff in buffs_to_echo:
+                    val = getattr(self.ball, buff, 0.0)
+                    if val > 0:
+                        setattr(nearest_ally, buff, max(getattr(nearest_ally, buff, 0.0), val * 0.5))
 
         # Apply permanent team-wide aura buffs
         if hasattr(self.world, "permanent_aura_buffs") and isinstance(getattr(self.world, "permanent_aura_buffs", None), dict):

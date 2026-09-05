@@ -2925,6 +2925,16 @@ func _attempt_damage_internal(attacker, target) -> void:
 											if "alive" in other: other.alive = false
 											elif typeof(other) == TYPE_OBJECT and other.has_method("set_meta"): other.set_meta("alive", false)
 		var leech_timer = 0.0
+		var echo_aura_timer = 0.0
+		if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("echo_aura_timer"): echo_aura_timer = self.ball.echo_aura_timer
+		elif typeof(self.ball) == TYPE_OBJECT and "echo_aura_timer" in self.ball: echo_aura_timer = self.ball.echo_aura_timer
+		if echo_aura_timer > 0.0:
+			echo_aura_timer -= delta
+			if echo_aura_timer <= 0.0:
+				echo_aura_timer = 0.0
+			if typeof(self.ball) == TYPE_DICTIONARY: self.ball["echo_aura_timer"] = echo_aura_timer
+			else: self.ball.echo_aura_timer = echo_aura_timer
+
 		var echo_timer = 0.0
 		if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("echo_booster_timer"): echo_timer = self.ball.echo_booster_timer
 		elif typeof(self.ball) == TYPE_OBJECT and "echo_booster_timer" in self.ball: echo_timer = self.ball.echo_booster_timer
