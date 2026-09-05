@@ -43150,94 +43150,75 @@ func _use_skill():
                 self.ball.skill_timer = self.ball.get_meta("skill_cooldown")
             else:
                 self.ball.skill_timer = 8.0
-        elif skill_name == "blood_pact":
-            var max_hp = 100.0
-            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("max_hp"):
-                max_hp = self.ball.get_meta("max_hp")
-            elif "max_hp" in self.ball:
-                max_hp = self.ball.max_hp
+        elif skill_name == "dark_tether":
+            if "balls" in self.world:
+                var minions = []
+                for b in self.world.balls:
+                    var is_alive = false
+                    if typeof(b) == TYPE_OBJECT and "alive" in b: is_alive = b.alive
+                    elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): is_alive = b.alive
 
-            var current_hp = 0.0
-            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("hp"):
-                current_hp = self.ball.get_meta("hp")
-            elif "hp" in self.ball:
-                current_hp = self.ball.hp
+                    var is_mine = false
+                    var b_owner = null
+                    if typeof(b) == TYPE_OBJECT and "minion_owner" in b: b_owner = b.minion_owner
+                    elif typeof(b) == TYPE_DICTIONARY and b.has("minion_owner"): b_owner = b.minion_owner
 
-            var hp_cost = current_hp * 0.2
-            if current_hp > hp_cost:
-                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
-                    self.ball.set_meta("hp", current_hp - hp_cost)
-                elif "hp" in self.ball:
-                    self.ball.hp -= hp_cost
-                if "events" in self.world:
-                    self.world.events.append(["visual_effect", {"type": "blood_pact_activation", "x": self.ball.x, "y": self.ball.y}])
+                    var my_id = null
+                    if typeof(self.ball) == TYPE_OBJECT and "id" in self.ball: my_id = self.ball.id
+                    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): my_id = self.ball.id
 
-                if "balls" in self.world:
-                    var dead_teammates = []
-                    for b in self.world.balls:
-                        var is_alive = true
-                        if "alive" in b: is_alive = b.alive
-                        var b_team = ""
-                        if "team" in b: b_team = b.team
-                        var b_type = ""
-                        if "ball_type" in b: b_type = b.ball_type
-                        if not is_alive and "team" in self.ball and b_team == self.ball.team and b_type != "minion" and b_type != "elite_minion" and b_type != "skeletal_dragon":
-                            dead_teammates.append(b)
+                    if is_alive and b_owner != null and my_id != null and b_owner == my_id:
+                        minions.append(b)
 
-                    if dead_teammates.size() > 0:
-                        var target = dead_teammates[0]
-                        if typeof(target) == TYPE_DICTIONARY:
-                            target["alive"] = true
-                            target["hp"] = target.get("max_hp", 100.0)
-                            target["ball_type"] = "elite_minion"
-                            target["base_speed"] = target.get("base_speed", target.get("speed", 15.0)) * 1.5
-                            target["base_damage"] = target.get("base_damage", target.get("damage", 10.0)) * 1.5
-                            target["speed"] = target["base_speed"]
-                            target["damage"] = target["base_damage"]
-                            if "id" in self.ball: target["minion_owner"] = self.ball.id
-                        else:
-                            target.alive = true
-                            var t_max_hp = 100.0
-                            if "max_hp" in target: t_max_hp = target.max_hp
-                            target.hp = t_max_hp
-                            target.ball_type = "elite_minion"
-                            var t_speed = 15.0
-                            if "speed" in target: t_speed = target.speed
-                            var t_base_speed = t_speed
-                            if "base_speed" in target: t_base_speed = target.base_speed
-                            target.base_speed = t_base_speed * 1.5
-                            var t_damage = 10.0
-                            if "damage" in target: t_damage = target.damage
-                            var t_base_damage = t_damage
-                            if "base_damage" in target: t_base_damage = target.base_damage
-                            target.base_damage = t_base_damage * 1.5
-                            target.speed = target.base_speed
-                            target.damage = target.base_damage
-                            if "id" in self.ball: target.minion_owner = self.ball.id
-                        if "events" in self.world:
-                            self.world.events.append(["visual_effect", {"type": "blood_pact_resurrect", "x": target.x, "y": target.y}])
+                if minions.size() > 0:
+                    var target = minions[0]
+                    var min_dist = 999999.0
+                    for m in minions:
+                        var mx = 0.0
+                        var my = 0.0
+                        if typeof(m) == TYPE_OBJECT and "x" in m and "y" in m:
+                            mx = m.x
+                            my = m.y
+                        elif typeof(m) == TYPE_DICTIONARY and m.has("x") and m.has("y"):
+                            mx = m.x
+                            my = m.y
+                        var b_x = 0.0
+                        var b_y = 0.0
+                        if typeof(self.ball) == TYPE_OBJECT and "x" in self.ball and "y" in self.ball:
+                            b_x = self.ball.x
+                            b_y = self.ball.y
+                        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("x") and self.ball.has("y"):
+                            b_x = self.ball.x
+                            b_y = self.ball.y
+
+                        var dist = sqrt(pow(mx - b_x, 2) + pow(my - b_y, 2))
+                        if dist < min_dist:
+                            min_dist = dist
+                            target = m
+
+                    var t_id = null
+                    if typeof(target) == TYPE_OBJECT and "id" in target: t_id = target.id
+                    elif typeof(target) == TYPE_DICTIONARY and target.has("id"): t_id = target.id
+
+                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                        self.ball.set_meta("dark_tether_target_id", t_id)
+                    elif typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["dark_tether_target_id"] = t_id
                     else:
-                        var active_minions = []
-                        for b in self.world.balls:
-                            var is_alive = false
-                            if "alive" in b: is_alive = b.alive
-                            var b_team = ""
-                            if "team" in b: b_team = b.team
-                            var b_type = ""
-                            if "ball_type" in b: b_type = b.ball_type
-                            if is_alive and "team" in self.ball and b_team == self.ball.team and (b_type == "minion" or b_type == "elite_minion" or b_type == "skeletal_dragon"):
-                                active_minions.append(b)
+                        self.ball.dark_tether_target_id = t_id
 
-                        if active_minions.size() > 0:
-                            for minion in active_minions:
-                                if typeof(minion) == TYPE_DICTIONARY:
-                                    minion["lifesteal_aura_timer"] = 10.0
-                                    if "id" in self.ball: minion["lifesteal_aura_owner"] = self.ball.id
-                                else:
-                                    minion.lifesteal_aura_timer = 10.0
-                                    if "id" in self.ball: minion.lifesteal_aura_owner = self.ball.id
-                            if "events" in self.world:
-                                self.world.events.append(["visual_effect", {"type": "blood_pact_aura", "x": self.ball.x, "y": self.ball.y}])
+                    if "events" in self.world:
+                        self.world.events.append(["visual_effect", {"type": "dark_tether_activation", "x": b_x, "y": b_y, "target_id": t_id}])
+
+            var cd = 8.0
+            if typeof(self.ball) == TYPE_OBJECT and "skill_cooldown" in self.ball: cd = self.ball.skill_cooldown
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("skill_cooldown"): cd = self.ball.skill_cooldown
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("skill_cooldown"): cd = self.ball.get_meta("skill_cooldown")
+
+            if typeof(self.ball) == TYPE_OBJECT and "skill_timer" in self.ball: self.ball.skill_timer = cd
+            elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["skill_timer"] = cd
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", cd)
+            else: self.ball.skill_timer = cd
         elif skill_name == "corpse_explosion":
             if "balls" in self.world:
                 var minions = []

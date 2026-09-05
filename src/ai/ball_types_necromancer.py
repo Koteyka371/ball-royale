@@ -14,7 +14,7 @@ class Necromancer:
     PERCEPTION_RADIUS = 320
     AGGRESSION = 0.3
     COLOR = 'black'
-    SKILL = 'blood_pact'
+    SKILL = 'dark_tether'
     SKILL_COOLDOWN = 8.0
     ATTACK_RANGE = 35.0
 
@@ -37,6 +37,7 @@ class Necromancer:
         self.survival_without_damage = 0.0
         self.is_lich = False
         self.skeletal_dragons_summoned = 0
+        self.dark_tether_target_id = None
 
     def get_hp_percent(self) -> float:
         return self.hp / self.max_hp if self.max_hp > 0 else 0.0
@@ -83,6 +84,24 @@ class Necromancer:
         self.current_action = "idle"
 
     def take_damage(self, amount: float) -> None:
+        if getattr(self, "dark_tether_target_id", None) is not None:
+            world = getattr(self, "world", None)
+            if not world and hasattr(self, "_cached_world"):
+                world = self._cached_world
+            if world and hasattr(world, "balls"):
+                tethered_minion = next((b for b in world.balls if getattr(b, "id", None) == self.dark_tether_target_id and getattr(b, "alive", True)), None)
+                if tethered_minion:
+                    split_amount = amount * 0.5
+                    amount = split_amount
+                    if hasattr(tethered_minion, "take_damage"):
+                        tethered_minion.take_damage(split_amount)
+                    elif hasattr(tethered_minion, "hp"):
+                        tethered_minion.hp -= split_amount
+                        if tethered_minion.hp <= 0:
+                            tethered_minion.alive = False
+                else:
+                    self.dark_tether_target_id = None
+
         if getattr(self, "radiation_duration", 0.0) > 0:
             amount *= getattr(self, "radiation_multiplier", 1.5)
 

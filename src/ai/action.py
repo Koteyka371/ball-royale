@@ -1596,6 +1596,15 @@ class Action:
                     if hasattr(self.world, "events"):
                         self.world.events.append({'type': 'visual_effect', 'data': {'type': 'enforcer_aura', 'x': attacker.x, 'y': attacker.y, 'stacks': attacker.enforcer_vengeance_stacks}})
 
+
+        if old_hp > new_hp and getattr(attacker, "ball_type", "") == "minion":
+            m_owner = getattr(attacker, "minion_owner", None)
+            if m_owner is not None and hasattr(self.world, "balls"):
+                owner_ball = next((b for b in self.world.balls if getattr(b, "id", None) == m_owner and getattr(b, "alive", True) and getattr(b, "ball_type", "") == "necromancer"), None)
+                if owner_ball and getattr(owner_ball, "dark_tether_target_id", None) == getattr(attacker, "id", None):
+                    heal_amount = (old_hp - new_hp) * 0.1
+                    owner_ball.hp = min(getattr(owner_ball, "max_hp", 100.0), getattr(owner_ball, "hp", 100.0) + heal_amount)
+
         if b_type_attacker == 'leech':
             damage_dealt = max(0, old_hp - new_hp)
             if damage_dealt > 0:
@@ -22372,36 +22381,16 @@ class Action:
                     wall.owner_team = getattr(self.ball, "team", "")
                     self.world.arena.hazards.append(wall)
                 self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 8.0)
-            elif skill_name == "blood_pact":
-                hp_cost = getattr(self.ball, "hp", 100.0) * 0.2
-                if self.ball.hp > hp_cost:
-                    self.ball.hp -= hp_cost
-                    if hasattr(self.world, "events"):
-                        self.world.events.append(("visual_effect", {"type": "blood_pact_activation", "x": self.ball.x, "y": self.ball.y}))
-
-                    if hasattr(self.world, "balls"):
-                        dead_teammates = [b for b in self.world.balls if getattr(b, "team", "") == getattr(self.ball, "team", "") and not getattr(b, "alive", True) and getattr(b, "ball_type", "") not in ["minion", "elite_minion", "skeletal_dragon"]]
-
-                        if dead_teammates:
-                            target = dead_teammates[0]
-                            target.alive = True
-                            target.hp = getattr(target, "max_hp", 100.0)
-                            target.ball_type = "elite_minion"
-                            target.base_speed = getattr(target, 'base_speed', getattr(target, 'speed', 15.0)) * 1.5
-                            target.base_damage = getattr(target, 'base_damage', getattr(target, 'damage', 10.0)) * 1.5
-                            target.speed = target.base_speed
-                            target.damage = target.base_damage
-                            target.minion_owner = self.ball.id
-                            if hasattr(self.world, "events"):
-                                self.world.events.append(("visual_effect", {"type": "blood_pact_resurrect", "x": target.x, "y": target.y}))
-                        else:
-                            active_minions = [b for b in self.world.balls if getattr(b, "team", "") == getattr(self.ball, "team", "") and getattr(b, "alive", True) and getattr(b, "ball_type", "") in ["minion", "elite_minion", "skeletal_dragon"]]
-                            if active_minions:
-                                for minion in active_minions:
-                                    minion.lifesteal_aura_timer = 10.0
-                                    minion.lifesteal_aura_owner = self.ball.id
-                                if hasattr(self.world, "events"):
-                                    self.world.events.append(("visual_effect", {"type": "blood_pact_aura", "x": self.ball.x, "y": self.ball.y}))
+            elif skill_name == "dark_tether":
+                if hasattr(self.world, "balls"):
+                    minions = [b for b in self.world.balls if getattr(b, "minion_owner", None) == self.ball.id and getattr(b, "alive", True)]
+                    if minions:
+                        import math
+                        target = min(minions, key=lambda m: math.hypot(getattr(m, "x", 0.0) - self.ball.x, getattr(m, "y", 0.0) - self.ball.y))
+                        self.ball.dark_tether_target_id = target.id
+                        if hasattr(self.world, "events"):
+                            self.world.events.append(("visual_effect", {"type": "dark_tether_activation", "x": self.ball.x, "y": self.ball.y, "target_id": target.id}))
+                self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 8.0)
             elif skill_name == "corpse_explosion":
                 if hasattr(self.world, "balls"):
                     minions = [b for b in self.world.balls if getattr(b, "ball_type", "") in ["minion", "elite_minion"] and getattr(b, "team", "") == getattr(self.ball, "team", "")]
