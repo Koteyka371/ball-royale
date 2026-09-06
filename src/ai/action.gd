@@ -2935,6 +2935,96 @@ func _attempt_damage_internal(attacker, target) -> void:
 			if typeof(self.ball) == TYPE_DICTIONARY: self.ball["echo_aura_timer"] = echo_aura_timer
 			else: self.ball.echo_aura_timer = echo_aura_timer
 
+		if echo_aura_timer > 0.0:
+			var nearest_ally = null
+			var min_dist = 999999.0
+			var my_team = ""
+			if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"): my_team = self.ball.team
+			elif typeof(self.ball) == TYPE_OBJECT and "team" in self.ball: my_team = self.ball.team
+			elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"): my_team = self.ball.ball_type
+			elif typeof(self.ball) == TYPE_OBJECT and "ball_type" in self.ball: my_team = self.ball.ball_type
+
+			var my_id = null
+			if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): my_id = self.ball.id
+			elif typeof(self.ball) == TYPE_OBJECT and "id" in self.ball: my_id = self.ball.id
+
+			var aura_radius = 150.0
+			var aura_multiplier = 1.0
+
+			var in_aura_nullifier = false
+			if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("in_aura_nullifier_zone"): in_aura_nullifier = self.ball.in_aura_nullifier_zone
+			elif typeof(self.ball) == TYPE_OBJECT and "in_aura_nullifier_zone" in self.ball: in_aura_nullifier = self.ball.in_aura_nullifier_zone
+
+			if in_aura_nullifier:
+				aura_radius = 0.0
+
+			var aura_booster = 0.0
+			if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("aura_booster_timer"): aura_booster = self.ball.aura_booster_timer
+			elif typeof(self.ball) == TYPE_OBJECT and "aura_booster_timer" in self.ball: aura_booster = self.ball.aura_booster_timer
+
+			if aura_booster > 0.0:
+				aura_radius = 500.0
+				aura_multiplier = 2.0
+
+			if typeof(self.world) == TYPE_OBJECT and "balls" in self.world:
+				for other in self.world.balls:
+					var o_alive = true
+					if typeof(other) == TYPE_DICTIONARY and other.has("alive"): o_alive = other.alive
+					elif typeof(other) == TYPE_OBJECT and "alive" in other: o_alive = other.alive
+
+					var o_id = null
+					if typeof(other) == TYPE_DICTIONARY and other.has("id"): o_id = other.id
+					elif typeof(other) == TYPE_OBJECT and "id" in other: o_id = other.id
+
+					var o_team = ""
+					if typeof(other) == TYPE_DICTIONARY and other.has("team"): o_team = other.team
+					elif typeof(other) == TYPE_OBJECT and "team" in other: o_team = other.team
+					elif typeof(other) == TYPE_DICTIONARY and other.has("ball_type"): o_team = other.ball_type
+					elif typeof(other) == TYPE_OBJECT and "ball_type" in other: o_team = other.ball_type
+
+					if o_alive and str(o_id) != str(my_id) and o_team == my_team:
+						var ox = 0.0
+						var oy = 0.0
+						var mx = 0.0
+						var my = 0.0
+						if typeof(other) == TYPE_DICTIONARY and other.has("x"): ox = other.x
+						elif typeof(other) == TYPE_OBJECT and "x" in other: ox = other.x
+						if typeof(other) == TYPE_DICTIONARY and other.has("y"): oy = other.y
+						elif typeof(other) == TYPE_OBJECT and "y" in other: oy = other.y
+						if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("x"): mx = self.ball.x
+						elif typeof(self.ball) == TYPE_OBJECT and "x" in self.ball: mx = self.ball.x
+						if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("y"): my = self.ball.y
+						elif typeof(self.ball) == TYPE_OBJECT and "y" in self.ball: my = self.ball.y
+
+						var dx = mx - ox
+						var dy = my - oy
+						var dist_sq = dx*dx + dy*dy
+
+						if dist_sq <= aura_radius*aura_radius and dist_sq < min_dist:
+							min_dist = dist_sq
+							nearest_ally = other
+
+			if nearest_ally != null:
+				var buffs_to_echo = [
+					"speed_boost_timer", "damage_booster_timer", "shield_timer", "invisibility_booster_timer",
+					"aura_booster_timer", "vampiric_aura_timer", "stamina_booster_timer", "ghost_booster_timer",
+					"mirage_booster_timer", "heroism_booster_timer", "juggernaut_booster_timer", "phase_booster_timer",
+					"stealth_booster_timer", "hazard_immunity_timer", "emp_immunity_timer"
+				]
+				for buff in buffs_to_echo:
+					var val = 0.0
+					if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has(buff): val = self.ball[buff]
+					elif typeof(self.ball) == TYPE_OBJECT and buff in self.ball: val = self.ball.get(buff)
+
+					if val > 0.0:
+						var ally_val = 0.0
+						if typeof(nearest_ally) == TYPE_DICTIONARY and nearest_ally.has(buff): ally_val = nearest_ally[buff]
+						elif typeof(nearest_ally) == TYPE_OBJECT and buff in nearest_ally: ally_val = nearest_ally.get(buff)
+
+						if val * 0.5 > ally_val:
+							if typeof(nearest_ally) == TYPE_DICTIONARY: nearest_ally[buff] = val * 0.5
+							elif typeof(nearest_ally) == TYPE_OBJECT: nearest_ally.set(buff, val * 0.5)
+
 		var echo_timer = 0.0
 		if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("echo_booster_timer"): echo_timer = self.ball.echo_booster_timer
 		elif typeof(self.ball) == TYPE_OBJECT and "echo_booster_timer" in self.ball: echo_timer = self.ball.echo_booster_timer
