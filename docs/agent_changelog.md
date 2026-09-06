@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2047] Echo Auras — *2026-09-06 20:26:36 UTC*
+
+A new aura type that doesn't provide stats directly, but instead echoes any active buffs on the player to the nearest ally at 50% effectiveness. The Echo Aura has a short duration and drops frequently in team-based game modes to encourage grouping.
+
+---
+
 ## [idea-2127] Portal Mine — *2026-09-06 12:35:21 UTC*
 
 A mine that teleports the triggering player to a random spot on the arena while dealing minor damage.
