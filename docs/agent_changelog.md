@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2127] Portal Mine — *2026-09-06 12:35:21 UTC*
+
+A mine that teleports the triggering player to a random spot on the arena while dealing minor damage.
+
+---
+
 ## [idea-2133] Solar Flare Mutator — *2026-09-05 05:27:57 UTC*
 
 Periodically disables all deployed shields and turrets and slows down all entities momentarily, acting as a global EMP.
