@@ -697,6 +697,8 @@ class Action:
         if getattr(target, "vulnerability_multiplier", 1.0) > 1.0:
             multiplier *= getattr(target, "vulnerability_multiplier", 1.0)
 
+        if getattr(target, "quantum_vulnerability_timer", 0.0) > 0.0:
+            original_damage *= 2.0
         if getattr(target, "freeze_trap_vulnerability_timer", 0.0) > 0.0:
             multiplier *= 1.25
 
@@ -3191,6 +3193,18 @@ class Action:
                 self.ball.aegis_shield_active_timer -= delta
                 if self.ball.aegis_shield_active_timer <= 0:
                     pass
+        if getattr(self.ball, "quantum_booster_cooldown", 0.0) > 0.0:
+            self.ball.quantum_booster_cooldown -= delta
+
+        qb_active = getattr(self.ball, "quantum_booster_active_timer", 0.0)
+        if qb_active > 0.0:
+            self.ball.quantum_booster_active_timer -= delta
+            if self.ball.quantum_booster_active_timer <= 0.0:
+                self.ball.quantum_vulnerability_timer = 3.0
+        else:
+            if getattr(self.ball, "quantum_vulnerability_timer", 0.0) > 0.0:
+                self.ball.quantum_vulnerability_timer -= delta
+
         if getattr(self.ball, "has_hermes_boots", False):
             if getattr(self.ball, "hermes_boots_cooldown", 0.0) > 0:
                 self.ball.hermes_boots_cooldown -= delta
@@ -20814,6 +20828,10 @@ class Action:
                     self.ball.quantum_leap_active = True
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "quantum_booster":
+                    self.ball.has_quantum_booster = True
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "death_defy_booster":
                     self.ball.death_defy_active = True
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
@@ -21174,6 +21192,13 @@ class Action:
         import math
         if getattr(self.ball, "silence_timer", 0.0) > 0:
             return
+
+        if getattr(self.ball, "has_quantum_booster", False):
+            if getattr(self.ball, "quantum_booster_cooldown", 0.0) <= 0:
+                self.ball.quantum_booster_active_timer = 2.0
+                self.ball.quantum_booster_cooldown = 15.0
+                if hasattr(self.world, "events"):
+                    self.world.events.append(("quantum_boost_activated", {"ball_id": self.ball.id}))
 
         if getattr(self.ball, "has_aegis_shield", False):
             if getattr(self.ball, "aegis_shield_cooldown", 0.0) <= 0:
@@ -24186,7 +24211,7 @@ class Action:
                     target_hazard = None
                     min_dist_sq = 22500.0  # Range 150
                     for h in hazards:
-                        if getattr(h, "kind", "") not in ["deployable_ice_wall", "ice_wall_shrapnel", "deployable_proximity_mud_puddle", "overload_zone_item", "deployable_directional_shield", "deployable_stasis_bubble", "deployable_ice_wall", "ice_wall_shrapnel", "deployable_decoy_swap_item", "deployable_reversal_trap", "deployable_pull_trap", "deployable_freeze_trap", "deployable_hologram_trap", "event_horizon_trap", "repulsion_zone", "healing_spring", "inverted_clone_hazard", "booster", "defensive_shield", "aura_nullifier_gadget", "emp_trap", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "freeze_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "reverse_gravity_item", "gravity_multiplier_booster", "anchor_booster", "wind_shield_booster", "disruptor_booster", "emp_booster", "cursed_relic", "cursed_booster", "black_hole_grenade_booster", "gravity_well_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "recall_booster", "survival_rewind_booster", "snapback_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "vampiric_frenzy_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "anchor_repulsor_booster", "gravity_well_booster", "overclock_booster", "chronosphere_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "grapple_chain_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "insulator_booster", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_bounty_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "pinball_projectile_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "forecast_booster", "pet_item", "artillery_pet_item", "miniature_black_hole_item", "reverse_gravity_item", "wind_tunnel", "cryogenic_booster", "overload_zone_item", "eclipse_booster_item", "eclipse_booster", "echolocation_booster", "ethereal_tether_booster"]:
+                        if getattr(h, "kind", "") not in ["deployable_ice_wall", "ice_wall_shrapnel", "deployable_proximity_mud_puddle", "overload_zone_item", "deployable_directional_shield", "deployable_stasis_bubble", "deployable_ice_wall", "ice_wall_shrapnel", "deployable_decoy_swap_item", "deployable_reversal_trap", "deployable_pull_trap", "deployable_freeze_trap", "deployable_hologram_trap", "event_horizon_trap", "repulsion_zone", "healing_spring", "inverted_clone_hazard", "booster", "defensive_shield", "aura_nullifier_gadget", "emp_trap", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "freeze_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "reverse_gravity_item", "gravity_multiplier_booster", "anchor_booster", "wind_shield_booster", "disruptor_booster", "emp_booster", "cursed_relic", "cursed_booster", "black_hole_grenade_booster", "gravity_well_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "recall_booster", "survival_rewind_booster", "snapback_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "vampiric_frenzy_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "anchor_repulsor_booster", "gravity_well_booster", "overclock_booster", "chronosphere_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "grapple_chain_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "insulator_booster", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_bounty_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "pinball_projectile_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "quantum_booster", "forecast_booster", "pet_item", "artillery_pet_item", "miniature_black_hole_item", "reverse_gravity_item", "wind_tunnel", "cryogenic_booster", "overload_zone_item", "eclipse_booster_item", "eclipse_booster", "echolocation_booster", "ethereal_tether_booster"]:
                             dx = h.x - self.ball.x
                             dy = h.y - self.ball.y
                             dist_sq = dx*dx + dy*dy
@@ -26324,7 +26349,7 @@ class Action:
         self.ball.y += ny * speed * 0.3
 
     def _clamp_position(self) -> bool:
-        if getattr(self.ball, "intangible", False) or getattr(self.ball, "intangible_timer", 0.0) > 0.0 or getattr(self.ball, "phase_booster_timer", 0.0) > 0.0 or getattr(self.ball, "ghost_booster_timer", 0.0) > 0.0:
+        if getattr(self.ball, "intangible", False) or getattr(self.ball, "intangible_timer", 0.0) > 0.0 or getattr(self.ball, "phase_booster_timer", 0.0) > 0.0 or getattr(self.ball, "ghost_booster_timer", 0.0) > 0.0 or getattr(self.ball, "quantum_booster_active_timer", 0.0) > 0.0:
             return False
         bounced = False
         radius = getattr(self.ball, "radius", 10.0)
@@ -26454,7 +26479,7 @@ class Action:
         return bounced
 
     def _resolve_collisions(self) -> bool:
-        if getattr(self.ball, "intangible", False) or getattr(self.ball, "intangible_timer", 0.0) > 0.0 or getattr(self.ball, "phase_booster_timer", 0.0) > 0.0 or getattr(self.ball, "ghost_booster_timer", 0.0) > 0.0:
+        if getattr(self.ball, "intangible", False) or getattr(self.ball, "intangible_timer", 0.0) > 0.0 or getattr(self.ball, "phase_booster_timer", 0.0) > 0.0 or getattr(self.ball, "ghost_booster_timer", 0.0) > 0.0 or getattr(self.ball, "quantum_booster_active_timer", 0.0) > 0.0:
             return False
         bounced = False
         ball_radius = getattr(self.ball, "radius", 10.0)
@@ -28295,7 +28320,7 @@ class Action:
             self.ball.pull_booster_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["deployable_ice_wall", "ice_wall_shrapnel", "deployable_directional_shield", "deployable_stasis_bubble", "deployable_ice_wall", "ice_wall_shrapnel", "deployable_reversal_trap", "deployable_pull_trap", "deployable_freeze_trap", "deployable_hologram_trap", "deployable_shrapnel_trap", "vampiric_aura_booster", "vampiric_puddle", "healing_spring", "inverted_clone_hazard", "booster", "defensive_shield", "aura_nullifier_gadget", "emp_trap", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "vision_reduction_trap", "decoy_item", "silence_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "entanglement_booster", "weather_booster", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "invert_booster", "freeze_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "reverse_gravity_item", "gravity_multiplier_booster", "anchor_booster", "wind_shield_booster", "disruptor_booster", "emp_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "recall_booster", "survival_rewind_booster", "snapback_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "vampiric_frenzy_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "anchor_repulsor_booster", "gravity_well_booster", "overclock_booster", "chronosphere_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "grapple_chain_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "insulator_booster", "decoy_flare_item", "decoy_bounty_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "pinball_projectile_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "pet_item", "artillery_pet_item", "miniature_black_hole_item", "reverse_gravity_item", "wind_tunnel", "cryogenic_booster", "overload_zone_item", "eclipse_booster_item", "eclipse_booster", "echolocation_booster", "ethereal_tether_booster"]:
+                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["deployable_ice_wall", "ice_wall_shrapnel", "deployable_directional_shield", "deployable_stasis_bubble", "deployable_ice_wall", "ice_wall_shrapnel", "deployable_reversal_trap", "deployable_pull_trap", "deployable_freeze_trap", "deployable_hologram_trap", "deployable_shrapnel_trap", "vampiric_aura_booster", "vampiric_puddle", "healing_spring", "inverted_clone_hazard", "booster", "defensive_shield", "aura_nullifier_gadget", "emp_trap", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "vision_reduction_trap", "decoy_item", "silence_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "entanglement_booster", "weather_booster", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "invert_booster", "freeze_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "reverse_gravity_item", "gravity_multiplier_booster", "anchor_booster", "wind_shield_booster", "disruptor_booster", "emp_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "recall_booster", "survival_rewind_booster", "snapback_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "vampiric_frenzy_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "anchor_repulsor_booster", "gravity_well_booster", "overclock_booster", "chronosphere_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "grapple_chain_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "insulator_booster", "decoy_flare_item", "decoy_bounty_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "pinball_projectile_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "quantum_booster", "pet_item", "artillery_pet_item", "miniature_black_hole_item", "reverse_gravity_item", "wind_tunnel", "cryogenic_booster", "overload_zone_item", "eclipse_booster_item", "eclipse_booster", "echolocation_booster", "ethereal_tether_booster"]:
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         if dist_sq < 250000: # 500 range
                             import math
