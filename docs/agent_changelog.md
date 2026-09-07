@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2142] Guild Wars — *2026-09-07 02:37:04 UTC*
+
+Introduce clan vs clan battles with weekly rewards.
+
+---
+
 ## [idea-2032] Quantum Leap Mechanic — *2026-09-07 00:59:37 UTC*
 
 Players can find 'Quantum Boosters' that temporarily allow them to leap over walls and hazards by pressing a skill button, dodging incoming damage while airborne, but at the cost of a long cooldown and vulnerability upon landing.
