@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2032] Quantum Leap Mechanic — *2026-09-07 00:59:37 UTC*
+
+Players can find 'Quantum Boosters' that temporarily allow them to leap over walls and hazards by pressing a skill button, dodging incoming damage while airborne, but at the cost of a long cooldown and vulnerability upon landing.
+
+---
+
 ## [idea-2047] Echo Auras — *2026-09-06 20:26:36 UTC*
 
 A new aura type that doesn't provide stats directly, but instead echoes any active buffs on the player to the nearest ally at 50% effectiveness. The Echo Aura has a short duration and drops frequently in team-based game modes to encourage grouping.
