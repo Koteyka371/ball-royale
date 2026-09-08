@@ -17385,7 +17385,20 @@ func execute(strategy: String, delta: float):
                     elif typeof(self.ball) == TYPE_OBJECT and "id" in self.ball: my_id = self.ball.id
                     elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("id"): my_id = self.ball.get_meta("id")
 
-                    if owner_ball != null and owner_id != my_id:
+                    var my_team = ""
+                    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"): my_team = self.ball["team"]
+                    elif typeof(self.ball) == TYPE_OBJECT and "team" in self.ball: my_team = self.ball.team
+
+                    var owner_team = ""
+                    if owner_ball != null:
+                        if typeof(owner_ball) == TYPE_DICTIONARY and owner_ball.has("team"): owner_team = owner_ball["team"]
+                        elif typeof(owner_ball) == TYPE_OBJECT and "team" in owner_ball: owner_team = owner_ball.team
+
+                    var is_enemy = true
+                    if my_team != "" and owner_team != "" and my_team == owner_team and my_team != "none":
+                        is_enemy = false
+
+                    if owner_ball != null and owner_id != my_id and is_enemy:
                         var temp_x = my_x
                         var temp_y = my_y
 
@@ -47753,6 +47766,7 @@ func _use_skill():
                             "active": true,
                             "owner_id": b_id,
                             "duration": 8.0,
+                            "invisible": true,
                             "target_radius": 0.0
                         }
                         self.world.arena.hazards.append(tangle)
@@ -51161,6 +51175,7 @@ func _spawn_skill_particles(skill_name: String = ""):
                             "active": true,
                             "owner_id": b_id,
                             "duration": 8.0,
+                            "invisible": true,
                             "target_radius": 0.0
                         }
                         self.world.arena.hazards.append(tangle)

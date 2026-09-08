@@ -4606,7 +4606,14 @@ class Action:
                                     owner_ball = b
                                     break
 
-                        if owner_ball and owner_ball.id != self.ball.id:
+                        my_team = getattr(self.ball, "team", None)
+                        owner_team = getattr(owner_ball, "team", None) if owner_ball else None
+
+                        is_enemy = True
+                        if my_team and owner_team and my_team == owner_team and my_team != "none":
+                            is_enemy = False
+
+                        if owner_ball and owner_ball.id != self.ball.id and is_enemy:
                             temp_x = self.ball.x
                             temp_y = self.ball.y
 
@@ -24925,6 +24932,7 @@ class Action:
                             super().__init__(id=hid, x=hx, y=hy, radius=20.0, kind="quantum_tangle", damage=0.0)
                             self.owner_id = owner_id
                             self.duration = 8.0
+                            self.invisible = True
 
                     tangle = QuantumTangleNode(tangle_id, self.ball.x, self.ball.y, self.ball.id)
                     self.world.arena.hazards.append(tangle)
