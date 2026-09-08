@@ -34967,7 +34967,59 @@ func _collect_booster(delta: float):
     var boosters = _get_boosters()
     if boosters.size() > 0:
 
+
+        # Check for black_hole_dodge_booster
+        for b in boosters:
+            var b_x = b["x"] if typeof(b) == TYPE_DICTIONARY else b.x
+            var b_y = b["y"] if typeof(b) == TYPE_DICTIONARY else b.y
+            var dist = sqrt((b_x - self.ball.x) * (b_x - self.ball.x) + (b_y - self.ball.y) * (b_y - self.ball.y))
+            var b_kind = b["kind"] if typeof(b) == TYPE_DICTIONARY else (b.kind if "kind" in b else b.get_meta("kind") if b.has_method("get_meta") and b.has_meta("kind") else "")
+            var b_active = b["active"] if typeof(b) == TYPE_DICTIONARY and b.has("active") else (b.active if "active" in b else b.get_meta("active") if b.has_method("get_meta") and b.has_meta("active") else true)
+            if b_kind == "black_hole_dodge_booster" and b_active:
+                var my_rad = self.ball.radius if "radius" in self.ball else (self.ball.get_meta("radius") if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("radius") else 10.0)
+                var b_rad = b["radius"] if typeof(b) == TYPE_DICTIONARY and b.has("radius") else (b.radius if "radius" in b else b.get_meta("radius") if b.has_method("get_meta") and b.has_meta("radius") else 10.0)
+                if dist < my_rad + b_rad:
+                    if self.ball.has_method("set_meta"): self.ball.set_meta("has_black_hole_dodge_booster", true)
+                    elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["has_black_hole_dodge_booster"] = true
+                    elif "has_black_hole_dodge_booster" in self.ball: self.ball.has_black_hole_dodge_booster = true
+
+                    if typeof(b) == TYPE_DICTIONARY and b.has("active"): b["active"] = false
+                    elif typeof(b) == TYPE_OBJECT and "active" in b: b.active = false
+
+                    if "boosters" in self.world and b in self.world.boosters:
+                        self.world.boosters.erase(b)
+                    if "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT and "hazards" in self.world.arena and b in self.world.arena.hazards:
+                        self.world.arena.hazards.erase(b)
+                    break
+
+
+        # Check for black_hole_dodge_booster
+        for b in boosters:
+            var b_x = b["x"] if typeof(b) == TYPE_DICTIONARY else b.x
+            var b_y = b["y"] if typeof(b) == TYPE_DICTIONARY else b.y
+            var dist = sqrt((b_x - self.ball.x) * (b_x - self.ball.x) + (b_y - self.ball.y) * (b_y - self.ball.y))
+            var b_kind = b["kind"] if typeof(b) == TYPE_DICTIONARY else (b.kind if "kind" in b else b.get_meta("kind") if b.has_method("get_meta") and b.has_meta("kind") else "")
+            var b_active = b["active"] if typeof(b) == TYPE_DICTIONARY and b.has("active") else (b.active if "active" in b else b.get_meta("active") if b.has_method("get_meta") and b.has_meta("active") else true)
+            if b_kind == "black_hole_dodge_booster" and b_active:
+                var my_rad = self.ball.radius if "radius" in self.ball else (self.ball.get_meta("radius") if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("radius") else 10.0)
+                var b_rad = b["radius"] if typeof(b) == TYPE_DICTIONARY and b.has("radius") else (b.radius if "radius" in b else b.get_meta("radius") if b.has_method("get_meta") and b.has_meta("radius") else 10.0)
+                if dist < my_rad + b_rad:
+                    if self.ball.has_method("set_meta"): self.ball.set_meta("has_black_hole_dodge_booster", true)
+                    elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["has_black_hole_dodge_booster"] = true
+                    elif "has_black_hole_dodge_booster" in self.ball: self.ball.has_black_hole_dodge_booster = true
+
+                    if typeof(b) == TYPE_DICTIONARY and b.has("active"): b["active"] = false
+                    elif typeof(b) == TYPE_OBJECT and "active" in b: b.active = false
+
+                    if "boosters" in self.world and b in self.world.boosters:
+                        self.world.boosters.erase(b)
+                    if "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT and "hazards" in self.world.arena and b in self.world.arena.hazards:
+                        self.world.arena.hazards.erase(b)
+                    break
+
         # Check for blood orb
+
+
         for b in boosters:
 			var b_x = b["x"] if typeof(b) == TYPE_DICTIONARY else b.x
 			var b_y = b["y"] if typeof(b) == TYPE_DICTIONARY else b.y
@@ -47902,6 +47954,38 @@ func _use_skill():
                 return
             else:
                 _spawn_skill_particles("dash")
+
+            var has_dodge_booster = false
+            if self.ball.has_method("has_meta") and self.ball.has_meta("has_black_hole_dodge_booster"):
+                has_dodge_booster = self.ball.get_meta("has_black_hole_dodge_booster")
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("has_black_hole_dodge_booster"):
+                has_dodge_booster = self.ball["has_black_hole_dodge_booster"]
+            elif "has_black_hole_dodge_booster" in self.ball:
+                has_dodge_booster = self.ball.has_black_hole_dodge_booster
+
+            if has_dodge_booster:
+                if self.ball.has_method("set_meta"): self.ball.set_meta("has_black_hole_dodge_booster", false)
+                elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["has_black_hole_dodge_booster"] = false
+                elif "has_black_hole_dodge_booster" in self.ball: self.ball.has_black_hole_dodge_booster = false
+
+                if "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT and "hazards" in self.world.arena:
+                    var bh_id = 10000 + (randi() % 89999)
+                    if "next_id" in self.world:
+                        bh_id = self.world.next_id
+
+                    var mini_bh = {
+                        "id": bh_id,
+                        "x": self.ball.get("x", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.x,
+                        "y": self.ball.get("y", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.y,
+                        "radius": 40.0,
+                        "kind": "mini_black_hole",
+                        "damage": 15.0,
+                        "active": true,
+                        "duration": 3.0,
+                        "lifetime": 0.0,
+                        "pull_strength": 200.0
+                    }
+                    self.world.arena.hazards.append(mini_bh)
 
             var dash_range_mult = 1.0
             if self.ball.has_method("has_meta") and self.ball.has_meta("dash_range_mult"):
