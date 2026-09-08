@@ -2646,8 +2646,17 @@ class GameMode:
             if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
                 world.arena.hazards.append(soul_fragment)
 
-        # Elite Minion death logic - drops a soul fragment for Necromancer
+                # Elite Minion death logic - drops a soul fragment for Necromancer
         if getattr(ball, "is_elite_minion", False) and getattr(ball, "ball_type", "").lower() == "elite_minion":
+            # Task idea-2130: Drop an Overcharged Coin when an elite minion dies
+            if not hasattr(world, "currency_pickups"):
+                world.currency_pickups = []
+            world.currency_pickups.append({
+                "x": ball.x,
+                "y": ball.y,
+                "type": "overcharged_coin"
+            })
+
             class _SoulHazard:
                 def __init__(self, id, x, y, radius, kind, damage):
                     self.id = id
@@ -21521,9 +21530,13 @@ class BlackMarketMode(GameMode):
                     if c.get("type") == "cursed_currency":
                         b.currency = getattr(b, "currency", 0) + 3
                         b.cursed_currency_vulnerability_timer = 5.0
+                    elif c.get("type") == "overcharged_coin":
+                        b.currency = getattr(b, "currency", 0) + 5
+                        b.overcharged_coin_debuff_timer = 3.0
                     else:
                         b.currency = getattr(b, "currency", 0) + 1
                     pickups_to_remove.append(c)
+
 
             for c in pickups_to_remove:
                 if c in world.currency_pickups:
@@ -33395,9 +33408,13 @@ class CurrencyBurdenMode(GameMode):
                     if c.get("type") == "cursed_currency":
                         b.currency = getattr(b, "currency", 0) + 3
                         b.cursed_currency_vulnerability_timer = 5.0
+                    elif c.get("type") == "overcharged_coin":
+                        b.currency = getattr(b, "currency", 0) + 5
+                        b.overcharged_coin_debuff_timer = 3.0
                     else:
                         b.currency = getattr(b, "currency", 0) + 1
                     pickups_to_remove.append(c)
+
 
             for c in pickups_to_remove:
                 if c in world.currency_pickups:
@@ -40033,9 +40050,13 @@ class CurrencyBountyMode(GameMode):
                     if c.get("type") == "cursed_currency":
                         b.currency = getattr(b, "currency", 0) + 3
                         b.cursed_currency_vulnerability_timer = 5.0
+                    elif c.get("type") == "overcharged_coin":
+                        b.currency = getattr(b, "currency", 0) + 5
+                        b.overcharged_coin_debuff_timer = 3.0
                     else:
                         b.currency = getattr(b, "currency", 0) + 1
                     pickups_to_remove.append(c)
+
 
             for c in pickups_to_remove:
                 if c in world.currency_pickups:
