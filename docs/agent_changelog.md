@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2137] Black Hole Anomaly Modifier — *2026-09-08 00:50:17 UTC*
+
+A random event that spawns a massive black hole in the center of the arena, dragging players towards it over time.
+
+---
+
 ## [idea-2142] Guild Wars — *2026-09-07 02:37:04 UTC*
 
 Introduce clan vs clan battles with weekly rewards.
