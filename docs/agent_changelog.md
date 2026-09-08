@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1984] Gravity Singularity Booster — *2026-09-08 22:52:54 UTC*
+
+A booster that allows the player to leave behind a tiny black hole projectile when they dodge. It rapidly pulls in nearby hazards, projectiles, and smaller enemies before violently collapsing and dealing damage.
+
+---
+
 ## [idea-2130] New Currency Item: Overcharged Coin — *2026-09-08 16:34:13 UTC*
 
 Introduces a rare currency pickup called 'Overcharged Coin' that drops from elite enemies. Collecting it grants 5 regular currency points instantly but applies a short temporary speed debuff due to its immense weight.
