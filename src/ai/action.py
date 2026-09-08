@@ -18163,7 +18163,37 @@ class Action:
                 return b_obj.get("y", 0) if isinstance(b_obj, dict) else getattr(b_obj, "y", 0)
 
 
+
+            # Check for black_hole_dodge_booster
+            for b in boosters:
+                dist = math.sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
+                if getattr(b, 'kind', '') == 'black_hole_dodge_booster' and getattr(b, 'active', True):
+                    if dist < getattr(self.ball, 'radius', 10.0) + getattr(b, 'radius', 10.0):
+                        self.ball.has_black_hole_dodge_booster = True
+                        if hasattr(b, 'active'): b.active = False
+                        if b in getattr(self.world, "boosters", []):
+                            self.world.boosters.remove(b)
+                        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and b in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(b)
+                        break
+
+
+            # Check for black_hole_dodge_booster
+            for b in boosters:
+                dist = math.sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
+                if getattr(b, 'kind', '') == 'black_hole_dodge_booster' and getattr(b, 'active', True):
+                    if dist < getattr(self.ball, 'radius', 10.0) + getattr(b, 'radius', 10.0):
+                        self.ball.has_black_hole_dodge_booster = True
+                        if hasattr(b, 'active'): b.active = False
+                        if b in getattr(self.world, "boosters", []):
+                            self.world.boosters.remove(b)
+                        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and b in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(b)
+                        break
+
             # Check for blood orb
+
+
             for b in boosters:
                 dist = math.sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
                 if getattr(b, 'kind', '') == 'phantom_artifact_item' and getattr(b, 'active', True):
@@ -25008,10 +25038,52 @@ class Action:
 
                     self.ball.x = teleport_x
                     self.ball.y = teleport_y
+
                     self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 5.0) * 1.5 # Longer cooldown
                     return
                 else:
                     self._spawn_skill_particles("dash")
+
+                if getattr(self.ball, "has_black_hole_dodge_booster", False):
+                    self.ball.has_black_hole_dodge_booster = False
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        import random
+                        class _MiniBH:
+                            def __init__(self, hid, hx, hy):
+                                self.id = hid
+                                self.x = hx
+                                self.y = hy
+                                self.radius = 40.0
+                                self.kind = "mini_black_hole"
+                                self.damage = 15.0
+                                self.active = True
+                                self.duration = 3.0
+                                self.lifetime = 0.0
+                                self.pull_strength = 200.0
+
+                        bh_id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                        self.world.arena.hazards.append(_MiniBH(bh_id, self.ball.x, self.ball.y))
+
+                if getattr(self.ball, "has_black_hole_dodge_booster", False):
+                    self.ball.has_black_hole_dodge_booster = False
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        import random
+                        class _MiniBH:
+                            def __init__(self, hid, hx, hy):
+                                self.id = hid
+                                self.x = hx
+                                self.y = hy
+                                self.radius = 40.0
+                                self.kind = "mini_black_hole"
+                                self.damage = 15.0
+                                self.active = True
+                                self.duration = 3.0
+                                self.lifetime = 0.0
+                                self.pull_strength = 200.0
+
+                        bh_id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                        self.world.arena.hazards.append(_MiniBH(bh_id, self.ball.x, self.ball.y))
+
 
 
                 dash_range_mult = getattr(self.ball, "dash_range_mult", 1.0)
