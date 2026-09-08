@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2144] Black Hole Survival — *2026-09-08 23:07:11 UTC*
+
+Players start far away from the black hole and must reach the safe zone.
+
+---
+
 ## [idea-1984] Gravity Singularity Booster — *2026-09-08 22:52:54 UTC*
 
 A booster that allows the player to leave behind a tiny black hole projectile when they dodge. It rapidly pulls in nearby hazards, projectiles, and smaller enemies before violently collapsing and dealing damage.
