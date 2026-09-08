@@ -17334,6 +17334,101 @@ func execute(strategy: String, delta: float):
                     var dy = hy - my_ball.y
                     if dx*dx + dy*dy <= hr*hr:
                         in_anomaly_zone = true
+
+            elif h_kind == "quantum_tangle":
+                var h_x = hazard["x"] if typeof(hazard) == TYPE_DICTIONARY else (hazard.x if "x" in hazard else hazard.get_meta("x", 0.0))
+                var h_y = hazard["y"] if typeof(hazard) == TYPE_DICTIONARY else (hazard.y if "y" in hazard else hazard.get_meta("y", 0.0))
+                var h_rad = 20.0
+                if typeof(hazard) == TYPE_DICTIONARY and hazard.has("radius"): h_rad = hazard["radius"]
+                elif typeof(hazard) == TYPE_OBJECT and "radius" in hazard: h_rad = hazard.radius
+                elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("radius"): h_rad = hazard.get_meta("radius")
+
+                var my_x = self.ball["x"] if typeof(self.ball) == TYPE_DICTIONARY else self.ball.x
+                var my_y = self.ball["y"] if typeof(self.ball) == TYPE_DICTIONARY else self.ball.y
+                var my_radius = 10.0
+                if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("radius"): my_radius = self.ball["radius"]
+                elif typeof(self.ball) == TYPE_OBJECT and "radius" in self.ball: my_radius = self.ball.radius
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("radius"): my_radius = self.ball.get_meta("radius")
+
+                var dx = my_x - h_x
+                var dy = my_y - h_y
+                var dist = sqrt(dx*dx + dy*dy)
+
+                if dist <= h_rad + my_radius:
+                    var owner_id = -1
+                    if typeof(hazard) == TYPE_DICTIONARY and hazard.has("owner_id"): owner_id = hazard["owner_id"]
+                    elif typeof(hazard) == TYPE_OBJECT and "owner_id" in hazard: owner_id = hazard.owner_id
+                    elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("owner_id"): owner_id = hazard.get_meta("owner_id")
+
+                    var owner_ball = null
+                    var balls = []
+                    if self.world != null and typeof(self.world) == TYPE_OBJECT and "balls" in self.world:
+                        balls = self.world.balls
+
+                    for b in balls:
+                        var b_id = -1
+                        if typeof(b) == TYPE_DICTIONARY and b.has("id"): b_id = b["id"]
+                        elif typeof(b) == TYPE_OBJECT and "id" in b: b_id = b.id
+                        elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("id"): b_id = b.get_meta("id")
+
+                        if b_id == owner_id:
+                            var is_alive = true
+                            if typeof(b) == TYPE_DICTIONARY and b.has("alive"): is_alive = b["alive"]
+                            elif typeof(b) == TYPE_OBJECT and "alive" in b: is_alive = b.alive
+                            elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
+                            if is_alive:
+                                owner_ball = b
+                                break
+
+                    var my_id = -1
+                    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): my_id = self.ball["id"]
+                    elif typeof(self.ball) == TYPE_OBJECT and "id" in self.ball: my_id = self.ball.id
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("id"): my_id = self.ball.get_meta("id")
+
+                    if owner_ball != null and owner_id != my_id:
+                        var temp_x = my_x
+                        var temp_y = my_y
+
+                        var o_x = owner_ball["x"] if typeof(owner_ball) == TYPE_DICTIONARY else owner_ball.x
+                        var o_y = owner_ball["y"] if typeof(owner_ball) == TYPE_DICTIONARY else owner_ball.y
+
+                        if typeof(self.ball) == TYPE_DICTIONARY:
+                            self.ball["x"] = o_x
+                            self.ball["y"] = o_y
+                        else:
+                            self.ball.x = o_x
+                            self.ball.y = o_y
+
+                        if typeof(owner_ball) == TYPE_DICTIONARY:
+                            owner_ball["x"] = temp_x
+                            owner_ball["y"] = temp_y
+                        else:
+                            owner_ball.x = temp_x
+                            owner_ball.y = temp_y
+
+                        if "events" in self.world:
+                            self.world.events.append({
+                                "type": "visual_effect",
+                                "data": {
+                                    "type": "quantum_swap_trigger",
+                                    "x1": o_x,
+                                    "y1": o_y,
+                                    "x2": temp_x,
+                                    "y2": temp_y,
+                                    "color": "#9000ff"
+                                }
+                            })
+
+                        if typeof(hazard) == TYPE_DICTIONARY:
+                            hazard["active"] = false
+                            hazard["duration"] = 0.0
+                        else:
+                            if "active" in hazard: hazard.active = false
+                            if "duration" in hazard: hazard.duration = 0.0
+                            if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"):
+                                hazard.set_meta("active", false)
+                                hazard.set_meta("duration", 0.0)
+
             elif h_kind == "reverse_physics_zone":
                 var hx = h.x if "x" in h else h.get_meta("x")
                 var hy = h.y if "y" in h else h.get_meta("y")
@@ -47574,6 +47669,133 @@ func _use_skill():
 			if "skill_timer" in self.ball: self.ball.skill_timer = cd
 			if self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", cd)
 
+
+        elif skill_name == "quantum_tangle_dash":
+            _spawn_skill_particles("dash")
+
+            var dash_range_mult = 1.2
+            if self.ball.has_method("has_meta") and self.ball.has_meta("dash_range_mult"):
+                dash_range_mult = self.ball.get_meta("dash_range_mult")
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("dash_range_mult"):
+                dash_range_mult = self.ball["dash_range_mult"]
+            elif "dash_range_mult" in self.ball:
+                dash_range_mult = self.ball.dash_range_mult
+
+            var dash_dist = 120.0 * dash_range_mult
+
+            var enemies = _get_enemies()
+            var target = null
+            var min_dist_sq = 99999999.0
+
+            for e in enemies:
+                if typeof(e) == TYPE_DICTIONARY and e.has("hp") and e["hp"] > 0:
+                    var dx = e["x"] - self.ball.x
+                    var dy = e["y"] - self.ball.y
+                    var d = dx*dx + dy*dy
+                    if d < min_dist_sq:
+                        min_dist_sq = d
+                        target = e
+                elif typeof(e) == TYPE_OBJECT and "hp" in e and e.hp > 0:
+                    var dx = e.x - self.ball.x
+                    var dy = e.y - self.ball.y
+                    var d = dx*dx + dy*dy
+                    if d < min_dist_sq:
+                        min_dist_sq = d
+                        target = e
+
+            var dir_x = 0.0
+            var dir_y = 0.0
+
+            if target != null:
+                var t_x = target["x"] if typeof(target) == TYPE_DICTIONARY else target.x
+                var t_y = target["y"] if typeof(target) == TYPE_DICTIONARY else target.y
+                var dx = t_x - self.ball.x
+                var dy = t_y - self.ball.y
+                var dist = sqrt(dx*dx + dy*dy)
+                if dist > 0.0001:
+                    dir_x = dx / dist
+                    dir_y = dy / dist
+                else:
+                    var angle = randf() * 2.0 * PI
+                    dir_x = cos(angle)
+                    dir_y = sin(angle)
+            else:
+                var angle = randf() * 2.0 * PI
+                dir_x = cos(angle)
+                dir_y = sin(angle)
+
+            var teleport_x = self.ball.x + dir_x * dash_dist
+            var teleport_y = self.ball.y + dir_y * dash_dist
+
+            var leave_tangle_chance = 0.33
+            if self.ball.has_method("has_meta") and self.ball.has_meta("leave_tangle_chance"):
+                leave_tangle_chance = self.ball.get_meta("leave_tangle_chance")
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("leave_tangle_chance"):
+                leave_tangle_chance = self.ball["leave_tangle_chance"]
+            elif "leave_tangle_chance" in self.ball:
+                leave_tangle_chance = self.ball.leave_tangle_chance
+
+            if randf() < leave_tangle_chance:
+                if self.world != null and typeof(self.world) == TYPE_OBJECT and "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT:
+                    if "hazards" in self.world.arena:
+                        var tangle_id = randi() % 100000 + 200000
+                        var b_id = -1
+                        if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): b_id = self.ball["id"]
+                        elif "id" in self.ball: b_id = self.ball.id
+
+                        var tangle = {
+                            "id": tangle_id,
+                            "x": self.ball.x,
+                            "y": self.ball.y,
+                            "radius": 20.0,
+                            "kind": "quantum_tangle",
+                            "damage": 0.0,
+                            "active": true,
+                            "owner_id": b_id,
+                            "duration": 8.0,
+                            "target_radius": 0.0
+                        }
+                        self.world.arena.hazards.append(tangle)
+
+                        if "events" in self.world:
+                            self.world.events.append({
+                                "type": "visual_effect",
+                                "data": {
+                                    "type": "quantum_node_spawn",
+                                    "x": self.ball.x,
+                                    "y": self.ball.y,
+                                    "radius": 20.0,
+                                    "color": "#9000ff"
+                                }
+                            })
+
+            var rad = 10.0
+            if self.ball.has_method("has_meta") and self.ball.has_meta("radius"): rad = self.ball.get_meta("radius")
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("radius"): rad = self.ball["radius"]
+            elif "radius" in self.ball: rad = self.ball.radius
+
+            if "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT and self.world.arena.has_method("clamp_position"):
+                var res = self.world.arena.clamp_position(teleport_x, teleport_y, rad)
+                if typeof(res) == TYPE_ARRAY and res.size() >= 2:
+                    teleport_x = res[0]
+                    teleport_y = res[1]
+
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["x"] = teleport_x
+                self.ball["y"] = teleport_y
+            else:
+                self.ball.x = teleport_x
+                self.ball.y = teleport_y
+
+            var cd = 6.0
+            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("SKILL_COOLDOWN"): cd = self.ball["SKILL_COOLDOWN"]
+            elif "SKILL_COOLDOWN" in self.ball: cd = self.ball.SKILL_COOLDOWN
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("SKILL_COOLDOWN"): cd = self.ball.get_meta("SKILL_COOLDOWN")
+
+            if self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", cd)
+            elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["skill_timer"] = cd
+            elif "skill_timer" in self.ball: self.ball.skill_timer = cd
+
         elif skill_name == "dash":
             var is_teleport_dash = false
             if "game_mode" in self.world and typeof(self.world.game_mode) == TYPE_OBJECT:
@@ -50854,6 +51076,133 @@ func _spawn_skill_particles(skill_name: String = ""):
             particles.color = Color(0.6, 0.4, 0.2, 0.8) # Brownish trail
             particles.lifetime = 0.4
             particles.explosiveness = 0.6
+
+
+        elif skill_name == "quantum_tangle_dash":
+            _spawn_skill_particles("dash")
+
+            var dash_range_mult = 1.2
+            if self.ball.has_method("has_meta") and self.ball.has_meta("dash_range_mult"):
+                dash_range_mult = self.ball.get_meta("dash_range_mult")
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("dash_range_mult"):
+                dash_range_mult = self.ball["dash_range_mult"]
+            elif "dash_range_mult" in self.ball:
+                dash_range_mult = self.ball.dash_range_mult
+
+            var dash_dist = 120.0 * dash_range_mult
+
+            var enemies = _get_enemies()
+            var target = null
+            var min_dist_sq = 99999999.0
+
+            for e in enemies:
+                if typeof(e) == TYPE_DICTIONARY and e.has("hp") and e["hp"] > 0:
+                    var dx = e["x"] - self.ball.x
+                    var dy = e["y"] - self.ball.y
+                    var d = dx*dx + dy*dy
+                    if d < min_dist_sq:
+                        min_dist_sq = d
+                        target = e
+                elif typeof(e) == TYPE_OBJECT and "hp" in e and e.hp > 0:
+                    var dx = e.x - self.ball.x
+                    var dy = e.y - self.ball.y
+                    var d = dx*dx + dy*dy
+                    if d < min_dist_sq:
+                        min_dist_sq = d
+                        target = e
+
+            var dir_x = 0.0
+            var dir_y = 0.0
+
+            if target != null:
+                var t_x = target["x"] if typeof(target) == TYPE_DICTIONARY else target.x
+                var t_y = target["y"] if typeof(target) == TYPE_DICTIONARY else target.y
+                var dx = t_x - self.ball.x
+                var dy = t_y - self.ball.y
+                var dist = sqrt(dx*dx + dy*dy)
+                if dist > 0.0001:
+                    dir_x = dx / dist
+                    dir_y = dy / dist
+                else:
+                    var angle = randf() * 2.0 * PI
+                    dir_x = cos(angle)
+                    dir_y = sin(angle)
+            else:
+                var angle = randf() * 2.0 * PI
+                dir_x = cos(angle)
+                dir_y = sin(angle)
+
+            var teleport_x = self.ball.x + dir_x * dash_dist
+            var teleport_y = self.ball.y + dir_y * dash_dist
+
+            var leave_tangle_chance = 0.33
+            if self.ball.has_method("has_meta") and self.ball.has_meta("leave_tangle_chance"):
+                leave_tangle_chance = self.ball.get_meta("leave_tangle_chance")
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("leave_tangle_chance"):
+                leave_tangle_chance = self.ball["leave_tangle_chance"]
+            elif "leave_tangle_chance" in self.ball:
+                leave_tangle_chance = self.ball.leave_tangle_chance
+
+            if randf() < leave_tangle_chance:
+                if self.world != null and typeof(self.world) == TYPE_OBJECT and "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT:
+                    if "hazards" in self.world.arena:
+                        var tangle_id = randi() % 100000 + 200000
+                        var b_id = -1
+                        if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): b_id = self.ball["id"]
+                        elif "id" in self.ball: b_id = self.ball.id
+
+                        var tangle = {
+                            "id": tangle_id,
+                            "x": self.ball.x,
+                            "y": self.ball.y,
+                            "radius": 20.0,
+                            "kind": "quantum_tangle",
+                            "damage": 0.0,
+                            "active": true,
+                            "owner_id": b_id,
+                            "duration": 8.0,
+                            "target_radius": 0.0
+                        }
+                        self.world.arena.hazards.append(tangle)
+
+                        if "events" in self.world:
+                            self.world.events.append({
+                                "type": "visual_effect",
+                                "data": {
+                                    "type": "quantum_node_spawn",
+                                    "x": self.ball.x,
+                                    "y": self.ball.y,
+                                    "radius": 20.0,
+                                    "color": "#9000ff"
+                                }
+                            })
+
+            var rad = 10.0
+            if self.ball.has_method("has_meta") and self.ball.has_meta("radius"): rad = self.ball.get_meta("radius")
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("radius"): rad = self.ball["radius"]
+            elif "radius" in self.ball: rad = self.ball.radius
+
+            if "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT and self.world.arena.has_method("clamp_position"):
+                var res = self.world.arena.clamp_position(teleport_x, teleport_y, rad)
+                if typeof(res) == TYPE_ARRAY and res.size() >= 2:
+                    teleport_x = res[0]
+                    teleport_y = res[1]
+
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["x"] = teleport_x
+                self.ball["y"] = teleport_y
+            else:
+                self.ball.x = teleport_x
+                self.ball.y = teleport_y
+
+            var cd = 6.0
+            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("SKILL_COOLDOWN"): cd = self.ball["SKILL_COOLDOWN"]
+            elif "SKILL_COOLDOWN" in self.ball: cd = self.ball.SKILL_COOLDOWN
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("SKILL_COOLDOWN"): cd = self.ball.get_meta("SKILL_COOLDOWN")
+
+            if self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", cd)
+            elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["skill_timer"] = cd
+            elif "skill_timer" in self.ball: self.ball.skill_timer = cd
 
         elif skill_name == "dash":
             particles.amount = int(20 * tier_multiplier)
