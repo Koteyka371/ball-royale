@@ -4592,6 +4592,46 @@ class Action:
                             self.ball.stamina = max(0.0, getattr(self.ball, "stamina", 0.0) - 20.0 * delta)
                             if self.ball.stamina <= 0.0 and hasattr(self.ball, "speed"):
                                 self.ball.speed = getattr(self.ball, "base_speed", 100.0) * 0.75
+
+                elif getattr(hazard, "kind", "") == "quantum_tangle":
+                    hx = getattr(hazard, "x", 0.0) - getattr(self.ball, "x", 0.0)
+                    hy = getattr(hazard, "y", 0.0) - getattr(self.ball, "y", 0.0)
+                    import math
+                    if math.hypot(hx, hy) <= getattr(hazard, "radius", 20.0) + getattr(self.ball, "radius", 10.0):
+                        owner_id = getattr(hazard, "owner_id", None)
+                        owner_ball = None
+                        if owner_id is not None:
+                            for b in self.world.balls:
+                                if getattr(b, "id", None) == owner_id and getattr(b, "alive", getattr(b, "active", True)):
+                                    owner_ball = b
+                                    break
+
+                        if owner_ball and owner_ball.id != self.ball.id:
+                            temp_x = self.ball.x
+                            temp_y = self.ball.y
+
+                            self.ball.x = owner_ball.x
+                            self.ball.y = owner_ball.y
+
+                            owner_ball.x = temp_x
+                            owner_ball.y = temp_y
+
+                            if hasattr(self.world, "events"):
+                                self.world.events.append({
+                                    "type": "visual_effect",
+                                    "data": {
+                                        "type": "quantum_swap_trigger",
+                                        "x1": self.ball.x,
+                                        "y1": self.ball.y,
+                                        "x2": temp_x,
+                                        "y2": temp_y,
+                                        "color": "#9000ff"
+                                    }
+                                })
+
+                            hazard.active = False
+                            hazard.duration = 0.0
+
                 elif getattr(hazard, "kind", "") == "slow_motion_zone":
                     hx = getattr(hazard, "x", 0.0) - getattr(self.ball, "x", 0.0)
                     hy = getattr(hazard, "y", 0.0) - getattr(self.ball, "y", 0.0)
@@ -24822,6 +24862,92 @@ class Action:
                         }
                     })
 
+                self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 6.0)
+
+
+            elif skill_name == "quantum_tangle_dash":
+                self._spawn_skill_particles("dash")
+
+                dash_range_mult = getattr(self.ball, "dash_range_mult", 1.2)
+                dash_dist = 120.0 * dash_range_mult
+                enemies = self._get_enemies()
+
+                is_teleport_dash = False
+                if getattr(self.world, "game_mode", None):
+                    gm = self.world.game_mode
+                    if getattr(gm, "mutators_active", False) and "teleport_dash" in getattr(gm, "mutators", []):
+                        is_teleport_dash = True
+                if hasattr(self.ball, "mutators") and "teleport_dash" in getattr(self.ball, "mutators", []):
+                    is_teleport_dash = True
+
+                target = None
+                alive_enemies = [e for e in enemies if getattr(e, "hp", 1.0) > 0]
+                if alive_enemies:
+                    target = min(alive_enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+
+                dir_x, dir_y = 0.0, 0.0
+                if target:
+                    dx = target.x - self.ball.x
+                    dy = target.y - self.ball.y
+                    import math
+                    dist = math.sqrt(dx*dx + dy*dy)
+                    if dist > 0.0001:
+                        dir_x = dx / dist
+                        dir_y = dy / dist
+                    else:
+                        import random
+                        angle = random.uniform(0, 2 * math.pi)
+                        dir_x = math.cos(angle)
+                        dir_y = math.sin(angle)
+                else:
+                    import random
+                    import math
+                    angle = random.uniform(0, 2 * math.pi)
+                    dir_x = math.cos(angle)
+                    dir_y = math.sin(angle)
+
+                teleport_x = self.ball.x + dir_x * dash_dist
+                teleport_y = self.ball.y + dir_y * dash_dist
+
+                leave_tangle_chance = getattr(self.ball, "leave_tangle_chance", 0.33)
+                import random
+                if random.random() < leave_tangle_chance:
+                    if not hasattr(self.world, "arena"):
+                        self.world.arena = type('obj', (object,), {'hazards': []})
+                    if not hasattr(self.world.arena, "hazards"):
+                        self.world.arena.hazards = []
+
+                    tangle_id = getattr(self.world, "next_id", random.randint(200000, 299999))
+                    from arena.procedural_arena import Hazard
+
+                    class QuantumTangleNode(Hazard):
+                        def __init__(self, hid, hx, hy, owner_id):
+                            super().__init__(id=hid, x=hx, y=hy, radius=20.0, kind="quantum_tangle", damage=0.0)
+                            self.owner_id = owner_id
+                            self.duration = 8.0
+
+                    tangle = QuantumTangleNode(tangle_id, self.ball.x, self.ball.y, self.ball.id)
+                    self.world.arena.hazards.append(tangle)
+
+                    if hasattr(self.world, "events"):
+                        self.world.events.append({
+                            "type": "visual_effect",
+                            "data": {
+                                "type": "quantum_node_spawn",
+                                "x": self.ball.x,
+                                "y": self.ball.y,
+                                "radius": 20.0,
+                                "color": "#9000ff"
+                            }
+                        })
+
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "clamp_position"):
+                    res = self.world.arena.clamp_position(teleport_x, teleport_y, getattr(self.ball, "radius", 10.0))
+                    if isinstance(res, (list, tuple)) and len(res) >= 2:
+                        teleport_x, teleport_y = res[0], res[1]
+
+                self.ball.x = teleport_x
+                self.ball.y = teleport_y
                 self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 6.0)
 
             elif skill_name == "dash":
