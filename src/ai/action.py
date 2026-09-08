@@ -30413,6 +30413,18 @@ class Action:
 
         if getattr(self.ball, "cursed_currency_vulnerability_timer", 0.0) > 0.0:
             self.ball.cursed_currency_vulnerability_timer -= delta
+
+        if getattr(self.ball, "overcharged_coin_debuff_timer", 0.0) > 0.0:
+            self.ball.overcharged_coin_debuff_timer -= delta
+            # Apply debuff (speed reduction). Use _orig_speed like other logic if no base_speed
+            if not hasattr(self.ball, "base_speed"):
+                self.ball.base_speed = getattr(self.ball, "speed", 100.0)
+            self.ball.speed = self.ball.base_speed * 0.5
+        elif getattr(self.ball, "overcharged_coin_debuff_timer", 0.0) <= 0.0 and hasattr(self.ball, "overcharged_coin_debuff_timer"):
+            if not getattr(self.ball, "is_overcharged", False) and hasattr(self.ball, "base_speed"):
+                self.ball.speed = self.ball.base_speed
+            delattr(self.ball, "overcharged_coin_debuff_timer")
+
         if getattr(self.ball, "cooldown_freeze_timer", 0.0) > 0.0:
             self.ball.cooldown_freeze_timer -= delta
             cooldown_mult = 0.0

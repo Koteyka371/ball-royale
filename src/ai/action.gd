@@ -60320,6 +60320,47 @@ func _update_skill_timer(delta: float):
 		elif self.ball.has_method("set_meta"): self.ball.set_meta("cursed_currency_vulnerability_timer", cursed_vuln_t)
 		elif "cursed_currency_vulnerability_timer" in self.ball: self.ball.set("cursed_currency_vulnerability_timer", cursed_vuln_t)
 
+	var overcharged_debuff_t = 0.0
+	if "overcharged_coin_debuff_timer" in self.ball: overcharged_debuff_t = float(self.ball.get("overcharged_coin_debuff_timer", 0.0))
+	elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("overcharged_coin_debuff_timer"): overcharged_debuff_t = float(self.ball.get_meta("overcharged_coin_debuff_timer"))
+
+	if overcharged_debuff_t > 0.0:
+		overcharged_debuff_t -= delta
+		if typeof(self.ball) == TYPE_DICTIONARY: self.ball["overcharged_coin_debuff_timer"] = overcharged_debuff_t
+		elif self.ball.has_method("set_meta"): self.ball.set_meta("overcharged_coin_debuff_timer", overcharged_debuff_t)
+		elif "overcharged_coin_debuff_timer" in self.ball: self.ball.set("overcharged_coin_debuff_timer", overcharged_debuff_t)
+
+		var b_speed = 100.0
+		if "base_speed" in self.ball: b_speed = float(self.ball.get("base_speed", 100.0))
+		elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("base_speed"): b_speed = float(self.ball.get_meta("base_speed"))
+		else:
+			b_speed = float(self.ball.get("speed", 100.0))
+			if typeof(self.ball) == TYPE_DICTIONARY: self.ball["base_speed"] = b_speed
+			elif self.ball.has_method("set_meta"): self.ball.set_meta("base_speed", b_speed)
+			elif "base_speed" in self.ball: self.ball.set("base_speed", b_speed)
+
+		if typeof(self.ball) == TYPE_DICTIONARY: self.ball["speed"] = b_speed * 0.5
+		elif self.ball.has_method("set_meta"): self.ball.set_meta("speed", b_speed * 0.5)
+		elif "speed" in self.ball: self.ball.set("speed", b_speed * 0.5)
+	else:
+		if "overcharged_coin_debuff_timer" in self.ball or (typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("overcharged_coin_debuff_timer")):
+			if typeof(self.ball) == TYPE_DICTIONARY: self.ball.erase("overcharged_coin_debuff_timer")
+			elif self.ball.has_method("remove_meta"): self.ball.remove_meta("overcharged_coin_debuff_timer")
+
+			var is_over = false
+			if "is_overcharged" in self.ball: is_over = bool(self.ball.get("is_overcharged", false))
+			elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("is_overcharged"): is_over = bool(self.ball.get_meta("is_overcharged"))
+
+			if not is_over:
+				var b_speed = 100.0
+				if "base_speed" in self.ball: b_speed = float(self.ball.get("base_speed", 100.0))
+				elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("base_speed"): b_speed = float(self.ball.get_meta("base_speed"))
+				if typeof(self.ball) == TYPE_DICTIONARY: self.ball["speed"] = b_speed
+				elif self.ball.has_method("set_meta"): self.ball.set_meta("speed", b_speed)
+				elif "speed" in self.ball: self.ball.set("speed", b_speed)
+
+
+
     var cf_t = 0.0
     if "cooldown_freeze_timer" in self.ball: cf_t = float(self.ball.cooldown_freeze_timer)
     elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("cooldown_freeze_timer"): cf_t = float(self.ball.get_meta("cooldown_freeze_timer"))
