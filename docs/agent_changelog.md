@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2130] New Currency Item: Overcharged Coin — *2026-09-08 16:34:13 UTC*
+
+Introduces a rare currency pickup called 'Overcharged Coin' that drops from elite enemies. Collecting it grants 5 regular currency points instantly but applies a short temporary speed debuff due to its immense weight.
+
+---
+
 ## [idea-2044] Quantum Tangle Ball Type — *2026-09-08 05:22:34 UTC*
 
 A new ball type that occasionally leaves behind an invisible 'quantum tangle' node when using its dash skill. If enemies trigger the tangle, they and the ball are forcibly teleported to swap positions, disorienting attackers and potentially dropping them into hazards.
