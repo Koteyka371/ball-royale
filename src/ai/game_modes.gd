@@ -15148,7 +15148,8 @@ class BlackHoleMode extends GameMode:
 
 class BlackHoleSafeZoneMode extends GameMode:
 	var black_hole_radius = 50.0
-	var safe_zone_radius = 500.0
+	var safe_zone_radius = 1400.0
+	var initial_radius = 1400.0
 	var shrink_rate = 10.0
 	var outside_damage_per_second = 10.0
 
@@ -15157,6 +15158,13 @@ class BlackHoleSafeZoneMode extends GameMode:
 		description = "A safe zone slowly shrinks while a black hole grows in the center, pulling everyone in!"
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if not self.has_meta("_initialized_radius"):
+			self.set_meta("_initialized_radius", true)
+			if world != null and "arena" in world and world.arena != null and "safe_zone_radius" in world.arena:
+				var arena_radius = world.arena.safe_zone_radius
+				if arena_radius > safe_zone_radius:
+					safe_zone_radius = arena_radius
+				initial_radius = safe_zone_radius
 		if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
 			var crowd = world.get_node("CrowdSystem")
 			var kill_log = []
@@ -15180,6 +15188,11 @@ class BlackHoleSafeZoneMode extends GameMode:
 
 		var center_x = arena_width / 2.0
 		var center_y = arena_height / 2.0
+
+		if initial_radius > 0.0:
+			var progress = clamp(1.0 - (safe_zone_radius / initial_radius), 0.0, 1.0)
+			if world != null and world.has_method("add_event"):
+				world.add_event("safe_zone_progress", {"progress": progress, "radius": safe_zone_radius, "center_x": center_x, "center_y": center_y})
 
 		black_hole_radius += 2.0 * delta
 		safe_zone_radius -= shrink_rate * delta
