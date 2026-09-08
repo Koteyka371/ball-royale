@@ -10133,11 +10133,18 @@ class BlackHoleSafeZoneMode(GameMode):
         self.name = "Black Hole Safe Zone"
         self.description = "A safe zone slowly shrinks while a black hole grows in the center, pulling everyone in!"
         self.black_hole_radius = 50.0
-        self.safe_zone_radius = 500.0
+        self.safe_zone_radius = 1400.0
+        self.initial_radius = 1400.0
         self.shrink_rate = 10.0
         self.outside_damage_per_second = 10.0
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        if not hasattr(self, "_initialized_radius"):
+            self._initialized_radius = True
+            if hasattr(world, "arena") and hasattr(world.arena, "safe_zone_radius"):
+                self.safe_zone_radius = max(self.safe_zone_radius, world.arena.safe_zone_radius)
+                self.initial_radius = self.safe_zone_radius
+
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         self.apply_dynamic_traits(world, balls, delta)
@@ -10154,6 +10161,13 @@ class BlackHoleSafeZoneMode(GameMode):
 
         # The black hole slowly grows over time
         self.black_hole_radius += 2.0 * delta
+
+        # Keep safe zone progress available for visual effects (0.0 -> 1.0)
+        current_radius = getattr(self, "safe_zone_radius", 1400.0)
+        if getattr(self, "initial_radius", 0.0) > 0:
+            progress = max(0.0, min(1.0, 1.0 - (current_radius / self.initial_radius)))
+            if hasattr(world, "add_event"):
+                world.add_event("safe_zone_progress", {"progress": progress, "radius": current_radius, "center_x": center_x, "center_y": center_y})
 
         # The safe zone slowly shrinks over time
         self.safe_zone_radius -= self.shrink_rate * delta
