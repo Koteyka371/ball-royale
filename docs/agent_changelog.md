@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2044] Quantum Tangle Ball Type — *2026-09-08 05:22:34 UTC*
+
+A new ball type that occasionally leaves behind an invisible 'quantum tangle' node when using its dash skill. If enemies trigger the tangle, they and the ball are forcibly teleported to swap positions, disorienting attackers and potentially dropping them into hazards.
+
+---
+
 ## [idea-2137] Black Hole Anomaly Modifier — *2026-09-08 00:50:17 UTC*
 
 A random event that spawns a massive black hole in the center of the arena, dragging players towards it over time.
