@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2153] Grapple Hook Item — *2026-09-09 06:43:53 UTC*
+
+A consumable item that lets players shoot a grapple hook to pull themselves towards walls or enemies, closing the distance quickly.
+
+---
+
 ## [idea-2143] Mounts — *2026-09-09 06:32:39 UTC*
 
 Introduce mounts that increase movement speed.
