@@ -19009,7 +19009,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'deploy_clan_banner', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_aura_nullifier_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'survival_rewind', 'echo_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_dash', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'sabotage_bounty', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'deploy_kinetic_trap', 'deploy_emp_trap', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_stabilizer_field', 'deploy_tracker_drone', 'deploy_distract_drone', 'deploy_fake_balls', 'decoy_swarm', 'hire_mercenary', 'hazard_surfing', 'grapple_hook', 'elastic_tether']
+                    skills = ['throw_time_dilation_grenade', 'ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'deploy_clan_banner', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_aura_nullifier_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'survival_rewind', 'echo_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_dash', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'sabotage_bounty', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'deploy_kinetic_trap', 'deploy_emp_trap', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_stabilizer_field', 'deploy_tracker_drone', 'deploy_distract_drone', 'deploy_fake_balls', 'decoy_swarm', 'hire_mercenary', 'hazard_surfing', 'grapple_hook', 'elastic_tether']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
@@ -24163,6 +24163,51 @@ class Action:
 
                     self.world.arena.hazards.append(thrown_grenade)
                     self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
+            elif skill_name == "throw_time_dilation_grenade":
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    enemies = self._get_enemies()
+                    nx, ny = 1.0, 0.0
+                    if enemies:
+                        import math
+                        closest_enemy = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                        dx = closest_enemy.x - self.ball.x
+                        dy = closest_enemy.y - self.ball.y
+                        dist = math.sqrt(dx*dx + dy*dy)
+                        if dist > 0.0001:
+                            nx, ny = dx/dist, dy/dist
+
+                    try:
+                        from arena.procedural_arena import Hazard
+                    except ImportError:
+                        class Hazard:
+                            def __init__(self, id, x, y, radius, kind, damage, owner_id):
+                                self.id = id
+                                self.x = x
+                                self.y = y
+                                self.radius = radius
+                                self.kind = kind
+                                self.damage = damage
+                                self.active = True
+
+                    import uuid
+                    class TempHazard:
+                        pass
+                    thrown_grenade = TempHazard()
+                    thrown_grenade.id = str(uuid.uuid4())
+                    thrown_grenade.x = self.ball.x + nx * (getattr(self.ball, "radius", 10.0) + 5.0)
+                    thrown_grenade.y = self.ball.y + ny * (getattr(self.ball, "radius", 10.0) + 5.0)
+                    thrown_grenade.radius = 15.0
+                    thrown_grenade.kind = "thrown_time_dilation_grenade"
+                    thrown_grenade.damage = 0.0
+                    thrown_grenade.owner_id = getattr(self.ball, "id", None)
+                    setattr(thrown_grenade, "vx", nx * 400.0)
+                    setattr(thrown_grenade, "vy", ny * 400.0)
+                    setattr(thrown_grenade, "duration", 1.5)
+                    setattr(thrown_grenade, "team", getattr(self.ball, "team", None))
+                    setattr(thrown_grenade, "active", True)
+                    self.world.arena.hazards.append(thrown_grenade)
+                    self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
+
 
             elif skill_name == "throw_vortex_grenade":
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -28701,6 +28746,56 @@ class Action:
                             if hazard in self.world.arena.hazards:
                                 self.world.arena.hazards.remove(hazard)
                     continue
+                if getattr(hazard, "kind", "") == "thrown_time_dilation_grenade":
+                    if getattr(hazard, "duration", 0.0) > 0:
+                        hazard.duration -= delta
+                        if hazard.duration <= 0:
+                            hazard.duration = 0.0
+                            if hazard in self.world.arena.hazards:
+                                self.world.arena.hazards.remove(hazard)
+                            try:
+                                from arena.procedural_arena import Hazard
+                            except ImportError:
+                                class Hazard:
+                                    def __init__(self, id, x, y, radius, kind, damage, owner_id):
+                                        self.id = id
+                                        self.x = x
+                                        self.y = y
+                                        self.radius = radius
+                                        self.kind = kind
+                                        self.damage = damage
+                                        self.active = True
+                            import uuid
+                            class TempHazard: pass
+                            dome = TempHazard()
+                            dome.id = str(uuid.uuid4())
+                            dome.x = hazard.x
+                            dome.y = hazard.y
+                            dome.radius = 200.0
+                            dome.kind = "time_dilation_dome"
+                            dome.damage = 0.0
+                            dome.owner_id = getattr(hazard, "owner_id", None)
+                            setattr(dome, "duration", 5.0)
+                            setattr(dome, "team", getattr(hazard, "team", None))
+                            setattr(dome, "active", True)
+                            self.world.arena.hazards.append(dome)
+
+                if getattr(hazard, "kind", "") == "time_dilation_dome":
+                    duration = getattr(hazard, "duration", 0.0)
+                    if duration > 0:
+                        hazard.duration = duration - delta
+                        if hasattr(self.world, "balls"):
+                            import math
+                            for b in list(self.world.balls):
+                                if getattr(b, "alive", True) and getattr(b, "team", None) != getattr(hazard, "team", None):
+                                    dx = hazard.x - getattr(b, "x", 0.0)
+                                    dy = hazard.y - getattr(b, "y", 0.0)
+                                    dist = math.sqrt(dx*dx + dy*dy)
+                                    if dist < getattr(hazard, "radius", 200.0):
+                                        b.stutter_timer = getattr(b, "stutter_timer", 0.0) + delta
+                    else:
+                        hazard.active = False
+
 
 
                 if getattr(hazard, "kind", "") == "vortex_grenade":

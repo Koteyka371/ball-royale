@@ -37340,7 +37340,7 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'deploy_clan_banner', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_aura_nullifier_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'survival_rewind', 'echo_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_dash', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'deploy_kinetic_trap', 'deploy_emp_trap', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_stabilizer_field', 'deploy_tracker_drone', 'deploy_distract_drone', 'deploy_fake_balls', 'decoy_swarm', 'hire_mercenary', 'hazard_surfing', 'grapple_hook', 'elastic_tether', 'instant_swap']
+                var skills = ['throw_time_dilation_grenade', 'ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'deploy_clan_banner', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_aura_nullifier_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'survival_rewind', 'echo_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_dash', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'deploy_kinetic_trap', 'deploy_emp_trap', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_stabilizer_field', 'deploy_tracker_drone', 'deploy_distract_drone', 'deploy_fake_balls', 'decoy_swarm', 'hire_mercenary', 'hazard_surfing', 'grapple_hook', 'elastic_tether', 'instant_swap']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -50253,6 +50253,57 @@ func _use_skill():
                 if "skill_cooldown" in self.ball:
                     cd = self.ball.skill_cooldown
                 self.ball.skill_timer = cd
+        elif skill_name == "throw_time_dilation_grenade":
+            if "hazards" in self.world.arena:
+                var hazards = self.world.arena.hazards
+                var enemies = self._get_enemies()
+                var nx = 1.0
+                var ny = 0.0
+                if enemies.size() > 0:
+                    var closest_enemy = enemies[0]
+                    var min_dist_sq = INF
+                    for e in enemies:
+                        var dx_e = e.x - self.ball.x
+                        var dy_e = e.y - self.ball.y
+                        var dist_sq = dx_e*dx_e + dy_e*dy_e
+                        if dist_sq < min_dist_sq:
+                            min_dist_sq = dist_sq
+                            closest_enemy = e
+                    var dx = closest_enemy.x - self.ball.x
+                    var dy = closest_enemy.y - self.ball.y
+                    var dist = sqrt(dx*dx + dy*dy)
+                    if dist > 0.0001:
+                        nx = dx/dist
+                        ny = dy/dist
+
+                var team_val = null
+                if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"): team_val = self.ball.team
+                elif "team" in self.ball: team_val = self.ball.team
+
+                var id_val = null
+                if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): id_val = self.ball.id
+                elif "id" in self.ball: id_val = self.ball.id
+
+                var thrown_bomb = {
+                    "id": str(randi()),
+                    "x": self.ball.x + nx * (self.ball.get("radius", 10.0) + 5.0),
+                    "y": self.ball.y + ny * (self.ball.get("radius", 10.0) + 5.0),
+                    "radius": 15.0,
+                    "kind": "thrown_time_dilation_grenade",
+                    "damage": 0.0,
+                    "vx": nx * 400.0,
+                    "vy": ny * 400.0,
+                    "duration": 1.5,
+                    "team": team_val,
+                    "owner_id": id_val,
+                    "active": true
+                }
+                hazards.append(thrown_bomb)
+
+                var cd = 5.0
+                if "skill_cooldown" in self.ball: cd = self.ball.skill_cooldown
+                self.ball.skill_timer = cd
+
 
         elif skill_name == "throw_vortex_grenade":
             if "hazards" in self.world.arena:
@@ -56854,6 +56905,123 @@ func _update_skill_timer(delta: float):
                                 elif hazard.has_method("set_meta"): hazard.set_meta("active", false)
                             hazards_to_remove.append(hazard)
                     continue
+                if h_kind == "thrown_time_dilation_grenade":
+                    var h_dur = 0.0
+                    if typeof(hazard) == TYPE_DICTIONARY and hazard.has("duration"): h_dur = float(hazard.duration)
+                    elif typeof(hazard) == TYPE_OBJECT and "duration" in hazard: h_dur = float(hazard.duration)
+
+                    if h_dur > 0:
+                        h_dur -= delta
+                        if h_dur <= 0:
+                            h_dur = 0.0
+                            if typeof(hazard) == TYPE_DICTIONARY: hazard.duration = 0.0
+                            else: hazard.duration = 0.0
+                            if typeof(hazard) == TYPE_DICTIONARY: hazard.active = false
+                            else: hazard.active = false
+
+                            if "hazards" in world.arena and world.arena.hazards.has(hazard):
+                                world.arena.hazards.erase(hazard)
+
+                            var h_team = null
+                            if typeof(hazard) == TYPE_DICTIONARY and hazard.has("team"): h_team = hazard.team
+                            elif typeof(hazard) == TYPE_OBJECT and "team" in hazard: h_team = hazard.team
+
+                            var owner_id = null
+                            if typeof(hazard) == TYPE_DICTIONARY and hazard.has("owner_id"): owner_id = hazard.owner_id
+                            elif typeof(hazard) == TYPE_OBJECT and "owner_id" in hazard: owner_id = hazard.owner_id
+
+                            var hx = 0.0
+                            var hy = 0.0
+                            if typeof(hazard) == TYPE_DICTIONARY:
+                                hx = hazard.get("x", 0.0)
+                                hy = hazard.get("y", 0.0)
+                            elif typeof(hazard) == TYPE_OBJECT:
+                                if "x" in hazard: hx = hazard.x
+                                if "y" in hazard: hy = hazard.y
+
+                            var dome = {
+                                "id": str(randi()),
+                                "x": hx,
+                                "y": hy,
+                                "radius": 200.0,
+                                "kind": "time_dilation_dome",
+                                "damage": 0.0,
+                                "duration": 5.0,
+                                "team": h_team,
+                                "owner_id": owner_id,
+                                "active": true
+                            }
+                            world.arena.hazards.append(dome)
+
+                if h_kind == "time_dilation_dome":
+                    var duration = 0.0
+                    if typeof(hazard) == TYPE_DICTIONARY:
+                        duration = hazard.get("duration", 0.0)
+                    elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get"):
+                        var g_dur = hazard.get("duration")
+                        if g_dur != null: duration = g_dur
+
+                    if duration > 0.0:
+                        if typeof(hazard) == TYPE_DICTIONARY:
+                            hazard["duration"] = duration - delta
+                        elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set"):
+                            hazard.set("duration", duration - delta)
+
+                        var h_team = null
+                        if typeof(hazard) == TYPE_DICTIONARY and hazard.has("team"): h_team = hazard.team
+                        elif typeof(hazard) == TYPE_OBJECT and "team" in hazard: h_team = hazard.team
+
+                        var balls_arr = []
+                        if typeof(self.world) == TYPE_DICTIONARY and self.world.has("balls"):
+                            balls_arr = self.world.balls
+                        elif typeof(self.world) == TYPE_OBJECT and self.world.get("balls") != null:
+                            balls_arr = self.world.balls
+
+                        var hx = 0.0
+                        var hy = 0.0
+                        var hr = 200.0
+                        if typeof(hazard) == TYPE_DICTIONARY:
+                            hx = hazard.get("x", 0.0)
+                            hy = hazard.get("y", 0.0)
+                            hr = hazard.get("radius", 200.0)
+                        elif typeof(hazard) == TYPE_OBJECT:
+                            if "x" in hazard: hx = hazard.x
+                            if "y" in hazard: hy = hazard.y
+                            if "radius" in hazard: hr = hazard.radius
+
+                        for b in balls_arr:
+                            var is_alive = true
+                            if typeof(b) == TYPE_DICTIONARY: is_alive = b.get("alive", true)
+                            elif typeof(b) == TYPE_OBJECT and "alive" in b: is_alive = b.alive
+
+                            var b_team = null
+                            if typeof(b) == TYPE_DICTIONARY: b_team = b.get("team", null)
+                            elif typeof(b) == TYPE_OBJECT and "team" in b: b_team = b.team
+
+                            if is_alive and b_team != h_team:
+                                var bx_ = 0.0
+                                var by_ = 0.0
+                                if typeof(b) == TYPE_DICTIONARY:
+                                    bx_ = b.get("x", 0.0)
+                                    by_ = b.get("y", 0.0)
+                                elif typeof(b) == TYPE_OBJECT:
+                                    if "x" in b: bx_ = b.x
+                                    if "y" in b: by_ = b.y
+
+                                var dx = hx - bx_
+                                var dy = hy - by_
+                                var dist = sqrt(dx*dx + dy*dy)
+                                if dist < hr:
+                                    if typeof(b) == TYPE_DICTIONARY:
+                                        var current_stutter = b.get("stutter_timer", 0.0)
+                                        b["stutter_timer"] = current_stutter + delta
+                                    elif typeof(b) == TYPE_OBJECT:
+                                        var current_stutter = b.stutter_timer if "stutter_timer" in b else 0.0
+                                        b.stutter_timer = current_stutter + delta
+                    else:
+                        if typeof(hazard) == TYPE_DICTIONARY: hazard["active"] = false
+                        elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set"): hazard.set("active", false)
+
 
 
                 if h_kind == "vortex_grenade":
