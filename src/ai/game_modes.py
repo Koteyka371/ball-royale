@@ -59114,3 +59114,99 @@ class GlobalEMPEventMode(GameMode):
                 world.arena.hazards = surviving_hazards
 
 GAME_MODES["global_emp_event"] = GlobalEMPEventMode()
+
+class ClutchComebackMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Clutch Comeback"
+        self.description = "When a team is severely behind in score or player count, their remaining members emit a visible aura and gain slowly regenerating shields to encourage late-game clutches."
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        team_stats = {}
+        total_score = 0.0
+        total_players = 0
+
+        for b in balls:
+            team = b.get("team", None) if isinstance(b, dict) else getattr(b, "team", None)
+            if not team: continue
+
+            is_alive = b.get("alive", True) if isinstance(b, dict) else getattr(b, "alive", True)
+            score = b.get("score", 0.0) if isinstance(b, dict) else getattr(b, "score", 0.0)
+
+            try:
+                score = float(score)
+            except:
+                score = 0.0
+
+            if team not in team_stats:
+                team_stats[team] = {"score": 0.0, "alive_count": 0, "total_count": 0}
+
+            team_stats[team]["total_count"] += 1
+            if is_alive:
+                team_stats[team]["alive_count"] += 1
+                team_stats[team]["score"] += score
+                total_players += 1
+                total_score += score
+
+        if len(team_stats) >= 2:
+            avg_score = total_score / float(len(team_stats))
+            avg_alive = float(total_players) / float(len(team_stats))
+
+            for b in balls:
+                is_alive = b.get("alive", True) if isinstance(b, dict) else getattr(b, "alive", True)
+                if not is_alive: continue
+
+                team = b.get("team", None) if isinstance(b, dict) else getattr(b, "team", None)
+                if not team: continue
+
+                stats = team_stats[team]
+
+                is_behind_score = (stats["score"] < avg_score * 0.5) and (avg_score > 10.0)
+                is_behind_count = (stats["alive_count"] < avg_alive * 0.5) and (avg_alive > 1.5)
+
+                if is_behind_score or is_behind_count:
+                    b_id = b.get("id", None) if isinstance(b, dict) else getattr(b, "id", None)
+                    if isinstance(b, dict):
+                        b["clutch_aura"] = True
+                    else:
+                        b.clutch_aura = True
+
+                    # Add event safely
+                    try:
+                        if hasattr(world, "add_event"):
+                            world.add_event("visual_effect", {"type": "clutch_aura", "id": b_id})
+                        elif hasattr(world, "events") and isinstance(world.events, list):
+                            world.events.append({'type': 'visual_effect', 'data': {'type': 'clutch_aura', 'id': b_id}})
+                        elif isinstance(world, dict) and "events" in world and isinstance(world["events"], list):
+                            world["events"].append({'type': 'visual_effect', 'data': {'type': 'clutch_aura', 'id': b_id}})
+                    except Exception:
+                        pass
+
+                    # Regenerate shield
+                    current_shield = b.get("shield", 0.0) if isinstance(b, dict) else getattr(b, "shield", 0.0)
+                    try:
+                        current_shield = float(current_shield)
+                    except:
+                        current_shield = 0.0
+
+                    max_shield = b.get("max_shield", 50.0) if isinstance(b, dict) else getattr(b, "max_shield", 50.0)
+                    try:
+                        max_shield = float(max_shield)
+                    except:
+                        max_shield = 50.0
+
+                    new_shield = min(max_shield, current_shield + 5.0 * delta)
+
+                    if isinstance(b, dict):
+                        b["shield"] = new_shield
+                    else:
+                        b.shield = new_shield
+                else:
+                    if isinstance(b, dict):
+                        b["clutch_aura"] = False
+                    else:
+                        b.clutch_aura = False
+
+GAME_MODES["clutch_comeback"] = ClutchComebackMode()

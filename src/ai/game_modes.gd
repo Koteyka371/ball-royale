@@ -92619,3 +92619,104 @@ class GlobalEMPEventMode extends GameMode:
 				world.arena.hazards = surviving
 
 GAME_MODES["global_emp_event"] = GlobalEMPEventMode.new()
+
+class ClutchComebackMode extends GameMode:
+	func _init().():
+		name = "Clutch Comeback"
+		description = "When a team is severely behind in score or player count, their remaining members emit a visible aura and gain slowly regenerating shields to encourage late-game clutches."
+
+	func tick(world, balls, delta = 0.016):
+		.tick(world, balls, delta)
+
+		var team_stats = {}
+		var total_score = 0.0
+		var total_players = 0
+
+		for b in balls:
+			var b_team = null
+			var b_alive = true
+			var b_score = 0.0
+
+			if typeof(b) == TYPE_DICTIONARY:
+				b_team = b.get("team", null)
+				b_alive = b.get("alive", true)
+				b_score = b.get("score", 0.0)
+			else:
+				b_team = b.team if "team" in b else null
+				b_alive = b.alive if "alive" in b else true
+				b_score = b.score if "score" in b else 0.0
+
+			if not b_team:
+				continue
+
+			if not team_stats.has(b_team):
+				team_stats[b_team] = {"score": 0.0, "alive_count": 0, "total_count": 0}
+
+			team_stats[b_team]["total_count"] += 1
+			if b_alive:
+				team_stats[b_team]["alive_count"] += 1
+				team_stats[b_team]["score"] += float(b_score)
+				total_players += 1
+				total_score += float(b_score)
+
+		if team_stats.size() >= 2:
+			var avg_score = total_score / float(team_stats.size())
+			var avg_alive = float(total_players) / float(team_stats.size())
+
+			for b in balls:
+				var b_alive = true
+				if typeof(b) == TYPE_DICTIONARY:
+					b_alive = b.get("alive", true)
+				else:
+					b_alive = b.alive if "alive" in b else true
+
+				if not b_alive:
+					continue
+
+				var b_team = null
+				if typeof(b) == TYPE_DICTIONARY:
+					b_team = b.get("team", null)
+				else:
+					b_team = b.team if "team" in b else null
+
+				if not b_team:
+					continue
+
+				var stats = team_stats[b_team]
+				var is_behind_score = (stats["score"] < avg_score * 0.5) and (avg_score > 10.0)
+				var is_behind_count = (stats["alive_count"] < avg_alive * 0.5) and (avg_alive > 1.5)
+
+				if is_behind_score or is_behind_count:
+					var b_id = null
+					if typeof(b) == TYPE_DICTIONARY:
+						b["clutch_aura"] = true
+						b_id = b.get("id", null)
+					else:
+						b.clutch_aura = true
+						b_id = b.id if "id" in b else null
+
+					if typeof(world) == TYPE_DICTIONARY:
+						if not world.has("events"):
+							world["events"] = []
+						world["events"].append({"type": "visual_effect", "data": {"type": "clutch_aura", "id": b_id}})
+					else:
+						if "events" in world:
+							world.events.append({"type": "visual_effect", "data": {"type": "clutch_aura", "id": b_id}})
+
+					var current_shield = 0.0
+					var max_shield = 50.0
+					if typeof(b) == TYPE_DICTIONARY:
+						current_shield = float(b.get("shield", 0.0))
+						max_shield = float(b.get("max_shield", 50.0))
+						b["shield"] = min(max_shield, current_shield + 5.0 * delta)
+					else:
+						current_shield = float(b.shield if "shield" in b else 0.0)
+						max_shield = float(b.max_shield if "max_shield" in b else 50.0)
+						b.shield = min(max_shield, current_shield + 5.0 * delta)
+				else:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["clutch_aura"] = false
+					else:
+						b.clutch_aura = false
+
+GAME_MODES["clutch_comeback"] = ClutchComebackMode.new()
