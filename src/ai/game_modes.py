@@ -21571,45 +21571,53 @@ class BlackMarketMode(GameMode):
             b.radius = b.base_radius * (1.0 + (curr * 0.02))
 
             # Purchase upgrades
-            if getattr(b, "purchase_cooldown", 0.0) <= 0.0 and getattr(b, "currency", 0) >= 5:
+            upgrade_cost = 4 if getattr(b, "has_loyalty_card", False) else 5
+            if getattr(b, "purchase_cooldown", 0.0) <= 0.0 and getattr(b, "currency", 0) >= upgrade_cost:
                 for bm in world.black_markets:
                     dx = b.x - bm["x"]
                     dy = b.y - bm["y"]
                     dist = math.sqrt(dx*dx + dy*dy)
                     if dist <= getattr(b, "radius", 10.0) + bm["radius"]:
-                        b.currency -= 5
-                        b.purchase_cooldown = 5.0
+                        if not getattr(b, "has_loyalty_card", False) and getattr(b, "currency", 0) >= 15:
+                            b.currency -= 15
+                            b.has_loyalty_card = True
+                            b.purchase_cooldown = 5.0
+                            if hasattr(world, "add_event"):
+                                world.add_event("loyalty_card_purchased", {"ball": b})
+                        else:
+                            b.currency -= upgrade_cost
+                            b.purchase_cooldown = 5.0
 
-                        # Apply random upgrade
-                        upgrade_type = random.choice(["max_hp", "speed", "damage", "radius", "reflect_shield_duration"])
-                        if upgrade_type == "max_hp":
-                            if not hasattr(b, "base_max_hp"):
-                                b.base_max_hp = getattr(b, "max_hp", 100.0)
-                            b.base_max_hp += 20.0
-                            b.max_hp = b.base_max_hp
-                            b.hp = min(getattr(b, "hp", 100.0) + 20.0, b.max_hp)
-                        elif upgrade_type == "speed":
-                            if not hasattr(b, "base_speed"):
-                                b.base_speed = getattr(b, "speed", 100.0)
-                            b.base_speed += 15.0
-                            b.speed = b.base_speed
-                        elif upgrade_type == "damage":
-                            if not hasattr(b, "base_damage"):
-                                b.base_damage = getattr(b, "damage", 10.0)
-                            b.base_damage += 5.0
-                            b.damage = b.base_damage
-                        elif upgrade_type == "radius":
-                            if not hasattr(b, "base_radius"):
-                                b.base_radius = getattr(b, "radius", 10.0)
-                            b.base_radius = max(5.0, b.base_radius - 2.0)
-                            b.radius = b.base_radius
-                        elif upgrade_type == "reflect_shield_duration":
-                            if not hasattr(b, "bonus_reflect_shield_duration"):
-                                b.bonus_reflect_shield_duration = 0.0
-                            b.bonus_reflect_shield_duration += 1.0
+                            # Apply random upgrade
+                            upgrade_type = random.choice(["max_hp", "speed", "damage", "radius", "reflect_shield_duration"])
+                            if upgrade_type == "max_hp":
+                                if not hasattr(b, "base_max_hp"):
+                                    b.base_max_hp = getattr(b, "max_hp", 100.0)
+                                b.base_max_hp += 20.0
+                                b.max_hp = b.base_max_hp
+                                b.hp = min(getattr(b, "hp", 100.0) + 20.0, b.max_hp)
+                            elif upgrade_type == "speed":
+                                if not hasattr(b, "base_speed"):
+                                    b.base_speed = getattr(b, "speed", 100.0)
+                                b.base_speed += 15.0
+                                b.speed = b.base_speed
+                            elif upgrade_type == "damage":
+                                if not hasattr(b, "base_damage"):
+                                    b.base_damage = getattr(b, "damage", 10.0)
+                                b.base_damage += 5.0
+                                b.damage = b.base_damage
+                            elif upgrade_type == "radius":
+                                if not hasattr(b, "base_radius"):
+                                    b.base_radius = getattr(b, "radius", 10.0)
+                                b.base_radius = max(5.0, b.base_radius - 2.0)
+                                b.radius = b.base_radius
+                            elif upgrade_type == "reflect_shield_duration":
+                                if not hasattr(b, "bonus_reflect_shield_duration"):
+                                    b.bonus_reflect_shield_duration = 0.0
+                                b.bonus_reflect_shield_duration += 1.0
 
-                        if hasattr(world, "add_event"):
-                            world.add_event("upgrade_purchased", {"ball": b, "upgrade": upgrade_type})
+                            if hasattr(world, "add_event"):
+                                world.add_event("upgrade_purchased", {"ball": b, "upgrade": upgrade_type})
                         break
 
             # Gambling Nodes

@@ -33605,14 +33605,42 @@ class BlackMarketMode extends GameMode:
 				b.set("damage", b_base_damage * (1.0 + (cur_currency * 0.1)))
 				b.set("radius", b_base_radius * (1.0 + (cur_currency * 0.02)))
 
-			if bpcooldown <= 0.0 and bcurrency >= 5 and "black_markets" in world:
+			var has_loyalty_card = false
+			if typeof(b) == TYPE_DICTIONARY:
+				has_loyalty_card = b.get("has_loyalty_card", false)
+			else:
+				has_loyalty_card = b.get_meta("has_loyalty_card") if b.has_meta("has_loyalty_card") else false
+
+			var upgrade_cost = 4 if has_loyalty_card else 5
+
+			if bpcooldown <= 0.0 and bcurrency >= upgrade_cost and "black_markets" in world:
 				for bm in world.black_markets:
 					var dx = bx - float(bm["x"])
 					var dy = by - float(bm["y"])
 					var dist = sqrt(dx*dx + dy*dy)
 					if dist <= bradius + float(bm["radius"]):
-						bcurrency -= 5
-						bpcooldown = 5.0
+						if not has_loyalty_card and bcurrency >= 15:
+							bcurrency -= 15
+							has_loyalty_card = true
+							bpcooldown = 5.0
+							if typeof(b) == TYPE_DICTIONARY:
+								b["has_loyalty_card"] = true
+							else:
+								b.set_meta("has_loyalty_card", true)
+
+							if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+								world.add_event("loyalty_card_purchased", {"ball": b})
+
+							if typeof(b) == TYPE_DICTIONARY:
+								b["currency"] = bcurrency
+								b["purchase_cooldown"] = bpcooldown
+							else:
+								b.set_meta("currency", bcurrency)
+								b.set_meta("purchase_cooldown", bpcooldown)
+							break
+						else:
+							bcurrency -= upgrade_cost
+							bpcooldown = 5.0
 
 						var upgrades = ["max_hp", "speed", "damage", "radius", "reflect_shield_duration"]
 						var upgrade_type = upgrades[randi() % upgrades.size()]
