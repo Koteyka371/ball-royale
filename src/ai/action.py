@@ -263,6 +263,21 @@ class Action:
 
         original_damage = getattr(attacker, "damage", 10.0)
 
+        # Elemental synergy vulnerability to area-of-effect
+        is_aoe = False
+        attacker_kind = getattr(attacker, "kind", "")
+        # A simple heuristic for AoE: traps, mines, explosions or high radius.
+        if attacker_kind in ("trap", "mine", "bomb", "explosion", "hazard"):
+            is_aoe = True
+        elif getattr(attacker, "radius", 0.0) > 40.0 and attacker_kind != "player":
+            is_aoe = True
+        elif "explosion" in attacker_kind or "aoe" in attacker_kind:
+            is_aoe = True
+
+        if getattr(target, "_elemental_synergy_vulnerable", False) and is_aoe:
+            original_damage *= 1.5
+
+
         # Status Dome logic: double direct damage taken by allies inside the dome
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             import math as _math
@@ -2295,6 +2310,53 @@ class Action:
                 if hasattr(self.ball, "was_frictionless"):
                     self.ball.is_frictionless = self.ball.was_frictionless
                     delattr(self.ball, "was_frictionless")
+
+
+        # Elemental Synergy: Magnetism and Speed
+        my_element = getattr(self.ball, "element", None)
+        if my_element and isinstance(my_element, str):
+            # Reset elemental synergy buff first
+            if getattr(self.ball, "_elemental_synergy_speed_buffed", False):
+                base_speed = getattr(self.ball, "base_speed", 200.0)
+                self.ball.speed = base_speed
+                self.ball._elemental_synergy_speed_buffed = False
+
+            self.ball._elemental_synergy_vulnerable = False
+
+            # Add magnetic pull towards matching elements and check proximity for speed boost
+            has_nearby_synergy = False
+            for b in getattr(self.world, "balls", []):
+                if getattr(b, "id", None) != getattr(self.ball, "id", None) and getattr(b, "alive", False) and getattr(b, "team", None) == getattr(self.ball, "team", None):
+                    b_element = getattr(b, "element", None)
+                    if b_element == my_element:
+                        dx = getattr(b, "x", 0) - getattr(self.ball, "x", 0)
+                        dy = getattr(b, "y", 0) - getattr(self.ball, "y", 0)
+                        import math
+                        dist = math.hypot(dx, dy)
+
+                        if 10.0 < dist < 300.0:
+                            # Magnetic pull
+                            pull_strength = 50.0 * delta
+                            self.ball.vx = getattr(self.ball, "vx", 0.0) + (dx / dist) * pull_strength
+                            self.ball.vy = getattr(self.ball, "vy", 0.0) + (dy / dist) * pull_strength
+
+                            # Vulnerability to AoE is handled where AoE damage is taken, but we can set a flag
+                            self.ball._elemental_synergy_vulnerable = True
+
+
+                        if dist < 150.0:
+                            has_nearby_synergy = True
+
+            if has_nearby_synergy:
+                self.ball._elemental_synergy_speed_buffed = True
+                base_speed = getattr(self.ball, "base_speed", 200.0)
+                self.ball.speed = base_speed * 1.5
+        else:
+            if getattr(self.ball, "_elemental_synergy_speed_buffed", False):
+                base_speed = getattr(self.ball, "base_speed", 200.0)
+                self.ball.speed = base_speed
+                self.ball._elemental_synergy_speed_buffed = False
+                self.ball._elemental_synergy_vulnerable = False
 
         if getattr(self.ball, "emp_trap_disabled_timer", 0.0) > 0.0:
             self.ball.emp_trap_disabled_timer -= delta
