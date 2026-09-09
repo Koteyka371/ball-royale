@@ -13502,6 +13502,107 @@ func execute(strategy: String, delta: float):
 			elif typeof(self.ball) == TYPE_DICTIONARY:
 				self.ball["use_item"] = false
 
+		if inv.has("grapple_hook_item") and self.ball.get("use_item", false):
+			var arena_width = 1000.0
+			var arena_height = 1000.0
+			if world != null and "arena" in world and world.arena != null:
+				if "width" in world.arena: arena_width = float(world.arena.width)
+				if "height" in world.arena: arena_height = float(world.arena.height)
+
+			var grapple_targets = []
+			if world != null and "balls" in world:
+				for b in world.balls:
+					var is_b_alive = true
+					if typeof(b) == TYPE_DICTIONARY and b.has("alive"): is_b_alive = b.alive
+					elif typeof(b) != TYPE_DICTIONARY and "alive" in b: is_b_alive = b.alive
+					if b != self.ball and is_b_alive:
+						var bx = 0.0
+						var by = 0.0
+						if typeof(b) == TYPE_DICTIONARY:
+							bx = float(b.x)
+							by = float(b.y)
+						else:
+							bx = float(b.x)
+							by = float(b.y)
+						var dx = bx - self.ball.x
+						var dy = by - self.ball.y
+						var dist_sq = dx*dx + dy*dy
+						grapple_targets.append({"target": b, "type": "ball", "dist_sq": dist_sq, "x": bx, "y": by})
+
+			var closest_target_data = null
+			var closest_target_dist_sq = 999999.0
+			for t in grapple_targets:
+				if t.dist_sq < closest_target_dist_sq:
+					closest_target_dist_sq = t.dist_sq
+					closest_target_data = t
+
+			var dists = {
+				"left": self.ball.x,
+				"right": arena_width - self.ball.x,
+				"top": self.ball.y,
+				"bottom": arena_height - self.ball.y
+			}
+			var closest_wall = ""
+			var closest_wall_dist = 999999.0
+			for w in dists:
+				if dists[w] < closest_wall_dist:
+					closest_wall_dist = dists[w]
+					closest_wall = w
+
+			if closest_target_data != null and closest_target_dist_sq < (closest_wall_dist * closest_wall_dist):
+				var dist = sqrt(closest_target_dist_sq)
+				if dist > 0.0001:
+					var dx = closest_target_data.x - self.ball.x
+					var dy = closest_target_data.y - self.ball.y
+
+					if closest_target_data.type == "ball":
+						var slingshot_boost = 1500.0
+						self.ball.vx += (dx / dist) * slingshot_boost
+						self.ball.vy += (dy / dist) * slingshot_boost
+						if "is_frictionless" in self.ball:
+							self.ball.is_frictionless = true
+						else:
+							self.ball["is_frictionless"] = true
+
+						var target_b = closest_target_data.target
+						var hp = 100.0
+						if typeof(target_b) == TYPE_DICTIONARY and target_b.has("hp"):
+							hp = target_b.hp
+						elif typeof(target_b) != TYPE_DICTIONARY and "hp" in target_b:
+							hp = target_b.hp
+
+						hp -= 10.0
+
+						if typeof(target_b) == TYPE_DICTIONARY:
+							target_b["hp"] = hp
+						elif typeof(target_b) != TYPE_DICTIONARY:
+							target_b.hp = hp
+
+						if world != null and "events" in world:
+							world.events.append({"type": "visual_effect", "data": {"type": "lightning", "x": self.ball.x, "y": self.ball.y, "tx": target_b.x, "ty": target_b.y}})
+			else:
+				var slingshot_boost = 1500.0
+				if closest_wall == "left":
+					self.ball.vx -= slingshot_boost
+				elif closest_wall == "right":
+					self.ball.vx += slingshot_boost
+				elif closest_wall == "top":
+					self.ball.vy -= slingshot_boost
+				elif closest_wall == "bottom":
+					self.ball.vy += slingshot_boost
+				if "is_frictionless" in self.ball:
+					self.ball.is_frictionless = true
+				else:
+					self.ball["is_frictionless"] = true
+
+			inv.erase("grapple_hook_item")
+			if "use_item" in self.ball:
+				self.ball.use_item = false
+			else:
+				self.ball["use_item"] = false
+
+
+
 		if inv.has("eclipse_booster_item") and self.ball.get("use_item", false):
 			if world != null and "arena" in world and "hazards" in world.arena:
 				var eb_id = world.arena.hazards.size() + 9101
@@ -38824,6 +38925,27 @@ func _collect_booster(delta: float):
                             var new_frozen = max(current_frozen, fduration)
                             if "frozen_timer" in h: h.frozen_timer = new_frozen
                             elif h.has_method("set_meta"): h.set_meta("frozen_timer", new_frozen)
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "grapple_hook_item":
+                if self.ball.has_meta("inventory"):
+                    var inv = self.ball.get_meta("inventory")
+                    inv.append("grapple_hook_item")
+                    self.ball.set_meta("inventory", inv)
+                elif "inventory" in self.ball:
+                    self.ball.inventory.append("grapple_hook_item")
+                else:
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["inventory"] = ["grapple_hook_item"]
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                        self.ball.set_meta("inventory", ["grapple_hook_item"])
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)

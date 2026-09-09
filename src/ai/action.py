@@ -7074,6 +7074,75 @@ class Action:
             self.ball.use_item = False
 
 
+        # Check inventory for grapple hook item
+        if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "grapple_hook_item" in self.ball.inventory and getattr(self.ball, "use_item", False):
+            # We want to pull towards another ball, large hazard, or wall
+            arena_width = getattr(self.world.arena, "width", 1000) if hasattr(self.world, "arena") and self.world.arena else getattr(self.world, "width", 1000)
+            arena_height = getattr(self.world.arena, "height", 1000) if hasattr(self.world, "arena") and self.world.arena else getattr(self.world, "height", 1000)
+
+            grapple_targets = []
+            if hasattr(self.world, "balls"):
+                for b in getattr(self.world, "balls", []):
+                    if b != self.ball and getattr(b, "alive", True):
+                        dist_sq = (b.x - self.ball.x)**2 + (b.y - self.ball.y)**2
+                        grapple_targets.append({"target": b, "type": "ball", "dist_sq": dist_sq, "x": b.x, "y": b.y})
+
+            closest_target_data = None
+            if grapple_targets:
+                closest_target_data = min(grapple_targets, key=lambda t: t["dist_sq"])
+
+            closest_target_dist_sq = 999999.0
+            if closest_target_data:
+                closest_target_dist_sq = closest_target_data["dist_sq"]
+
+            dists = {
+                "left": self.ball.x,
+                "right": arena_width - self.ball.x,
+                "top": self.ball.y,
+                "bottom": arena_height - self.ball.y
+            }
+            closest_wall = min(dists, key=dists.get)
+            closest_wall_dist = dists[closest_wall]
+
+            import math
+            # Decide whether to grapple to wall or target based on distance
+            if closest_target_data and closest_target_dist_sq < (closest_wall_dist ** 2):
+                # Grapple to target
+                dist = math.sqrt(closest_target_dist_sq)
+                if dist > 0.0001:
+                    dx = closest_target_data["x"] - self.ball.x
+                    dy = closest_target_data["y"] - self.ball.y
+
+                    if closest_target_data["type"] == "ball":
+                        # Apply velocity impulse towards target
+                        slingshot_boost = 1500.0
+                        self.ball.vx = getattr(self.ball, "vx", 0.0) + (dx / dist) * slingshot_boost
+                        self.ball.vy = getattr(self.ball, "vy", 0.0) + (dy / dist) * slingshot_boost
+                        self.ball.is_frictionless = True
+
+                        target_b = closest_target_data["target"]
+                        target_b.hp = getattr(target_b, "hp", 100.0) - 10.0
+
+                        if hasattr(self.world, "events"):
+                            self.world.events.append({"type": "visual_effect", "data": {"type": "lightning", "x": self.ball.x, "y": self.ball.y, "tx": target_b.x, "ty": target_b.y}})
+            else:
+                # Grapple to wall - apply impulse
+                slingshot_boost = 1500.0
+                if closest_wall == "left":
+                    self.ball.vx = getattr(self.ball, "vx", 0.0) - slingshot_boost
+                elif closest_wall == "right":
+                    self.ball.vx = getattr(self.ball, "vx", 0.0) + slingshot_boost
+                elif closest_wall == "top":
+                    self.ball.vy = getattr(self.ball, "vy", 0.0) - slingshot_boost
+                elif closest_wall == "bottom":
+                    self.ball.vy = getattr(self.ball, "vy", 0.0) + slingshot_boost
+                self.ball.is_frictionless = True
+
+            self.ball.inventory.remove("grapple_hook_item")
+            self.ball.use_item = False
+
+
+
         if hasattr(self.ball, "inventory") and "eclipse_booster_item" in self.ball.inventory and getattr(self.ball, "use_item", False):
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 try:
@@ -19849,6 +19918,14 @@ class Action:
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "grapple_hook_item":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("grapple_hook_item")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
+                        self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "emp_wave_item":
