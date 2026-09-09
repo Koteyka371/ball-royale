@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2135] Cosmic Drift Modifier — *2026-09-09 17:59:13 UTC*
+
+A new arena modifier mode where physics friction is disabled entirely, and all balls continue moving endlessly in their last direction unless acted upon by a skill, wall, or another player.
+
+---
+
 ## [idea-2149] Chronosphere Grenade — *2026-09-09 10:33:56 UTC*
 
 A throwable item that creates a large dome where time is significantly slowed for enemies but normal for allies.
