@@ -13588,6 +13588,55 @@ func execute(strategy: String, delta: float):
 				self.ball.set_meta("use_item", false)
 
 
+
+		if inv.has("wormhole_item") and self.ball.get("use_item", false):
+			if world != null and "arena" in world and "hazards" in world.arena:
+				var arena = world.arena
+				var wh_id1 = arena.hazards.size() + randi() % 10000 + 9901
+				var wh_id2 = arena.hazards.size() + randi() % 10000 + 9902
+
+				var tx = self.ball.x + 200.0
+				var ty = self.ball.y + 200.0
+
+				if "balls" in world:
+					for b in world.balls:
+						var bid = b.get("id") if typeof(b) == TYPE_DICTIONARY else (b.id if typeof(b) == TYPE_OBJECT and "id" in b else null)
+						var mbid = self.ball.get("id") if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.id if typeof(self.ball) == TYPE_OBJECT and "id" in self.ball else null)
+						if bid != mbid:
+							tx = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.x
+							ty = b.get("y") if typeof(b) == TYPE_DICTIONARY else b.y
+							break
+
+				var wh1 = null
+				var wh2 = null
+				if load("res://src/arena/procedural_arena.gd") != null:
+					wh1 = load("res://src/arena/procedural_arena.gd").Hazard.new(wh_id1, self.ball.x, self.ball.y, 30.0, "wormhole", 0.0)
+					wh1.set_meta("linked_x", tx)
+					wh1.set_meta("linked_y", ty)
+					wh1.set_meta("duration", 10.0)
+
+					wh2 = load("res://src/arena/procedural_arena.gd").Hazard.new(wh_id2, tx, ty, 30.0, "wormhole", 0.0)
+					wh2.set_meta("linked_x", self.ball.x)
+					wh2.set_meta("linked_y", self.ball.y)
+					wh2.set_meta("duration", 10.0)
+
+					arena.hazards.append(wh1)
+					arena.hazards.append(wh2)
+			inv.erase("wormhole_item")
+			if typeof(self.ball) == TYPE_DICTIONARY:
+				self.ball["inventory"] = inv
+			elif "inventory" in self.ball:
+				self.ball.inventory = inv
+			elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+				self.ball.set_meta("inventory", inv)
+			if "use_item" in self.ball:
+				self.ball.use_item = false
+			elif typeof(self.ball) == TYPE_DICTIONARY:
+				self.ball["use_item"] = false
+			elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+				self.ball.set_meta("use_item", false)
+
+
 		var inv = self.ball.get("inventory") if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get("inventory") if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get") else [])
 		if typeof(inv) == TYPE_ARRAY and inv.has("safe_zone_radar") and self.ball.get("use_item", false):
 			var gm = null
