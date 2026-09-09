@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2131] Black Market Loyalty Card — *2026-09-09 06:12:11 UTC*
+
+Players can purchase a 'Loyalty Card' from the Black Market using a high amount of currency. Once acquired, all future upgrades from any Black Market node will cost 1 less currency, incentivizing early hoarding and late-game spending sprees.
+
+---
+
 ## [idea-2053] Supernova Trap — *2026-09-09 05:54:22 UTC*
 
 A new hazard that acts as a delayed explosive trap. Once triggered, it starts pulling nearby players slowly, increasing its pull strength over 3 seconds, before exploding in a massive area-of-effect blast, damaging and knocking back anyone caught inside.
