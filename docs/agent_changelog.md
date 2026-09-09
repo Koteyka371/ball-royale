@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2149] Chronosphere Grenade — *2026-09-09 10:33:56 UTC*
+
+A throwable item that creates a large dome where time is significantly slowed for enemies but normal for allies.
+
+---
+
 ## [idea-2153] Grapple Hook Item — *2026-09-09 06:43:53 UTC*
 
 A consumable item that lets players shoot a grapple hook to pull themselves towards walls or enemies, closing the distance quickly.
