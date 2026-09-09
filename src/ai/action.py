@@ -3515,7 +3515,7 @@ class Action:
                             self.ball.mount_max_hp = getattr(hazard, "max_hp", 200)
                             self.ball.hp = getattr(hazard, "hp", 200)
                             self.ball.mount_damage = getattr(hazard, "damage", 50)
-                            self.ball.mount_speed = getattr(hazard, "speed", 50)
+                            self.ball.mount_speed = getattr(self.ball, "pre_mount_speed", 100) + getattr(hazard, "speed", 50)
 
                             self.world.arena.hazards.remove(hazard)
                             if hasattr(self.world, "add_event"):

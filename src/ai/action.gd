@@ -6861,8 +6861,8 @@ func execute(strategy: String, delta: float):
                         elif self.ball.has_method("set_meta"): self.ball.set_meta("hp", h_hp)
                         if "mount_damage" in self.ball: self.ball.mount_damage = h_dmg
                         elif self.ball.has_method("set_meta"): self.ball.set_meta("mount_damage", h_dmg)
-                        if "mount_speed" in self.ball: self.ball.mount_speed = h_spd
-                        elif self.ball.has_method("set_meta"): self.ball.set_meta("mount_speed", h_spd)
+                        if "mount_speed" in self.ball: self.ball.mount_speed = b_spd + h_spd
+                        elif self.ball.has_method("set_meta"): self.ball.set_meta("mount_speed", b_spd + h_spd)
 
                         to_remove.append(h)
 
