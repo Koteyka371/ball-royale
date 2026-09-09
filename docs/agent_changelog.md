@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2136] Dynamic Season Changes — *2026-09-09 19:56:22 UTC*
+
+Introduce dynamic season changes during matches, where spring, summer, fall, and winter each bring unique global effects such as increased stamina regeneration, slower movement speeds, or hazard interactions. Seasons rotate on a fixed timer during long battle royale matches, forcing players to adapt their strategies mid-game.
+
+---
+
 ## [idea-2054] Wormhole Relic — *2026-09-09 19:37:48 UTC*
 
 A new item that can be picked up. Once activated, it creates a temporary two-way wormhole linking the player's current location with a targeted location, allowing anyone to teleport back and forth instantly until it closes.
