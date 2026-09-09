@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2141] Comeback Aura — *2026-09-09 22:59:09 UTC*
+
+When a team is severely behind in score or player count, their remaining members emit a visible aura and gain slowly regenerating shields to encourage late-game clutches.
+
+---
+
 ## [idea-2145] Decoy Resonance — *2026-09-09 20:20:59 UTC*
 
 When multiple decoys of the same element explode near each other, their secondary effects combine into a stronger, longer-lasting storm.
