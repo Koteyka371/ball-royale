@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2145] Decoy Resonance — *2026-09-09 20:20:59 UTC*
+
+When multiple decoys of the same element explode near each other, their secondary effects combine into a stronger, longer-lasting storm.
+
+---
+
 ## [idea-2136] Dynamic Season Changes — *2026-09-09 19:56:22 UTC*
 
 Introduce dynamic season changes during matches, where spring, summer, fall, and winter each bring unique global effects such as increased stamina regeneration, slower movement speeds, or hazard interactions. Seasons rotate on a fixed timer during long battle royale matches, forcing players to adapt their strategies mid-game.
