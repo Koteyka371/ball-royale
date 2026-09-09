@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2143] Mounts — *2026-09-09 06:32:39 UTC*
+
+Introduce mounts that increase movement speed.
+
+---
+
 ## [idea-2131] Black Market Loyalty Card — *2026-09-09 06:12:11 UTC*
 
 Players can purchase a 'Loyalty Card' from the Black Market using a high amount of currency. Once acquired, all future upgrades from any Black Market node will cost 1 less currency, incentivizing early hoarding and late-game spending sprees.
