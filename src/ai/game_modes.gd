@@ -50503,16 +50503,16 @@ class FrictionlessArenaModifierMode extends GameMode:
 						if b.get("alive", false):
 							b["is_frictionless"] = true
 							b["frictionless_modifier_applied"] = true
-							b["friction_multiplier"] = 0.05
+							b["friction_multiplier"] = 0.0
 					elif typeof(b) == TYPE_OBJECT:
 						if b.get("alive") if "alive" in b else false:
 							b.set_meta("is_frictionless", true)
 							if "is_frictionless" in b:
 								b.is_frictionless = true
 							b.set_meta("frictionless_modifier_applied", true)
-							b.set_meta("friction_multiplier", 0.05)
+							b.set_meta("friction_multiplier", 0.0)
 							if "friction_multiplier" in b:
-								b.friction_multiplier = 0.05
+								b.friction_multiplier = 0.0
 		else:
 			event_timer -= delta
 			if event_timer <= 0:
@@ -50525,16 +50525,16 @@ class FrictionlessArenaModifierMode extends GameMode:
 						if b.get("alive", false):
 							b["is_frictionless"] = true
 							b["frictionless_modifier_applied"] = true
-							b["friction_multiplier"] = 0.05
+							b["friction_multiplier"] = 0.0
 					elif typeof(b) == TYPE_OBJECT:
 						if b.get("alive") if "alive" in b else false:
 							b.set_meta("is_frictionless", true)
 							if "is_frictionless" in b:
 								b.is_frictionless = true
 							b.set_meta("frictionless_modifier_applied", true)
-							b.set_meta("friction_multiplier", 0.05)
+							b.set_meta("friction_multiplier", 0.0)
 							if "friction_multiplier" in b:
-								b.friction_multiplier = 0.05
+								b.friction_multiplier = 0.0
 
 
 

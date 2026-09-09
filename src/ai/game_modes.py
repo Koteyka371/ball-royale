@@ -30457,7 +30457,7 @@ class FrictionlessArenaModifierMode(GameMode):
                     if getattr(b, "alive", False):
                         b.is_frictionless = True
                         b.frictionless_modifier_applied = True
-                        b.friction_multiplier = 0.05
+                        b.friction_multiplier = 0.0
         else:
             self.event_timer -= delta
             if self.event_timer <= 0:
@@ -30469,7 +30469,7 @@ class FrictionlessArenaModifierMode(GameMode):
                     if getattr(b, "alive", False):
                         b.is_frictionless = True
                         b.frictionless_modifier_applied = True
-                        b.friction_multiplier = 0.05
+                        b.friction_multiplier = 0.0
 
 class SweepingRotatingLasersMode(GameMode):
     def __init__(self):
