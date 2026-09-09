@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2053] Supernova Trap — *2026-09-09 05:54:22 UTC*
+
+A new hazard that acts as a delayed explosive trap. Once triggered, it starts pulling nearby players slowly, increasing its pull strength over 3 seconds, before exploding in a massive area-of-effect blast, damaging and knocking back anyone caught inside.
+
+---
+
 ## [idea-2052] Siphon Drone Pet — *2026-09-09 05:03:30 UTC*
 
 A new cosmetic pet that orbits the player and slowly drains aura buffs from nearby enemies to permanently increase its owner's base movement speed over the course of the match.
