@@ -52,6 +52,19 @@ class GameMode:
                         b.speed = getattr(b, "base_speed", 100.0)
                 b.in_puddle = False
 
+
+            try:
+                # avoid breaking tests where wormhole_cooldown is MagicMock
+                w_cool = getattr(b, "wormhole_cooldown", 0.0)
+                if not isinstance(w_cool, (int, float)):
+                    pass
+                elif w_cool > 0:
+                    setattr(b, "wormhole_cooldown", w_cool - delta)
+            except Exception:
+                pass
+
+
+
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
             for h in world.arena.hazards:
                 if getattr(h, "kind", "") == "puddle":
@@ -2283,6 +2296,35 @@ class GameMode:
                         world.arena.hazards.remove(m)
 
 
+
+            # Process wormholes
+            wormholes = [h for h in world.arena.hazards if getattr(h, "kind", "") == "wormhole"]
+            for wh in wormholes:
+                dur = getattr(wh, "duration", 10.0)
+                dur -= delta
+                if dur <= 0:
+                    if wh in world.arena.hazards:
+                        world.arena.hazards.remove(wh)
+                    continue
+                setattr(wh, "duration", dur)
+
+                # Check for balls touching the wormhole
+                lx = getattr(wh, "linked_x", None)
+                ly = getattr(wh, "linked_y", None)
+                if lx is not None and ly is not None:
+                    for b in balls:
+                        if not getattr(b, "alive", False): continue
+
+                        dist_sq = (b.x - wh.x)**2 + (b.y - wh.y)**2
+                        r_sum = getattr(wh, "radius", 30.0) + getattr(b, "radius", 15.0)
+
+                        if dist_sq < r_sum**2:
+                            # Cooldown check to prevent infinite bouncing
+                            cooldown = getattr(b, "wormhole_cooldown", 0.0)
+                            if cooldown <= 0:
+                                b.x = lx
+                                b.y = ly
+                                setattr(b, "wormhole_cooldown", 1.0)
             # Process orbital moons
             orbital_moons = [h for h in world.arena.hazards if getattr(h, "kind", "") == "orbital_moon"]
             for m in orbital_moons:
@@ -4460,7 +4502,7 @@ class BattleRoyaleMode(GameMode):
                         self.ball_type = "booster"
                         self.active = True
 
-                booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_link_booster", "speed_booster", "hologram_booster", "holographic_decoy_module", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_shield_booster", "nemesis_drone_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "weather_scanner_item", "aura_booster", "aura_amplifier_trap_booster", "hazard_immunity_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "dummy_item", "fake_healing_orb", "cursed_booster", "grapple_booster", "time_rewind_booster", "snapback_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "mirror_shield_booster", "half_reflect_shield_booster", "damage_reflection_booster", "layer_reflect_shield_booster", "projectile_reflect_booster", "deflector_shield_booster", "bounce_shield_booster", "rearm_token", "gravity_well_booster", "reverse_gravity_item", "gravity_boots", "overclock_booster", "chronosphere_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "fire_sticky_bomb_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "decoy_flare_item", "decoy_bounty_item", "kinetic_shield_booster", "bumper_synergy_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "kinetic_battery_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_stasis_bubble", "deployable_velocity_scrambler_trap", "deployable_time_anomaly", "deployable_decoy_swap_item", "pet_item", "artillery_pet_item", "hazard_jar_item", "ammo_pack", "orbital_mine_immunity_booster", "lightning_rod_item", "orbital_emp_strike_item", "orbital_moon_item", "safe_zone_radar", "phantom_artifact_item", "blood_pact_artifact_item", "contract_item"]
+                booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_link_booster", "speed_booster", "hologram_booster", "holographic_decoy_module", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_shield_booster", "nemesis_drone_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "weather_scanner_item", "aura_booster", "aura_amplifier_trap_booster", "hazard_immunity_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "dummy_item", "fake_healing_orb", "cursed_booster", "grapple_booster", "time_rewind_booster", "snapback_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "mirror_shield_booster", "half_reflect_shield_booster", "damage_reflection_booster", "layer_reflect_shield_booster", "projectile_reflect_booster", "deflector_shield_booster", "bounce_shield_booster", "rearm_token", "gravity_well_booster", "reverse_gravity_item", "gravity_boots", "overclock_booster", "chronosphere_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "fire_sticky_bomb_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "decoy_flare_item", "decoy_bounty_item", "kinetic_shield_booster", "bumper_synergy_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "kinetic_battery_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_stasis_bubble", "deployable_velocity_scrambler_trap", "deployable_time_anomaly", "deployable_decoy_swap_item", "pet_item", "artillery_pet_item", "hazard_jar_item", "ammo_pack", "orbital_mine_immunity_booster", "lightning_rod_item", "orbital_emp_strike_item", "orbital_moon_item", "wormhole_item", "safe_zone_radar", "phantom_artifact_item", "blood_pact_artifact_item", "contract_item"]
                 chosen_kind = rnd.choice(booster_kinds)
                 b_id = 9000 + len(world.boosters) + rnd.randint(0, 1000)
                 b_x = rnd.uniform(100, arena_width - 100)
@@ -43321,7 +43363,7 @@ class ItemMorphMode(GameMode):
         super().__init__()
         self.morph_timer = 0.0
         self.morph_interval = 10.0
-        self.booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_link_booster", "speed_booster", "hologram_booster", "holographic_decoy_module", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_shield_booster", "nemesis_drone_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "weather_scanner_item", "aura_booster", "aura_amplifier_trap_booster", "hazard_immunity_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "dummy_item", "fake_healing_orb", "cursed_booster", "grapple_booster", "time_rewind_booster", "snapback_booster", "time_stop_booster", "instant_rewind_booster", "mirror_shield_booster", "half_reflect_shield_booster", "damage_reflection_booster", "layer_reflect_shield_booster", "projectile_reflect_booster", "deflector_shield_booster", "bounce_shield_booster", "rearm_token", "gravity_well_booster", "reverse_gravity_item", "gravity_boots", "overclock_booster", "chronosphere_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "fire_sticky_bomb_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "decoy_flare_item", "decoy_bounty_item", "kinetic_shield_booster", "bumper_synergy_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "kinetic_battery_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_stasis_bubble", "deployable_velocity_scrambler_trap", "deployable_time_anomaly", "deployable_decoy_swap_item", "pet_item", "artillery_pet_item", "hazard_jar_item", "ammo_pack", "orbital_mine_immunity_booster", "lightning_rod_item", "orbital_emp_strike_item", "orbital_moon_item", "safe_zone_radar", "phantom_artifact_item", "blood_pact_artifact_item", "contract_item"]
+        self.booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_link_booster", "speed_booster", "hologram_booster", "holographic_decoy_module", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_shield_booster", "nemesis_drone_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "weather_scanner_item", "aura_booster", "aura_amplifier_trap_booster", "hazard_immunity_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "dummy_item", "fake_healing_orb", "cursed_booster", "grapple_booster", "time_rewind_booster", "snapback_booster", "time_stop_booster", "instant_rewind_booster", "mirror_shield_booster", "half_reflect_shield_booster", "damage_reflection_booster", "layer_reflect_shield_booster", "projectile_reflect_booster", "deflector_shield_booster", "bounce_shield_booster", "rearm_token", "gravity_well_booster", "reverse_gravity_item", "gravity_boots", "overclock_booster", "chronosphere_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "fire_sticky_bomb_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "decoy_flare_item", "decoy_bounty_item", "kinetic_shield_booster", "bumper_synergy_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "kinetic_battery_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_stasis_bubble", "deployable_velocity_scrambler_trap", "deployable_time_anomaly", "deployable_decoy_swap_item", "pet_item", "artillery_pet_item", "hazard_jar_item", "ammo_pack", "orbital_mine_immunity_booster", "lightning_rod_item", "orbital_emp_strike_item", "orbital_moon_item", "wormhole_item", "safe_zone_radar", "phantom_artifact_item", "blood_pact_artifact_item", "contract_item"]
         import random
         self.random = random
 

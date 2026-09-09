@@ -7150,6 +7150,44 @@ class Action:
             self.ball.safe_zone_radar_timer -= getattr(self.world, "delta", 0.016)
             if self.ball.safe_zone_radar_timer <= 0:
                 self.ball.safe_zone_radar_timer = 0
+
+        # Check inventory for wormhole_item
+        if hasattr(self.ball, "inventory") and "wormhole_item" in self.ball.inventory and getattr(self.ball, "use_item", False):
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                try:
+                    from arena.procedural_arena import Hazard
+                except ImportError:
+                    Hazard = type('Hazard', (), {}) # dummy
+
+                wh_id1 = f"wh_{getattr(self.ball, 'id', 'x')}_{len(self.world.arena.hazards) + 9901}_1"
+                wh_id2 = f"wh_{getattr(self.ball, 'id', 'x')}_{len(self.world.arena.hazards) + 9901}_2"
+
+                # Determine target location. If a strategy involves an enemy, use enemy location, otherwise a random offset.
+                tx, ty = self.ball.x + 200.0, self.ball.y + 200.0
+                # Let's find an enemy if possible
+                if hasattr(self, "get_nearest_enemy"): # We probably don't have this, let's just find first enemy.
+                    pass
+                for b in getattr(self.world, "balls", []):
+                    if getattr(b, "id", None) != getattr(self.ball, "id", None) and getattr(b, "team", 0) != getattr(self.ball, "team", 0) and getattr(b, "alive", False):
+                        tx, ty = b.x, b.y
+                        break
+
+                wh1 = Hazard(id=wh_id1, x=self.ball.x, y=self.ball.y, radius=30.0, kind="wormhole", damage=0.0)
+                setattr(wh1, "linked_x", tx)
+                setattr(wh1, "linked_y", ty)
+                setattr(wh1, "duration", 10.0)
+
+                wh2 = Hazard(id=wh_id2, x=tx, y=ty, radius=30.0, kind="wormhole", damage=0.0)
+                setattr(wh2, "linked_x", self.ball.x)
+                setattr(wh2, "linked_y", self.ball.y)
+                setattr(wh2, "duration", 10.0)
+
+                self.world.arena.hazards.append(wh1)
+                self.world.arena.hazards.append(wh2)
+
+            self.ball.inventory.remove("wormhole_item")
+            self.ball.use_item = False
+
         if hasattr(self.ball, "inventory") and "reverse_gravity_item" in self.ball.inventory and getattr(self.ball, "use_item", False):
             # Spawn reverse gravity field hazard in an area
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
