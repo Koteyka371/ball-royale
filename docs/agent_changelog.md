@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2052] Siphon Drone Pet — *2026-09-09 05:03:30 UTC*
+
+A new cosmetic pet that orbits the player and slowly drains aura buffs from nearby enemies to permanently increase its owner's base movement speed over the course of the match.
+
+---
+
 ## [idea-2144] Black Hole Survival — *2026-09-08 23:07:11 UTC*
 
 Players start far away from the black hole and must reach the safe zone.
