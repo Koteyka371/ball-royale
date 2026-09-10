@@ -48748,6 +48748,121 @@ class ReverseBlackHoleMode extends GameMode:
 							b.x += (dx / dist) * push_strength * push_factor * delta
 							b.y += (dy / dist) * push_strength * push_factor * delta
 
+class MiniBlackHoleSpawnerMode extends GameMode:
+	var spawn_timer = 0.0
+
+	func _init() -> void:
+		name = "Mini Black Hole Spawner"
+		description = "Hazards occasionally spawn mini black holes that pull in nearby players for a short duration."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		spawn_timer -= delta
+		if spawn_timer <= 0:
+			spawn_timer = 5.0
+
+			if world != null and "arena" in world and world.arena != null and "hazards" in world.arena and typeof(world.arena.hazards) == TYPE_ARRAY and world.arena.hazards.size() > 0:
+				var hazard = world.arena.hazards[randi() % world.arena.hazards.size()]
+
+				var h_x = 0.0
+				var h_y = 0.0
+				if typeof(hazard) == TYPE_DICTIONARY:
+					h_x = hazard.get("x", 0.0)
+					h_y = hazard.get("y", 0.0)
+				else:
+					h_x = hazard.x if "x" in hazard else 0.0
+					h_y = hazard.y if "y" in hazard else 0.0
+
+				var mini_bh = {
+					"id": randi() % 900000 + 100000,
+					"x": h_x,
+					"y": h_y,
+					"radius": 80.0,
+					"kind": "mini_black_hole",
+					"duration": 3.0,
+					"damage": 5.0,
+					"active": true
+				}
+				world.arena.hazards.append(mini_bh)
+
+		if world != null and "arena" in world and world.arena != null and "hazards" in world.arena and typeof(world.arena.hazards) == TYPE_ARRAY:
+			var hazards_to_remove = []
+
+			for h in world.arena.hazards:
+				var h_kind = ""
+				var h_active = false
+				var h_duration = 0.0
+				var h_x = 0.0
+				var h_y = 0.0
+				var h_radius = 80.0
+
+				if typeof(h) == TYPE_DICTIONARY:
+					h_kind = h.get("kind", "")
+					h_active = h.get("active", true)
+					h_duration = h.get("duration", 0.0)
+					h_x = h.get("x", 0.0)
+					h_y = h.get("y", 0.0)
+					h_radius = h.get("radius", 80.0)
+				else:
+					h_kind = h.kind if "kind" in h else ""
+					h_active = h.active if "active" in h else true
+					h_duration = h.duration if "duration" in h else 0.0
+					h_x = h.x if "x" in h else 0.0
+					h_y = h.y if "y" in h else 0.0
+					h_radius = h.radius if "radius" in h else 80.0
+
+				if h_kind == "mini_black_hole" and h_active:
+					h_duration -= delta
+					if typeof(h) == TYPE_DICTIONARY:
+						h["duration"] = h_duration
+					else:
+						if "duration" in h:
+							h.duration = h_duration
+
+					if h_duration <= 0:
+						if typeof(h) == TYPE_DICTIONARY:
+							h["active"] = false
+						else:
+							if "active" in h:
+								h.active = false
+						hazards_to_remove.append(h)
+					else:
+						for b in balls:
+							var b_alive = false
+							if typeof(b) == TYPE_DICTIONARY:
+								b_alive = b.get("alive", false)
+							else:
+								b_alive = b.alive if "alive" in b else false
+
+							if not b_alive:
+								continue
+
+							var b_x = 0.0
+							var b_y = 0.0
+							if typeof(b) == TYPE_DICTIONARY:
+								b_x = b.get("x", 0.0)
+								b_y = b.get("y", 0.0)
+							else:
+								b_x = b.x if "x" in b else 0.0
+								b_y = b.y if "y" in b else 0.0
+
+							var dx = h_x - b_x
+							var dy = h_y - b_y
+							var dist = sqrt(dx * dx + dy * dy)
+
+							if dist > 0 and dist < h_radius:
+								var pull_strength = 150.0 * (1.0 - dist / h_radius)
+								if typeof(b) == TYPE_DICTIONARY:
+									b["x"] += (dx / dist) * pull_strength * delta
+									b["y"] += (dy / dist) * pull_strength * delta
+								else:
+									if "x" in b: b.x += (dx / dist) * pull_strength * delta
+									if "y" in b: b.y += (dy / dist) * pull_strength * delta
+
+			for h in hazards_to_remove:
+				world.arena.hazards.erase(h)
+
 class MassiveBlackHoleEventMode extends GameMode:
 	var active = false
 	var timer = 0.0
@@ -66384,6 +66499,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"reverse_friction": preload("res://src/ai/reverse_friction.gd").ReverseFrictionMode.new(),
 	"underground_tunnels": UndergroundTunnelMode.new(),
 	"reverse_black_hole_event": ReverseBlackHoleMode.new(),
+		"mini_black_hole_spawner": MiniBlackHoleSpawnerMode.new(),
 	"massive_black_hole_event": MassiveBlackHoleEventMode.new(),
 	"ticking_bomb": TickingBombMode.new(),
 	"aura_bomb_event": AuraBombEventMode.new(),

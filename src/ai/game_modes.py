@@ -45688,6 +45688,73 @@ class PaintSplatterMode(GameMode):
             b._prev_y_paint = b.y
 
 GAME_MODES['reverse_black_hole_event'] = ReverseBlackHoleMode()
+
+class MiniBlackHoleSpawnerMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Mini Black Hole Spawner"
+        self.description = "Hazards occasionally spawn mini black holes that pull in nearby players for a short duration."
+        self.spawn_timer = 0.0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import random
+        import math
+
+        self.spawn_timer -= delta
+        if self.spawn_timer <= 0:
+            self.spawn_timer = 5.0
+
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards") and world.arena.hazards:
+                hazard = random.choice(world.arena.hazards)
+
+                class MiniBlackHoleHazard:
+                    def __init__(self, x, y):
+                        self.id = random.randint(100000, 999999)
+                        self.x = x
+                        self.y = y
+                        self.radius = 80.0
+                        self.kind = "mini_black_hole"
+                        self.duration = 3.0
+                        self.damage = 5.0
+                        self.active = True
+
+                world.arena.hazards.append(MiniBlackHoleHazard(hazard.x, hazard.y))
+
+        # Handle mini black holes logic
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            hazards_to_remove = []
+
+            for h in world.arena.hazards:
+                if getattr(h, "kind", "") == "mini_black_hole" and getattr(h, "active", True):
+                    h.duration -= delta
+                    if h.duration <= 0:
+                        h.active = False
+                        hazards_to_remove.append(h)
+                    else:
+                        for b in balls:
+                            if not getattr(b, "alive", False):
+                                continue
+
+                            dx = h.x - b.x
+                            dy = h.y - b.y
+                            dist = math.hypot(dx, dy)
+
+                            if 0 < dist < h.radius:
+                                pull_strength = 150.0 * (1.0 - dist / h.radius)
+                                if isinstance(b, dict):
+                                    b["x"] += (dx / dist) * pull_strength * delta
+                                    b["y"] += (dy / dist) * pull_strength * delta
+                                else:
+                                    b.x += (dx / dist) * pull_strength * delta
+                                    b.y += (dy / dist) * pull_strength * delta
+
+            for h in hazards_to_remove:
+                if h in world.arena.hazards:
+                    world.arena.hazards.remove(h)
+
+GAME_MODES['mini_black_hole_spawner'] = MiniBlackHoleSpawnerMode()
+
 GAME_MODES['massive_black_hole_event'] = MassiveBlackHoleEventMode()
 GAME_MODES['paint_splatter'] = PaintSplatterMode()
 GAME_MODES['ticking_bomb'] = TickingBombMode()
