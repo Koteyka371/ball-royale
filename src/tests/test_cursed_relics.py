@@ -19,6 +19,7 @@ class MockBall:
         self.alive = True
         self.radius = 20.0
         self.damage = 10.0
+        self.base_damage = 10.0
         self.hp = 100.0
 
 def test_cursed_relics_mode():
