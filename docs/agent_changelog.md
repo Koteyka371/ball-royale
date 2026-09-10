@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2140] Reverse Gravity Zone Hazard — *2026-09-10 00:42:06 UTC*
+
+A hazard that flips the gravity for any ball inside it, causing them to float upwards or be repelled away from the arena center instead of being pulled towards it. This would disrupt standard positioning and create chaotic combat scenarios.
+
+---
+
 ## [idea-2141] Comeback Aura — *2026-09-09 22:59:09 UTC*
 
 When a team is severely behind in score or player count, their remaining members emit a visible aura and gain slowly regenerating shields to encourage late-game clutches.
