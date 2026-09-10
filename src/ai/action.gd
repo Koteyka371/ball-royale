@@ -24381,21 +24381,74 @@ func execute(strategy: String, delta: float):
                                     if "killer" in self.ball:
                                         self.ball.killer = "massive_black_hole"
                                 else:
-                                    var lifetime_mult = 1.0
-                                    if hazard.has_meta("lifetime"):
-                                        lifetime_mult = 1.0 + (hazard.get_meta("lifetime") / 10.0)
-                                    var damage_val = 10.0
-                                    if "damage" in hazard: damage_val = hazard.damage
-                                    damage_val = damage_val * delta * lifetime_mult
-                                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("take_damage"):
-                                        self.ball.take_damage(damage_val)
-                                    elif "hp" in self.ball:
-                                        self.ball.hp -= damage_val
-                                        if self.ball.hp <= 0:
-                                            self.ball.hp = 0
-                                            self.ball.alive = false
-                                            if "killer" in self.ball:
-                                                self.ball.killer = "black_hole"
+                                    var is_teleport = true
+                                    if typeof(hazard) == TYPE_OBJECT and hazard.has_method("has_meta") and hazard.has_meta("is_teleport_black_hole"):
+                                        is_teleport = hazard.get_meta("is_teleport_black_hole")
+                                    elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("is_teleport_black_hole"):
+                                        is_teleport = hazard["is_teleport_black_hole"]
+                                    elif "is_teleport_black_hole" in hazard:
+                                        is_teleport = hazard.is_teleport_black_hole
+
+                                    var is_spectator = false
+                                    if typeof(self.ball) == TYPE_OBJECT:
+                                        if self.ball.has_method("has_meta") and self.ball.has_meta("ball_type") and self.ball.get_meta("ball_type") == "spectator":
+                                            is_spectator = true
+                                        elif "ball_type" in self.ball and self.ball.ball_type == "spectator":
+                                            is_spectator = true
+                                    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type") and self.ball["ball_type"] == "spectator":
+                                        is_spectator = true
+
+                                    if is_teleport and not is_spectator:
+                                        var arena_w = 1000.0
+                                        var arena_h = 1000.0
+                                        if self.world.arena != null:
+                                            if "width" in self.world.arena: arena_w = self.world.arena.width
+                                            if "height" in self.world.arena: arena_h = self.world.arena.height
+
+                                        var edge = randi() % 4
+                                        var new_x = 0.0
+                                        var new_y = 0.0
+                                        if edge == 0:
+                                            new_x = randf_range(0.0, arena_w)
+                                            new_y = 0.0
+                                        elif edge == 1:
+                                            new_x = randf_range(0.0, arena_w)
+                                            new_y = arena_h
+                                        elif edge == 2:
+                                            new_x = 0.0
+                                            new_y = randf_range(0.0, arena_h)
+                                        else:
+                                            new_x = arena_w
+                                            new_y = randf_range(0.0, arena_h)
+
+                                        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                            self.ball.set_meta("x", new_x)
+                                            self.ball.set_meta("y", new_y)
+                                        elif "x" in self.ball and "y" in self.ball:
+                                            self.ball.x = new_x
+                                            self.ball.y = new_y
+
+                                        if "stutter_timer" in self.ball:
+                                            self.ball.stutter_timer += 3.0
+                                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta"):
+                                            var current_stutter = self.ball.get_meta("stutter_timer") if self.ball.has_meta("stutter_timer") else 0.0
+                                            self.ball.set_meta("stutter_timer", current_stutter + 3.0)
+                                    else:
+                                        var lifetime_mult = 1.0
+                                        if hazard.has_meta("lifetime"):
+                                            lifetime_mult = 1.0 + (hazard.get_meta("lifetime") / 10.0)
+                                        var damage_val = 10.0
+                                        if "damage" in hazard: damage_val = hazard.damage
+                                        damage_val = damage_val * delta * lifetime_mult
+                                        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("take_damage"):
+                                            self.ball.take_damage(damage_val)
+                                        elif "hp" in self.ball:
+                                            self.ball.hp -= damage_val
+                                            if self.ball.hp <= 0:
+                                                self.ball.hp = 0
+                                                self.ball.alive = false
+                                                if "killer" in self.ball:
+                                                    self.ball.killer = "black_hole"
 
         if "hazards" in self.world.arena:
             var alive_hazards = []
