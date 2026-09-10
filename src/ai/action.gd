@@ -4299,6 +4299,132 @@ func execute(strategy: String, delta: float):
 	elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("cosmetic"): cosmetic = self.ball["cosmetic"].to_lower().replace(" ", "_")
 	elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("cosmetic"): cosmetic = self.ball.get_meta("cosmetic").to_lower().replace(" ", "_")
 
+
+	# Elemental Synergy: Magnetism and Speed
+	var my_element = null
+	if "element" in self.ball: my_element = self.ball.element
+	elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("element"): my_element = self.ball["element"]
+	elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("element"): my_element = self.ball.get_meta("element")
+
+	if my_element != null and typeof(my_element) == TYPE_STRING and my_element != "":
+		var was_buffed = false
+		if "_elemental_synergy_speed_buffed" in self.ball: was_buffed = self.ball._elemental_synergy_speed_buffed
+		elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("_elemental_synergy_speed_buffed"): was_buffed = self.ball["_elemental_synergy_speed_buffed"]
+
+		if was_buffed:
+			var base_speed = 200.0
+			if "base_speed" in self.ball: base_speed = self.ball.base_speed
+			elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("base_speed"): base_speed = self.ball["base_speed"]
+
+			if typeof(self.ball) == TYPE_DICTIONARY:
+				self.ball["speed"] = base_speed
+				self.ball["_elemental_synergy_speed_buffed"] = false
+			else:
+				self.ball.speed = base_speed
+				self.ball._elemental_synergy_speed_buffed = false
+
+		if typeof(self.ball) == TYPE_DICTIONARY:
+			self.ball["_elemental_synergy_vulnerable"] = false
+		else:
+			self.ball._elemental_synergy_vulnerable = false
+
+		var has_nearby_synergy = false
+		var my_team = -1
+		if "team" in self.ball: my_team = self.ball.team
+		elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"): my_team = self.ball["team"]
+
+		var my_id = -1
+		if "id" in self.ball: my_id = self.ball.id
+		elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): my_id = self.ball["id"]
+
+		if self.world != null and "balls" in self.world:
+			for b in self.world.balls:
+				var b_id = -1
+				if "id" in b: b_id = b.id
+				elif typeof(b) == TYPE_DICTIONARY and b.has("id"): b_id = b["id"]
+
+				var b_alive = false
+				if "alive" in b: b_alive = b.alive
+				elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): b_alive = b["alive"]
+
+				var b_team = -2
+				if "team" in b: b_team = b.team
+				elif typeof(b) == TYPE_DICTIONARY and b.has("team"): b_team = b["team"]
+
+				if b_id != my_id and b_alive and b_team == my_team:
+					var b_element = null
+					if "element" in b: b_element = b.element
+					elif typeof(b) == TYPE_DICTIONARY and b.has("element"): b_element = b["element"]
+
+					if b_element == my_element:
+						var bx = 0.0
+						if "x" in b: bx = b.x
+						elif typeof(b) == TYPE_DICTIONARY and b.has("x"): bx = b["x"]
+
+						var by = 0.0
+						if "y" in b: by = b.y
+						elif typeof(b) == TYPE_DICTIONARY and b.has("y"): by = b["y"]
+
+						var mx = 0.0
+						if "x" in self.ball: mx = self.ball.x
+						elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("x"): mx = self.ball["x"]
+
+						var my_y = 0.0
+						if "y" in self.ball: my_y = self.ball.y
+						elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("y"): my_y = self.ball["y"]
+
+						var dx = bx - mx
+						var dy = by - my_y
+						var dist = sqrt(dx*dx + dy*dy)
+
+						if dist > 10.0 and dist < 300.0:
+							var pull_strength = 50.0 * delta
+							if typeof(self.ball) == TYPE_DICTIONARY:
+								self.ball["vx"] = self.ball.get("vx", 0.0) + (dx / dist) * pull_strength
+								self.ball["vy"] = self.ball.get("vy", 0.0) + (dy / dist) * pull_strength
+								self.ball["_elemental_synergy_vulnerable"] = true
+							else:
+								var old_vx = 0.0
+								if "vx" in self.ball: old_vx = self.ball.vx
+								var old_vy = 0.0
+								if "vy" in self.ball: old_vy = self.ball.vy
+								self.ball.vx = old_vx + (dx / dist) * pull_strength
+								self.ball.vy = old_vy + (dy / dist) * pull_strength
+								self.ball._elemental_synergy_vulnerable = true
+
+						if dist < 150.0:
+							has_nearby_synergy = true
+
+		if has_nearby_synergy:
+			var base_speed = 200.0
+			if "base_speed" in self.ball: base_speed = self.ball.base_speed
+			elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("base_speed"): base_speed = self.ball["base_speed"]
+
+			if typeof(self.ball) == TYPE_DICTIONARY:
+				self.ball["_elemental_synergy_speed_buffed"] = true
+				self.ball["speed"] = base_speed * 1.5
+			else:
+				self.ball._elemental_synergy_speed_buffed = true
+				self.ball.speed = base_speed * 1.5
+	else:
+		var was_buffed = false
+		if "_elemental_synergy_speed_buffed" in self.ball: was_buffed = self.ball._elemental_synergy_speed_buffed
+		elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("_elemental_synergy_speed_buffed"): was_buffed = self.ball["_elemental_synergy_speed_buffed"]
+
+		if was_buffed:
+			var base_speed = 200.0
+			if "base_speed" in self.ball: base_speed = self.ball.base_speed
+			elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("base_speed"): base_speed = self.ball["base_speed"]
+
+			if typeof(self.ball) == TYPE_DICTIONARY:
+				self.ball["speed"] = base_speed
+				self.ball["_elemental_synergy_speed_buffed"] = false
+				self.ball["_elemental_synergy_vulnerable"] = false
+			else:
+				self.ball.speed = base_speed
+				self.ball._elemental_synergy_speed_buffed = false
+				self.ball._elemental_synergy_vulnerable = false
+
 	if cosmetic == "aura_drain_pet":
 		var has_pet = false
 		if "has_pet" in self.ball: has_pet = self.ball.has_pet
