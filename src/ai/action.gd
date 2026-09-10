@@ -54511,14 +54511,23 @@ func _update_skill_timer(delta: float):
             self.ball._prev_skill_timer = current_st
             self.ball.blood_magic_timer = bm_timer - delta
 
-    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("sonar_ping_timer"):
-        var spt = float(self.ball.get_meta("sonar_ping_timer"))
-        if spt > 0: self.ball.set_meta("sonar_ping_timer", spt - delta)
-    elif typeof(self.ball) == TYPE_DICTIONARY and "sonar_ping_timer" in self.ball:
-        var spt = float(self.ball["sonar_ping_timer"])
-        if spt > 0: self.ball["sonar_ping_timer"] = spt - delta
-    elif "sonar_ping_timer" in self.ball and self.ball.sonar_ping_timer != null and self.ball.sonar_ping_timer > 0:
-        self.ball.sonar_ping_timer -= delta
+    var is_sb_sonar = false
+    if typeof(self.ball) == TYPE_DICTIONARY:
+        is_sb_sonar = self.ball.get("stasis_bubble_active", false)
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("stasis_bubble_active"):
+        is_sb_sonar = self.ball.get_meta("stasis_bubble_active")
+    elif "stasis_bubble_active" in self.ball:
+        is_sb_sonar = self.ball.stasis_bubble_active
+
+    if not is_sb_sonar:
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("sonar_ping_timer"):
+            var spt = float(self.ball.get_meta("sonar_ping_timer"))
+            if spt > 0: self.ball.set_meta("sonar_ping_timer", spt - delta)
+        elif typeof(self.ball) == TYPE_DICTIONARY and "sonar_ping_timer" in self.ball:
+            var spt = float(self.ball["sonar_ping_timer"])
+            if spt > 0: self.ball["sonar_ping_timer"] = spt - delta
+        elif "sonar_ping_timer" in self.ball and self.ball.sonar_ping_timer != null and self.ball.sonar_ping_timer > 0:
+            self.ball.sonar_ping_timer -= delta
 
     var sc_timer = 0.0
     if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("supercharge_timer"):
@@ -61140,7 +61149,16 @@ func _update_skill_timer(delta: float):
         elif is_windy2:
             cd_mult2 = 1.2
 
-        attack_timer -= delta * cd_mult2
+        var is_sb_attack = false
+        if typeof(self.ball) == TYPE_DICTIONARY:
+            is_sb_attack = self.ball.get("stasis_bubble_active", false)
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("stasis_bubble_active"):
+            is_sb_attack = self.ball.get_meta("stasis_bubble_active")
+        elif "stasis_bubble_active" in self.ball:
+            is_sb_attack = self.ball.stasis_bubble_active
+
+        if not is_sb_attack:
+            attack_timer -= delta * cd_mult2
         if "attack_timer" in self.ball:
             self.ball.attack_timer = attack_timer
         elif self.ball.has_method("set_meta"):
