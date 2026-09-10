@@ -92557,6 +92557,153 @@ class GravityVortexHazardMode extends GameMode:
 
 GAME_MODES["gravity_vortex_hazard"] = GravityVortexHazardMode.new()
 
+class GravityInverterHazardMode extends GameMode:
+	func _init().():
+		name = "Gravity Inverter Hazard"
+		description = "A hazard that flips the gravity for any ball inside it, causing them to float upwards or be repelled away from the arena center instead of being pulled towards it."
+
+	func setup(world, balls: Array) -> void:
+		.setup(world, balls)
+		if world != null and ("arena" in world) and world.arena != null:
+			if not ("hazards" in world.arena):
+				world.arena.hazards = []
+
+			var center_x = 500.0
+			var center_y = 500.0
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				center_x = world.arena.get("width", 1000.0) / 2.0
+				center_y = world.arena.get("height", 1000.0) / 2.0
+			else:
+				if "width" in world.arena:
+					center_x = world.arena.width / 2.0
+				if "height" in world.arena:
+					center_y = world.arena.height / 2.0
+
+			var inverter = {
+				"id": 999902,
+				"x": center_x,
+				"y": center_y,
+				"radius": 150.0,
+				"kind": "gravity_inverter",
+				"damage": 0.0,
+				"active": true,
+				"target_radius": 0.0
+			}
+			if typeof(world.arena.hazards) == TYPE_ARRAY:
+				world.arena.hazards.append(inverter)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		.tick(world, balls, delta)
+
+		if world == null or not ("arena" in world) or world.arena == null or not ("hazards" in world.arena):
+			return
+
+		var hazards = world.arena.hazards
+		if typeof(hazards) != TYPE_ARRAY:
+			return
+
+		var inverters = []
+		for h in hazards:
+			var h_kind = ""
+			var h_active = true
+			if typeof(h) == TYPE_DICTIONARY:
+				h_kind = h.get("kind", "")
+				h_active = h.get("active", true)
+			elif typeof(h) == TYPE_OBJECT:
+				h_kind = h.get("kind") if h.has_method("get") else h.kind if "kind" in h else ""
+				h_active = h.get("active") if h.has_method("get") else h.active if "active" in h else true
+
+			if h_kind == "gravity_inverter" and h_active:
+				inverters.append(h)
+
+		if inverters.size() == 0:
+			return
+
+		for b in balls:
+			var is_dict = typeof(b) == TYPE_DICTIONARY
+			var alive = true
+			if is_dict:
+				alive = b.get("alive", true)
+			else:
+				alive = b.get("alive") if b.has_method("get") else b.alive if "alive" in b else true
+
+			if not alive:
+				continue
+
+			var bx = 0.0
+			var by = 0.0
+			var bvy = 0.0
+			if is_dict:
+				bx = b.get("x", 0.0)
+				by = b.get("y", 0.0)
+				bvy = b.get("vy", 0.0)
+			else:
+				bx = b.get("x") if b.has_method("get") else b.x if "x" in b else 0.0
+				by = b.get("y") if b.has_method("get") else b.y if "y" in b else 0.0
+				bvy = b.get("vy") if b.has_method("get") else b.vy if "vy" in b else 0.0
+
+			for inverter in inverters:
+				var ix = 0.0
+				var iy = 0.0
+				var radius = 150.0
+				if typeof(inverter) == TYPE_DICTIONARY:
+					ix = inverter.get("x", 0.0)
+					iy = inverter.get("y", 0.0)
+					radius = inverter.get("radius", 150.0)
+				elif typeof(inverter) == TYPE_OBJECT:
+					ix = inverter.get("x") if inverter.has_method("get") else inverter.x if "x" in inverter else 0.0
+					iy = inverter.get("y") if inverter.has_method("get") else inverter.y if "y" in inverter else 0.0
+					radius = inverter.get("radius") if inverter.has_method("get") else inverter.radius if "radius" in inverter else 150.0
+
+				var dx = bx - ix
+				var dy = by - iy
+				var dist = sqrt(dx * dx + dy * dy)
+
+				if dist < radius and dist > 0:
+					var push_strength = 60.0 * (1.0 - (dist / radius))
+
+					var dir_x = dx / dist
+					var dir_y = dy / dist
+
+					var new_x = bx + dir_x * push_strength * delta
+					var new_y = by + dir_y * push_strength * delta
+
+					if is_dict:
+						b["x"] = new_x
+						b["y"] = new_y
+
+						if "gravity_y" in world.arena:
+							var gravity_y = 0.0
+							if typeof(world.arena) == TYPE_DICTIONARY:
+								gravity_y = world.arena.get("gravity_y", 0.0)
+							else:
+								gravity_y = world.arena.gravity_y if "gravity_y" in world.arena else 0.0
+							b["vy"] = bvy - gravity_y * delta * 2.0
+					else:
+						if b.has_method("set"):
+							b.set("x", new_x)
+							b.set("y", new_y)
+						else:
+							if "x" in b:
+								b.x = new_x
+							if "y" in b:
+								b.y = new_y
+
+						if "gravity_y" in world.arena:
+							var gravity_y = 0.0
+							if typeof(world.arena) == TYPE_DICTIONARY:
+								gravity_y = world.arena.get("gravity_y", 0.0)
+							else:
+								gravity_y = world.arena.gravity_y if "gravity_y" in world.arena else 0.0
+
+							if b.has_method("set"):
+								b.set("vy", bvy - gravity_y * delta * 2.0)
+							elif "vy" in b:
+								b.vy = bvy - gravity_y * delta * 2.0
+
+GAME_MODES["gravity_inverter_hazard"] = GravityInverterHazardMode.new()
+
+
 GAME_MODES["blood_thirst"] = BloodThirstMode.new()
 
 class GlobalEMPEventMode extends GameMode:
