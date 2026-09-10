@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-2151] Black Hole Spawner — *2026-09-10 01:08:12 UTC*
+
+Hazards that spawn mini black holes occasionally.
+
+---
+
 ## [idea-2140] Reverse Gravity Zone Hazard — *2026-09-10 00:42:06 UTC*
 
 A hazard that flips the gravity for any ball inside it, causing them to float upwards or be repelled away from the arena center instead of being pulled towards it. This would disrupt standard positioning and create chaotic combat scenarios.
