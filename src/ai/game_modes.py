@@ -59064,6 +59064,100 @@ class GravityVortexHazardMode(GameMode):
 
 GAME_MODES["gravity_vortex_hazard"] = GravityVortexHazardMode()
 
+class GravityInverterHazardMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Gravity Inverter Hazard"
+        self.description = "A hazard that flips the gravity for any ball inside it, causing them to float upwards or be repelled away from the arena center instead of being pulled towards it."
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if hasattr(world, "arena"):
+            if not hasattr(world.arena, "hazards"):
+                world.arena.hazards = []
+
+            class FallbackHazard:
+                def __init__(self, id, x, y, radius, kind, damage):
+                    self.id = id
+                    self.x = x
+                    self.y = y
+                    self.radius = radius
+                    self.kind = kind
+                    self.damage = damage
+                    self.active = True
+                    self.target_radius = 0.0
+
+            center_x = getattr(world.arena, "width", 1000.0) / 2
+            center_y = getattr(world.arena, "height", 1000.0) / 2
+
+            inverter = FallbackHazard(
+                id=999902,
+                x=center_x,
+                y=center_y,
+                radius=150.0,
+                kind="gravity_inverter",
+                damage=0.0
+            )
+            world.arena.hazards.append(inverter)
+
+    def tick(self, world, balls, delta: float = 0.016):
+        super().tick(world, balls, delta)
+
+        if not hasattr(world, "arena") or not hasattr(world.arena, "hazards"):
+            return
+
+        inverters = [h for h in world.arena.hazards if getattr(h, "kind", "") == "gravity_inverter" and getattr(h, "active", True)]
+        if not inverters:
+            return
+
+        import math
+
+        for ball in balls:
+            is_dict = isinstance(ball, dict)
+            alive = ball.get("alive", True) if is_dict else getattr(ball, "alive", True)
+            if not alive:
+                continue
+
+            bx = ball.get("x", 0.0) if is_dict else getattr(ball, "x", 0.0)
+            by = ball.get("y", 0.0) if is_dict else getattr(ball, "y", 0.0)
+
+            for inverter in inverters:
+                ix = getattr(inverter, "x", 0.0)
+                iy = getattr(inverter, "y", 0.0)
+                radius = getattr(inverter, "radius", 150.0)
+
+                dx = bx - ix
+                dy = by - iy
+                dist = math.hypot(dx, dy)
+
+                if dist < radius and dist > 0:
+                    # Push them away from the center of the inverter
+                    push_strength = 60.0 * (1.0 - (dist / radius))
+
+                    dir_x = dx / dist
+                    dir_y = dy / dist
+
+                    new_x = bx + dir_x * push_strength * delta
+                    new_y = by + dir_y * push_strength * delta
+
+                    if is_dict:
+                        ball["x"] = new_x
+                        ball["y"] = new_y
+
+                        # Apply some reverse gravity effect if arena has gravity
+                        if hasattr(world.arena, "gravity_y"):
+                            ball["vy"] = ball.get("vy", 0.0) - world.arena.gravity_y * delta * 2.0
+                    else:
+                        setattr(ball, "x", new_x)
+                        setattr(ball, "y", new_y)
+
+                        if hasattr(world.arena, "gravity_y"):
+                            setattr(ball, "vy", getattr(ball, "vy", 0.0) - world.arena.gravity_y * delta * 2.0)
+
+GAME_MODES["gravity_inverter_hazard"] = GravityInverterHazardMode()
+
+
+
 GAME_MODES["slow_drain_aura"] = SlowDrainAuraMode()
 
 class GlobalEMPEventMode(GameMode):
