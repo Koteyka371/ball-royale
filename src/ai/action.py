@@ -12796,15 +12796,37 @@ class Action:
                                                         b.alive = False
                                                         b.killer = "massive_black_hole"
                                                     else:
-                                                        damage_val = getattr(hazard, "damage", 10.0) * delta * lifetime_mult
-                                                        if hasattr(b, "take_damage"):
-                                                            b.take_damage(damage_val)
-                                                        elif hasattr(b, "hp"):
-                                                            b.hp -= damage_val
-                                                            if b.hp <= 0:
-                                                                b.hp = 0
-                                                                b.alive = False
-                                                                b.killer = "black_hole"
+                                                        if getattr(hazard, "is_teleport_black_hole", True) and getattr(b, "ball_type", "") != "spectator":
+                                                            import random
+                                                            arena_width = getattr(self.world.arena, "width", 1000.0)
+                                                            arena_height = getattr(self.world.arena, "height", 1000.0)
+                                                            # Teleport to a random location on the edge
+                                                            edge = random.randint(0, 3)
+                                                            if edge == 0: # Top
+                                                                b.x = random.uniform(0, arena_width)
+                                                                b.y = 0.0
+                                                            elif edge == 1: # Bottom
+                                                                b.x = random.uniform(0, arena_width)
+                                                                b.y = arena_height
+                                                            elif edge == 2: # Left
+                                                                b.x = 0.0
+                                                                b.y = random.uniform(0, arena_height)
+                                                            else: # Right
+                                                                b.x = arena_width
+                                                                b.y = random.uniform(0, arena_height)
+
+                                                            # Apply temporary debuff to speed (using stutter_timer)
+                                                            b.stutter_timer = getattr(b, "stutter_timer", 0.0) + 3.0
+                                                        else:
+                                                            damage_val = getattr(hazard, "damage", 10.0) * delta * lifetime_mult
+                                                            if hasattr(b, "take_damage"):
+                                                                b.take_damage(damage_val)
+                                                            elif hasattr(b, "hp"):
+                                                                b.hp -= damage_val
+                                                                if b.hp <= 0:
+                                                                    b.hp = 0
+                                                                    b.alive = False
+                                                                    b.killer = "black_hole"
 
 
                             # Pull boosters once per frame
