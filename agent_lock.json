@@ -19,9 +19,9 @@
     "agent-3": {
       "name": "Jules Tests",
       "area": "tests",
-      "task_id": "idea-2068",
-      "status": "working",
-      "started_at": "2026-09-19T22:27:43.271012+00:00",
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
       "cycles_today": 0
     },
     "agent-4": {
@@ -91,9 +91,9 @@
     "agent-11": {
       "name": "Jules Worker 11",
       "area": "innovation",
-      "task_id": "idea-2128",
-      "status": "working",
-      "started_at": "2026-09-19T22:34:07.434931+00:00",
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
       "cycles_today": 0
     },
     "agent-12": {
