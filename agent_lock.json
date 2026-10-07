@@ -92,8 +92,8 @@
       "name": "Jules Worker 11",
       "area": "innovation",
       "task_id": "idea-2128",
-      "status": "assigned",
-      "started_at": "2026-10-07T11:15:14.098342+00:00",
+      "status": "working",
+      "started_at": "2026-10-07T11:25:59.501478+00:00",
       "cycles_today": 0
     },
     "agent-12": {
